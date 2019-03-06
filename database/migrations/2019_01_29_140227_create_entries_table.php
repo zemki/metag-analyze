@@ -22,7 +22,7 @@ class CreateEntriesTable extends Migration
             $table->integer('case_id')->unsigned()->references('id')->on('cases')->onDelete('cascade');
             $table->integer('media_id')->unsigned()->references('id')->on('media')->onDelete('cascade');
             $table->integer('place_id')->unsigned()->references('id')->on('places')->onDelete('cascade');
-            $table->integer('communcation_partner_id')->unsigned()->references('id')->on('communication_partner')->onDelete('cascade');
+            $table->integer('communication_partner_id')->unsigned()->references('id')->on('communication_partner')->onDelete('cascade');
 
             $table->timestamps();
         });
