@@ -12,7 +12,17 @@ class Project extends Model
 
     public function cases()
     {
-        return $this->HasMany('App\Cases')->withTimestamps();
+        return $this->HasMany(Cases::class);
+    }
+
+    public function path()
+    {
+    	return "/projects/{$this->id}";
+    }
+
+    public function created_by()
+    {
+        return $this->belongsTo(User::class,'created_by');
     }
 
 }

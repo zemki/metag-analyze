@@ -11,5 +11,16 @@ const mix = require('laravel-mix');
  |
  */
 
-mix.js('resources/js/app.js', 'public/js')
-   .sass('resources/sass/app.scss', 'public/css');
+ mix.js('resources/js/app.js', 'public/js').extract([
+ 	'vue',
+ 	'axios',
+ 	'bootstrap',
+ 	'jquery',
+ 	'lodash',
+ 	'popper.js'
+ 	])
+ .sass('resources/sass/app.scss', 'public/css',{ implementation: require('node-sass') })
+ .version()
+ .options({
+ 	processCssUrls: false
+ });

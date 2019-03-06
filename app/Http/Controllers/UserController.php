@@ -38,25 +38,9 @@ class UserController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreUser $request)
+    public function store(Request $request)
     {
-
-
-    $validated = $request->validated();
-
-
-    $user = New User();
-    $user->username = $request->get('username');
-    $user->email = $request->get('email');
-    $user->password =bcrypt("temp");
-
-
-    Mail::to($user->email)->send(new VerificationEmail($user));
-    $user->save();
-    $user->roles()->sync($request->get('roles'));
-    return response("An email verification was sent to ".$user->email." please let the user open it");
-    /// send an email to validate
-
+        User::create(request()->all());
 
 
 

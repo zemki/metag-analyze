@@ -30,14 +30,14 @@ class UsersTableSeeder extends Seeder
 	            'created_at' => $faker->dateTime($max = 'now', $timezone = "Europe/Berlin"),
 	            'updated_at' => $faker->dateTime($max = 'now', $timezone = "Europe/Berlin")
 	        ]);
-	    
+
 	    $this->command->info('Admin user seeded');
-	    $fakeusers = 100;
- 		
+	    $fakeusers = 1;
+
  		$this->command->info('Seeding fake users');
 	    /// create fake data
     	foreach (range(1,$fakeusers) as $index) {
-    		
+
     		$this->command->getOutput()->write("<info>".$index."</info>\r");
 
 

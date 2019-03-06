@@ -3,17 +3,15 @@
 namespace App;
 
 use Illuminate\Auth\MustVerifyEmail;
-use Laravel\Passport\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Contracts\Auth\MustVerifyEmail as MustVerifyEmailContract;
 use Illuminate\Support\Facades\Auth;
 use Validator;
 
-
 class User extends Authenticatable
 {
-    use HasApiTokens,Notifiable;
+    use Notifiable;
 
 
     /**
@@ -41,22 +39,13 @@ class User extends Authenticatable
 
     public function profile()
     {
-     return $this->hasOne('App\Profile');
+     return $this->hasOne(Profile::class);
     }
 
-    public function isAdmin()
+    public function projects()
     {
-        return in_array('admin',$this->roles()->pluck('roles.name')->toArray());
+        return $this->hasMany(Project::class,'created_by');
     }
 
-    public function isResearcher()
-    {
-        return in_array('researcher',$this->roles()->pluck('roles.name')->toArray());
-    }
-
-    public function isUser()
-    {
-        return in_array('user',$this->roles()->pluck('roles.name')->toArray());
-    }
 
 }

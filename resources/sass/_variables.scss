@@ -1,18 +1,38 @@
+// TEXT
+// HEX #4a4a4a
+// HEX #000000
+// HEX #046cbe
+// HEX #18507c
+// HEX #d92442
+// HEX #86adcc
+
+/* BACKGROUND
+HEX #ffffff
+HEX #fdfbf7
+HEX #046cbe
+HEX #e9e7e3
+*/
 
 // Body
-$body-bg: #f8fafc;
+$body-bg: #fdfbf7;
+$question-bg: #e9e7e3;
 
 // Typography
-$font-family-sans-serif: "Nunito", sans-serif;
+$font-family-sans-serif: 'Work Sans', 'Helvetica Neue';
+$family-primary: $font-family-sans-serif;
 $font-size-base: 0.9rem;
 $line-height-base: 1.6;
+$family-header:jaf-domus-titling-web,Helvetica,Arial,sans-serif;
+$success: #046cbe;
+$primary: #046cbe;
+$danger: #d92442;
 
 // Colors
 $blue: #3490dc;
 $indigo: #6574cd;
 $purple: #9561e2;
 $pink: #f66D9b;
-$red: #e3342f;
+$red: #d92442;
 $orange: #f6993f;
 $yellow: #ffed4a;
 $green: #38c172;
