@@ -25,4 +25,11 @@ class Project extends Model
         return $this->belongsTo(User::class,'created_by');
     }
 
+
+
+    public function addCase($name)
+    {
+        return $this->cases()->create(compact('name'));
+    }
+
 }

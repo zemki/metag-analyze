@@ -27,9 +27,10 @@ class ProjectTest extends TestCase
     /** @test    */
     public function a_user_can_create_a_project()
     {
-                $this->withoutExceptionHandling();
+                //$this->withoutExceptionHandling();
+                $this->signIn();
 
-        $this->be(factory('App\User')->create());
+    //    $this->signIn();
 
         $attributes = [
             'name' => $this->faker->name,
@@ -54,7 +55,7 @@ class ProjectTest extends TestCase
     public function a_project_needs_title(){
                 $this->withoutExceptionHandling();
 
-        $this->be(factory('App\User')->create());
+        $this->signIn();
         $attributes = factory('App\Project')->raw(['name' => '']);
 
         $this->post('/projects',$attributes)->assertSessionHasErrors('name');
@@ -65,7 +66,7 @@ class ProjectTest extends TestCase
 
         $this->withoutExceptionHandling();
 
-        $this->be(factory('App\User')->create());
+        $this->signIn();
 
         $attributes = factory('App\Project')->raw(['created_by' => '']);
 
@@ -76,7 +77,7 @@ class ProjectTest extends TestCase
     public function a_user_can_view_a_project(){
 
         $this->withoutExceptionHandling();
-        $this->be(factory('App\User')->create());
+        $this->signIn();
 
         $project = factory('App\Project')->create(['created_by' => auth()->id()]);
 
@@ -91,7 +92,7 @@ class ProjectTest extends TestCase
     public function a_user_auth_cannot_view_other_projects()
     {
 
-        $this->be(factory('App\User')->create());
+        $this->signIn();
 
         $project = factory('App\Project')->create();
 

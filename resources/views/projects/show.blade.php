@@ -19,7 +19,7 @@
 		<div class="level-right">
 	<div class="field">
 		<div class="control">
-			<button class="button is-link is-primary">Create Case</button>
+			<a href="{{$project->path().'/cases/new'}}"><button  class="button is-link is-primary">Create Case</button></a>
 		</div>
 	</div>
 </div>
@@ -31,34 +31,29 @@
 {{$project->description}}
 </p>
 </div>
-
-@forelse($project->cases() as $p)
-TABLE WITH CASES
-<!--
 <table class="table">
 	<thead>
 		<tr>
 			<th><abbr title="id">#</abbr></th>
-			<th>Project name</th>
-			<th><abbr title="Description">Description</abbr></th>
-			<th><abbr title="Cases">Number of cases</abbr></th>
-			<th><abbr title="Creator">Created by</abbr></th>
+			<th>Case name</th>
 		</tr>
 	</thead>
+@forelse($project->cases as $c)
+
+
 	<tbody>
 
 			<tr>
-				<td>{{$project->id}}</td>
-				<td><a href="{{url($project->path())}}" target="_blank">{{$project->name}}</a></td>
-				<td>{{$project->description}}</td>
-				<td>INSERT NUMBER OF CASES</td>
-				<td>{{\App\User::where('id',$project->created_by)->first()->email}}</td>
+				<td>{{$c->id}}</td>
+				<td><a href="{{$c->path()}}" target="_blank">{{$c->name}}</a></td>
 			</tr>
 	</tbody>
-</table> -->
 @empty
+<br>
 no cases yet
 @endforelse
+</table>
+
 </div>
 
 

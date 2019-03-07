@@ -50,6 +50,7 @@ class ProjectController extends Controller
             'duration' => 'nullable',
             'is_locked' => 'nullable '
         ]);
+
         if((isset($attributes['is_locked']) && $attributes['is_locked'] == "on"))$attributes['is_locked'] = 1;
         else $attributes['is_locked'] = 0;
 
