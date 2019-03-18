@@ -36,6 +36,7 @@ Route::group(['middleware' => 'auth'], function(){
 	Route::get('/projects/{project}/cases/new','ProjectCasesController@create');
 	Route::post('/projects/{project}/cases','ProjectCasesController@store');
 	Route::get('/projects/{project}/cases/{case}','ProjectCasesController@show');
+	Route::patch('/projects/{project}/cases/{case}','ProjectCasesController@update');
 
 
 	/**
