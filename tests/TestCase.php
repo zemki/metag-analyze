@@ -3,13 +3,31 @@
 namespace Tests;
 
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Foundation\Testing\WithFaker;
 
 abstract class TestCase extends BaseTestCase
 {
-	use CreatesApplication;
+	use CreatesApplication,WithFaker;
 
 	protected function signIn($user = null)
 	{
-		$this->be($user?: factory('App\User')->create());
+		$user = $user ?: factory('App\User')->create();
+		$this->actingAs($user);
+
+		return $user;
+	}
+
+	protected function create_user(){
+
+		$user = [
+			'username' => $this->faker->name,
+			'email' => $this->faker->email,
+			'password' => "test"
+		];
+		 $this->post('/users',$user);
+
+		 $user = \App\User::where('email',$user['email'])->first();
+
+		 return $user;
 	}
 }

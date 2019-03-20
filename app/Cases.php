@@ -7,17 +7,41 @@ use Illuminate\Database\Eloquent\Model;
 class Cases extends Model
 {
 
-	protected $fillable = [
-		'name'
-	];
+  protected $table = 'cases';
 
-    public function project()
-    {
-        return $this->belongsTo('App\Project');
-    }
+  protected $fillable = [
+    'name'
+  ];
 
-    public function path()
-    {
-    	return "projects/{$this->project->id}/cases/{$this->id}";
-    }
+  protected $guarded = [];
+
+  public function project()
+  {
+    return $this->belongsTo(Project::class);
+  }
+
+  public function user()
+  {
+    return $this->belongsTo(User::class,'user_id');
+  }
+
+  public function path()
+  {
+   return "projects/{$this->project->id}/cases/{$this->id}";
+ }
+
+/**
+ * assign a user to this case
+ * this will be the user that fills the entries
+ * @param User $user user to assign to the case
+ */
+public function addUser($user)
+{
+  is_array($user)? $user = \App\User::firstOrCreate($user) : $user = $user;
+
+  $this->user()->associate($user);
+  $this->save();
+  return $user;
+}
+
 }

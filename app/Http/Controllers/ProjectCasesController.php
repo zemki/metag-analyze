@@ -20,6 +20,7 @@ class ProjectCasesController extends Controller
 
 	}
 
+
 	public function create(Project $project)
 	{
 
@@ -34,13 +35,29 @@ class ProjectCasesController extends Controller
 	/**
 	 * Store a new case binded to the project
 	 * @param  Project $project
-	 * @return the project view with the updated data
+	 * @return the project view with the new stored data
 	 */
 	public function store(Project $project)
 	{
-		if(auth()->user()->isNot($project->created_by()->first())) abort(403);
+
+		$this->authorize('update',$project);
+
 		request()->validate(['name' => 'required']);
 		$project->addCase(request('name'));
+
+		return redirect($project->path());
+	}
+
+	public function update(Project $project,Cases $case)
+	{
+        $this->authorize('update',$case->project);
+
+
+		request()->validate(['name' => 'required']);
+
+		$case->update([
+			'name' => request('name')
+		]);
 
 		return redirect($project->path());
 	}

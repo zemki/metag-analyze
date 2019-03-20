@@ -18,9 +18,9 @@ class UserTest extends TestCase
     public function testExample()
     {
         $this->withoutExceptionHandling();
+        $this->signIn();
 
         $user = [
-            'id' => 1,
             'username' => 'alebelli',
             'email' => 'belli@uni-bremen.de',
             'password' => bcrypt("test")

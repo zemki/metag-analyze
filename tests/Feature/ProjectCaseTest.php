@@ -6,21 +6,40 @@ use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Project;
+use Facades\Tests\Setup\ProjectFactory;
 
 class ProjectCaseTest extends TestCase
 {
+
     use RefreshDatabase;
+
+    /** @test */
+    function a_case_can_be_updated()
+    {
+
+        $project = ProjectFactory::createdBy($this->signIn())
+        ->withCases(1)
+        ->create();
+
+        $this->patch($project->cases[0]->path(),[
+            'name' => 'changed'
+        ]);
+
+        $this->assertDatabaseHas('cases',[
+            'name' => 'changed'
+        ]);
+    }
+
 
     /** @test */
     public function a_project_can_have_cases()
     {
-        $this->withoutExceptionHandling();
 
-        $this->signIn();
+        $project = ProjectFactory::create();
 
-        $project = factory(Project::class)->create(['created_by' => auth()->id()]);
-
-        $this->post($project->path().'/cases',['name' => 'Test case']);
+        $this->actingAs($project->created_by())->post($project->path().'/cases',[
+            'name' => 'Test case'
+        ]);
 
         $this->get($project->path())->assertSee('Test case');
 
@@ -30,11 +49,9 @@ class ProjectCaseTest extends TestCase
 
     public function only_the_owner_of_a_project_can_add_cases()
     {
+        $project = ProjectFactory::create();
 
-        $this->signIn();
-
-        $project = factory(Project::class)->create();
-        $this->post($project->path().'/cases',['name' => 'Test case'])->assertStatus(403);
+        $this->actingAs($project->created_by())->post($project->path().'/cases',['name' => 'Test case'])->assertStatus(403);
 
         $this->assertDatabaseMissing('cases',['name' => 'Test case']);
     }
@@ -42,10 +59,9 @@ class ProjectCaseTest extends TestCase
     /** @test */
     public function a_case_require_a_name()
     {
-        $this->signIn();
-
-
-        $project = auth()->user()->projects()->create(factory(Project::class)->raw());
+      $project = ProjectFactory::createdBy($this->signIn())
+        ->withCases(1)
+        ->create();
 
         $attributes = factory('App\Cases')->raw(['name' => '']);
 

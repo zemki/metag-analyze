@@ -42,10 +42,17 @@ class User extends Authenticatable
      return $this->hasOne(Profile::class);
     }
 
+    public function case()
+    {
+     return $this->hasMany(Cases::class,'user_id');
+    }
+
     public function projects()
     {
         return $this->hasMany(Project::class,'created_by');
     }
+
+
 
 
 }
