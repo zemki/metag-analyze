@@ -9,11 +9,12 @@ class Cases extends Model
 
   protected $table = 'cases';
 
-  protected $fillable = [
-    'name'
-  ];
-
   protected $guarded = [];
+
+  public function entries()
+  {
+    return $this->hasMany(Entry::class);
+  }
 
   public function project()
   {
@@ -30,6 +31,11 @@ class Cases extends Model
    return "projects/{$this->project->id}/cases/{$this->id}";
  }
 
+ public function getInputsAttribute($value)
+ {
+  return is_array($value) ? $value : (array) json_decode($value);
+}
+
 /**
  * assign a user to this case
  * this will be the user that fills the entries
@@ -42,6 +48,15 @@ public function addUser($user)
   $this->user()->associate($user);
   $this->save();
   return $user;
+}
+
+/**
+ * edit the case only if has no entries
+ * @return boolean
+ */
+public function isEditable()
+{
+  return $this->entries()->count() > 0 ? false : true;
 }
 
 }

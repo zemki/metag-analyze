@@ -52,10 +52,16 @@ class ProjectController extends Controller
             'is_locked' => 'nullable '
         ]);
 
-        if($attributes['is_locked'] != 0 && isset($attributes['is_locked']) != 1){
-            if((isset($attributes['is_locked']) && $attributes['is_locked'] == "on"))$attributes['is_locked'] = 1;
-            elseif(!isset($attributes['is_locked']) || $attributes['is_locked'] == "off") $attributes['is_locked'] = 0;
+        if(!isset($attributes['is_locked'])) $attributes['is_locked'] = 0;
+        else{
+
+        if($attributes['is_locked'] != 0 && $attributes['is_locked'] != 1)
+        {
+            if($attributes['is_locked'] == "on")$attributes['is_locked'] = 1;
+            elseif($attributes['is_locked'] == "off") $attributes['is_locked'] = 0;
         }
+        }
+
 
         auth()->user()->projects()->create($attributes);
 

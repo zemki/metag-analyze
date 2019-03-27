@@ -30,7 +30,7 @@
 				<td>{{$project->id}}</td>
 				<td><a href="{{url($project->path())}}" target="_blank">{{$project->name}}</a></td>
 				<td>{{$project->description}}</td>
-				<td>INSERT NUMBER OF CASES</td>
+				<td>{{$project->cases->count()}}</td>
 				<td>{{\App\User::where('id',$project->created_by)->first()->email}}</td>
 			</tr>
 	</tbody>

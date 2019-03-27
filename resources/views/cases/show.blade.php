@@ -14,20 +14,15 @@
 		</nav>
 	</div>
 </div>
-<div class="content">
-	<div class="level">
-		<div class="level-left"><h1>{{$case->name}}</h1></div>
-		<div class="level-right">
-			<div class="field">
-			</div>
-		</div>
+        <b-tabs position="is-centered" class="block">
+            <b-tab-item label="Details"><edit-case :cases="{{$case}}"></edit-case></b-tab-item>
+            <b-tab-item label="Entries"></b-tab-item>
+        </b-tabs>
 
 
-	</div>
-	<div class="level">
-		<p> CASE'S DETAILS</p>
-	</div>
-</div>
 
 
+
+@endsection
+@section('pagespecificscripts')
 @endsection

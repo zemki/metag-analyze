@@ -10,7 +10,14 @@
     <title>{{ config('app.name', 'Laravel') }}</title>
 
     <!-- Scripts -->
+    <script src="{{ asset('js/manifest.js') }}" ></script>
+    <script src="{{ asset('js/vendor.js') }}" ></script>
     <script src="{{ asset('js/app.js') }}" defer></script>
+
+    <script type="text/javascript">
+    window.inputs = <?php echo json_encode(config('inputs')); ?>;
+    </script>
+
 
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
@@ -27,5 +34,7 @@
             @yield('content')
         </main>
     </div>
+
+    @yield('pagespecificscripts')
 </body>
 </html>

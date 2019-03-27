@@ -16,6 +16,7 @@
 <h1>Create a Project</h1>
 <form method="POST" action="/projects" class="container" style="padding-top: 40px">
 	@csrf
+	<input type="hidden" value="{{auth()->user()->id}}" name="created_by">
 	<div class="field">
 		<label for="name" class="label">
 			Title

@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Project;
 use Facades\Tests\Setup\ProjectFactory;
+use App\CaseInput;
 
 class ProjectCaseTest extends TestCase
 {
@@ -46,12 +47,37 @@ class ProjectCaseTest extends TestCase
     }
 
     /** @test */
+    public function a_case_has_inputs()
+    {
+        $this->withoutExceptionHandling();
 
+        $multiplec = "yes,no,magari";
+        $inputs = new Caseinput();
+        $inputs->multiplechoice("va?",$multiplec)->text("va?")->format();
+
+        $project = ProjectFactory::createdBy($this->signIn())
+        ->create();
+
+
+
+        $this->actingAs($project->created_by())->post($project->path().'/cases',[
+            'name' => 'Test case',
+            'inputs' => $inputs->content
+        ]);
+
+
+   //     $this->seeJson($inputs->content);
+        $this->assertDatabaseHas('cases',['inputs' => $inputs->content]);
+
+    }
+
+    /** @test */
     public function only_the_owner_of_a_project_can_add_cases()
     {
+        $this->signIn();
         $project = ProjectFactory::create();
 
-        $this->actingAs($project->created_by())->post($project->path().'/cases',['name' => 'Test case'])->assertStatus(403);
+        $this->post($project->path().'/cases',['name' => 'Test case'])->assertStatus(403);
 
         $this->assertDatabaseMissing('cases',['name' => 'Test case']);
     }

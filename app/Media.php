@@ -22,5 +22,10 @@ class Media extends Model
 		return $this->belongsTo(Media_group::class);
 	}
 
+	public function entries()
+	{
+		return $this->hasMany(Entry::class);
+	}
+
 
 }

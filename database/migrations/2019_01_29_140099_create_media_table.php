@@ -23,6 +23,7 @@ class CreateMediaTable extends Migration
             $table->text('properties');
             $table->integer('media_group_id')->unsigned()->references('id')->on('media_group')->onDelete('cascade');
 
+            $table->foreign('media_group_id')->references('id')->on('media_groups');
 
             $table->timestamps();
         });

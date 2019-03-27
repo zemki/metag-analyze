@@ -16,6 +16,7 @@ class ProjectCasesController extends Controller
 			abort(403);
 		}
 
+
 		return view('cases.show',compact('project','case'));
 
 	}
@@ -39,11 +40,14 @@ class ProjectCasesController extends Controller
 	 */
 	public function store(Project $project)
 	{
-
 		$this->authorize('update',$project);
 
-		request()->validate(['name' => 'required']);
-		$project->addCase(request('name'));
+		request()->validate(
+			['name' => 'required']
+		);
+
+
+		$project->addCase(request('name'),request('inputs'));
 
 		return redirect($project->path());
 	}

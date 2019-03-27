@@ -27,9 +27,9 @@ class Project extends Model
 
 
 
-    public function addCase($name)
+    public function addCase($name,$inputs)
     {
-        return $this->cases()->create(compact('name'));
+        return $this->cases()->create(compact('name','inputs'));
     }
 
 }
