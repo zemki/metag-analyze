@@ -13,7 +13,7 @@ class Cases extends Model
 
   public function entries()
   {
-    return $this->hasMany(Entry::class);
+    return $this->hasMany(Entry::class,'case_id');
   }
 
   public function project()
@@ -35,6 +35,8 @@ class Cases extends Model
  {
   return is_array($value) ? $value : (array) json_decode($value);
 }
+
+
 
 /**
  * assign a user to this case

@@ -26,7 +26,7 @@ class CreateEntriesTable extends Migration
             // content of the communication
             $table->text('content');
 
-            $table->string('comment', 255);
+            $table->string('comment', 255)->nullable();
             $table->integer('case_id')->unsigned()->references('id')->on('cases')->onDelete('cascade');
             $table->integer('media_id')->unsigned()->references('id')->on('media')->onDelete('cascade');
             $table->integer('place_id')->nullable()->unsigned()->references('id')->on('places')->onDelete('cascade');

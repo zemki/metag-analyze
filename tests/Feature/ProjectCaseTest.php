@@ -12,7 +12,7 @@ use App\CaseInput;
 class ProjectCaseTest extends TestCase
 {
 
-    use RefreshDatabase;
+  // use RefreshDatabase;
 
     /** @test */
     function a_case_can_be_updated()
@@ -29,6 +29,17 @@ class ProjectCaseTest extends TestCase
         $this->assertDatabaseHas('cases',[
             'name' => 'changed'
         ]);
+    }
+
+    /** @test */
+    function user_can_get_order_case()
+    {
+        auth()->loginUsingId(2, true);
+
+        $this->withoutExceptionHandling();
+
+        dd(auth()->user()->getOrderedCases()->get());
+
     }
 
 
@@ -86,13 +97,13 @@ class ProjectCaseTest extends TestCase
     public function a_case_require_a_name()
     {
       $project = ProjectFactory::createdBy($this->signIn())
-        ->withCases(1)
-        ->create();
+      ->withCases(1)
+      ->create();
 
-        $attributes = factory('App\Cases')->raw(['name' => '']);
+      $attributes = factory('App\Cases')->raw(['name' => '']);
 
-        $this->post($project->path().'/cases',$attributes)->assertSessionHasErrors('name');
+      $this->post($project->path().'/cases',$attributes)->assertSessionHasErrors('name');
 
-    }
+  }
 
 }
