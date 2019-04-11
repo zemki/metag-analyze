@@ -49,19 +49,19 @@ class ProjectController extends Controller
             'description' => 'required',
             'created_by' => 'required',
             'duration' => 'nullable',
-            'is_locked' => 'nullable '
+            'is_locked' => 'nullable ',
+            'inputs' => 'nullable'
         ]);
 
         if(!isset($attributes['is_locked'])) $attributes['is_locked'] = 0;
         else{
 
-        if($attributes['is_locked'] != 0 && $attributes['is_locked'] != 1)
-        {
-            if($attributes['is_locked'] == "on")$attributes['is_locked'] = 1;
-            elseif($attributes['is_locked'] == "off") $attributes['is_locked'] = 0;
+            if($attributes['is_locked'] != 0 && $attributes['is_locked'] != 1)
+            {
+                if($attributes['is_locked'] == "on")$attributes['is_locked'] = 1;
+                elseif($attributes['is_locked'] == "off") $attributes['is_locked'] = 0;
+            }
         }
-        }
-
 
         auth()->user()->projects()->create($attributes);
 
@@ -69,14 +69,16 @@ class ProjectController extends Controller
 
     }
 
-    public function update(Project $project)
+    public function update(Project $project,Request $request)
     {
 
         $this->authorize('update',$project);
 
-        $project->update(request(['name']));
+        $project->update($request->all());
+        $project->save();
 
-        return redirect('/projects');
+        return response("Updated project successfully");
+
 
     }
 }

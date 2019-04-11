@@ -14,10 +14,7 @@
 		</nav>
 	</div>
 </div>
-        <b-tabs position="is-centered" class="block">
-            <b-tab-item label="Details"><edit-case :cases="{{$case}}"></edit-case></b-tab-item>
-            <b-tab-item label="Entries"></b-tab-item>
-        </b-tabs>
+
 
 
 

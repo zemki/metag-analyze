@@ -20,6 +20,11 @@ class Entry extends Model
     	return $this->belongsTo(Cases::class);
     }
 
+    public function project()
+    {
+        return$this->belongsTo(Project::class);
+    }
+
     public function place()
     {
     	return $this->belongsTo(Place::class);

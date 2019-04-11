@@ -18,6 +18,10 @@ class CreateProjectsTable extends Migration
             $table->string('name', 200);
             $table->string('description', 250);
 
+            // inputs are binded to project because every case in a project needs to have same inputs
+
+            $table->text('inputs')->nullable();
+
             // how long the users can submit data
             $table->string('duration', 100);
             $table->integer('created_by')->unsigned()->references('id')->on('users')->onDelete('cascade');

@@ -6,10 +6,10 @@ use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Facades\Tests\Setup\ProjectFactory;
-
+use App\CaseInput;
 class ProjectTest extends TestCase
 {
-    use WithFaker,RefreshDatabase ;
+    use WithFaker, RefreshDatabase ;
 
     /** @test    */
     public function a_user_can_create_a_project()
@@ -99,6 +99,28 @@ class ProjectTest extends TestCase
         $this->get('/projects')->assertRedirect('login');
         $this->get('/projects/create')->assertRedirect('login');
         $this->get('/projects',$project->toArray())->assertRedirect('login');
+    }
+
+    /** @test */
+    public function project_inputs_can_be_edited_only_when_zero_entries()
+    {
+
+        $user = $this->signIn();
+        $multiplec = "yes,no,magari";
+        $inputs = new Caseinput();
+        $inputs->multiplechoice("va?",$multiplec)->text("va?")->format();
+
+        $project = ProjectFactory::createdBy($user)
+        ->withInputs($inputs->content)
+        ->create();
+
+        $project2 = factory(\App\Project::class)->make(['created_by'=> $user]);
+
+        $projectArray = ["name" =>  $project->name, "description" => $project2->description,"inputs" => 'no inputs'];
+
+        $this->patch($project->path(),$projectArray);
+        $this->assertDatabaseHas('projects',['inputs' =>'no inputs']);
+
     }
 
 

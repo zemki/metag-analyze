@@ -31,11 +31,6 @@ class Cases extends Model
    return "projects/{$this->project->id}/cases/{$this->id}";
  }
 
- public function getInputsAttribute($value)
- {
-  return is_array($value) ? $value : (array) json_decode($value);
-}
-
 
 
 /**

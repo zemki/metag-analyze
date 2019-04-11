@@ -11,10 +11,18 @@ class ProjectFactory
 
 	protected $casesCount = 0;
 	protected $user;
+	protected $inputs;
 
 	public function withCases($count)
 	{
 		$this->casesCount = $count;
+
+		return $this;
+	}
+
+	public function withInputs($inputs)
+	{
+		$this->inputs = $inputs;
 
 		return $this;
 	}
@@ -29,7 +37,8 @@ class ProjectFactory
 	public function create()
 	{
 		$project = factory(Project::class)->create([
-			'created_by' => $this->user ?? factory(User::class)
+			'created_by' => $this->user ?? factory(User::class),
+			'inputs' => $this->inputs ?? ''
 		]);
 
 		factory(Cases::class,$this->casesCount)->create([

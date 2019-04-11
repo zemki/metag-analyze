@@ -14,53 +14,123 @@
 </div>
 
 <h1>Create a Project</h1>
-<form method="POST" action="/projects" class="container" style="padding-top: 40px">
-	@csrf
-	<input type="hidden" value="{{auth()->user()->id}}" name="created_by">
-	<div class="field">
-		<label for="name" class="label">
-			Title
-		</label>
-		<div class="control">
-			<input type="text" class="input" name="name">
+<div class="columns">
+	<div class="level">
+		<form method="POST" action="/projects" class="container" style="padding-top: 40px">
+			@csrf
+			<input type="hidden" value="{{auth()->user()->id}}" name="created_by">
+			<div class="field">
+				<label for="name" class="label">
+					Title
+				</label>
+				<div class="control">
+					<input type="text" class="input" name="name">
+				</div>
+			</div>
+
+			<div class="field">
+				<label for="description" class="label">
+					Description
+				</label>
+
+				<div class="control">
+					<textarea name="description" id="textarea" class="textarea"></textarea>
+				</div>
+			</div>
+
+			<div class="field">
+				<div class="control">
+					<label class="checkbox">
+						<input type="checkbox" name="is_locked">
+						lock project
+					</label>
+				</div>
+			</div>
+
+			<div class="field">
+				<label for="duration" class="label">
+					Duration
+				</label>
+				<div class="control">
+					<input type="text" class="input" name="duration">
+				</div>
+			</div>
+			<input type="hidden" :value="JSON.stringify(newproject.inputs)" name="inputs">
+
+			<div class="field">
+				<label for="ninputs" class="label">
+					Number of inputs
+				</label>
+				<div class="control">
+					<input type="number" class="input" id="ninputs" min="0" max="10" value="1" v-model.number="newproject.ninputs">
+				</div>
+			</div>
+			<div class="columns is-multiline is-mobile">
+				<div class="inputs" v-for="(t,index) in newproject.inputs" :key="index">
+					<div class="column">
+						<div class="field">
+							<label for="name" class="label">
+								Input Name
+							</label>
+							<div class="control">
+								<input type="text" class="input" v-model="newproject.inputs[index].name">
+							</div>
+						</div>
+					</div>
+					<div class="column">
+						<div class="field">
+							<label class="label">Type</label>
+							<div class="control">
+								<div class="select">
+									<select v-model="newproject.inputs[index].type">
+										<option v-for="type in newproject.config.available" :value="type">@{{type}}</option>
+									</select>
+								</div>
+							</div>
+						</div>
+						<span v-if="(newproject.inputs[index].type == 'multiple choice' || newproject.inputs[index].type == 'one choice')">
+							<div class="field">
+								<label class="label">Number of Answers</label>
+								<div class="control">
+									<input v-model.number="newproject.inputs[index].numberofanswer" class="input" type="number" placeholder="">
+								</div>
+							</div>
+							<div class="field" v-for="na in newproject.inputs[index].numberofanswer">
+								<label class="label">Answers</label>
+								<div class="control" >
+									<input v-model="newproject.inputs[index].answers[na-1]" class="input" type="text" placeholder="">
+								</div>
+							</div>
+						</span>
+					</div>
+				</span>
+			</div>
+			<div class="level">
+				<div class="columns">
+					<div class="column">
+						<div class="notification is-danger" v-if="newproject.response != ''" v-html="newproject.response">
+							<button class="delete" @click.preventdefault="newproject.response = ''"></button>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
-	</div>
 
-	<div class="field">
-		<label for="description" class="label">
-			Description
-		</label>
 
-		<div class="control">
-			<textarea name="description" id="textarea" class="textarea"></textarea>
+
+		<div class="level">
+			<div class="field">
+				<div class="control">
+					<button class="button is-link">Create Project</button>
+				</div>
+			</div>
+
 		</div>
-	</div>
-
-	<div class="field">
-		<div class="control">
-			<label class="checkbox">
-				<input type="checkbox" name="is_locked">
-				lock project
-			</label>
-		</div>
-	</div>
-
-	<div class="field">
-		<label for="duration" class="label">
-			Duration
-		</label>
-		<div class="control">
-			<input type="text" class="input" name="duration">
-		</div>
-	</div>
-
-	<div class="field">
-		<div class="control">
-			<button class="button is-link">Create Project</button>
-		</div>
-	</div>
 
 
 
-</form>
+
+
+	</form>
+</div>
 @endsection

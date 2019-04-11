@@ -12,6 +12,7 @@ class ProjectPolicy
 
     public function update(User $user,Project $project)
     {
+
         return $user->is($project->created_by());
     }
 }

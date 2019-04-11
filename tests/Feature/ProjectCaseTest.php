@@ -12,7 +12,7 @@ use App\CaseInput;
 class ProjectCaseTest extends TestCase
 {
 
-  // use RefreshDatabase;
+   use RefreshDatabase;
 
     /** @test */
     function a_case_can_be_updated()
@@ -32,18 +32,6 @@ class ProjectCaseTest extends TestCase
     }
 
     /** @test */
-    function user_can_get_order_case()
-    {
-        auth()->loginUsingId(2, true);
-
-        $this->withoutExceptionHandling();
-
-        dd(auth()->user()->getOrderedCases()->get());
-
-    }
-
-
-    /** @test */
     public function a_project_can_have_cases()
     {
 
@@ -58,7 +46,7 @@ class ProjectCaseTest extends TestCase
     }
 
     /** @test */
-    public function a_case_has_inputs()
+    public function a_project_has_inputs()
     {
         $this->withoutExceptionHandling();
 
@@ -66,19 +54,14 @@ class ProjectCaseTest extends TestCase
         $inputs = new Caseinput();
         $inputs->multiplechoice("va?",$multiplec)->text("va?")->format();
 
-        $project = ProjectFactory::createdBy($this->signIn())
-        ->create();
+      $project = ProjectFactory::createdBy($this->signIn())
+      ->withInputs($inputs->content)
+      ->create();
 
-
-
-        $this->actingAs($project->created_by())->post($project->path().'/cases',[
-            'name' => 'Test case',
-            'inputs' => $inputs->content
-        ]);
 
 
    //     $this->seeJson($inputs->content);
-        $this->assertDatabaseHas('cases',['inputs' => $inputs->content]);
+        $this->assertDatabaseHas('projects',['inputs' => $inputs->content]);
 
     }
 

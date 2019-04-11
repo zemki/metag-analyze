@@ -47,7 +47,7 @@ class ProjectCasesController extends Controller
 		);
 
 
-		$project->addCase(request('name'),request('inputs'));
+		$project->addCase(request('name'));
 
 		return redirect($project->path());
 	}
