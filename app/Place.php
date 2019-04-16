@@ -13,4 +13,9 @@ class Place extends Model
 	{
 		return $this->hasMany(Entry::class);
 	}
+
+	 public function projects()
+    {
+        return $this->belongsToMany('App\Project','place_projects')->withTimestamps();
+    }
 }

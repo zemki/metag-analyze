@@ -27,5 +27,9 @@ class Media extends Model
 		return $this->hasMany(Entry::class);
 	}
 
+	 public function projects()
+    {
+           return $this->belongsToMany(Project::class,'media_projects');
+    }
 
 }

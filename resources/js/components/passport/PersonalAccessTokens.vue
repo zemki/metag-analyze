@@ -7,20 +7,20 @@
 <template>
     <div>
         <div>
-            <div class="panel">
-                <div class="panel-heading">
+            <div class="card card-default">
+                <div class="card-header">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span>
                             Personal Access Tokens
                         </span>
 
-                        <a class="is-link" tabindex="-1" @click="showCreateTokenForm">
+                        <a class="action-link" tabindex="-1" @click="showCreateTokenForm">
                             Create New Token
                         </a>
                     </div>
                 </div>
 
-                <div class="panel-block">
+                <div class="card-body">
                     <!-- No Tokens Notice -->
                     <p class="mb-0" v-if="tokens.length === 0">
                         You have not created any personal access tokens.
@@ -56,9 +56,8 @@
         </div>
 
         <!-- Create Token Modal -->
-
-        <div v-if="showmodal" :class="showmodal ? 'is-active modal' : 'modal'" id="modal-create-token" tabindex="-1" role="dialog">
-            <div class="modal-background"></div>
+        <div class="modal fade" id="modal-create-token" tabindex="-1" role="dialog">
+            <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h4 class="modal-title">
@@ -68,7 +67,7 @@
                         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                     </div>
 
-                    <div class="content">
+                    <div class="modal-body">
                         <!-- Form Errors -->
                         <div class="alert alert-danger" v-if="form.errors.length > 0">
                             <p class="mb-0"><strong>Whoops!</strong> Something went wrong!</p>
@@ -121,11 +120,12 @@
                         </button>
                     </div>
                 </div>
+            </div>
         </div>
 
         <!-- Access Token Modal -->
-        <div class="modal" id="modal-access-token" tabindex="-1" role="dialog">
-            <div class="modal-background"></div>
+        <div class="modal fade" id="modal-access-token" tabindex="-1" role="dialog">
+            <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h4 class="modal-title">
@@ -151,6 +151,7 @@
                 </div>
             </div>
         </div>
+    </div>
 </template>
 
 <script>
@@ -164,8 +165,6 @@
 
                 tokens: [],
                 scopes: [],
-
-                showmodal: false,
 
                 form: {
                     name: '',
@@ -226,7 +225,7 @@
              * Show the form for creating new tokens.
              */
             showCreateTokenForm() {
-                this.showmodal = true;
+                $('#modal-create-token').modal('show');
             },
 
             /**

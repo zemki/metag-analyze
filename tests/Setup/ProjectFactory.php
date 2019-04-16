@@ -4,18 +4,45 @@ namespace Tests\Setup;
 
 use App\Project;
 use App\Cases;
+use \App\Media;
+use \App\Place;
 use App\User;
+use App\Communication_Partner;
 
 class ProjectFactory
 {
 
 	protected $casesCount = 0;
+	protected $mediaCount = 0;
+	protected $placeCount = 0;
+	protected $communicationpartnerCount = 0;
 	protected $user;
 	protected $inputs;
 
 	public function withCases($count)
 	{
 		$this->casesCount = $count;
+
+		return $this;
+	}
+
+	public function withMedia($count)
+	{
+		$this->mediaCount = $count;
+
+		return $this;
+	}
+
+	public function withPlaces($count)
+	{
+		$this->placeCount = $count;
+
+		return $this;
+	}
+
+	public function withCommunicationPartners($count)
+	{
+		$this->communicationpartnerCount = $count;
 
 		return $this;
 	}
@@ -40,6 +67,10 @@ class ProjectFactory
 			'created_by' => $this->user ?? factory(User::class),
 			'inputs' => $this->inputs ?? ''
 		]);
+
+		$project->media()->sync(factory(Media::class,$this->mediaCount)->create());
+		$project->places()->sync(factory(Place::class,$this->placeCount)->create());
+		$project->communication_partners()->sync(factory(Communication_Partner::class,$this->communicationpartnerCount)->create());
 
 		factory(Cases::class,$this->casesCount)->create([
 			'project_id' => $project->id

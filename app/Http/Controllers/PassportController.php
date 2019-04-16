@@ -40,12 +40,17 @@ class PassportController extends Controller
      */
     public function login(Request $request)
     {
+
+
         $credentials = [
             'email' => $request->email,
             'password' => $request->password
         ];
 
         if (auth()->attempt($credentials)) {
+              logger("---------------------------");
+              logger($credentials);
+              logger("---------------------------");
             $token = auth()->user()->createToken('metag')->accessToken;
 
             $latestCase = auth()->user()->latestCase;
