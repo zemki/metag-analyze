@@ -16,7 +16,7 @@
 {{$error}}
 @endforeach
 @endif
-@forelse($media as $m)
+
 
 
 <table class="table">
@@ -30,7 +30,7 @@
 		</tr>
 	</thead>
 	<tbody>
-
+@forelse($media as $m)
 			<tr>
 				<td>{{$m->id}}</td>
 				<td><a href="{{url($m->path())}}" target="_blank">{{$m->name}}</a></td>
@@ -38,10 +38,11 @@
 				<td>{{$m->properties}}</td>
 				<td>{{$m->media_group->name}}</td>
 			</tr>
-	</tbody>
-</table>
-@empty
+			@empty
 no Media yet
 @endforelse
+	</tbody>
+</table>
+
 
 @endsection

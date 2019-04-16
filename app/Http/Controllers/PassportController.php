@@ -55,7 +55,11 @@ class PassportController extends Controller
 
             $latestCase = auth()->user()->latestCase;
             if(!$latestCase) $latestCase = 'No cases';
-
+            else{
+                $inputs['media'] = $case->project->media;
+                $inputs['places'] = $case->project->places;
+                $inputs['communication_partners'] = $case->project->communication_partners;
+            }
 
             return response()->json(['case' => $latestCase, 'token' => $token], 200);
         } else {

@@ -1,303 +1,235 @@
-<style scoped>
-    .action-link {
-        cursor: pointer;
-    }
-
-    .m-b-none {
-        margin-bottom: 0;
-    }
-</style>
-
 <template>
-    <div>
-        <div>
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span>
-                            Personal Access Tokens
-                        </span>
 
-                        <a class="action-link" @click="showCreateTokenForm">
-                            Create New Token
-                        </a>
-                    </div>
-                </div>
-
-                <div class="panel-body">
-                    <!-- No Tokens Notice -->
-                    <p class="m-b-none" v-if="tokens.length === 0">
-                        You have not created any personal access tokens.
-                    </p>
-
-                    <!-- Personal Access Tokens -->
-                    <table class="table table-borderless m-b-none" v-if="tokens.length > 0">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            <tr v-for="token in tokens">
-                                <!-- Client Name -->
-                                <td style="vertical-align: middle;">
-                                    {{ token.name }}
-                                </td>
-
-                                <!-- Delete Button -->
-                                <td style="vertical-align: middle;">
-                                    <a class="action-link text-danger" @click="revoke(token)">
-                                        Delete
-                                    </a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+    <div class="content">
+        <label class="checkbox">
+          <input type="checkbox" v-model="thisproject.edit">
+          Edit name and description
+      </label>
+      <div class="level">
+        <input type="hidden" :value="project.id" name="id">
+        <div class="level-left">
+            <h1 v-if="!thisproject.edit" v-html="thisproject.name"></h1>
+            <div class="field has-addons" v-if="thisproject.edit"><input name="name" v-model="thisproject.name" class="input text is-large">
+                <div class="control">
                 </div>
             </div>
         </div>
-
-        <!-- Create Token Modal -->
-        <div class="modal" id="modal-create-token" tabindex="-1" role="dialog" :class="[tokenModal ? 'is-active' : '']">
-          <div class="modal-background"></div>
-            <div class="modal-card">
-                <div class="modal-card-head">
-                    <h4 class="modal-card-title">
-                        Create Token
-                    </h4>
-                    <a class="delete" @click.prevent="closeTokenModal"></a>
-                </div>
-
-                <div class="modal-card-body">
-                    <!-- Form Errors -->
-                    <div class="notification is-danger" v-if="form.errors.length > 0">
-                        <strong>Whoops! Something went wrong!</strong>
-                        <br>
-                        <ul>
-                            <li v-for="error in form.errors">
-                                {{ error }}
-                            </li>
-                        </ul>
-                    </div>
-
-                    <!-- Create Token Form -->
-                    <form class="form-horizontal" role="form" @submit.prevent="store">
-                        <!-- Name -->
-                        <div class="field">
-                          <label class="label">Name</label>
-                          <p class="control">
-                            <input id="create-token-name" type="text" class="input" name="name" v-model="form.name">
-                          </p>
-                        </div>
-
-                        <!-- Scopes -->
-                        <div class="form-group" v-if="scopes.length > 0">
-                            <label class="col-md-4 control-label">Scopes</label>
-
-                            <div class="col-md-6">
-                                <div v-for="scope in scopes">
-                                    <div class="checkbox">
-                                        <label>
-                                            <input type="checkbox"
-                                                @click="toggleScope(scope.id)"
-                                                :checked="scopeIsAssigned(scope.id)">
-
-                                                {{ scope.id }}
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Modal Actions -->
-                <div class="modal-card-foot">
-                    <a class="button" @click.prevent="closeTokenModal">Close</a>
-                    <a class="button is-primary"@click="store">Create</a>
-                </div>
+        <div class="level-right">
+            <div class="field">
             </div>
-
-        </div>
-
-        <!-- Access Token Modal -->
-        <div class="modal" id="modal-access-token" tabindex="-1" role="dialog" :class="[accessTokenModal ? 'is-active' : '']">
-            <div class="modal-background"></div>
-            <div class="modal-card">
-
-              <div class="modal-card-head">
-                  <h4 class="modal-card-title">
-                      Personal Access Token
-                  </h4>
-                  <a class="delete" @click.prevent="closeAccessTokenModal"></a>
-              </div>
-
-              <div class="modal-card-body">
-                  <p>
-                      Here is your new personal access token. This is the only time it will be shown so don't lose it!
-                      You may now use this token to make API requests.
-                  </p>
-
-                  <pre><code>{{ accessToken }}</code></pre>
-              </div>
-
-                <!-- Modal Actions -->
-              <div class="modal-card-foot">
-                  <a class="button" @click.prevent="closeAccessTokenModal">Close</a>
-              </div>
-          </div>
         </div>
     </div>
+    <div class="level">
+        <input type="hidden" :value="project.id" name="id">
+        <div class="level-left">
+            <p v-if="!thisproject.edit" v-html="thisproject.description"></p>
+            <div class="field has-addons" v-if="thisproject.edit">
+                <textarea name="description" v-model="thisproject.description" class="input textarea"></textarea>
+                <div class="control">
+                </div>
+            </div>
+        </div>
+        <div class="level-right">
+
+        </div>
+    </div>
+    <div class="level">
+        <div class="field">
+            <h3> Duration</h3>
+           <p v-if="!thisproject.edit" v-html="thisproject.duration"></p>
+           <div class="field has-addons" v-if="thisproject.edit">
+            <input name="duration" v-model="thisproject.duration" class="input text">
+        </div>
+    </div>
+</div>
+<h2>Inputs</h2>
+
+
+<div class="columns is-multiline is-mobile">
+
+    <div class="inputs column is-4" v-for="(c,index) in project.inputs" :key="index">
+        <h4 v-html="c.name"></h4>
+
+
+        <p v-html="c.type"></p>
+
+        <div v-if="c.answers" v-for="(answer,index) in c.answers">
+            <p v-html="answer"></p>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" :value="JSON.stringify(thisproject.inputs)" name="inputs">
+
+<div class="field">
+    <label for="ninputs" class="label">
+        Number of inputs
+    </label>
+    <div class="control">
+        <input type="number" class="input" id="ninputs" min="0" max="10" value="1" v-model.number="thisproject.ninputs">
+    </div>
+</div>
+<div class="columns is-multiline is-mobile">
+    <div class="inputs" v-for="(t,index) in thisproject.inputs" :key="index">
+        <div class="column">
+            <div class="field">
+                <label for="name" class="label">
+                    Input Name
+                </label>
+
+                <div class="control">
+                    <input type="text" class="input" v-model="thisproject.inputs[index].name">
+                </div>
+            </div>
+        </div>
+        <div class="column">
+            <div class="field">
+                <label class="label">Type</label>
+                <div class="control">
+                    <div class="select">
+                        <select v-model="thisproject.inputs[index].type">
+                            <option v-for="type in thisproject.config.available" :value="type">{{type}}</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <span v-if="(thisproject.inputs[index].type == 'multiple choice' || thisproject.inputs[index].type == 'one choice')">
+                <div class="field">
+                    <label class="label">Number of Answers</label>
+                    <div class="control">
+                        <input v-model.number="thisproject.inputs[index].numberofanswer" class="input" type="number" placeholder="">
+                    </div>
+                </div>
+                <div class="field" v-for="na in thisproject.inputs[index].numberofanswer">
+                    <label class="label">Answers</label>
+                    <div class="control" >
+                        <input v-model="thisproject.inputs[index].answers[na-1]" class="input" type="text" placeholder="">
+                    </div>
+                </div>
+            </span>
+        </div>
+    </span>
+</div>
+</div>
+<div class="field">
+    <div class="control">
+        <button class="button is-link" @click.preventdefault="save">Edit Project</button>
+    </div>
+</div>
+<div class="level">
+    <div class="columns">
+        <div class="column">
+            <div class="notification is-danger" v-if="response != ''" v-html="response">
+                <button class="delete" @click.preventdefault="response = ''"></button>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
 </template>
 
 <script>
-    import axios from 'axios'
     export default {
-        /*
-         * The component's data.
-         */
-        data() {
-            return {
-                accessToken: null,
+        props:['project'],
+        computed: {
+            'formattedinputstring': function(){
+              console.log("computed formattedstring");
+              return JSON.stringify(this.thisproject.inputs);
+          }
+      },
+      watch: {
+        'thisproject.ninputs': function (newVal,oldVal) {
+            if(!this.firstLoading){
+                console.log(this.firstLoading);
+                console.log("token number watcher fired");
+                if(newVal < 0 || oldVal < 0) {
+                    newVal = 0;
+                    oldVal = 0;
+                }
 
-                tokens: [],
-                scopes: [],
+                let direction = (newVal-oldVal);
 
-                form: {
-                    name: '',
-                    scopes: [],
-                    errors: []
-                },
-                tokenModal: false,
-                accessTokenModal: false
-            };
-        },
+                if(direction > 0){
+                    let inputtemplate = {
+                        name: "",
+                        type: "",
+                        numberofanswer: 0,
+                        answers: []
+                    }
 
-        /**
-         * Prepare the component (Vue 1.x).
-         */
-        ready() {
-            this.prepareComponent();
-        },
+                    for (var i = 0; i < direction; i++) {
+                        this.thisproject.inputs.push(inputtemplate);
+                    }
+                }else if(newVal == 0){
+                            // special case
+                            this.thisproject.inputs = [];
+                        }else{
+                            // decrease
+                            for (var i = 0; i < Math.abs(direction); i++) {
+                                this.thisproject.inputs.pop();
 
-        /**
-         * Prepare the component (Vue 2.x).
-         */
-        mounted() {
-            this.prepareComponent();
-        },
-
-        methods: {
-            /**
-             * Prepare the component.
-             */
-            prepareComponent() {
-                this.getTokens();
-                this.getScopes();
-            },
-
-            /**
-             * Get all of the personal access tokens for the user.
-             */
-            getTokens() {
-                axios.get('/oauth/personal-access-tokens')
-                        .then(response => {
-                            this.tokens = response.data;
-                        });
-            },
-
-            /**
-             * Get all of the available scopes.
-             */
-            getScopes() {
-                axios.get('/oauth/scopes')
-                        .then(response => {
-                            this.scopes = response.data;
-                        });
-            },
-
-            /**
-             * Show the form for creating new tokens.
-             */
-            showCreateTokenForm() {
-                this.tokenModal = true
-            },
-
-            /**
-             * Create a new personal access token.
-             */
-            store() {
-                this.accessToken = null;
-
-                this.form.errors = [];
-
-                axios.post('/oauth/personal-access-tokens', this.form)
-                        .then(response => {
-                            this.form.name = '';
-                            this.form.scopes = [];
-                            this.form.errors = [];
-
-                            this.tokens.push(response.data.token);
-
-                            this.showAccessToken(response.data.accessToken);
-                        })
-                        .catch(response => {
-                            if (typeof response.data === 'object') {
-                                this.form.errors = _.flatten(_.toArray(response.data));
-                            } else {
-                                this.form.errors = ['Something went wrong. Please try again.'];
                             }
-                        });
-            },
-
-            /**
-             * Toggle the given scope in the list of assigned scopes.
-             */
-            toggleScope(scope) {
-                if (this.scopeIsAssigned(scope)) {
-                    this.form.scopes = _.reject(this.form.scopes, s => s == scope);
-                } else {
-                    this.form.scopes.push(scope);
+                        }
+                    }else{
+                        this.firstLoading = false;
+                    }
                 }
             },
-
-            /**
-             * Determine if the given scope has been assigned to the token.
-             */
-            scopeIsAssigned(scope) {
-                return _.indexOf(this.form.scopes, scope) >= 0;
+            data() {
+                return {
+                    response: '',
+                    firstLoading: true,
+                    thisproject: {
+                        edit: false,
+                        name: "",
+                        ninputs: 0,
+                        inputs:[],
+                        config: window.inputs,
+                        response: ""
+                    }
+                }
             },
+            created() {
+                this.fillInputs();
 
-            /**
-             * Show the given access token to the user.
-             */
-            showAccessToken(accessToken) {
-                this.closeTokenModal()
-
-                this.accessToken = accessToken;
-
-                this.accessTokenModal = true
             },
+            methods: {
+                fillInputs: function()
+                {
 
-            /**
-             * Revoke the given token.
-             */
-            revoke(token) {
-                axios.delete('/oauth/personal-access-tokens/' + token.id)
-                        .then(response => {
-                            this.getTokens();
-                        });
-            },
+                    console.log(this.project);
+                    this.thisproject.inputs = this.project.inputs;
+                    this.thisproject.ninputs = this.project.inputs.length;
+                    this.thisproject.name = this.project.name;
+                    this.thisproject.description = this.project.description;
+                    this.thisproject.duration = this.project.duration;
 
-            closeTokenModal () {
-              this.tokenModal = false
-            },
+                },
+                save: function()
+                {
 
-            closeAccessTokenModal () {
-              this.accessTokenModal = false
+
+                    let a = {};
+                    _.merge(a,{id: this.project.id},{name: this.thisproject.name},{description: this.thisproject.description},{duration: this.thisproject.duration},{inputs: this.formattedinputstring});
+
+                    window.axios.patch('../projects/'+a.id, a).then(response => {
+
+                        if(response.message) this.response = response.message;
+                        else{
+                            this.$snackbar.open(response.data);
+                        }
+
+
+                    }).catch(error => {
+                        console.log(error);
+                        if(error.message)this.$snackbar.open(error.message);
+                        else {
+                            this.$snackbar.open(error.response.data);
+                        }
+
+                    });
+
+                }
             }
         }
-    }
-</script>
+    </script>
