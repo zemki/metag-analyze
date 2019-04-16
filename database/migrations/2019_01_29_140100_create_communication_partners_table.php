@@ -16,7 +16,7 @@ class CreateCommunicationPartnersTable extends Migration
         Schema::create('communication_partners', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name', 200);
-            $table->string('comment', 250);
+            $table->string('comment', 250)->default();
 
             $table->timestamps();
         });

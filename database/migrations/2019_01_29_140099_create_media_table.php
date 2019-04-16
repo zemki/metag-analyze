@@ -16,11 +16,11 @@ class CreateMediaTable extends Migration
         Schema::create('media', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name', 200);
-            $table->string('description', 250);
+            $table->string('description', 250)->nullable();
 
             // json column about color in graph
             // probably not necessary?
-            $table->text('properties');
+            $table->text('properties')->nullable();
             $table->integer('media_group_id')->unsigned()->references('id')->on('media_group')->onDelete('cascade');
 
             $table->foreign('media_group_id')->references('id')->on('media_groups');
