@@ -30,7 +30,7 @@ class CreateEntriesTable extends Migration
             $table->integer('case_id')->unsigned()->references('id')->on('cases')->onDelete('cascade');
             $table->integer('media_id')->unsigned()->references('id')->on('media')->onDelete('cascade');
             $table->integer('place_id')->nullable()->unsigned()->references('id')->on('places')->onDelete('cascade');
-            $table->integer('communication_partner_id')->nullable()->unsigned()->references('id')->on('communication_partner')->onDelete('cascade');
+            $table->integer('communication_partner_id')->nullable()->unsigned()->references('id')->on('communication_partners')->onDelete('cascade');
 
             $table->foreign('case_id')->references('id')->on('cases');
             $table->foreign('media_id')->references('id')->on('media');

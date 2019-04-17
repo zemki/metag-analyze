@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Project;
+use App\Media;
+use App\Place;
+use App\Communication_partner;
 
 class ProjectController extends Controller
 {
@@ -38,11 +41,19 @@ class ProjectController extends Controller
      */
     public function create()
     {
-        return view('projects.create');
+        $data['media'] = Media::all();
+        $data['places'] = Place::all();
+        $data['cp'] = Communication_partner::all();
+
+        return view('projects.create',$data);
     }
 
 
     public function store(Request $request){
+
+        $cp = request()->cp;
+        $media = request()->media;
+        $places = request()->places;
 
     	$attributes = request()->validate([
             'name' => 'required',
@@ -52,6 +63,7 @@ class ProjectController extends Controller
             'is_locked' => 'nullable ',
             'inputs' => 'nullable'
         ]);
+
 
         if(!isset($attributes['is_locked'])) $attributes['is_locked'] = 0;
         else{
@@ -63,7 +75,12 @@ class ProjectController extends Controller
             }
         }
 
-        auth()->user()->projects()->create($attributes);
+        $project = auth()->user()->projects()->create($attributes);
+
+        $project->media()->sync(Media::whereIn('id',$media)->get());
+        $project->places()->sync(Place::whereIn('id',$places)->get());
+        $project->communication_partners()->sync(Communication_partner::whereIn('id',$cp)->get());
+
 
         return redirect('/projects');
 

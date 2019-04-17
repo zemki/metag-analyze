@@ -65,6 +65,82 @@
 					<input type="number" class="input" id="ninputs" min="0" max="10" value="1" v-model.number="newproject.ninputs">
 				</div>
 			</div>
+			<div class="columns">
+				<div class="column is-4">
+					<details>
+						<summary>
+							<label for="media" class="label" style="display: inline-flex;">
+								Media
+								<label id="media[]" class="checkbox" style="display: inline-block;margin-left: 5px;" onclick="selectAllHandler(this.id)">
+									<input type="checkbox" id="media[]i">
+									Select all
+								</label>
+							</label>
+						</summary>
+						<div class="field">
+							@forelse($media as $m)
+							<label class="checkbox">
+								<input type="checkbox" name="media[]" value="{{$m->id}}">
+								{{$m->name}}
+							</label><br>
+							@empty
+							No media, please contact the administrator
+							@endforelse
+
+						</div>
+					</details>
+				</div>
+				<div class="column is-4">
+					<details>
+						<summary>
+							<label for="places" class="label" style="display: inline-flex;">
+								Places
+								<label id="places[]" class="checkbox" style="display: inline-block;margin-left: 5px;" onclick="selectAllHandler(this.id)">
+									<input type="checkbox" id="places[]i">
+									Select all
+								</label>
+							</label>
+						</summary>
+						<div class="field">
+							@forelse($places as $place)
+							<label class="checkbox" >
+								<input type="checkbox" name="places[]" value="{{$place->id}}">
+								{{$place->name}}
+							</label><br>
+							@empty
+							No Places, please contact the administrator
+							@endforelse
+
+						</div>
+					</details>
+				</div>
+				<div class="column is-4">
+					<details>
+						<summary>
+							<label for="cp" class="label" style="display: inline-flex;">
+								Communication Partner
+								<label id="cp[]" class="checkbox" style="display: inline-block;margin-left: 5px;" onclick="selectAllHandler(this.id)">
+									<input type="checkbox" id="cp[]i">
+									Select all
+								</label>
+							</label>
+						</summary>
+						<div class="field">
+							@forelse($cp as $c)
+							<label class="checkbox">
+								<input type="checkbox" name="cp[]" value="{{$c->id}}">
+								{{$c->name}}
+							</label><br>
+							@empty
+							No Communication Partner, please contact the administrator
+							@endforelse
+
+						</div>
+					</details>
+				</div>
+			</div>
+
+
 			<div class="columns is-multiline is-mobile">
 				<div class="inputs" v-for="(t,index) in newproject.inputs" :key="index">
 					<div class="column">
@@ -133,4 +209,32 @@
 
 	</form>
 </div>
+@endsection
+
+@section('pagespecificscripts')
+<script type="text/javascript">
+	function selectAllHandler(id,c) {
+		var items = document.getElementsByName(id);
+		var element = document.getElementById(id+"i");
+		console.log(id);
+		console.log(element.checked);
+		if(!element.checked){
+			for (var i = 0; i < items.length; i++) {
+				if (items[i].type == 'checkbox')
+					items[i].checked = false;
+			}
+		}else{
+			for (var i = 0; i < items.length; i++) {
+				if (items[i].type == 'checkbox'){
+					items[i].checked = true;
+				}
+			}
+		}
+
+	}
+
+	function UnSelectAll() {
+
+	}
+</script>
 @endsection

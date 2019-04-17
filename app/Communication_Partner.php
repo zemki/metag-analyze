@@ -19,6 +19,6 @@ class Communication_Partner extends Model
 
 	public function projects()
 	{
-		return $this->belongsToMany('App\Project','communication_partner_projects','communication_partner_id','project_id')->withTimestamps();
+		return $this->belongsToMany(Project::class,'communication_partner_projects','communication_partner_id','project_id')->withTimestamps();
 	}
 }

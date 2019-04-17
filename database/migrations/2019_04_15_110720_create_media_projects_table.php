@@ -20,7 +20,7 @@ class CreateMediaProjectsTable extends Migration
             ->on('projects')->onDelete('cascade');
             $table->integer('media_id')->unsigned()->nullable();
             $table->foreign('media_id')->references('id')
-            ->on('projects')->onDelete('cascade');
+            ->on('media')->onDelete('cascade');
             $table->timestamps();
         });
     }

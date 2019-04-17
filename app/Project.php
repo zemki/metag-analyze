@@ -35,7 +35,7 @@ public function places()
 }
 public function communication_partners()
 {
-    return $this->belongsToMany(Communication_Partner::class,'communication_partner_projects','communication_partner_id','project_id');
+    return $this->belongsToMany(Communication_Partner::class,'communication_partner_projects','project_id','communication_partner_id');
 }
 
 public function path()
