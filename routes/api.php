@@ -18,16 +18,16 @@ use Illuminate\Http\Request;
 // });
 
 
+Route::get('/inputs/{project}','ApiController@getInputs');
 
 Route::get('/entry/{case}','EntryController@entriesByCase');
 
-Route::post('login', 'PassportController@login');
-Route::post('register', 'PassportController@register');
 
-Route::middleware('auth:api')->group(function () {
-    Route::get('user', 'PassportController@details');
-    Route::resource('products', 'ProductController');
+// Route::post('register', 'PassportController@register');
+Route::post('login', 'ApiController@login');
 
+Route::group(['prefix' => 'v1', 'middleware' => 'auth:api'], function () {
+Route::get('/inputs/{project}','ApiController@getInputs');
+Route::get('/project/{project}','ApiController@a');
 
 });
-

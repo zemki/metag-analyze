@@ -12,6 +12,8 @@ use App\Mail\VerificationEmail;
 
 class UserController extends Controller
 {
+
+
     /**
      * Display a listing of the resource.
      *
@@ -21,6 +23,7 @@ class UserController extends Controller
     {
         //
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -40,6 +43,8 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        $attributes = $request->all();
+        $attributes->api_token= str_random(60);
         User::create(request()->all());
 
 

@@ -48,24 +48,29 @@ class PassportController extends Controller
         ];
 
         if (auth()->attempt($credentials)) {
-              logger("---------------------------");
-              logger($credentials);
-              logger("---------------------------");
-            $token = auth()->user()->createToken('metag')->accessToken;
+          logger("---------------------------");
+          logger($credentials);
+          logger("---------------------------");
+          $token = auth()->user()->createToken('metag')->accessToken;
 
-            $latestCase = auth()->user()->latestCase;
-            if(!$latestCase) $latestCase = 'No cases';
-            else{
-                $inputs['media'] = $latestCase->project->media;
-                $inputs['places'] = $latestCase->project->places;
-                $inputs['communication_partners'] = $latestCase->project->communication_partners;
-            }
+          $latestCase = auth()->user()->latestCase;
+          if(!$latestCase){
+             $latestCase = 'No cases';
+             return response()->json(['case' => $latestCase], 200);
 
-            return response()->json(['case' => $latestCase, 'token' => $token,'inputs' => $inputs], 200);
-        } else {
-            return response()->json(['error' => 'Allorasolote'], 401);
+         }
+         else{
+            $inputs['media'] = $latestCase->project->media->pluck('name');
+            $inputs['places'] = $latestCase->project->places;
+            $inputs['communication_partners'] = $latestCase->project->communication_partners;
+            return response()->json(['media' => $inputs['media'],'case' => $latestCase, 'token' => $token], 200);
+
         }
+
+    } else {
+        return response()->json(['error' => 'credentials not valid'], 401);
     }
+}
 
     /**
      * Returns Authenticated User Details

@@ -36,80 +36,146 @@
     <div class="level">
         <div class="field">
             <h3> Duration</h3>
-           <p v-if="!thisproject.edit" v-html="thisproject.duration"></p>
-           <div class="field has-addons" v-if="thisproject.edit">
-            <input name="duration" v-model="thisproject.duration" class="input text">
-        </div>
-    </div>
-</div>
-<h2>Inputs</h2>
-
-
-<div class="columns is-multiline is-mobile">
-
-    <div class="inputs column is-4" v-for="(c,index) in project.inputs" :key="index">
-        <h4 v-html="c.name"></h4>
-
-
-        <p v-html="c.type"></p>
-
-        <div v-if="c.answers" v-for="(answer,index) in c.answers">
-            <p v-html="answer"></p>
-        </div>
-    </div>
-</div>
-
-<input type="hidden" :value="JSON.stringify(thisproject.inputs)" name="inputs">
-
-<div class="field">
-    <label for="ninputs" class="label">
-        Number of inputs
-    </label>
-    <div class="control">
-        <input type="number" class="input" id="ninputs" min="0" max="10" value="1" v-model.number="thisproject.ninputs">
-    </div>
-</div>
-<div class="columns is-multiline is-mobile">
-    <div class="inputs" v-for="(t,index) in thisproject.inputs" :key="index">
-        <div class="column">
-            <div class="field">
-                <label for="name" class="label">
-                    Input Name
-                </label>
-
-                <div class="control">
-                    <input type="text" class="input" v-model="thisproject.inputs[index].name">
-                </div>
+            <p v-if="!thisproject.edit" v-html="thisproject.duration"></p>
+            <div class="field has-addons" v-if="thisproject.edit">
+                <input name="duration" v-model="thisproject.duration" class="input text">
             </div>
         </div>
-        <div class="column">
-            <div class="field">
-                <label class="label">Type</label>
-                <div class="control">
-                    <div class="select">
-                        <select v-model="thisproject.inputs[index].type">
-                            <option v-for="type in thisproject.config.available" :value="type">{{type}}</option>
-                        </select>
-                    </div>
-                </div>
+    </div>
+    <h2>Inputs</h2>
+
+
+    <div class="columns is-multiline is-mobile">
+
+        <div class="inputs column is-4" v-for="(c,index) in project.inputs" :key="index">
+            <h4 v-html="c.name"></h4>
+
+
+            <p v-html="c.type"></p>
+
+            <div v-if="c.answers" v-for="(answer,index) in c.answers">
+                <p v-html="answer"></p>
             </div>
-            <span v-if="(thisproject.inputs[index].type == 'multiple choice' || thisproject.inputs[index].type == 'one choice')">
+        </div>
+    </div>
+
+    <input type="hidden" :value="JSON.stringify(thisproject.inputs)" name="inputs">
+
+    <div class="field">
+        <label for="ninputs" class="label">
+            Number of inputs
+        </label>
+        <div class="control">
+            <input type="number" class="input" id="ninputs" min="0" max="10" value="1" v-model.number="thisproject.ninputs">
+        </div>
+    </div>
+    <div class="columns is-multiline is-mobile">
+        <div class="inputs" v-for="(t,index) in thisproject.inputs" :key="index">
+            <div class="column">
                 <div class="field">
-                    <label class="label">Number of Answers</label>
+                    <label for="name" class="label">
+                        Input Name
+                    </label>
+
                     <div class="control">
-                        <input v-model.number="thisproject.inputs[index].numberofanswer" class="input" type="number" placeholder="">
+                        <input type="text" class="input" v-model="thisproject.inputs[index].name">
                     </div>
                 </div>
-                <div class="field" v-for="na in thisproject.inputs[index].numberofanswer">
-                    <label class="label">Answers</label>
-                    <div class="control" >
-                        <input v-model="thisproject.inputs[index].answers[na-1]" class="input" type="text" placeholder="">
+            </div>
+            <div class="column">
+                <div class="field">
+                    <label class="label">Type</label>
+                    <div class="control">
+                        <div class="select">
+                            <select v-model="thisproject.inputs[index].type">
+                                <option v-for="type in thisproject.config.available" :value="type">{{type}}</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
-            </span>
-        </div>
-    </span>
+                <span v-if="(thisproject.inputs[index].type == 'multiple choice' || thisproject.inputs[index].type == 'one choice')">
+                    <div class="field">
+                        <label class="label">Number of Answers</label>
+                        <div class="control">
+                            <input v-model.number="thisproject.inputs[index].numberofanswer" class="input" type="number" placeholder="">
+                        </div>
+                    </div>
+                    <div class="field" v-for="na in thisproject.inputs[index].numberofanswer">
+                        <label class="label">Answers</label>
+                        <div class="control" >
+                            <input v-model="thisproject.inputs[index].answers[na-1]" class="input" type="text" placeholder="">
+                        </div>
+                    </div>
+                </span>
+            </div>
+        </span>
+    </div>
 </div>
+<div class="columns">
+    <div class="column is-4">
+        <details>
+            <summary>
+                <label for="media" class="label" style="display: inline-flex;">
+                    Media
+                    <label id="media[]" class="checkbox" style="display: inline-block;margin-left: 5px;" @click="selectAllHandler('media')">
+                        <input type="checkbox" id="mediai">
+                        Select all
+                    </label>
+                </label>
+            </summary>
+            <div class="field" v-for="m in data.media">
+                <label class="checkbox">
+
+                    <input type="checkbox" :id="m.id" name="media" :value="m.id" v-model="thisproject.checkedmedia">
+                    {{m.name}}
+                </label><br>
+
+
+            </div>
+        </details>
+    </div>
+    <div class="column is-4">
+        <details>
+            <summary>
+                <label for="places" class="label" style="display: inline-flex;">
+                    Places
+                    <label id="places" class="checkbox" style="display: inline-block;margin-left: 5px;" @click="selectAllHandler('places')">
+                        <input type="checkbox" id="placesi">
+                        Select all
+                    </label>
+                </label>
+            </summary>
+            <div class="field" v-for="p in data.places">
+                <label class="checkbox" >
+                    <input type="checkbox" :id="p.id" name="places" :value="p.id" v-model="thisproject.checkedplaces">
+                    {{p.name}}
+                </label><br>
+
+            </div>
+        </details>
+    </div>
+    <div class="column is-4">
+        <details>
+            <summary>
+                <label for="cp" class="label" style="display: inline-flex;">
+                    Communication Partner
+                    <label id="cp" class="checkbox" style="display: inline-block;margin-left: 5px;" @click="selectAllHandler('cp')">
+                        <input type="checkbox" id="cpi">
+                        Select all
+                    </label>
+                </label>
+            </summary>
+            <div class="field" v-for="c in data.cp">
+
+                <label class="checkbox">
+                    <input type="checkbox" :id="c.id" name="cp" :value="c.id" v-model="thisproject.checkedcp">
+                    {{c.name}}
+                </label><br>
+
+
+            </div>
+        </details>
+    </div>
 </div>
 <div class="field">
     <div class="control">
@@ -130,7 +196,7 @@
 
 <script>
     export default {
-        props:['project'],
+        props:['project','data'],
         computed: {
             'formattedinputstring': function(){
               console.log("computed formattedstring");
@@ -185,7 +251,13 @@
                         ninputs: 0,
                         inputs:[],
                         config: window.inputs,
-                        response: ""
+                        response: "",
+                        media: "",
+                        places: "",
+                        cp: "",
+                        checkedmedia: [],
+                        checkedplaces: [],
+                        checkedcp: []
                     }
                 }
             },
@@ -204,15 +276,18 @@
                     this.thisproject.description = this.project.description;
                     this.thisproject.duration = this.project.duration;
 
+                    this.thisproject.checkedmedia = this.project.media;
+                    this.thisproject.checkedplaces = this.project.places;
+                    this.thisproject.checkedcp = this.project.communication_partners;
                 },
                 save: function()
                 {
 
 
-                    let a = {};
-                    _.merge(a,{id: this.project.id},{name: this.thisproject.name},{description: this.thisproject.description},{duration: this.thisproject.duration},{inputs: this.formattedinputstring});
+                    let submitObject = {};
+                    _.merge(submitObject,{id: this.project.id},{name: this.thisproject.name},{description: this.thisproject.description},{duration: this.thisproject.duration},{inputs: this.formattedinputstring},{media: this.thisproject.checkedmedia},{places: this.thisproject.checkedplaces},{cp: this.thisproject.checkedcp});
 
-                    window.axios.patch('../projects/'+a.id, a).then(response => {
+                    window.axios.patch('../projects/'+submitObject.id, submitObject).then(response => {
 
                         if(response.message) this.response = response.message;
                         else{
@@ -228,6 +303,32 @@
                         }
 
                     });
+
+                },
+                selectAllHandler: function(which)
+                {
+
+                    var items = document.getElementsByName(which);
+                    var element = document.getElementById(which+"i");
+                    console.log(which);
+                    console.log(element.checked);
+                    var varname = 'checked'+which;
+                    if(!element.checked){
+                        for (var i = 0; i < items.length; i++) {
+                            if (items[i].type == 'checkbox')
+                                items[i].checked = false;
+                        }
+                        console.log(varname);
+                        this.thisproject[varname] = [];
+                    }else{
+                        for (var i = 0; i < items.length; i++) {
+                            if (items[i].type == 'checkbox'){
+                                items[i].checked = true;
+                            }
+                             this.thisproject[varname] = this.data[which];
+                        }
+                    }
+
 
                 }
             }
