@@ -73,7 +73,8 @@ class ProjectFactory
 		$project->communication_partners()->sync(factory(Communication_Partner::class,$this->communicationpartnerCount)->create());
 
 		factory(Cases::class,$this->casesCount)->create([
-			'project_id' => $project->id
+			'project_id' => $project->id,
+			'user_id' =>  $project->created_by ?? factory(User::class)
 		]);
 
 		return $project;

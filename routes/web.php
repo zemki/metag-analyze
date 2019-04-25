@@ -39,6 +39,8 @@ Route::group(['middleware' => 'auth'], function(){
 	Route::get('/projects/{project}/cases/{case}','ProjectCasesController@show');
 	Route::patch('/projects/{project}/cases/{case}','ProjectCasesController@update');
 
+	Route::post('/projects/{project}/cases/{case}/entries','EntryController@store');
+
 
 	/**
 	 * Media Group Routes

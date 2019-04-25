@@ -20,7 +20,8 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         // 'App\Model' => 'App\Policies\ModelPolicy',
-        'App/Project' => 'App\Policies\ProjectPolicy'
+        'App/Project' => 'App\Policies\ProjectPolicy',
+        'App/Entry' => 'App\Policies\EntryPolicy'
     ];
 
     /**
@@ -31,6 +32,7 @@ class AuthServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->registerPolicies();
+
 
         Auth::viaRequest("api-token", function($request){
             return TokenGuard::findUser($request->api_user, $request->api_token);
@@ -49,12 +51,12 @@ class AuthServiceProvider extends ServiceProvider
         $data = compact("user_id","token");
 
         if(validator($data,$this->rules)->fails()){
-    return null;
-}
+            return null;
+        }
 
-$user = User::find($user_id);
+        $user = User::find($user_id);
 
-return decrypt($user->api_token) == $token ? $user : null;
+        return decrypt($user->api_token) == $token ? $user : null;
 
-}
+    }
 }
