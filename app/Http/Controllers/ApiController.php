@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\User;
 use App\Role;
+use App\Project;
 use Auth;
 use DB;
 
@@ -34,41 +35,52 @@ class ApiController extends Controller
        return response(Role::all()->jsonSerialize(), 200);
    }
 
-   public function login(Request $request)
-   {
+    /**
+     * Handles Login Request
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function login(Request $request)
+    {
 
-    // get client id and password of the user or return an error
 
-    $client = DB::table('oauth_clients')
-                     ->select(DB::raw('id, secret'))
-                     ->where('user_id', '=', $request->id)
-                     ->first();
+        $credentials = [
+            'email' => $request->email,
+            'password' => $request->password
+        ];
 
+        if (auth()->attempt($credentials)) {
 
-    // return error if $client has error or client_id is empty
-    $http = new \GuzzleHttp\Client;
-    try {
+        $token = str_random(60);
 
-        $response = $http->post(config('services.passport.login_endpoint'), [
-            'form_params' => [
-                'grant_type' => 'password',
-                'client_id' => $client->id,
-                'client_secret' => $client->secret,
-                'username' => $request->username,
-                'password' => $request->password,
-            ]
-        ]);
+        auth()->user()->forceFill([
+            'api_token' => hash('sha256', $token),
+        ])->save();
 
-        return $response->getBody();
-    } catch (\GuzzleHttp\Exception\BadResponseException $e) {
-        if ($e->getCode() === 400) {
-            return response()->json('Invalid Request. Please enter a username or a password.', $e->getCode());
-        } else if ($e->getCode() === 401) {
-            return response()->json('Your credentials are incorrect. Please try again', $e->getCode());
+          $response = auth()->user()->latestCase;
+          if(!$response){
+             $response = 'No cases';
+             return response()->json(['case' => $response], 200);
+
+         }
+         else{
+            $inputs['media'] = $response->project->media->pluck('name');
+            $inputs['places'] = $response->project->places->pluck('name');
+            $inputs['communication_partners'] = $response->project->communication_partners->pluck('name');
+
+            return response()->json(['media' => $inputs['media'],'places' => $inputs['places'], 'cp' => $inputs['communication_partners'],'case' => $response, 'token' => $token,'inputs' => $inputs], 200);
+
         }
-        return response()->json('Something went wrong on the server.', $e->getCode());
+
+    } else {
+        return response()->json(['error' => 'invalid credentials'], 401);
     }
 }
+
+
+
+
 public function register(Request $request)
 {
     dd("NOT POSSIBLE");
@@ -89,6 +101,39 @@ public function logout()
         $token->delete();
     });
     return response()->json('Logged out successfully', 200);
+}
+
+public function a(Project $p)
+{
+    return response()->json(compact($p),200);
+}
+
+    /**
+     * Update the authenticated user's API token.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return array
+     */
+    public function update(Request $request)
+    {
+        $token = Str::random(60);
+
+        $request->user()->forceFill([
+            'api_token' => hash('sha256', $token),
+        ])->save();
+
+        return ['token' => $token];
+    }
+
+public function getInputs(Project $project)
+{
+
+            $data['media'] = $project->media;
+            $data['places'] = $project->places;
+            $data['communication_partners'] = $project->communication_partners;
+
+            return response()->json($data, 200);
+
 }
 
 

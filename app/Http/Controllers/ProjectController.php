@@ -31,8 +31,16 @@ class ProjectController extends Controller
 
         $this->authorize('update',$project);
 
+        $project->media = $project->media()->pluck('media.id')->toArray();
+        $project->places = $project->places()->pluck('places.id')->toArray();
+        $project->communication_partners = $project->communication_partners()->pluck('communication_partners.id')->toArray();
 
-        return view('projects.show',compact('project'));
+        $data['data']['media'] = Media::all();
+        $data['data']['places'] = Place::all();
+        $data['data']['cp'] = Communication_partner::all();
+        $data['project'] = $project;
+
+        return view('projects.show',$data);
     }
 
     /**
@@ -55,7 +63,7 @@ class ProjectController extends Controller
         $media = request()->media;
         $places = request()->places;
 
-    	$attributes = request()->validate([
+        $attributes = request()->validate([
             'name' => 'required',
             'description' => 'required',
             'created_by' => 'required',
@@ -91,8 +99,25 @@ class ProjectController extends Controller
 
         $this->authorize('update',$project);
 
+        $cp = request()->cp;
+        $media = request()->media;
+        $places = request()->places;
+
+        $attributes = request()->validate([
+            'name' => 'required',
+            'description' => 'required',
+            'duration' => 'nullable',
+            'is_locked' => 'nullable ',
+            'inputs' => 'nullable'
+        ]);
         $project->update($request->all());
         $project->save();
+
+        $project->media()->sync(Media::whereIn('id',$media)->get());
+        $project->places()->sync(Place::whereIn('id',$places)->get());
+        $project->communication_partners()->sync(Communication_partner::whereIn('id',$cp)->get());
+
+
 
         return response("Updated project successfully");
 

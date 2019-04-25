@@ -3,6 +3,7 @@
 use Illuminate\Database\Seeder;
 use Faker\Factory as Faker;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class UsersTableSeeder extends Seeder
 {
@@ -13,28 +14,31 @@ class UsersTableSeeder extends Seeder
      */
     public function run()
     {
-        $faker = Faker::create();
+    	$faker = Faker::create();
 
 
-	    DB::table('users')->insert([
-	            'username' => "admin",
-	            'email' => "belli@uni-bremen.de",
-	            'password' => bcrypt('1234'),
-	            'created_at' => $faker->dateTime($max = 'now', $timezone = "Europe/Berlin"),
-	            'updated_at' => $faker->dateTime($max = 'now', $timezone = "Europe/Berlin")
-	        ],
-	        [
-	            'username' => "test_user",
-	            'email' => "belli@uni.de",
-	            'password' => bcrypt('1234'),
-	            'created_at' => $faker->dateTime($max = 'now', $timezone = "Europe/Berlin"),
-	            'updated_at' => $faker->dateTime($max = 'now', $timezone = "Europe/Berlin")
-	        ]);
+    	DB::table('users')->insert([
+    		'username' => "admin",
+    		'email' => "belli@uni-bremen.de",
+    		'password' => bcrypt('1234'),
+    		'api_token' => hash('sha256',str_random(60)),
+    		'created_at' => $faker->dateTime($max = 'now', $timezone = "Europe/Berlin"),
+    		'updated_at' => $faker->dateTime($max = 'now', $timezone = "Europe/Berlin")
+    	],
+    	[
+    		'username' => "test_user",
+    		'email' => "belli@uni.de",
+    		'password' => bcrypt('1234'),
+    		'api_token' =>  hash('sha256',str_random(60)),
 
-	    $this->command->info('Admin user seeded');
-	    $fakeusers = 1;
+    		'created_at' => $faker->dateTime($max = 'now', $timezone = "Europe/Berlin"),
+    		'updated_at' => $faker->dateTime($max = 'now', $timezone = "Europe/Berlin")
+    	]);
 
- 		$this->command->info('Seeding fake users');
+    	$this->command->info('Admin user seeded');
+    	$fakeusers = 1;
+
+    	$this->command->info('Seeding fake users');
 	    /// create fake data
     	foreach (range(1,$fakeusers) as $index) {
 
@@ -42,14 +46,14 @@ class UsersTableSeeder extends Seeder
 
 
 
-	        DB::table('users')->insert([
-	            'username' => $faker->username,
-	            'email' => $faker->email,
-	            'password' => bcrypt('secret'),
-	            'created_at' => $faker->dateTime($max = 'now', $timezone = "Europe/Berlin"),
-	            'updated_at' => $faker->dateTime($max = 'now', $timezone = "Europe/Berlin")
-	        ]);
-	    }
+    		DB::table('users')->insert([
+    			'username' => $faker->username,
+    			'email' => $faker->email,
+    			'password' => bcrypt('secret'),
+    			'created_at' => $faker->dateTime($max = 'now', $timezone = "Europe/Berlin"),
+    			'updated_at' => $faker->dateTime($max = 'now', $timezone = "Europe/Berlin")
+    		]);
+    	}
 
 
 

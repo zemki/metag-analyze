@@ -55,7 +55,7 @@
 		</table>
 	</b-tab-item>
 
-	<b-tab-item label="Inputs"><edit-project :project="{{$project}}"></edit-project></b-tab-item>
+	<b-tab-item label="Inputs"><edit-project :data="{{json_encode($data)}}" :project="{{$project}}"></edit-project></b-tab-item>
 
 </b-tabs>
 
