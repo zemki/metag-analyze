@@ -10,7 +10,7 @@ $factory->define(App\Project::class, function (Faker $faker,$params) {
 		'duration' => $faker->sentence,
 		'is_locked' => 0,
 		'created_by' => function() {
-			return factory(App\User::class)->create()->id;
+			return (isset($params['user_id']) ? $params['user_id'] : factory(App\User::class)->create()->id);
 		},
 		'inputs' => (isset($params['inputs']) ? $params['inputs'] : '')
 	];
