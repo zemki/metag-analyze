@@ -12,7 +12,7 @@ class EntryController extends Controller
 {
     public function entriesByCase(Cases $case)
     {
-    	return EntryResource::collection($case->entries);
+    	return EntryResource::collection($case->entries->sortByDesc('begin'));
     }
 
     /**
@@ -24,7 +24,7 @@ class EntryController extends Controller
     public function store(Request $request,Project $project,Cases $case)
     {
 
-		$this->authorize('update',[Entry::class,$case]);
+		//$this->authorize('update',[Entry::class,$case]);
 
      	$attributes = request()->validate([
             'begin' => 'required',

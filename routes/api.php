@@ -13,14 +13,9 @@ use Illuminate\Http\Request;
 |
 */
 
-// Route::middleware('auth:api')->get('/user', function (Request $request) {
-//     return $request->user();
-// });
 
 
-Route::get('/inputs/{project}','ApiController@getInputs');
 
-Route::get('/entry/{case}','EntryController@entriesByCase');
 
 
 // Route::post('register', 'PassportController@register');
@@ -29,5 +24,9 @@ Route::post('login', 'ApiController@login');
 Route::group(['prefix' => 'v1', 'middleware' => 'auth:api'], function () {
 Route::get('/inputs/{project}','ApiController@getInputs');
 Route::get('/project/{project}','ApiController@a');
+
+Route::get('/inputs/{project}','ApiController@getInputs');
+Route::get('/entry/{case}','EntryController@entriesByCase');
+Route::post('/cases/{case}/entries','EntryController@store');
 
 });

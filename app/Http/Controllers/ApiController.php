@@ -65,9 +65,13 @@ class ApiController extends Controller
 
          }
          else{
-            $inputs['media'] = $response->project->media->pluck('name');
-            $inputs['places'] = $response->project->places->pluck('name');
-            $inputs['communication_partners'] = $response->project->communication_partners->pluck('name');
+            $inputs['media'] = $response->project->media;
+            $nullItem = (object)array('id' => 0,'name' => '');
+            $inputs['media']->prepend($nullItem);
+            $inputs['places'] = $response->project->places;
+            $inputs['places']->prepend($nullItem);
+            $inputs['communication_partners'] = $response->project->communication_partners;
+            $inputs['communication_partners']->prepend($nullItem);
 
             return response()->json(['media' => $inputs['media'],'places' => $inputs['places'], 'cp' => $inputs['communication_partners'],'case' => $response, 'token' => $token,'inputs' => $inputs], 200);
 
