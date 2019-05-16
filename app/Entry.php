@@ -41,4 +41,6 @@ class Entry extends Model
     }
 
 
+
+
 }

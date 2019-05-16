@@ -8,7 +8,6 @@
  require('./bootstrap');
 
  import Buefy from 'buefy'
-
  window.Vue = require('vue');
 
 /**
@@ -23,9 +22,14 @@
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default));
 
 Vue.component('edit-project', require('./components/editproject.vue').default);
+Vue.component('consult-entries', require('./components/consultentries.vue').default);
 
- Vue.use(Buefy)
+ Vue.use(Buefy);
+import {GoogleCharts} from 'google-charts';
+import VueChartkick from 'vue-chartkick'
 
+Vue.use(VueChartkick)
+Vue.use(GoogleCharts)
 /**
  * Next, we will create a fresh Vue application instance and attach it to
  * the page. Then, you may begin adding components to this application
@@ -41,6 +45,35 @@ Vue.component('edit-project', require('./components/editproject.vue').default);
         }
     },
     watch: {
+        'newproject.duration.selectedUnit': function (newVal,OldVal){
+            if(!_.isEmpty(this.newproject.duration.input)){
+            console.log(newVal);
+            if(newVal == 'week') var numberOfDaysToAdd = parseInt(this.newproject.duration.input)*7;
+            else var numberOfDaysToAdd = parseInt(this.newproject.duration.input);
+            var today = new Date();
+            today.setDate(today.getDate() + numberOfDaysToAdd);
+            var dd = today.getDate();
+            var mm = today.getMonth() + 1;
+            var y = today.getFullYear();
+            this.newproject.duration.message = dd + '.'+ mm + '.'+ y;
+            }
+        },
+        'newproject.duration.input': function (newVal,OldVal){
+
+            this.newproject.duration.input = newVal.replace(/\D/g,'');
+
+            if(!_.isEmpty(this.newproject.duration.selectedUnit)){
+            console.log(newVal);
+            if(this.newproject.duration.selectedUnit == 'week') var numberOfDaysToAdd = parseInt(newVal)*7;
+            else var numberOfDaysToAdd = parseInt(newVal);
+            var today = new Date();
+            today.setDate(today.getDate() + numberOfDaysToAdd);
+            var dd = today.getDate();
+            var mm = today.getMonth() + 1;
+            var y = today.getFullYear();
+            this.newproject.duration.message = dd + '.'+ mm + '.'+ y;
+            }
+        },
     	'newproject.ninputs': function (newVal,oldVal) {
 
             console.log("token number watcher fired");
@@ -55,6 +88,7 @@ Vue.component('edit-project', require('./components/editproject.vue').default);
                 let inputtemplate = {
                     name: "",
                     type: "",
+                    mandatory: true,
                     numberofanswer: 0,
                     answers: []
                 }
@@ -84,6 +118,12 @@ Vue.component('edit-project', require('./components/editproject.vue').default);
         },
         newproject:{
           name: "",
+            duration: {
+              input: "",
+              selectedUnit: "",
+                allowedUnits: ["day(s)","week(s)"],
+                message: ""
+            },
           ninputs: 0,
           inputs:[],
           config: window.inputs,

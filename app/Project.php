@@ -10,14 +10,15 @@ class Project extends Model
 		'name', 'description', 'duration','created_by','is_locked','inputs'
 	];
 
+
   public function entries()
   {
     return $this->hasMany(Entry::class,'case_id');
 }
-public function getInputsAttribute($value)
+/*public function getInputsAttribute($value)
 {
   return is_array($value) ? $value : (array) json_decode($value);
-}
+}*/
 
 public function cases()
 {

@@ -1,5 +1,41 @@
 (window["webpackJsonp"] = window["webpackJsonp"] || []).push([["/js/app"],{
 
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/consultentries.vue?vue&type=script&lang=js&":
+/*!*************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/consultentries.vue?vue&type=script&lang=js& ***!
+  \*************************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+//
+//
+//
+//
+//
+/* harmony default export */ __webpack_exports__["default"] = ({
+  props: ['entries'],
+  name: "consultentries",
+  data: function data() {
+    return {
+      loaddata: {}
+    };
+  },
+  mounted: function mounted() {
+    this.fetchData();
+    this.drawGraph();
+  },
+  methods: {
+    fetchData: function fetchData() {
+      this.loaddatadata = JSON.parse(this.entries);
+    },
+    drawGraph: function drawGraph() {}
+  }
+});
+
+/***/ }),
+
 /***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/editproject.vue?vue&type=script&lang=js&":
 /*!**********************************************************************************************************************************************************************!*\
   !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/editproject.vue?vue&type=script&lang=js& ***!
@@ -9,9 +45,6 @@
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-//
-//
-//
 //
 //
 //
@@ -231,6 +264,7 @@ __webpack_require__.r(__webpack_exports__);
             name: "",
             type: "",
             numberofanswer: 0,
+            mandatory: true,
             answers: []
           };
 
@@ -13995,6 +14029,2719 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
 
 /***/ }),
 
+/***/ "./node_modules/chartkick/dist/chartkick.esm.js":
+/*!******************************************************!*\
+  !*** ./node_modules/chartkick/dist/chartkick.esm.js ***!
+  \******************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/*
+ * Chartkick.js
+ * Create beautiful charts with one line of JavaScript
+ * https://github.com/ankane/chartkick.js
+ * v3.0.2
+ * MIT License
+ */
+
+function isArray(variable) {
+  return Object.prototype.toString.call(variable) === "[object Array]";
+}
+
+function isFunction(variable) {
+  return variable instanceof Function;
+}
+
+function isPlainObject(variable) {
+  return !isFunction(variable) && variable instanceof Object;
+}
+
+// https://github.com/madrobby/zepto/blob/master/src/zepto.js
+function extend(target, source) {
+  var key;
+  for (key in source) {
+    if (isPlainObject(source[key]) || isArray(source[key])) {
+      if (isPlainObject(source[key]) && !isPlainObject(target[key])) {
+        target[key] = {};
+      }
+      if (isArray(source[key]) && !isArray(target[key])) {
+        target[key] = [];
+      }
+      extend(target[key], source[key]);
+    } else if (source[key] !== undefined) {
+      target[key] = source[key];
+    }
+  }
+}
+
+function merge(obj1, obj2) {
+  var target = {};
+  extend(target, obj1);
+  extend(target, obj2);
+  return target;
+}
+
+var DATE_PATTERN = /^(\d\d\d\d)(-)?(\d\d)(-)?(\d\d)$/i;
+
+// https://github.com/Do/iso8601.js
+var ISO8601_PATTERN = /(\d\d\d\d)(-)?(\d\d)(-)?(\d\d)(T)?(\d\d)(:)?(\d\d)?(:)?(\d\d)?([.,]\d+)?($|Z|([+-])(\d\d)(:)?(\d\d)?)/i;
+var DECIMAL_SEPARATOR = String(1.5).charAt(1);
+
+function parseISO8601(input) {
+  var day, hour, matches, milliseconds, minutes, month, offset, result, seconds, type, year;
+  type = Object.prototype.toString.call(input);
+  if (type === "[object Date]") {
+    return input;
+  }
+  if (type !== "[object String]") {
+    return;
+  }
+  matches = input.match(ISO8601_PATTERN);
+  if (matches) {
+    year = parseInt(matches[1], 10);
+    month = parseInt(matches[3], 10) - 1;
+    day = parseInt(matches[5], 10);
+    hour = parseInt(matches[7], 10);
+    minutes = matches[9] ? parseInt(matches[9], 10) : 0;
+    seconds = matches[11] ? parseInt(matches[11], 10) : 0;
+    milliseconds = matches[12] ? parseFloat(DECIMAL_SEPARATOR + matches[12].slice(1)) * 1000 : 0;
+    result = Date.UTC(year, month, day, hour, minutes, seconds, milliseconds);
+    if (matches[13] && matches[14]) {
+      offset = matches[15] * 60;
+      if (matches[17]) {
+        offset += parseInt(matches[17], 10);
+      }
+      offset *= matches[14] === "-" ? -1 : 1;
+      result -= offset * 60 * 1000;
+    }
+    return new Date(result);
+  }
+}
+// end iso8601.js
+
+function negativeValues(series) {
+  var i, j, data;
+  for (i = 0; i < series.length; i++) {
+    data = series[i].data;
+    for (j = 0; j < data.length; j++) {
+      if (data[j][1] < 0) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function toStr(n) {
+  return "" + n;
+}
+
+function toFloat(n) {
+  return parseFloat(n);
+}
+
+function toDate(n) {
+  var matches, year, month, day;
+  if (typeof n !== "object") {
+    if (typeof n === "number") {
+      n = new Date(n * 1000); // ms
+    } else {
+      n = toStr(n);
+      if ((matches = n.match(DATE_PATTERN))) {
+      year = parseInt(matches[1], 10);
+      month = parseInt(matches[3], 10) - 1;
+      day = parseInt(matches[5], 10);
+      return new Date(year, month, day);
+      } else { // str
+        // try our best to get the str into iso8601
+        // TODO be smarter about this
+        var str = n.replace(/ /, "T").replace(" ", "").replace("UTC", "Z");
+        n = parseISO8601(str) || new Date(n);
+      }
+    }
+  }
+  return n;
+}
+
+function toArr(n) {
+  if (!isArray(n)) {
+    var arr = [], i;
+    for (i in n) {
+      if (n.hasOwnProperty(i)) {
+        arr.push([i, n[i]]);
+      }
+    }
+    n = arr;
+  }
+  return n;
+}
+
+function jsOptionsFunc(defaultOptions, hideLegend, setTitle, setMin, setMax, setStacked, setXtitle, setYtitle) {
+  return function (chart, opts, chartOptions) {
+    var series = chart.data;
+    var options = merge({}, defaultOptions);
+    options = merge(options, chartOptions || {});
+
+    if (chart.hideLegend || "legend" in opts) {
+      hideLegend(options, opts.legend, chart.hideLegend);
+    }
+
+    if (opts.title) {
+      setTitle(options, opts.title);
+    }
+
+    // min
+    if ("min" in opts) {
+      setMin(options, opts.min);
+    } else if (!negativeValues(series)) {
+      setMin(options, 0);
+    }
+
+    // max
+    if (opts.max) {
+      setMax(options, opts.max);
+    }
+
+    if ("stacked" in opts) {
+      setStacked(options, opts.stacked);
+    }
+
+    if (opts.colors) {
+      options.colors = opts.colors;
+    }
+
+    if (opts.xtitle) {
+      setXtitle(options, opts.xtitle);
+    }
+
+    if (opts.ytitle) {
+      setYtitle(options, opts.ytitle);
+    }
+
+    // merge library last
+    options = merge(options, opts.library || {});
+
+    return options;
+  };
+}
+
+function sortByTime(a, b) {
+  return a[0].getTime() - b[0].getTime();
+}
+
+function sortByNumberSeries(a, b) {
+  return a[0] - b[0];
+}
+
+function sortByNumber(a, b) {
+  return a - b;
+}
+
+function isMinute(d) {
+  return d.getMilliseconds() === 0 && d.getSeconds() === 0;
+}
+
+function isHour(d) {
+  return isMinute(d) && d.getMinutes() === 0;
+}
+
+function isDay(d) {
+  return isHour(d) && d.getHours() === 0;
+}
+
+function isWeek(d, dayOfWeek) {
+  return isDay(d) && d.getDay() === dayOfWeek;
+}
+
+function isMonth(d) {
+  return isDay(d) && d.getDate() === 1;
+}
+
+function isYear(d) {
+  return isMonth(d) && d.getMonth() === 0;
+}
+
+function isDate(obj) {
+  return !isNaN(toDate(obj)) && toStr(obj).length >= 6;
+}
+
+function isNumber(obj) {
+  return typeof obj === "number";
+}
+
+function formatValue(pre, value, options) {
+  pre = pre || "";
+  if (options.prefix) {
+    if (value < 0) {
+      value = value * -1;
+      pre += "-";
+    }
+    pre += options.prefix;
+  }
+
+  if (options.thousands || options.decimal) {
+    value = toStr(value);
+    var parts = value.split(".");
+    value = parts[0];
+    if (options.thousands) {
+      value = value.replace(/\B(?=(\d{3})+(?!\d))/g, options.thousands);
+    }
+    if (parts.length > 1) {
+      value += (options.decimal || ".") + parts[1];
+    }
+  }
+
+  return pre + value + (options.suffix || "");
+}
+
+function seriesOption(chart, series, option) {
+  if (option in series) {
+    return series[option];
+  } else if (option in chart.options) {
+    return chart.options[option];
+  }
+  return null;
+}
+
+function allZeros(data) {
+  var i, j, d;
+  for (i = 0; i < data.length; i++) {
+    d = data[i].data;
+    for (j = 0; j < d.length; j++) {
+      if (d[j][1] != 0) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+var baseOptions = {
+  maintainAspectRatio: false,
+  animation: false,
+  tooltips: {
+    displayColors: false,
+    callbacks: {}
+  },
+  legend: {},
+  title: {fontSize: 20, fontColor: "#333"}
+};
+
+var defaultOptions = {
+  scales: {
+    yAxes: [
+      {
+        ticks: {
+          maxTicksLimit: 4
+        },
+        scaleLabel: {
+          fontSize: 16,
+          // fontStyle: "bold",
+          fontColor: "#333"
+        }
+      }
+    ],
+    xAxes: [
+      {
+        gridLines: {
+          drawOnChartArea: false
+        },
+        scaleLabel: {
+          fontSize: 16,
+          // fontStyle: "bold",
+          fontColor: "#333"
+        },
+        time: {},
+        ticks: {}
+      }
+    ]
+  }
+};
+
+// http://there4.io/2012/05/02/google-chart-color-list/
+var defaultColors = [
+  "#3366CC", "#DC3912", "#FF9900", "#109618", "#990099", "#3B3EAC", "#0099C6",
+  "#DD4477", "#66AA00", "#B82E2E", "#316395", "#994499", "#22AA99", "#AAAA11",
+  "#6633CC", "#E67300", "#8B0707", "#329262", "#5574A6", "#651067"
+];
+
+var hideLegend = function (options, legend, hideLegend) {
+  if (legend !== undefined) {
+    options.legend.display = !!legend;
+    if (legend && legend !== true) {
+      options.legend.position = legend;
+    }
+  } else if (hideLegend) {
+    options.legend.display = false;
+  }
+};
+
+var setTitle = function (options, title) {
+  options.title.display = true;
+  options.title.text = title;
+};
+
+var setMin = function (options, min) {
+  if (min !== null) {
+    options.scales.yAxes[0].ticks.min = toFloat(min);
+  }
+};
+
+var setMax = function (options, max) {
+  options.scales.yAxes[0].ticks.max = toFloat(max);
+};
+
+var setBarMin = function (options, min) {
+  if (min !== null) {
+    options.scales.xAxes[0].ticks.min = toFloat(min);
+  }
+};
+
+var setBarMax = function (options, max) {
+  options.scales.xAxes[0].ticks.max = toFloat(max);
+};
+
+var setStacked = function (options, stacked) {
+  options.scales.xAxes[0].stacked = !!stacked;
+  options.scales.yAxes[0].stacked = !!stacked;
+};
+
+var setXtitle = function (options, title) {
+  options.scales.xAxes[0].scaleLabel.display = true;
+  options.scales.xAxes[0].scaleLabel.labelString = title;
+};
+
+var setYtitle = function (options, title) {
+  options.scales.yAxes[0].scaleLabel.display = true;
+  options.scales.yAxes[0].scaleLabel.labelString = title;
+};
+
+// https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
+var addOpacity = function(hex, opacity) {
+  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? "rgba(" + parseInt(result[1], 16) + ", " + parseInt(result[2], 16) + ", " + parseInt(result[3], 16) + ", " + opacity + ")" : hex;
+};
+
+var setLabelSize = function (chart, data, options) {
+  var maxLabelSize = Math.ceil(chart.element.offsetWidth / 4.0 / data.labels.length);
+  if (maxLabelSize > 25) {
+    maxLabelSize = 25;
+  } else if (maxLabelSize < 10) {
+    maxLabelSize = 10;
+  }
+  if (!options.scales.xAxes[0].ticks.callback) {
+    options.scales.xAxes[0].ticks.callback = function (value) {
+      value = toStr(value);
+      if (value.length > maxLabelSize) {
+        return value.substring(0, maxLabelSize - 2) + "...";
+      } else {
+        return value;
+      }
+    };
+  }
+};
+
+var setFormatOptions = function(chart, options, chartType) {
+  var formatOptions = {
+    prefix: chart.options.prefix,
+    suffix: chart.options.suffix,
+    thousands: chart.options.thousands,
+    decimal: chart.options.decimal
+  };
+
+  if (chartType !== "pie") {
+    var myAxes = options.scales.yAxes;
+    if (chartType === "bar") {
+      myAxes = options.scales.xAxes;
+    }
+
+    if (!myAxes[0].ticks.callback) {
+      myAxes[0].ticks.callback = function (value) {
+        return formatValue("", value, formatOptions);
+      };
+    }
+  }
+
+  if (!options.tooltips.callbacks.label) {
+    if (chartType === "scatter") {
+      options.tooltips.callbacks.label = function (item, data) {
+        var label = data.datasets[item.datasetIndex].label || '';
+        if (label) {
+          label += ': ';
+        }
+        return label + '(' + item.xLabel + ', ' + item.yLabel + ')';
+      };
+    } else if (chartType === "bubble") {
+      options.tooltips.callbacks.label = function (item, data) {
+        var label = data.datasets[item.datasetIndex].label || '';
+        if (label) {
+          label += ': ';
+        }
+        var dataPoint = data.datasets[item.datasetIndex].data[item.index];
+        return label + '(' + item.xLabel + ', ' + item.yLabel + ', ' + dataPoint.v + ')';
+      };
+    } else if (chartType === "pie") {
+      // need to use separate label for pie charts
+      options.tooltips.callbacks.label = function (tooltipItem, data) {
+        var dataLabel = data.labels[tooltipItem.index];
+        var value = ': ';
+
+        if (isArray(dataLabel)) {
+          // show value on first line of multiline label
+          // need to clone because we are changing the value
+          dataLabel = dataLabel.slice();
+          dataLabel[0] += value;
+        } else {
+          dataLabel += value;
+        }
+
+        return formatValue(dataLabel, data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index], formatOptions);
+      };
+    } else {
+      var valueLabel = chartType === "bar" ? "xLabel" : "yLabel";
+      options.tooltips.callbacks.label = function (tooltipItem, data) {
+        var label = data.datasets[tooltipItem.datasetIndex].label || '';
+        if (label) {
+          label += ': ';
+        }
+        return formatValue(label, tooltipItem[valueLabel], formatOptions);
+      };
+    }
+  }
+};
+
+var jsOptions = jsOptionsFunc(merge(baseOptions, defaultOptions), hideLegend, setTitle, setMin, setMax, setStacked, setXtitle, setYtitle);
+
+var createDataTable = function (chart, options, chartType) {
+  var datasets = [];
+  var labels = [];
+
+  var colors = chart.options.colors || defaultColors;
+
+  var day = true;
+  var week = true;
+  var dayOfWeek;
+  var month = true;
+  var year = true;
+  var hour = true;
+  var minute = true;
+
+  var series = chart.data;
+
+  var max = 0;
+  if (chartType === "bubble") {
+    for (var i$1 = 0; i$1 < series.length; i$1++) {
+      var s$1 = series[i$1];
+      for (var j$1 = 0; j$1 < s$1.data.length; j$1++) {
+        if (s$1.data[j$1][2] > max) {
+          max = s$1.data[j$1][2];
+        }
+      }
+    }
+  }
+
+  var i, j, s, d, key, rows = [], rows2 = [];
+
+  if (chartType === "bar" || chartType === "column" || (chart.xtype !== "number" && chart.xtype !== "bubble")) {
+    var sortedLabels = [];
+
+    for (i = 0; i < series.length; i++) {
+      s = series[i];
+
+      for (j = 0; j < s.data.length; j++) {
+        d = s.data[j];
+        key = chart.xtype == "datetime" ? d[0].getTime() : d[0];
+        if (!rows[key]) {
+          rows[key] = new Array(series.length);
+        }
+        rows[key][i] = toFloat(d[1]);
+        if (sortedLabels.indexOf(key) === -1) {
+          sortedLabels.push(key);
+        }
+      }
+    }
+
+    if (chart.xtype === "datetime" || chart.xtype === "number") {
+      sortedLabels.sort(sortByNumber);
+    }
+
+    for (j = 0; j < series.length; j++) {
+      rows2.push([]);
+    }
+
+    var value;
+    var k;
+    for (k = 0; k < sortedLabels.length; k++) {
+      i = sortedLabels[k];
+      if (chart.xtype === "datetime") {
+        value = new Date(toFloat(i));
+        // TODO make this efficient
+        day = day && isDay(value);
+        if (!dayOfWeek) {
+          dayOfWeek = value.getDay();
+        }
+        week = week && isWeek(value, dayOfWeek);
+        month = month && isMonth(value);
+        year = year && isYear(value);
+        hour = hour && isHour(value);
+        minute = minute && isMinute(value);
+      } else {
+        value = i;
+      }
+      labels.push(value);
+      for (j = 0; j < series.length; j++) {
+        // Chart.js doesn't like undefined
+        rows2[j].push(rows[i][j] === undefined ? null : rows[i][j]);
+      }
+    }
+  } else {
+    for (var i$2 = 0; i$2 < series.length; i$2++) {
+      var s$2 = series[i$2];
+      var d$1 = [];
+      for (var j$2 = 0; j$2 < s$2.data.length; j$2++) {
+        var point = {
+          x: toFloat(s$2.data[j$2][0]),
+          y: toFloat(s$2.data[j$2][1])
+        };
+        if (chartType === "bubble") {
+          point.r = toFloat(s$2.data[j$2][2]) * 20 / max;
+          // custom attribute, for tooltip
+          point.v = s$2.data[j$2][2];
+        }
+        d$1.push(point);
+      }
+      rows2.push(d$1);
+    }
+  }
+
+  for (i = 0; i < series.length; i++) {
+    s = series[i];
+
+    var color = s.color || colors[i];
+    var backgroundColor = chartType !== "line" ? addOpacity(color, 0.5) : color;
+
+    var dataset = {
+      label: s.name || "",
+      data: rows2[i],
+      fill: chartType === "area",
+      borderColor: color,
+      backgroundColor: backgroundColor,
+      pointBackgroundColor: color,
+      borderWidth: 2,
+      pointHoverBackgroundColor: color
+    };
+
+    if (s.stack) {
+      dataset.stack = s.stack;
+    }
+
+    var curve = seriesOption(chart, s, "curve");
+    if (curve === false) {
+      dataset.lineTension = 0;
+    }
+
+    var points = seriesOption(chart, s, "points");
+    if (points === false) {
+      dataset.pointRadius = 0;
+      dataset.pointHitRadius = 5;
+    }
+
+    dataset = merge(dataset, chart.options.dataset || {});
+    dataset = merge(dataset, s.library || {});
+    dataset = merge(dataset, s.dataset || {});
+
+    datasets.push(dataset);
+  }
+
+  if (chart.xtype === "datetime" && labels.length > 0) {
+    var minTime = labels[0].getTime();
+    var maxTime = labels[0].getTime();
+    for (i = 1; i < labels.length; i++) {
+      var value$1 = labels[i].getTime();
+      if (value$1 < minTime) {
+        minTime = value$1;
+      }
+      if (value$1 > maxTime) {
+        maxTime = value$1;
+      }
+    }
+
+    var timeDiff = (maxTime - minTime) / (86400 * 1000.0);
+
+    if (!options.scales.xAxes[0].time.unit) {
+      var step;
+      if (year || timeDiff > 365 * 10) {
+        options.scales.xAxes[0].time.unit = "year";
+        step = 365;
+      } else if (month || timeDiff > 30 * 10) {
+        options.scales.xAxes[0].time.unit = "month";
+        step = 30;
+      } else if (day || timeDiff > 10) {
+        options.scales.xAxes[0].time.unit = "day";
+        step = 1;
+      } else if (hour || timeDiff > 0.5) {
+        options.scales.xAxes[0].time.displayFormats = {hour: "MMM D, h a"};
+        options.scales.xAxes[0].time.unit = "hour";
+        step = 1 / 24.0;
+      } else if (minute) {
+        options.scales.xAxes[0].time.displayFormats = {minute: "h:mm a"};
+        options.scales.xAxes[0].time.unit = "minute";
+        step = 1 / 24.0 / 60.0;
+      }
+
+      if (step && timeDiff > 0) {
+        var unitStepSize = Math.ceil(timeDiff / step / (chart.element.offsetWidth / 100.0));
+        if (week && step === 1) {
+          unitStepSize = Math.ceil(unitStepSize / 7.0) * 7;
+        }
+        options.scales.xAxes[0].time.unitStepSize = unitStepSize;
+      }
+    }
+
+    if (!options.scales.xAxes[0].time.tooltipFormat) {
+      if (day) {
+        options.scales.xAxes[0].time.tooltipFormat = "ll";
+      } else if (hour) {
+        options.scales.xAxes[0].time.tooltipFormat = "MMM D, h a";
+      } else if (minute) {
+        options.scales.xAxes[0].time.tooltipFormat = "h:mm a";
+      }
+    }
+  }
+
+  var data = {
+    labels: labels,
+    datasets: datasets
+  };
+
+  return data;
+};
+
+var defaultExport = function defaultExport(library) {
+  this.name = "chartjs";
+  this.library = library;
+};
+
+defaultExport.prototype.renderLineChart = function renderLineChart (chart, chartType) {
+  var chartOptions = {};
+  // fix for https://github.com/chartjs/Chart.js/issues/2441
+  if (!chart.options.max && allZeros(chart.data)) {
+    chartOptions.max = 1;
+  }
+
+  var options = jsOptions(chart, merge(chartOptions, chart.options));
+  setFormatOptions(chart, options, chartType);
+
+  var data = createDataTable(chart, options, chartType || "line");
+
+  if (chart.xtype === "number") {
+    options.scales.xAxes[0].type = "linear";
+    options.scales.xAxes[0].position = "bottom";
+  } else {
+    options.scales.xAxes[0].type = chart.xtype === "string" ? "category" : "time";
+  }
+
+  this.drawChart(chart, "line", data, options);
+};
+
+defaultExport.prototype.renderPieChart = function renderPieChart (chart) {
+  var options = merge({}, baseOptions);
+  if (chart.options.donut) {
+    options.cutoutPercentage = 50;
+  }
+
+  if ("legend" in chart.options) {
+    hideLegend(options, chart.options.legend);
+  }
+
+  if (chart.options.title) {
+    setTitle(options, chart.options.title);
+  }
+
+  options = merge(options, chart.options.library || {});
+  setFormatOptions(chart, options, "pie");
+
+  var labels = [];
+  var values = [];
+  for (var i = 0; i < chart.data.length; i++) {
+    var point = chart.data[i];
+    labels.push(point[0]);
+    values.push(point[1]);
+  }
+
+  var dataset = {
+    data: values,
+    backgroundColor: chart.options.colors || defaultColors
+  };
+  dataset = merge(dataset, chart.options.dataset || {});
+
+  var data = {
+    labels: labels,
+    datasets: [dataset]
+  };
+
+  this.drawChart(chart, "pie", data, options);
+};
+
+defaultExport.prototype.renderColumnChart = function renderColumnChart (chart, chartType) {
+  var options;
+  if (chartType === "bar") {
+    options = jsOptionsFunc(merge(baseOptions, defaultOptions), hideLegend, setTitle, setBarMin, setBarMax, setStacked, setXtitle, setYtitle)(chart, chart.options);
+  } else {
+    options = jsOptions(chart, chart.options);
+  }
+  setFormatOptions(chart, options, chartType);
+  var data = createDataTable(chart, options, "column");
+  if (chartType !== "bar") {
+    setLabelSize(chart, data, options);
+  }
+  this.drawChart(chart, (chartType === "bar" ? "horizontalBar" : "bar"), data, options);
+};
+
+defaultExport.prototype.renderAreaChart = function renderAreaChart (chart) {
+  this.renderLineChart(chart, "area");
+};
+
+defaultExport.prototype.renderBarChart = function renderBarChart (chart) {
+  this.renderColumnChart(chart, "bar");
+};
+
+defaultExport.prototype.renderScatterChart = function renderScatterChart (chart, chartType) {
+  chartType = chartType || "scatter";
+
+  var options = jsOptions(chart, chart.options);
+  setFormatOptions(chart, options, chartType);
+
+  if (!("showLines" in options)) {
+    options.showLines = false;
+  }
+
+  var data = createDataTable(chart, options, chartType);
+
+  options.scales.xAxes[0].type = "linear";
+  options.scales.xAxes[0].position = "bottom";
+
+  this.drawChart(chart, chartType, data, options);
+};
+
+defaultExport.prototype.renderBubbleChart = function renderBubbleChart (chart) {
+  this.renderScatterChart(chart, "bubble");
+};
+
+defaultExport.prototype.destroy = function destroy (chart) {
+  if (chart.chart) {
+    chart.chart.destroy();
+  }
+};
+
+defaultExport.prototype.drawChart = function drawChart (chart, type, data, options) {
+  this.destroy(chart);
+
+  var chartOptions = {
+    type: type,
+    data: data,
+    options: options
+  };
+
+  if (chart.options.code) {
+    window.console.log("new Chart(ctx, " + JSON.stringify(chartOptions) + ");");
+  }
+
+  chart.element.innerHTML = "<canvas></canvas>";
+  var ctx = chart.element.getElementsByTagName("CANVAS")[0];
+  chart.chart = new this.library(ctx, chartOptions);
+};
+
+var defaultOptions$1 = {
+  chart: {},
+  xAxis: {
+    title: {
+      text: null
+    },
+    labels: {
+      style: {
+        fontSize: "12px"
+      }
+    }
+  },
+  yAxis: {
+    title: {
+      text: null
+    },
+    labels: {
+      style: {
+        fontSize: "12px"
+      }
+    }
+  },
+  title: {
+    text: null
+  },
+  credits: {
+    enabled: false
+  },
+  legend: {
+    borderWidth: 0
+  },
+  tooltip: {
+    style: {
+      fontSize: "12px"
+    }
+  },
+  plotOptions: {
+    areaspline: {},
+    series: {
+      marker: {}
+    }
+  }
+};
+
+var hideLegend$1 = function (options, legend, hideLegend) {
+  if (legend !== undefined) {
+    options.legend.enabled = !!legend;
+    if (legend && legend !== true) {
+      if (legend === "top" || legend === "bottom") {
+        options.legend.verticalAlign = legend;
+      } else {
+        options.legend.layout = "vertical";
+        options.legend.verticalAlign = "middle";
+        options.legend.align = legend;
+      }
+    }
+  } else if (hideLegend) {
+    options.legend.enabled = false;
+  }
+};
+
+var setTitle$1 = function (options, title) {
+  options.title.text = title;
+};
+
+var setMin$1 = function (options, min) {
+  options.yAxis.min = min;
+};
+
+var setMax$1 = function (options, max) {
+  options.yAxis.max = max;
+};
+
+var setStacked$1 = function (options, stacked) {
+  options.plotOptions.series.stacking = stacked ? (stacked === true ? "normal" : stacked) : null;
+};
+
+var setXtitle$1 = function (options, title) {
+  options.xAxis.title.text = title;
+};
+
+var setYtitle$1 = function (options, title) {
+  options.yAxis.title.text = title;
+};
+
+var jsOptions$1 = jsOptionsFunc(defaultOptions$1, hideLegend$1, setTitle$1, setMin$1, setMax$1, setStacked$1, setXtitle$1, setYtitle$1);
+
+var setFormatOptions$1 = function(chart, options, chartType) {
+  var formatOptions = {
+    prefix: chart.options.prefix,
+    suffix: chart.options.suffix,
+    thousands: chart.options.thousands,
+    decimal: chart.options.decimal
+  };
+
+  if (chartType !== "pie" && !options.yAxis.labels.formatter) {
+    options.yAxis.labels.formatter = function () {
+      return formatValue("", this.value, formatOptions);
+    };
+  }
+
+  if (!options.tooltip.pointFormatter) {
+    options.tooltip.pointFormatter = function () {
+      return '<span style="color:' + this.color + '>\u25CF</span> ' + formatValue(this.series.name + ': <b>', this.y, formatOptions) + '</b><br/>';
+    };
+  }
+};
+
+var defaultExport$1 = function defaultExport(library) {
+  this.name = "highcharts";
+  this.library = library;
+};
+
+defaultExport$1.prototype.renderLineChart = function renderLineChart (chart, chartType) {
+  chartType = chartType || "spline";
+  var chartOptions = {};
+  if (chartType === "areaspline") {
+    chartOptions = {
+      plotOptions: {
+        areaspline: {
+          stacking: "normal"
+        },
+        area: {
+          stacking: "normal"
+        },
+        series: {
+          marker: {
+            enabled: false
+          }
+        }
+      }
+    };
+  }
+
+  if (chart.options.curve === false) {
+    if (chartType === "areaspline") {
+      chartType = "area";
+    } else if (chartType === "spline") {
+      chartType = "line";
+    }
+  }
+
+  var options = jsOptions$1(chart, chart.options, chartOptions), data, i, j;
+  options.xAxis.type = chart.xtype === "string" ? "category" : (chart.xtype === "number" ? "linear" : "datetime");
+  if (!options.chart.type) {
+    options.chart.type = chartType;
+  }
+  setFormatOptions$1(chart, options, chartType);
+
+  var series = chart.data;
+  for (i = 0; i < series.length; i++) {
+    series[i].name = series[i].name || "Value";
+    data = series[i].data;
+    if (chart.xtype === "datetime") {
+      for (j = 0; j < data.length; j++) {
+        data[j][0] = data[j][0].getTime();
+      }
+    }
+    series[i].marker = {symbol: "circle"};
+    if (chart.options.points === false) {
+      series[i].marker.enabled = false;
+    }
+  }
+
+  this.drawChart(chart, series, options);
+};
+
+defaultExport$1.prototype.renderScatterChart = function renderScatterChart (chart) {
+  var options = jsOptions$1(chart, chart.options, {});
+  options.chart.type = "scatter";
+  this.drawChart(chart, chart.data, options);
+};
+
+defaultExport$1.prototype.renderPieChart = function renderPieChart (chart) {
+  var chartOptions = merge(defaultOptions$1, {});
+
+  if (chart.options.colors) {
+    chartOptions.colors = chart.options.colors;
+  }
+  if (chart.options.donut) {
+    chartOptions.plotOptions = {pie: {innerSize: "50%"}};
+  }
+
+  if ("legend" in chart.options) {
+    hideLegend$1(chartOptions, chart.options.legend);
+  }
+
+  if (chart.options.title) {
+    setTitle$1(chartOptions, chart.options.title);
+  }
+
+  var options = merge(chartOptions, chart.options.library || {});
+  setFormatOptions$1(chart, options, "pie");
+  var series = [{
+    type: "pie",
+    name: chart.options.label || "Value",
+    data: chart.data
+  }];
+
+  this.drawChart(chart, series, options);
+};
+
+defaultExport$1.prototype.renderColumnChart = function renderColumnChart (chart, chartType) {
+  chartType = chartType || "column";
+  var series = chart.data;
+  var options = jsOptions$1(chart, chart.options), i, j, s, d, rows = [], categories = [];
+  options.chart.type = chartType;
+  setFormatOptions$1(chart, options, chartType);
+
+  for (i = 0; i < series.length; i++) {
+    s = series[i];
+
+    for (j = 0; j < s.data.length; j++) {
+      d = s.data[j];
+      if (!rows[d[0]]) {
+        rows[d[0]] = new Array(series.length);
+        categories.push(d[0]);
+      }
+      rows[d[0]][i] = d[1];
+    }
+  }
+
+  if (chart.xtype === "number") {
+    categories.sort(sortByNumber);
+  }
+
+  options.xAxis.categories = categories;
+
+  var newSeries = [], d2;
+  for (i = 0; i < series.length; i++) {
+    d = [];
+    for (j = 0; j < categories.length; j++) {
+      d.push(rows[categories[j]][i] || 0);
+    }
+
+    d2 = {
+      name: series[i].name || "Value",
+      data: d
+    };
+    if (series[i].stack) {
+      d2.stack = series[i].stack;
+    }
+
+    newSeries.push(d2);
+  }
+
+  this.drawChart(chart, newSeries, options);
+};
+
+defaultExport$1.prototype.renderBarChart = function renderBarChart (chart) {
+  this.renderColumnChart(chart, "bar");
+};
+
+defaultExport$1.prototype.renderAreaChart = function renderAreaChart (chart) {
+  this.renderLineChart(chart, "areaspline");
+};
+
+defaultExport$1.prototype.destroy = function destroy (chart) {
+  if (chart.chart) {
+    chart.chart.destroy();
+  }
+};
+
+defaultExport$1.prototype.drawChart = function drawChart (chart, data, options) {
+  this.destroy(chart);
+
+  options.chart.renderTo = chart.element.id;
+  options.series = data;
+
+  if (chart.options.code) {
+    window.console.log("new Highcharts.Chart(" + JSON.stringify(options) + ");");
+  }
+
+  chart.chart = new this.library.Chart(options);
+};
+
+var loaded = {};
+var callbacks = [];
+
+// Set chart options
+var defaultOptions$2 = {
+  chartArea: {},
+  fontName: "'Lucida Grande', 'Lucida Sans Unicode', Verdana, Arial, Helvetica, sans-serif",
+  pointSize: 6,
+  legend: {
+    textStyle: {
+      fontSize: 12,
+      color: "#444"
+    },
+    alignment: "center",
+    position: "right"
+  },
+  curveType: "function",
+  hAxis: {
+    textStyle: {
+      color: "#666",
+      fontSize: 12
+    },
+    titleTextStyle: {},
+    gridlines: {
+      color: "transparent"
+    },
+    baselineColor: "#ccc",
+    viewWindow: {}
+  },
+  vAxis: {
+    textStyle: {
+      color: "#666",
+      fontSize: 12
+    },
+    titleTextStyle: {},
+    baselineColor: "#ccc",
+    viewWindow: {}
+  },
+  tooltip: {
+    textStyle: {
+      color: "#666",
+      fontSize: 12
+    }
+  }
+};
+
+var hideLegend$2 = function (options, legend, hideLegend) {
+  if (legend !== undefined) {
+    var position;
+    if (!legend) {
+      position = "none";
+    } else if (legend === true) {
+      position = "right";
+    } else {
+      position = legend;
+    }
+    options.legend.position = position;
+  } else if (hideLegend) {
+    options.legend.position = "none";
+  }
+};
+
+var setTitle$2 = function (options, title) {
+  options.title = title;
+  options.titleTextStyle = {color: "#333", fontSize: "20px"};
+};
+
+var setMin$2 = function (options, min) {
+  options.vAxis.viewWindow.min = min;
+};
+
+var setMax$2 = function (options, max) {
+  options.vAxis.viewWindow.max = max;
+};
+
+var setBarMin$1 = function (options, min) {
+  options.hAxis.viewWindow.min = min;
+};
+
+var setBarMax$1 = function (options, max) {
+  options.hAxis.viewWindow.max = max;
+};
+
+var setStacked$2 = function (options, stacked) {
+  options.isStacked = stacked ? stacked : false;
+};
+
+var setXtitle$2 = function (options, title) {
+  options.hAxis.title = title;
+  options.hAxis.titleTextStyle.italic = false;
+};
+
+var setYtitle$2 = function (options, title) {
+  options.vAxis.title = title;
+  options.vAxis.titleTextStyle.italic = false;
+};
+
+var jsOptions$2 = jsOptionsFunc(defaultOptions$2, hideLegend$2, setTitle$2, setMin$2, setMax$2, setStacked$2, setXtitle$2, setYtitle$2);
+
+var resize = function (callback) {
+  if (window.attachEvent) {
+    window.attachEvent("onresize", callback);
+  } else if (window.addEventListener) {
+    window.addEventListener("resize", callback, true);
+  }
+  callback();
+};
+
+var defaultExport$2 = function defaultExport(library) {
+  this.name = "google";
+  this.library = library;
+};
+
+defaultExport$2.prototype.renderLineChart = function renderLineChart (chart) {
+    var this$1 = this;
+
+  this.waitForLoaded(chart, function () {
+    var chartOptions = {};
+
+    if (chart.options.curve === false) {
+      chartOptions.curveType = "none";
+    }
+
+    if (chart.options.points === false) {
+      chartOptions.pointSize = 0;
+    }
+
+    var options = jsOptions$2(chart, chart.options, chartOptions);
+    var data = this$1.createDataTable(chart.data, chart.xtype);
+
+    this$1.drawChart(chart, "LineChart", data, options);
+  });
+};
+
+defaultExport$2.prototype.renderPieChart = function renderPieChart (chart) {
+    var this$1 = this;
+
+  this.waitForLoaded(chart, function () {
+    var chartOptions = {
+      chartArea: {
+        top: "10%",
+        height: "80%"
+      },
+      legend: {}
+    };
+    if (chart.options.colors) {
+      chartOptions.colors = chart.options.colors;
+    }
+    if (chart.options.donut) {
+      chartOptions.pieHole = 0.5;
+    }
+    if ("legend" in chart.options) {
+      hideLegend$2(chartOptions, chart.options.legend);
+    }
+    if (chart.options.title) {
+      setTitle$2(chartOptions, chart.options.title);
+    }
+    var options = merge(merge(defaultOptions$2, chartOptions), chart.options.library || {});
+
+    var data = new this$1.library.visualization.DataTable();
+    data.addColumn("string", "");
+    data.addColumn("number", "Value");
+    data.addRows(chart.data);
+
+    this$1.drawChart(chart, "PieChart", data, options);
+  });
+};
+
+defaultExport$2.prototype.renderColumnChart = function renderColumnChart (chart) {
+    var this$1 = this;
+
+  this.waitForLoaded(chart, function () {
+    var options = jsOptions$2(chart, chart.options);
+    var data = this$1.createDataTable(chart.data, chart.xtype);
+
+    this$1.drawChart(chart, "ColumnChart", data, options);
+  });
+};
+
+defaultExport$2.prototype.renderBarChart = function renderBarChart (chart) {
+    var this$1 = this;
+
+  this.waitForLoaded(chart, function () {
+    var chartOptions = {
+      hAxis: {
+        gridlines: {
+          color: "#ccc"
+        }
+      }
+    };
+    var options = jsOptionsFunc(defaultOptions$2, hideLegend$2, setTitle$2, setBarMin$1, setBarMax$1, setStacked$2, setXtitle$2, setYtitle$2)(chart, chart.options, chartOptions);
+    var data = this$1.createDataTable(chart.data, chart.xtype);
+
+    this$1.drawChart(chart, "BarChart", data, options);
+  });
+};
+
+defaultExport$2.prototype.renderAreaChart = function renderAreaChart (chart) {
+    var this$1 = this;
+
+  this.waitForLoaded(chart, function () {
+    var chartOptions = {
+      isStacked: true,
+      pointSize: 0,
+      areaOpacity: 0.5
+    };
+
+    var options = jsOptions$2(chart, chart.options, chartOptions);
+    var data = this$1.createDataTable(chart.data, chart.xtype);
+
+    this$1.drawChart(chart, "AreaChart", data, options);
+  });
+};
+
+defaultExport$2.prototype.renderGeoChart = function renderGeoChart (chart) {
+    var this$1 = this;
+
+  this.waitForLoaded(chart, function () {
+    var chartOptions = {
+      legend: "none",
+      colorAxis: {
+        colors: chart.options.colors || ["#f6c7b6", "#ce502d"]
+      }
+    };
+    var options = merge(merge(defaultOptions$2, chartOptions), chart.options.library || {});
+
+    var data = new this$1.library.visualization.DataTable();
+    data.addColumn("string", "");
+    data.addColumn("number", chart.options.label || "Value");
+    data.addRows(chart.data);
+
+    this$1.drawChart(chart, "GeoChart", data, options);
+  });
+};
+
+defaultExport$2.prototype.renderScatterChart = function renderScatterChart (chart) {
+    var this$1 = this;
+
+  this.waitForLoaded(chart, function () {
+    var chartOptions = {};
+    var options = jsOptions$2(chart, chart.options, chartOptions);
+
+    var series = chart.data, rows2 = [], i, j, data, d;
+    for (i = 0; i < series.length; i++) {
+      series[i].name = series[i].name || "Value";
+      d = series[i].data;
+      for (j = 0; j < d.length; j++) {
+        var row = new Array(series.length + 1);
+        row[0] = d[j][0];
+        row[i + 1] = d[j][1];
+        rows2.push(row);
+      }
+    }
+
+    data = new this$1.library.visualization.DataTable();
+    data.addColumn("number", "");
+    for (i = 0; i < series.length; i++) {
+      data.addColumn("number", series[i].name);
+    }
+    data.addRows(rows2);
+
+    this$1.drawChart(chart, "ScatterChart", data, options);
+  });
+};
+
+defaultExport$2.prototype.renderTimeline = function renderTimeline (chart) {
+    var this$1 = this;
+
+  this.waitForLoaded(chart, "timeline", function () {
+    var chartOptions = {
+      legend: "none"
+    };
+
+    if (chart.options.colors) {
+      chartOptions.colors = chart.options.colors;
+    }
+    var options = merge(merge(defaultOptions$2, chartOptions), chart.options.library || {});
+
+    var data = new this$1.library.visualization.DataTable();
+    data.addColumn({type: "string", id: "Name"});
+    data.addColumn({type: "date", id: "Start"});
+    data.addColumn({type: "date", id: "End"});
+    data.addRows(chart.data);
+
+    chart.element.style.lineHeight = "normal";
+
+    this$1.drawChart(chart, "Timeline", data, options);
+  });
+};
+
+defaultExport$2.prototype.destroy = function destroy (chart) {
+  if (chart.chart) {
+    chart.chart.clearChart();
+  }
+};
+
+defaultExport$2.prototype.drawChart = function drawChart (chart, type, data, options) {
+  this.destroy(chart);
+
+  if (chart.options.code) {
+    window.console.log("var data = new google.visualization.DataTable(" + data.toJSON() + ");\nvar chart = new google.visualization." + type + "(element);\nchart.draw(data, " + JSON.stringify(options) + ");");
+  }
+
+  chart.chart = new this.library.visualization[type](chart.element);
+  resize(function () {
+    chart.chart.draw(data, options);
+  });
+};
+
+defaultExport$2.prototype.waitForLoaded = function waitForLoaded (chart, pack, callback) {
+    var this$1 = this;
+
+  if (!callback) {
+    callback = pack;
+    pack = "corechart";
+  }
+
+  callbacks.push({pack: pack, callback: callback});
+
+  if (loaded[pack]) {
+    this.runCallbacks();
+  } else {
+    loaded[pack] = true;
+
+    // https://groups.google.com/forum/#!topic/google-visualization-api/fMKJcyA2yyI
+    var loadOptions = {
+      packages: [pack],
+      callback: function () { this$1.runCallbacks(); }
+    };
+    var config = chart.__config();
+    if (config.language) {
+      loadOptions.language = config.language;
+    }
+    if (pack === "corechart" && config.mapsApiKey) {
+      loadOptions.mapsApiKey = config.mapsApiKey;
+    }
+
+    this.library.charts.load("current", loadOptions);
+  }
+};
+
+defaultExport$2.prototype.runCallbacks = function runCallbacks () {
+  var cb, call;
+  for (var i = 0; i < callbacks.length; i++) {
+    cb = callbacks[i];
+    call = this.library.visualization && ((cb.pack === "corechart" && this.library.visualization.LineChart) || (cb.pack === "timeline" && this.library.visualization.Timeline));
+    if (call) {
+      cb.callback();
+      callbacks.splice(i, 1);
+      i--;
+    }
+  }
+};
+
+// cant use object as key
+defaultExport$2.prototype.createDataTable = function createDataTable (series, columnType) {
+  var i, j, s, d, key, rows = [], sortedLabels = [];
+  for (i = 0; i < series.length; i++) {
+    s = series[i];
+    series[i].name = series[i].name || "Value";
+
+    for (j = 0; j < s.data.length; j++) {
+      d = s.data[j];
+      key = (columnType === "datetime") ? d[0].getTime() : d[0];
+      if (!rows[key]) {
+        rows[key] = new Array(series.length);
+        sortedLabels.push(key);
+      }
+      rows[key][i] = toFloat(d[1]);
+    }
+  }
+
+  var rows2 = [];
+  var day = true;
+  var value;
+  for (j = 0; j < sortedLabels.length; j++) {
+    i = sortedLabels[j];
+    if (columnType === "datetime") {
+      value = new Date(toFloat(i));
+      day = day && isDay(value);
+    } else if (columnType === "number") {
+      value = toFloat(i);
+    } else {
+      value = i;
+    }
+    rows2.push([value].concat(rows[i]));
+  }
+  if (columnType === "datetime") {
+    rows2.sort(sortByTime);
+  } else if (columnType === "number") {
+    rows2.sort(sortByNumberSeries);
+
+    for (i = 0; i < rows2.length; i++) {
+      rows2[i][0] = toStr(rows2[i][0]);
+    }
+
+    columnType = "string";
+  }
+
+  // create datatable
+  var data = new this.library.visualization.DataTable();
+  columnType = columnType === "datetime" && day ? "date" : columnType;
+  data.addColumn(columnType, "");
+  for (i = 0; i < series.length; i++) {
+    data.addColumn("number", series[i].name);
+  }
+  data.addRows(rows2);
+
+  return data;
+};
+
+var pendingRequests = [], runningRequests = 0, maxRequests = 4;
+
+function pushRequest(url, success, error) {
+  pendingRequests.push([url, success, error]);
+  runNext();
+}
+
+function runNext() {
+  if (runningRequests < maxRequests) {
+    var request = pendingRequests.shift();
+    if (request) {
+      runningRequests++;
+      getJSON(request[0], request[1], request[2]);
+      runNext();
+    }
+  }
+}
+
+function requestComplete() {
+  runningRequests--;
+  runNext();
+}
+
+function getJSON(url, success, error) {
+  ajaxCall(url, success, function (jqXHR, textStatus, errorThrown) {
+    var message = (typeof errorThrown === "string") ? errorThrown : errorThrown.message;
+    error(message);
+  });
+}
+
+function ajaxCall(url, success, error) {
+  var $ = window.jQuery || window.Zepto || window.$;
+
+  if ($) {
+    $.ajax({
+      dataType: "json",
+      url: url,
+      success: success,
+      error: error,
+      complete: requestComplete
+    });
+  } else {
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", url, true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.onload = function () {
+      requestComplete();
+      if (xhr.status === 200) {
+        success(JSON.parse(xhr.responseText), xhr.statusText, xhr);
+      } else {
+        error(xhr, "error", xhr.statusText);
+      }
+    };
+    xhr.send();
+  }
+}
+
+var config = {};
+var adapters = [];
+
+// helpers
+
+function setText(element, text) {
+  if (document.body.innerText) {
+    element.innerText = text;
+  } else {
+    element.textContent = text;
+  }
+}
+
+function chartError(element, message) {
+  setText(element, "Error Loading Chart: " + message);
+  element.style.color = "#ff0000";
+}
+
+function errorCatcher(chart) {
+  try {
+    chart.__render();
+  } catch (err) {
+    chartError(chart.element, err.message);
+    throw err;
+  }
+}
+
+function fetchDataSource(chart, dataSource) {
+  if (typeof dataSource === "string") {
+    pushRequest(dataSource, function (data) {
+      chart.rawData = data;
+      errorCatcher(chart);
+    }, function (message) {
+      chartError(chart.element, message);
+    });
+  } else {
+    chart.rawData = dataSource;
+    errorCatcher(chart);
+  }
+}
+
+function addDownloadButton(chart) {
+  var element = chart.element;
+  var link = document.createElement("a");
+
+  var download = chart.options.download;
+  if (download === true) {
+    download = {};
+  } else if (typeof download === "string") {
+    download = {filename: download};
+  }
+  link.download = download.filename || "chart.png"; // https://caniuse.com/download
+
+  link.style.position = "absolute";
+  link.style.top = "20px";
+  link.style.right = "20px";
+  link.style.zIndex = 1000;
+  link.style.lineHeight = "20px";
+  link.target = "_blank"; // for safari
+  var image = document.createElement("img");
+  image.alt = "Download";
+  image.style.border = "none";
+  // icon from font-awesome
+  // http://fa2png.io/
+  image.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAMAAAC6V+0/AAABCFBMVEUAAADMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMywEsqxAAAAV3RSTlMAAQIDBggJCgsMDQ4PERQaHB0eISIjJCouLzE0OTo/QUJHSUpLTU5PUllhYmltcHh5foWLjI+SlaCio6atr7S1t7m6vsHHyM7R2tze5Obo7fHz9ff5+/1hlxK2AAAA30lEQVQYGUXBhVYCQQBA0TdYWAt2d3d3YWAHyur7/z9xgD16Lw0DW+XKx+1GgX+FRzM3HWQWrHl5N/oapW5RPe0PkBu+UYeICvozTWZVK23Ao04B79oJrOsJDOoxkZoQPWgX29pHpCZEk7rEvQYiNSFq1UMqvlCjJkRBS1R8hb00Vb/TajtBL7nTHE1X1vyMQF732dQhyF2o6SAwrzP06iUQzvwsArlnzcOdrgBhJyHa1QOgO9U1GsKuvjUTjavliZYQ8nNPapG6sap/3nrIdJ6bOWzmX/fy0XVpfzZP3S8OJT3g9EEiJwAAAABJRU5ErkJggg==";
+  link.appendChild(image);
+  element.style.position = "relative";
+
+  chart.__downloadAttached = true;
+
+  // mouseenter
+  chart.__enterEvent = addEvent(element, "mouseover", function(e) {
+    var related = e.relatedTarget;
+    // check download option again to ensure it wasn't changed
+    if ((!related || (related !== this && !childOf(this, related))) && chart.options.download) {
+      link.href = chart.toImage(download);
+      element.appendChild(link);
+    }
+  });
+
+  // mouseleave
+  chart.__leaveEvent = addEvent(element, "mouseout", function(e) {
+    var related = e.relatedTarget;
+    if (!related || (related !== this && !childOf(this, related))) {
+      if (link.parentNode) {
+        link.parentNode.removeChild(link);
+      }
+    }
+  });
+}
+
+// https://stackoverflow.com/questions/10149963/adding-event-listener-cross-browser
+function addEvent(elem, event, fn) {
+  if (elem.addEventListener) {
+    elem.addEventListener(event, fn, false);
+    return fn;
+  } else {
+    var fn2 = function() {
+      // set the this pointer same as addEventListener when fn is called
+      return(fn.call(elem, window.event));
+    };
+    elem.attachEvent("on" + event, fn2);
+    return fn2;
+  }
+}
+
+function removeEvent(elem, event, fn) {
+  if (elem.removeEventListener) {
+    elem.removeEventListener(event, fn, false);
+  } else {
+    elem.detachEvent("on" + event, fn);
+  }
+}
+
+// https://gist.github.com/shawnbot/4166283
+function childOf(p, c) {
+  if (p === c) { return false; }
+  while (c && c !== p) { c = c.parentNode; }
+  return c === p;
+}
+
+function getAdapterType(library) {
+  if (library) {
+    if (library.product === "Highcharts") {
+      return defaultExport$1;
+    } else if (library.charts) {
+      return defaultExport$2;
+    } else if (isFunction(library)) {
+      return defaultExport;
+    }
+  }
+  throw new Error("Unknown adapter");
+}
+
+function addAdapter(library) {
+  var adapterType = getAdapterType(library);
+  var adapter = new adapterType(library);
+
+  if (adapters.indexOf(adapter) === -1) {
+    adapters.push(adapter);
+  }
+}
+
+function loadAdapters() {
+  if ("Chart" in window) {
+    addAdapter(window.Chart);
+  }
+
+  if ("Highcharts" in window) {
+    addAdapter(window.Highcharts);
+  }
+
+  if (window.google && window.google.charts) {
+    addAdapter(window.google);
+  }
+}
+
+function dataEmpty(data, chartType) {
+  if (chartType === "PieChart" || chartType === "GeoChart" || chartType === "Timeline") {
+    return data.length === 0;
+  } else {
+    for (var i = 0; i < data.length; i++) {
+      if (data[i].data.length > 0) {
+        return false;
+      }
+    }
+    return true;
+  }
+}
+
+function renderChart(chartType, chart) {
+  if (chart.options.messages && chart.options.messages.empty && dataEmpty(chart.data, chartType)) {
+    setText(chart.element, chart.options.messages.empty);
+  } else {
+    callAdapter(chartType, chart);
+    if (chart.options.download && !chart.__downloadAttached && chart.adapter === "chartjs") {
+      addDownloadButton(chart);
+    }
+  }
+}
+
+// TODO remove chartType if cross-browser way
+// to get the name of the chart class
+function callAdapter(chartType, chart) {
+  var i, adapter, fnName, adapterName;
+  fnName = "render" + chartType;
+  adapterName = chart.options.adapter;
+
+  loadAdapters();
+
+  for (i = 0; i < adapters.length; i++) {
+    adapter = adapters[i];
+    if ((!adapterName || adapterName === adapter.name) && isFunction(adapter[fnName])) {
+      chart.adapter = adapter.name;
+      chart.__adapterObject = adapter;
+      return adapter[fnName](chart);
+    }
+  }
+
+  if (adapters.length > 0) {
+    throw new Error("No charting library found for " + chartType);
+  } else {
+    throw new Error("No charting libraries found - be sure to include one before your charts");
+  }
+}
+
+// process data
+
+var toFormattedKey = function (key, keyType) {
+  if (keyType === "number") {
+    key = toFloat(key);
+  } else if (keyType === "datetime") {
+    key = toDate(key);
+  } else {
+    key = toStr(key);
+  }
+  return key;
+};
+
+var formatSeriesData = function (data, keyType) {
+  var r = [], key, j;
+  for (j = 0; j < data.length; j++) {
+    if (keyType === "bubble") {
+      r.push([toFloat(data[j][0]), toFloat(data[j][1]), toFloat(data[j][2])]);
+    } else {
+      key = toFormattedKey(data[j][0], keyType);
+      r.push([key, toFloat(data[j][1])]);
+    }
+  }
+  if (keyType === "datetime") {
+    r.sort(sortByTime);
+  } else if (keyType === "number") {
+    r.sort(sortByNumberSeries);
+  }
+  return r;
+};
+
+function detectXType(series, noDatetime) {
+  if (detectXTypeWithFunction(series, isNumber)) {
+    return "number";
+  } else if (!noDatetime && detectXTypeWithFunction(series, isDate)) {
+    return "datetime";
+  } else {
+    return "string";
+  }
+}
+
+function detectXTypeWithFunction(series, func) {
+  var i, j, data;
+  for (i = 0; i < series.length; i++) {
+    data = toArr(series[i].data);
+    for (j = 0; j < data.length; j++) {
+      if (!func(data[j][0])) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+// creates a shallow copy of each element of the array
+// elements are expected to be objects
+function copySeries(series) {
+  var newSeries = [], i, j;
+  for (i = 0; i < series.length; i++) {
+    var copy = {};
+    for (j in series[i]) {
+      if (series[i].hasOwnProperty(j)) {
+        copy[j] = series[i][j];
+      }
+    }
+    newSeries.push(copy);
+  }
+  return newSeries;
+}
+
+function processSeries(chart, keyType, noDatetime) {
+  var i;
+
+  var opts = chart.options;
+  var series = chart.rawData;
+
+  // see if one series or multiple
+  if (!isArray(series) || typeof series[0] !== "object" || isArray(series[0])) {
+    series = [{name: opts.label, data: series}];
+    chart.hideLegend = true;
+  } else {
+    chart.hideLegend = false;
+  }
+
+  chart.xtype = keyType ? keyType : (opts.discrete ? "string" : detectXType(series, noDatetime));
+
+  // right format
+  series = copySeries(series);
+  for (i = 0; i < series.length; i++) {
+    series[i].data = formatSeriesData(toArr(series[i].data), chart.xtype);
+  }
+
+  return series;
+}
+
+function processSimple(chart) {
+  var perfectData = toArr(chart.rawData), i;
+  for (i = 0; i < perfectData.length; i++) {
+    perfectData[i] = [toStr(perfectData[i][0]), toFloat(perfectData[i][1])];
+  }
+  return perfectData;
+}
+
+// define classes
+
+var Chart = function Chart(element, dataSource, options) {
+  var elementId;
+  if (typeof element === "string") {
+    elementId = element;
+    element = document.getElementById(element);
+    if (!element) {
+      throw new Error("No element with id " + elementId);
+    }
+  }
+  this.element = element;
+  this.options = merge(Chartkick.options, options || {});
+  this.dataSource = dataSource;
+
+  Chartkick.charts[element.id] = this;
+
+  fetchDataSource(this, dataSource);
+
+  if (this.options.refresh) {
+    this.startRefresh();
+  }
+};
+
+Chart.prototype.getElement = function getElement () {
+  return this.element;
+};
+
+Chart.prototype.getDataSource = function getDataSource () {
+  return this.dataSource;
+};
+
+Chart.prototype.getData = function getData () {
+  return this.data;
+};
+
+Chart.prototype.getOptions = function getOptions () {
+  return this.options;
+};
+
+Chart.prototype.getChartObject = function getChartObject () {
+  return this.chart;
+};
+
+Chart.prototype.getAdapter = function getAdapter () {
+  return this.adapter;
+};
+
+Chart.prototype.updateData = function updateData (dataSource, options) {
+  this.dataSource = dataSource;
+  if (options) {
+    this.__updateOptions(options);
+  }
+  fetchDataSource(this, dataSource);
+};
+
+Chart.prototype.setOptions = function setOptions (options) {
+  this.__updateOptions(options);
+  this.redraw();
+};
+
+Chart.prototype.redraw = function redraw () {
+  fetchDataSource(this, this.rawData);
+};
+
+Chart.prototype.refreshData = function refreshData () {
+  if (typeof this.dataSource === "string") {
+    // prevent browser from caching
+    var sep = this.dataSource.indexOf("?") === -1 ? "?" : "&";
+    var url = this.dataSource + sep + "_=" + (new Date()).getTime();
+    fetchDataSource(this, url);
+  }
+};
+
+Chart.prototype.startRefresh = function startRefresh () {
+    var this$1 = this;
+
+  var refresh = this.options.refresh;
+
+  if (refresh && typeof this.dataSource !== "string") {
+    throw new Error("Data source must be a URL for refresh");
+  }
+
+  if (!this.intervalId) {
+    if (refresh) {
+      this.intervalId = setInterval( function () {
+        this$1.refreshData();
+      }, refresh * 1000);
+    } else {
+      throw new Error("No refresh interval");
+    }
+  }
+};
+
+Chart.prototype.stopRefresh = function stopRefresh () {
+  if (this.intervalId) {
+    clearInterval(this.intervalId);
+    this.intervalId = null;
+  }
+};
+
+Chart.prototype.toImage = function toImage (download) {
+  if (this.adapter === "chartjs") {
+    if (download && download.background && download.background !== "transparent") {
+      // https://stackoverflow.com/questions/30464750/chartjs-line-chart-set-background-color
+      var canvas = this.chart.chart.canvas;
+      var ctx = this.chart.chart.ctx;
+      var tmpCanvas = document.createElement("canvas");
+      var tmpCtx = tmpCanvas.getContext("2d");
+      tmpCanvas.width = ctx.canvas.width;
+      tmpCanvas.height = ctx.canvas.height;
+      tmpCtx.fillStyle = download.background;
+      tmpCtx.fillRect(0, 0, tmpCanvas.width, tmpCanvas.height);
+      tmpCtx.drawImage(canvas, 0, 0);
+      return tmpCanvas.toDataURL("image/png");
+    } else {
+      return this.chart.toBase64Image();
+    }
+  } else {
+    // TODO throw error in next major version
+    // throw new Error("Feature only available for Chart.js");
+    return null;
+  }
+};
+
+Chart.prototype.destroy = function destroy () {
+  if (this.__adapterObject) {
+    this.__adapterObject.destroy(this);
+  }
+
+  if (this.__enterEvent) {
+    removeEvent(this.element, "mouseover", this.__enterEvent);
+  }
+
+  if (this.__leaveEvent) {
+    removeEvent(this.element, "mouseout", this.__leaveEvent);
+  }
+};
+
+Chart.prototype.__updateOptions = function __updateOptions (options) {
+  var updateRefresh = options.refresh && options.refresh !== this.options.refresh;
+  this.options = merge(Chartkick.options, options);
+  if (updateRefresh) {
+    this.stopRefresh();
+    this.startRefresh();
+  }
+};
+
+Chart.prototype.__render = function __render () {
+  this.data = this.__processData();
+  renderChart(this.__chartName(), this);
+};
+
+Chart.prototype.__config = function __config () {
+  return config;
+};
+
+var LineChart = /*@__PURE__*/(function (Chart) {
+  function LineChart () {
+    Chart.apply(this, arguments);
+  }
+
+  if ( Chart ) LineChart.__proto__ = Chart;
+  LineChart.prototype = Object.create( Chart && Chart.prototype );
+  LineChart.prototype.constructor = LineChart;
+
+  LineChart.prototype.__processData = function __processData () {
+    return processSeries(this);
+  };
+
+  LineChart.prototype.__chartName = function __chartName () {
+    return "LineChart";
+  };
+
+  return LineChart;
+}(Chart));
+
+var PieChart = /*@__PURE__*/(function (Chart) {
+  function PieChart () {
+    Chart.apply(this, arguments);
+  }
+
+  if ( Chart ) PieChart.__proto__ = Chart;
+  PieChart.prototype = Object.create( Chart && Chart.prototype );
+  PieChart.prototype.constructor = PieChart;
+
+  PieChart.prototype.__processData = function __processData () {
+    return processSimple(this);
+  };
+
+  PieChart.prototype.__chartName = function __chartName () {
+    return "PieChart";
+  };
+
+  return PieChart;
+}(Chart));
+
+var ColumnChart = /*@__PURE__*/(function (Chart) {
+  function ColumnChart () {
+    Chart.apply(this, arguments);
+  }
+
+  if ( Chart ) ColumnChart.__proto__ = Chart;
+  ColumnChart.prototype = Object.create( Chart && Chart.prototype );
+  ColumnChart.prototype.constructor = ColumnChart;
+
+  ColumnChart.prototype.__processData = function __processData () {
+    return processSeries(this, null, true);
+  };
+
+  ColumnChart.prototype.__chartName = function __chartName () {
+    return "ColumnChart";
+  };
+
+  return ColumnChart;
+}(Chart));
+
+var BarChart = /*@__PURE__*/(function (Chart) {
+  function BarChart () {
+    Chart.apply(this, arguments);
+  }
+
+  if ( Chart ) BarChart.__proto__ = Chart;
+  BarChart.prototype = Object.create( Chart && Chart.prototype );
+  BarChart.prototype.constructor = BarChart;
+
+  BarChart.prototype.__processData = function __processData () {
+    return processSeries(this, null, true);
+  };
+
+  BarChart.prototype.__chartName = function __chartName () {
+    return "BarChart";
+  };
+
+  return BarChart;
+}(Chart));
+
+var AreaChart = /*@__PURE__*/(function (Chart) {
+  function AreaChart () {
+    Chart.apply(this, arguments);
+  }
+
+  if ( Chart ) AreaChart.__proto__ = Chart;
+  AreaChart.prototype = Object.create( Chart && Chart.prototype );
+  AreaChart.prototype.constructor = AreaChart;
+
+  AreaChart.prototype.__processData = function __processData () {
+    return processSeries(this);
+  };
+
+  AreaChart.prototype.__chartName = function __chartName () {
+    return "AreaChart";
+  };
+
+  return AreaChart;
+}(Chart));
+
+var GeoChart = /*@__PURE__*/(function (Chart) {
+  function GeoChart () {
+    Chart.apply(this, arguments);
+  }
+
+  if ( Chart ) GeoChart.__proto__ = Chart;
+  GeoChart.prototype = Object.create( Chart && Chart.prototype );
+  GeoChart.prototype.constructor = GeoChart;
+
+  GeoChart.prototype.__processData = function __processData () {
+    return processSimple(this);
+  };
+
+  GeoChart.prototype.__chartName = function __chartName () {
+    return "GeoChart";
+  };
+
+  return GeoChart;
+}(Chart));
+
+var ScatterChart = /*@__PURE__*/(function (Chart) {
+  function ScatterChart () {
+    Chart.apply(this, arguments);
+  }
+
+  if ( Chart ) ScatterChart.__proto__ = Chart;
+  ScatterChart.prototype = Object.create( Chart && Chart.prototype );
+  ScatterChart.prototype.constructor = ScatterChart;
+
+  ScatterChart.prototype.__processData = function __processData () {
+    return processSeries(this, "number");
+  };
+
+  ScatterChart.prototype.__chartName = function __chartName () {
+    return "ScatterChart";
+  };
+
+  return ScatterChart;
+}(Chart));
+
+var BubbleChart = /*@__PURE__*/(function (Chart) {
+  function BubbleChart () {
+    Chart.apply(this, arguments);
+  }
+
+  if ( Chart ) BubbleChart.__proto__ = Chart;
+  BubbleChart.prototype = Object.create( Chart && Chart.prototype );
+  BubbleChart.prototype.constructor = BubbleChart;
+
+  BubbleChart.prototype.__processData = function __processData () {
+    return processSeries(this, "bubble");
+  };
+
+  BubbleChart.prototype.__chartName = function __chartName () {
+    return "BubbleChart";
+  };
+
+  return BubbleChart;
+}(Chart));
+
+var Timeline = /*@__PURE__*/(function (Chart) {
+  function Timeline () {
+    Chart.apply(this, arguments);
+  }
+
+  if ( Chart ) Timeline.__proto__ = Chart;
+  Timeline.prototype = Object.create( Chart && Chart.prototype );
+  Timeline.prototype.constructor = Timeline;
+
+  Timeline.prototype.__processData = function __processData () {
+    var i, data = this.rawData;
+    for (i = 0; i < data.length; i++) {
+      data[i][1] = toDate(data[i][1]);
+      data[i][2] = toDate(data[i][2]);
+    }
+    return data;
+  };
+
+  Timeline.prototype.__chartName = function __chartName () {
+    return "Timeline";
+  };
+
+  return Timeline;
+}(Chart));
+
+var Chartkick = {
+  LineChart: LineChart,
+  PieChart: PieChart,
+  ColumnChart: ColumnChart,
+  BarChart: BarChart,
+  AreaChart: AreaChart,
+  GeoChart: GeoChart,
+  ScatterChart: ScatterChart,
+  BubbleChart: BubbleChart,
+  Timeline: Timeline,
+  charts: {},
+  configure: function (options) {
+    for (var key in options) {
+      if (options.hasOwnProperty(key)) {
+        config[key] = options[key];
+      }
+    }
+  },
+  setDefaultOptions: function (opts) {
+    Chartkick.options = opts;
+  },
+  eachChart: function (callback) {
+    for (var chartId in Chartkick.charts) {
+      if (Chartkick.charts.hasOwnProperty(chartId)) {
+        callback(Chartkick.charts[chartId]);
+      }
+    }
+  },
+  config: config,
+  options: {},
+  adapters: adapters,
+  addAdapter: addAdapter
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (Chartkick);
+
+
+/***/ }),
+
+/***/ "./node_modules/css-loader/index.js?!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/consultentries.vue?vue&type=style&index=0&id=38b5f7a2&scoped=true&lang=css&":
+/*!********************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/css-loader??ref--6-1!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src??ref--6-2!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/consultentries.vue?vue&type=style&index=0&id=38b5f7a2&scoped=true&lang=css& ***!
+  \********************************************************************************************************************************************************************************************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loader/lib/css-base.js */ "./node_modules/css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, "\n.line[data-v-38b5f7a2] {\n    fill: none;\n    stroke: steelblue;\n    stroke-width: 2px;\n}\n.axisRed line[data-v-38b5f7a2]{\n    stroke: red;\n}\n.axisRed path[data-v-38b5f7a2]{\n    stroke: red;\n}\n.axisRed text[data-v-38b5f7a2]{\n    fill: red;\n}\n\n", ""]);
+
+// exports
+
+
+/***/ }),
+
+/***/ "./node_modules/css-loader/lib/css-base.js":
+/*!*************************************************!*\
+  !*** ./node_modules/css-loader/lib/css-base.js ***!
+  \*************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+/*
+	MIT License http://www.opensource.org/licenses/mit-license.php
+	Author Tobias Koppers @sokra
+*/
+// css base code, injected by the css-loader
+module.exports = function(useSourceMap) {
+	var list = [];
+
+	// return the list of modules as css string
+	list.toString = function toString() {
+		return this.map(function (item) {
+			var content = cssWithMappingToString(item, useSourceMap);
+			if(item[2]) {
+				return "@media " + item[2] + "{" + content + "}";
+			} else {
+				return content;
+			}
+		}).join("");
+	};
+
+	// import a list of modules into the list
+	list.i = function(modules, mediaQuery) {
+		if(typeof modules === "string")
+			modules = [[null, modules, ""]];
+		var alreadyImportedModules = {};
+		for(var i = 0; i < this.length; i++) {
+			var id = this[i][0];
+			if(typeof id === "number")
+				alreadyImportedModules[id] = true;
+		}
+		for(i = 0; i < modules.length; i++) {
+			var item = modules[i];
+			// skip already imported module
+			// this implementation is not 100% perfect for weird media query combinations
+			//  when a module is imported multiple times with different media queries.
+			//  I hope this will never occur (Hey this way we have smaller bundles)
+			if(typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
+				if(mediaQuery && !item[2]) {
+					item[2] = mediaQuery;
+				} else if(mediaQuery) {
+					item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
+				}
+				list.push(item);
+			}
+		}
+	};
+	return list;
+};
+
+function cssWithMappingToString(item, useSourceMap) {
+	var content = item[1] || '';
+	var cssMapping = item[3];
+	if (!cssMapping) {
+		return content;
+	}
+
+	if (useSourceMap && typeof btoa === 'function') {
+		var sourceMapping = toComment(cssMapping);
+		var sourceURLs = cssMapping.sources.map(function (source) {
+			return '/*# sourceURL=' + cssMapping.sourceRoot + source + ' */'
+		});
+
+		return [content].concat(sourceURLs).concat([sourceMapping]).join('\n');
+	}
+
+	return [content].join('\n');
+}
+
+// Adapted from convert-source-map (MIT)
+function toComment(sourceMap) {
+	// eslint-disable-next-line no-undef
+	var base64 = btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap))));
+	var data = 'sourceMappingURL=data:application/json;charset=utf-8;base64,' + base64;
+
+	return '/*# ' + data + ' */';
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/deep-equal/index.js":
+/*!******************************************!*\
+  !*** ./node_modules/deep-equal/index.js ***!
+  \******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var pSlice = Array.prototype.slice;
+var objectKeys = __webpack_require__(/*! ./lib/keys.js */ "./node_modules/deep-equal/lib/keys.js");
+var isArguments = __webpack_require__(/*! ./lib/is_arguments.js */ "./node_modules/deep-equal/lib/is_arguments.js");
+
+var deepEqual = module.exports = function (actual, expected, opts) {
+  if (!opts) opts = {};
+  // 7.1. All identical values are equivalent, as determined by ===.
+  if (actual === expected) {
+    return true;
+
+  } else if (actual instanceof Date && expected instanceof Date) {
+    return actual.getTime() === expected.getTime();
+
+  // 7.3. Other pairs that do not both pass typeof value == 'object',
+  // equivalence is determined by ==.
+  } else if (!actual || !expected || typeof actual != 'object' && typeof expected != 'object') {
+    return opts.strict ? actual === expected : actual == expected;
+
+  // 7.4. For all other Object pairs, including Array objects, equivalence is
+  // determined by having the same number of owned properties (as verified
+  // with Object.prototype.hasOwnProperty.call), the same set of keys
+  // (although not necessarily the same order), equivalent values for every
+  // corresponding key, and an identical 'prototype' property. Note: this
+  // accounts for both named and indexed properties on Arrays.
+  } else {
+    return objEquiv(actual, expected, opts);
+  }
+}
+
+function isUndefinedOrNull(value) {
+  return value === null || value === undefined;
+}
+
+function isBuffer (x) {
+  if (!x || typeof x !== 'object' || typeof x.length !== 'number') return false;
+  if (typeof x.copy !== 'function' || typeof x.slice !== 'function') {
+    return false;
+  }
+  if (x.length > 0 && typeof x[0] !== 'number') return false;
+  return true;
+}
+
+function objEquiv(a, b, opts) {
+  var i, key;
+  if (isUndefinedOrNull(a) || isUndefinedOrNull(b))
+    return false;
+  // an identical 'prototype' property.
+  if (a.prototype !== b.prototype) return false;
+  //~~~I've managed to break Object.keys through screwy arguments passing.
+  //   Converting to array solves the problem.
+  if (isArguments(a)) {
+    if (!isArguments(b)) {
+      return false;
+    }
+    a = pSlice.call(a);
+    b = pSlice.call(b);
+    return deepEqual(a, b, opts);
+  }
+  if (isBuffer(a)) {
+    if (!isBuffer(b)) {
+      return false;
+    }
+    if (a.length !== b.length) return false;
+    for (i = 0; i < a.length; i++) {
+      if (a[i] !== b[i]) return false;
+    }
+    return true;
+  }
+  try {
+    var ka = objectKeys(a),
+        kb = objectKeys(b);
+  } catch (e) {//happens when one is a string literal and the other isn't
+    return false;
+  }
+  // having the same number of owned properties (keys incorporates
+  // hasOwnProperty)
+  if (ka.length != kb.length)
+    return false;
+  //the same set of keys (although not necessarily the same order),
+  ka.sort();
+  kb.sort();
+  //~~~cheap key test
+  for (i = ka.length - 1; i >= 0; i--) {
+    if (ka[i] != kb[i])
+      return false;
+  }
+  //equivalent values for every corresponding key, and
+  //~~~possibly expensive deep test
+  for (i = ka.length - 1; i >= 0; i--) {
+    key = ka[i];
+    if (!deepEqual(a[key], b[key], opts)) return false;
+  }
+  return typeof a === typeof b;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/deep-equal/lib/is_arguments.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/deep-equal/lib/is_arguments.js ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+var supportsArgumentsClass = (function(){
+  return Object.prototype.toString.call(arguments)
+})() == '[object Arguments]';
+
+exports = module.exports = supportsArgumentsClass ? supported : unsupported;
+
+exports.supported = supported;
+function supported(object) {
+  return Object.prototype.toString.call(object) == '[object Arguments]';
+};
+
+exports.unsupported = unsupported;
+function unsupported(object){
+  return object &&
+    typeof object == 'object' &&
+    typeof object.length == 'number' &&
+    Object.prototype.hasOwnProperty.call(object, 'callee') &&
+    !Object.prototype.propertyIsEnumerable.call(object, 'callee') ||
+    false;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/deep-equal/lib/keys.js":
+/*!*********************************************!*\
+  !*** ./node_modules/deep-equal/lib/keys.js ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+exports = module.exports = typeof Object.keys === 'function'
+  ? Object.keys : shim;
+
+exports.shim = shim;
+function shim (obj) {
+  var keys = [];
+  for (var key in obj) keys.push(key);
+  return keys;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/deepmerge/dist/es.js":
+/*!*******************************************!*\
+  !*** ./node_modules/deepmerge/dist/es.js ***!
+  \*******************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+var isMergeableObject = function isMergeableObject(value) {
+	return isNonNullObject(value)
+		&& !isSpecial(value)
+};
+
+function isNonNullObject(value) {
+	return !!value && typeof value === 'object'
+}
+
+function isSpecial(value) {
+	var stringValue = Object.prototype.toString.call(value);
+
+	return stringValue === '[object RegExp]'
+		|| stringValue === '[object Date]'
+		|| isReactElement(value)
+}
+
+// see https://github.com/facebook/react/blob/b5ac963fb791d1298e7f396236383bc955f916c1/src/isomorphic/classic/element/ReactElement.js#L21-L25
+var canUseSymbol = typeof Symbol === 'function' && Symbol.for;
+var REACT_ELEMENT_TYPE = canUseSymbol ? Symbol.for('react.element') : 0xeac7;
+
+function isReactElement(value) {
+	return value.$$typeof === REACT_ELEMENT_TYPE
+}
+
+function emptyTarget(val) {
+	return Array.isArray(val) ? [] : {}
+}
+
+function cloneUnlessOtherwiseSpecified(value, options) {
+	return (options.clone !== false && options.isMergeableObject(value))
+		? deepmerge(emptyTarget(value), value, options)
+		: value
+}
+
+function defaultArrayMerge(target, source, options) {
+	return target.concat(source).map(function(element) {
+		return cloneUnlessOtherwiseSpecified(element, options)
+	})
+}
+
+function mergeObject(target, source, options) {
+	var destination = {};
+	if (options.isMergeableObject(target)) {
+		Object.keys(target).forEach(function(key) {
+			destination[key] = cloneUnlessOtherwiseSpecified(target[key], options);
+		});
+	}
+	Object.keys(source).forEach(function(key) {
+		if (!options.isMergeableObject(source[key]) || !target[key]) {
+			destination[key] = cloneUnlessOtherwiseSpecified(source[key], options);
+		} else {
+			destination[key] = deepmerge(target[key], source[key], options);
+		}
+	});
+	return destination
+}
+
+function deepmerge(target, source, options) {
+	options = options || {};
+	options.arrayMerge = options.arrayMerge || defaultArrayMerge;
+	options.isMergeableObject = options.isMergeableObject || isMergeableObject;
+
+	var sourceIsArray = Array.isArray(source);
+	var targetIsArray = Array.isArray(target);
+	var sourceAndTargetTypesMatch = sourceIsArray === targetIsArray;
+
+	if (!sourceAndTargetTypesMatch) {
+		return cloneUnlessOtherwiseSpecified(source, options)
+	} else if (sourceIsArray) {
+		return options.arrayMerge(target, source, options)
+	} else {
+		return mergeObject(target, source, options)
+	}
+}
+
+deepmerge.all = function deepmergeAll(array, options) {
+	if (!Array.isArray(array)) {
+		throw new Error('first argument should be an array')
+	}
+
+	return array.reduce(function(prev, next) {
+		return deepmerge(prev, next, options)
+	}, {})
+};
+
+var deepmerge_1 = deepmerge;
+
+/* harmony default export */ __webpack_exports__["default"] = (deepmerge_1);
+
+
+/***/ }),
+
+/***/ "./node_modules/google-charts/dist/googleCharts.esm.js":
+/*!*************************************************************!*\
+  !*** ./node_modules/google-charts/dist/googleCharts.esm.js ***!
+  \*************************************************************/
+/*! exports provided: default, GoogleCharts */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GoogleCharts", function() { return GoogleCharts; });
+/* googleCharts.js Version: 1.5.0 Built On: 2018-12-30 */
+const loadScript = Symbol('loadScript');
+const instance = Symbol('instance');
+let _instance;
+
+class GoogleChartsManager {
+    get [instance]() {
+        return _instance
+    }
+
+    set [instance](value) {
+        _instance = value;
+    }
+
+    constructor() {
+        if (this[instance]) {
+            return this[instance]
+        }
+
+        this[instance] = this;
+    }
+
+    reset() {
+        _instance = null;
+    }
+
+    [loadScript]() {
+        if (!this.scriptPromise) {
+            this.scriptPromise = new Promise(resolve => {
+                const body = document.getElementsByTagName('body')[0];
+                const script = document.createElement('script');
+                script.type = 'text/javascript';
+                script.onload = function() {
+                    GoogleCharts.api = window.google;
+                    GoogleCharts.api.charts.load('current', {
+                        packages: ['corechart', 'table'],
+                    });
+                    GoogleCharts.api.charts.setOnLoadCallback(() => {
+                        resolve();
+                    });
+                };
+                script.src = 'https://www.gstatic.com/charts/loader.js';
+                body.appendChild(script);
+            });
+        }
+        return this.scriptPromise
+    }
+
+    load(callback, type) {
+        return this[loadScript]().then(() => {
+            if (type) {
+                let config = {};
+                if (type instanceof Object) {
+                    config = type;
+                } else if (Array.isArray(type)) {
+                    config = { packages: type };
+                } else {
+                    config = { packages: [type] };
+                }
+                this.api.charts.load('current', config);
+                this.api.charts.setOnLoadCallback(callback);
+            } else {
+                if(typeof callback != 'function') {
+                    throw('callback must be a function');
+                } else {
+                    callback();               
+                }
+            }
+        })
+    }
+}
+
+const GoogleCharts = new GoogleChartsManager();
+
+/* harmony default export */ __webpack_exports__["default"] = (GoogleChartsManager);
+
+
+
+/***/ }),
+
 /***/ "./node_modules/is-buffer/index.js":
 /*!*****************************************!*\
   !*** ./node_modules/is-buffer/index.js ***!
@@ -14420,6 +17167,545 @@ process.umask = function() { return 0; };
 
 /***/ }),
 
+/***/ "./node_modules/style-loader/index.js!./node_modules/css-loader/index.js?!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/consultentries.vue?vue&type=style&index=0&id=38b5f7a2&scoped=true&lang=css&":
+/*!************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/style-loader!./node_modules/css-loader??ref--6-1!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src??ref--6-2!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/consultentries.vue?vue&type=style&index=0&id=38b5f7a2&scoped=true&lang=css& ***!
+  \************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+var content = __webpack_require__(/*! !../../../node_modules/css-loader??ref--6-1!../../../node_modules/vue-loader/lib/loaders/stylePostLoader.js!../../../node_modules/postcss-loader/src??ref--6-2!../../../node_modules/vue-loader/lib??vue-loader-options!./consultentries.vue?vue&type=style&index=0&id=38b5f7a2&scoped=true&lang=css& */ "./node_modules/css-loader/index.js?!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/consultentries.vue?vue&type=style&index=0&id=38b5f7a2&scoped=true&lang=css&");
+
+if(typeof content === 'string') content = [[module.i, content, '']];
+
+var transform;
+var insertInto;
+
+
+
+var options = {"hmr":true}
+
+options.transform = transform
+options.insertInto = undefined;
+
+var update = __webpack_require__(/*! ../../../node_modules/style-loader/lib/addStyles.js */ "./node_modules/style-loader/lib/addStyles.js")(content, options);
+
+if(content.locals) module.exports = content.locals;
+
+if(false) {}
+
+/***/ }),
+
+/***/ "./node_modules/style-loader/lib/addStyles.js":
+/*!****************************************************!*\
+  !*** ./node_modules/style-loader/lib/addStyles.js ***!
+  \****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+/*
+	MIT License http://www.opensource.org/licenses/mit-license.php
+	Author Tobias Koppers @sokra
+*/
+
+var stylesInDom = {};
+
+var	memoize = function (fn) {
+	var memo;
+
+	return function () {
+		if (typeof memo === "undefined") memo = fn.apply(this, arguments);
+		return memo;
+	};
+};
+
+var isOldIE = memoize(function () {
+	// Test for IE <= 9 as proposed by Browserhacks
+	// @see http://browserhacks.com/#hack-e71d8692f65334173fee715c222cb805
+	// Tests for existence of standard globals is to allow style-loader
+	// to operate correctly into non-standard environments
+	// @see https://github.com/webpack-contrib/style-loader/issues/177
+	return window && document && document.all && !window.atob;
+});
+
+var getTarget = function (target, parent) {
+  if (parent){
+    return parent.querySelector(target);
+  }
+  return document.querySelector(target);
+};
+
+var getElement = (function (fn) {
+	var memo = {};
+
+	return function(target, parent) {
+                // If passing function in options, then use it for resolve "head" element.
+                // Useful for Shadow Root style i.e
+                // {
+                //   insertInto: function () { return document.querySelector("#foo").shadowRoot }
+                // }
+                if (typeof target === 'function') {
+                        return target();
+                }
+                if (typeof memo[target] === "undefined") {
+			var styleTarget = getTarget.call(this, target, parent);
+			// Special case to return head of iframe instead of iframe itself
+			if (window.HTMLIFrameElement && styleTarget instanceof window.HTMLIFrameElement) {
+				try {
+					// This will throw an exception if access to iframe is blocked
+					// due to cross-origin restrictions
+					styleTarget = styleTarget.contentDocument.head;
+				} catch(e) {
+					styleTarget = null;
+				}
+			}
+			memo[target] = styleTarget;
+		}
+		return memo[target]
+	};
+})();
+
+var singleton = null;
+var	singletonCounter = 0;
+var	stylesInsertedAtTop = [];
+
+var	fixUrls = __webpack_require__(/*! ./urls */ "./node_modules/style-loader/lib/urls.js");
+
+module.exports = function(list, options) {
+	if (typeof DEBUG !== "undefined" && DEBUG) {
+		if (typeof document !== "object") throw new Error("The style-loader cannot be used in a non-browser environment");
+	}
+
+	options = options || {};
+
+	options.attrs = typeof options.attrs === "object" ? options.attrs : {};
+
+	// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
+	// tags it will allow on a page
+	if (!options.singleton && typeof options.singleton !== "boolean") options.singleton = isOldIE();
+
+	// By default, add <style> tags to the <head> element
+        if (!options.insertInto) options.insertInto = "head";
+
+	// By default, add <style> tags to the bottom of the target
+	if (!options.insertAt) options.insertAt = "bottom";
+
+	var styles = listToStyles(list, options);
+
+	addStylesToDom(styles, options);
+
+	return function update (newList) {
+		var mayRemove = [];
+
+		for (var i = 0; i < styles.length; i++) {
+			var item = styles[i];
+			var domStyle = stylesInDom[item.id];
+
+			domStyle.refs--;
+			mayRemove.push(domStyle);
+		}
+
+		if(newList) {
+			var newStyles = listToStyles(newList, options);
+			addStylesToDom(newStyles, options);
+		}
+
+		for (var i = 0; i < mayRemove.length; i++) {
+			var domStyle = mayRemove[i];
+
+			if(domStyle.refs === 0) {
+				for (var j = 0; j < domStyle.parts.length; j++) domStyle.parts[j]();
+
+				delete stylesInDom[domStyle.id];
+			}
+		}
+	};
+};
+
+function addStylesToDom (styles, options) {
+	for (var i = 0; i < styles.length; i++) {
+		var item = styles[i];
+		var domStyle = stylesInDom[item.id];
+
+		if(domStyle) {
+			domStyle.refs++;
+
+			for(var j = 0; j < domStyle.parts.length; j++) {
+				domStyle.parts[j](item.parts[j]);
+			}
+
+			for(; j < item.parts.length; j++) {
+				domStyle.parts.push(addStyle(item.parts[j], options));
+			}
+		} else {
+			var parts = [];
+
+			for(var j = 0; j < item.parts.length; j++) {
+				parts.push(addStyle(item.parts[j], options));
+			}
+
+			stylesInDom[item.id] = {id: item.id, refs: 1, parts: parts};
+		}
+	}
+}
+
+function listToStyles (list, options) {
+	var styles = [];
+	var newStyles = {};
+
+	for (var i = 0; i < list.length; i++) {
+		var item = list[i];
+		var id = options.base ? item[0] + options.base : item[0];
+		var css = item[1];
+		var media = item[2];
+		var sourceMap = item[3];
+		var part = {css: css, media: media, sourceMap: sourceMap};
+
+		if(!newStyles[id]) styles.push(newStyles[id] = {id: id, parts: [part]});
+		else newStyles[id].parts.push(part);
+	}
+
+	return styles;
+}
+
+function insertStyleElement (options, style) {
+	var target = getElement(options.insertInto)
+
+	if (!target) {
+		throw new Error("Couldn't find a style target. This probably means that the value for the 'insertInto' parameter is invalid.");
+	}
+
+	var lastStyleElementInsertedAtTop = stylesInsertedAtTop[stylesInsertedAtTop.length - 1];
+
+	if (options.insertAt === "top") {
+		if (!lastStyleElementInsertedAtTop) {
+			target.insertBefore(style, target.firstChild);
+		} else if (lastStyleElementInsertedAtTop.nextSibling) {
+			target.insertBefore(style, lastStyleElementInsertedAtTop.nextSibling);
+		} else {
+			target.appendChild(style);
+		}
+		stylesInsertedAtTop.push(style);
+	} else if (options.insertAt === "bottom") {
+		target.appendChild(style);
+	} else if (typeof options.insertAt === "object" && options.insertAt.before) {
+		var nextSibling = getElement(options.insertAt.before, target);
+		target.insertBefore(style, nextSibling);
+	} else {
+		throw new Error("[Style Loader]\n\n Invalid value for parameter 'insertAt' ('options.insertAt') found.\n Must be 'top', 'bottom', or Object.\n (https://github.com/webpack-contrib/style-loader#insertat)\n");
+	}
+}
+
+function removeStyleElement (style) {
+	if (style.parentNode === null) return false;
+	style.parentNode.removeChild(style);
+
+	var idx = stylesInsertedAtTop.indexOf(style);
+	if(idx >= 0) {
+		stylesInsertedAtTop.splice(idx, 1);
+	}
+}
+
+function createStyleElement (options) {
+	var style = document.createElement("style");
+
+	if(options.attrs.type === undefined) {
+		options.attrs.type = "text/css";
+	}
+
+	if(options.attrs.nonce === undefined) {
+		var nonce = getNonce();
+		if (nonce) {
+			options.attrs.nonce = nonce;
+		}
+	}
+
+	addAttrs(style, options.attrs);
+	insertStyleElement(options, style);
+
+	return style;
+}
+
+function createLinkElement (options) {
+	var link = document.createElement("link");
+
+	if(options.attrs.type === undefined) {
+		options.attrs.type = "text/css";
+	}
+	options.attrs.rel = "stylesheet";
+
+	addAttrs(link, options.attrs);
+	insertStyleElement(options, link);
+
+	return link;
+}
+
+function addAttrs (el, attrs) {
+	Object.keys(attrs).forEach(function (key) {
+		el.setAttribute(key, attrs[key]);
+	});
+}
+
+function getNonce() {
+	if (false) {}
+
+	return __webpack_require__.nc;
+}
+
+function addStyle (obj, options) {
+	var style, update, remove, result;
+
+	// If a transform function was defined, run it on the css
+	if (options.transform && obj.css) {
+	    result = typeof options.transform === 'function'
+		 ? options.transform(obj.css) 
+		 : options.transform.default(obj.css);
+
+	    if (result) {
+	    	// If transform returns a value, use that instead of the original css.
+	    	// This allows running runtime transformations on the css.
+	    	obj.css = result;
+	    } else {
+	    	// If the transform function returns a falsy value, don't add this css.
+	    	// This allows conditional loading of css
+	    	return function() {
+	    		// noop
+	    	};
+	    }
+	}
+
+	if (options.singleton) {
+		var styleIndex = singletonCounter++;
+
+		style = singleton || (singleton = createStyleElement(options));
+
+		update = applyToSingletonTag.bind(null, style, styleIndex, false);
+		remove = applyToSingletonTag.bind(null, style, styleIndex, true);
+
+	} else if (
+		obj.sourceMap &&
+		typeof URL === "function" &&
+		typeof URL.createObjectURL === "function" &&
+		typeof URL.revokeObjectURL === "function" &&
+		typeof Blob === "function" &&
+		typeof btoa === "function"
+	) {
+		style = createLinkElement(options);
+		update = updateLink.bind(null, style, options);
+		remove = function () {
+			removeStyleElement(style);
+
+			if(style.href) URL.revokeObjectURL(style.href);
+		};
+	} else {
+		style = createStyleElement(options);
+		update = applyToTag.bind(null, style);
+		remove = function () {
+			removeStyleElement(style);
+		};
+	}
+
+	update(obj);
+
+	return function updateStyle (newObj) {
+		if (newObj) {
+			if (
+				newObj.css === obj.css &&
+				newObj.media === obj.media &&
+				newObj.sourceMap === obj.sourceMap
+			) {
+				return;
+			}
+
+			update(obj = newObj);
+		} else {
+			remove();
+		}
+	};
+}
+
+var replaceText = (function () {
+	var textStore = [];
+
+	return function (index, replacement) {
+		textStore[index] = replacement;
+
+		return textStore.filter(Boolean).join('\n');
+	};
+})();
+
+function applyToSingletonTag (style, index, remove, obj) {
+	var css = remove ? "" : obj.css;
+
+	if (style.styleSheet) {
+		style.styleSheet.cssText = replaceText(index, css);
+	} else {
+		var cssNode = document.createTextNode(css);
+		var childNodes = style.childNodes;
+
+		if (childNodes[index]) style.removeChild(childNodes[index]);
+
+		if (childNodes.length) {
+			style.insertBefore(cssNode, childNodes[index]);
+		} else {
+			style.appendChild(cssNode);
+		}
+	}
+}
+
+function applyToTag (style, obj) {
+	var css = obj.css;
+	var media = obj.media;
+
+	if(media) {
+		style.setAttribute("media", media)
+	}
+
+	if(style.styleSheet) {
+		style.styleSheet.cssText = css;
+	} else {
+		while(style.firstChild) {
+			style.removeChild(style.firstChild);
+		}
+
+		style.appendChild(document.createTextNode(css));
+	}
+}
+
+function updateLink (link, options, obj) {
+	var css = obj.css;
+	var sourceMap = obj.sourceMap;
+
+	/*
+		If convertToAbsoluteUrls isn't defined, but sourcemaps are enabled
+		and there is no publicPath defined then lets turn convertToAbsoluteUrls
+		on by default.  Otherwise default to the convertToAbsoluteUrls option
+		directly
+	*/
+	var autoFixUrls = options.convertToAbsoluteUrls === undefined && sourceMap;
+
+	if (options.convertToAbsoluteUrls || autoFixUrls) {
+		css = fixUrls(css);
+	}
+
+	if (sourceMap) {
+		// http://stackoverflow.com/a/26603875
+		css += "\n/*# sourceMappingURL=data:application/json;base64," + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + " */";
+	}
+
+	var blob = new Blob([css], { type: "text/css" });
+
+	var oldSrc = link.href;
+
+	link.href = URL.createObjectURL(blob);
+
+	if(oldSrc) URL.revokeObjectURL(oldSrc);
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/style-loader/lib/urls.js":
+/*!***********************************************!*\
+  !*** ./node_modules/style-loader/lib/urls.js ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+
+/**
+ * When source maps are enabled, `style-loader` uses a link element with a data-uri to
+ * embed the css on the page. This breaks all relative urls because now they are relative to a
+ * bundle instead of the current page.
+ *
+ * One solution is to only use full urls, but that may be impossible.
+ *
+ * Instead, this function "fixes" the relative urls to be absolute according to the current page location.
+ *
+ * A rudimentary test suite is located at `test/fixUrls.js` and can be run via the `npm test` command.
+ *
+ */
+
+module.exports = function (css) {
+  // get current location
+  var location = typeof window !== "undefined" && window.location;
+
+  if (!location) {
+    throw new Error("fixUrls requires window.location");
+  }
+
+	// blank or null?
+	if (!css || typeof css !== "string") {
+	  return css;
+  }
+
+  var baseUrl = location.protocol + "//" + location.host;
+  var currentDir = baseUrl + location.pathname.replace(/\/[^\/]*$/, "/");
+
+	// convert each url(...)
+	/*
+	This regular expression is just a way to recursively match brackets within
+	a string.
+
+	 /url\s*\(  = Match on the word "url" with any whitespace after it and then a parens
+	   (  = Start a capturing group
+	     (?:  = Start a non-capturing group
+	         [^)(]  = Match anything that isn't a parentheses
+	         |  = OR
+	         \(  = Match a start parentheses
+	             (?:  = Start another non-capturing groups
+	                 [^)(]+  = Match anything that isn't a parentheses
+	                 |  = OR
+	                 \(  = Match a start parentheses
+	                     [^)(]*  = Match anything that isn't a parentheses
+	                 \)  = Match a end parentheses
+	             )  = End Group
+              *\) = Match anything and then a close parens
+          )  = Close non-capturing group
+          *  = Match anything
+       )  = Close capturing group
+	 \)  = Match a close parens
+
+	 /gi  = Get all matches, not the first.  Be case insensitive.
+	 */
+	var fixedCss = css.replace(/url\s*\(((?:[^)(]|\((?:[^)(]+|\([^)(]*\))*\))*)\)/gi, function(fullMatch, origUrl) {
+		// strip quotes (if they exist)
+		var unquotedOrigUrl = origUrl
+			.trim()
+			.replace(/^"(.*)"$/, function(o, $1){ return $1; })
+			.replace(/^'(.*)'$/, function(o, $1){ return $1; });
+
+		// already a full url? no change
+		if (/^(#|data:|http:\/\/|https:\/\/|file:\/\/\/|\s*$)/i.test(unquotedOrigUrl)) {
+		  return fullMatch;
+		}
+
+		// convert the url to a full url
+		var newUrl;
+
+		if (unquotedOrigUrl.indexOf("//") === 0) {
+		  	//TODO: should we add protocol?
+			newUrl = unquotedOrigUrl;
+		} else if (unquotedOrigUrl.indexOf("/") === 0) {
+			// path should be relative to the base url
+			newUrl = baseUrl + unquotedOrigUrl; // already starts with '/'
+		} else {
+			// path should be relative to current directory
+			newUrl = currentDir + unquotedOrigUrl.replace(/^\.\//, ""); // Strip leading './'
+		}
+
+		// send back the fixed url(...)
+		return "url(" + JSON.stringify(newUrl) + ")";
+	});
+
+	// send back the fixed css
+	return fixedCss;
+};
+
+
+/***/ }),
+
 /***/ "./node_modules/timers-browserify/main.js":
 /*!************************************************!*\
   !*** ./node_modules/timers-browserify/main.js ***!
@@ -14492,6 +17778,188 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
                          (this && this.clearImmediate);
 
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
+/***/ "./node_modules/vue-chartkick/dist/vue-chartkick.esm.js":
+/*!**************************************************************!*\
+  !*** ./node_modules/vue-chartkick/dist/vue-chartkick.esm.js ***!
+  \**************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var chartkick__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! chartkick */ "./node_modules/chartkick/dist/chartkick.esm.js");
+/* harmony import */ var deep_equal__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! deep-equal */ "./node_modules/deep-equal/index.js");
+/* harmony import */ var deep_equal__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(deep_equal__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var deepmerge__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! deepmerge */ "./node_modules/deepmerge/dist/es.js");
+/*
+ * Vue Chartkick
+ * Create beautiful JavaScript charts with one line of Vue
+ * https://github.com/ankane/vue-chartkick
+ * v0.5.0
+ * MIT License
+ */
+
+
+
+
+
+var chartId = 1;
+
+var createComponent = function(Vue, tagName, chartType) {
+  var chartProps = [
+    "colors", "curve", "dataset", "decimal", "discrete", "donut", "download", "label",
+    "legend", "library", "max", "messages", "min", "points", "prefix", "refresh",
+    "stacked", "suffix", "thousands", "title", "xtitle", "ytitle"
+  ];
+  Vue.component(tagName, {
+    props: ["data", "id", "width", "height"].concat(chartProps),
+    render: function(createElement) {
+      return createElement(
+        "div",
+        {
+          attrs: {
+            id: this.chartId
+          },
+          style: this.chartStyle
+        },
+        ["Loading..."]
+      )
+    },
+    data: function() {
+      return {
+        chartId: null
+      }
+    },
+    computed: {
+      chartStyle: function() {
+        // hack to watch data and options
+        this.data;
+        this.chartOptions;
+
+        return {
+          height: this.height || "300px",
+          lineHeight: this.height || "300px",
+          width: this.width || "100%",
+          textAlign: "center",
+          color: "#999",
+          fontSize: "14px",
+          fontFamily: "'Lucida Grande', 'Lucida Sans Unicode', Verdana, Arial, Helvetica, sans-serif"
+        }
+      },
+      chartOptions: function() {
+        var this$1 = this;
+
+        var options = {};
+        var props = chartProps;
+        for (var i = 0; i < props.length; i++) {
+          var prop = props[i];
+          if (this$1[prop] !== undefined) {
+            options[prop] = this$1[prop];
+          }
+        }
+        return options
+      }
+    },
+    created: function() {
+      this.chartId = this.chartId || this.id || ("chart-" + chartId++);
+    },
+    mounted: function() {
+      this.updateChart();
+      this.savedState = this.currentState();
+    },
+    updated: function() {
+      // avoid updates when literal objects are used as props
+      // see https://github.com/ankane/vue-chartkick/pull/52
+      // and https://github.com/vuejs/vue/issues/4060
+      var currentState = this.currentState();
+      if (!deep_equal__WEBPACK_IMPORTED_MODULE_1___default()(currentState, this.savedState)) {
+        this.updateChart();
+        this.savedState = currentState;
+      }
+    },
+    beforeDestroy: function() {
+      if (this.chart) {
+        this.chart.destroy();
+      }
+    },
+    methods: {
+      updateChart: function() {
+        if (this.data !== null) {
+          if (this.chart) {
+            this.chart.updateData(this.data, this.chartOptions);
+          } else {
+            this.chart = new chartType(this.chartId, this.data, this.chartOptions);
+          }
+        } else if (this.chart) {
+          this.chart.destroy();
+          this.chart = null;
+          this.$el.innerText = "Loading...";
+        }
+      },
+      currentState: function() {
+        return Object(deepmerge__WEBPACK_IMPORTED_MODULE_2__["default"])({}, {
+          data: this.data,
+          chartOptions: this.chartOptions
+        })
+      }
+    }
+  });
+};
+
+var VueChartkick = {
+  version: "0.5.0",
+  install: function(Vue, options) {
+    if (options && options.adapter) {
+      chartkick__WEBPACK_IMPORTED_MODULE_0__["default"].addAdapter(options.adapter);
+    }
+    createComponent(Vue, "line-chart", chartkick__WEBPACK_IMPORTED_MODULE_0__["default"].LineChart);
+    createComponent(Vue, "pie-chart", chartkick__WEBPACK_IMPORTED_MODULE_0__["default"].PieChart);
+    createComponent(Vue, "column-chart", chartkick__WEBPACK_IMPORTED_MODULE_0__["default"].ColumnChart);
+    createComponent(Vue, "bar-chart", chartkick__WEBPACK_IMPORTED_MODULE_0__["default"].BarChart);
+    createComponent(Vue, "area-chart", chartkick__WEBPACK_IMPORTED_MODULE_0__["default"].AreaChart);
+    createComponent(Vue, "scatter-chart", chartkick__WEBPACK_IMPORTED_MODULE_0__["default"].ScatterChart);
+    createComponent(Vue, "geo-chart", chartkick__WEBPACK_IMPORTED_MODULE_0__["default"].GeoChart);
+    createComponent(Vue, "timeline", chartkick__WEBPACK_IMPORTED_MODULE_0__["default"].Timeline);
+  },
+  addAdapter: function(library) {
+    chartkick__WEBPACK_IMPORTED_MODULE_0__["default"].addAdapter(library);
+  }
+};
+
+// in browser
+if (typeof window !== "undefined" && window.Vue) {
+  window.Vue.use(VueChartkick);
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (VueChartkick);
+
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/consultentries.vue?vue&type=template&id=38b5f7a2&scoped=true&":
+/*!*****************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/consultentries.vue?vue&type=template&id=38b5f7a2&scoped=true& ***!
+  \*****************************************************************************************************************************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("svg", { attrs: { width: "200", height: "500" } })
+}
+var staticRenderFns = []
+render._withStripped = true
+
+
 
 /***/ }),
 
@@ -14802,49 +18270,61 @@ var render = function() {
           _vm._v(" "),
           _c("div", { staticClass: "column" }, [
             _c("div", { staticClass: "field" }, [
-              _c("label", { staticClass: "label" }, [_vm._v("Type")]),
-              _vm._v(" "),
-              _c("div", { staticClass: "control" }, [
-                _c("div", { staticClass: "select" }, [
-                  _c(
-                    "select",
+              _c("label", { staticClass: "checkbox" }, [
+                _c("input", {
+                  directives: [
                     {
-                      directives: [
-                        {
-                          name: "model",
-                          rawName: "v-model",
-                          value: _vm.thisproject.inputs[index].type,
-                          expression: "thisproject.inputs[index].type"
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.thisproject.inputs[index].mandatory,
+                      expression: "thisproject.inputs[index].mandatory"
+                    }
+                  ],
+                  attrs: { type: "checkbox", checked: "checked" },
+                  domProps: {
+                    checked: Array.isArray(
+                      _vm.thisproject.inputs[index].mandatory
+                    )
+                      ? _vm._i(_vm.thisproject.inputs[index].mandatory, null) >
+                        -1
+                      : _vm.thisproject.inputs[index].mandatory
+                  },
+                  on: {
+                    change: function($event) {
+                      var $$a = _vm.thisproject.inputs[index].mandatory,
+                        $$el = $event.target,
+                        $$c = $$el.checked ? true : false
+                      if (Array.isArray($$a)) {
+                        var $$v = null,
+                          $$i = _vm._i($$a, $$v)
+                        if ($$el.checked) {
+                          $$i < 0 &&
+                            _vm.$set(
+                              _vm.thisproject.inputs[index],
+                              "mandatory",
+                              $$a.concat([$$v])
+                            )
+                        } else {
+                          $$i > -1 &&
+                            _vm.$set(
+                              _vm.thisproject.inputs[index],
+                              "mandatory",
+                              $$a.slice(0, $$i).concat($$a.slice($$i + 1))
+                            )
                         }
-                      ],
-                      on: {
-                        change: function($event) {
-                          var $$selectedVal = Array.prototype.filter
-                            .call($event.target.options, function(o) {
-                              return o.selected
-                            })
-                            .map(function(o) {
-                              var val = "_value" in o ? o._value : o.value
-                              return val
-                            })
-                          _vm.$set(
-                            _vm.thisproject.inputs[index],
-                            "type",
-                            $event.target.multiple
-                              ? $$selectedVal
-                              : $$selectedVal[0]
-                          )
-                        }
+                      } else {
+                        _vm.$set(
+                          _vm.thisproject.inputs[index],
+                          "mandatory",
+                          $$c
+                        )
                       }
-                    },
-                    _vm._l(_vm.thisproject.config.available, function(type) {
-                      return _c("option", { domProps: { value: type } }, [
-                        _vm._v(_vm._s(type))
-                      ])
-                    }),
-                    0
-                  )
-                ])
+                    }
+                  }
+                }),
+                _vm._v(
+                  "\n                        Mandatory\n                    "
+                )
               ])
             ]),
             _vm._v(" "),
@@ -15530,6 +19010,8 @@ module.exports = function(module) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var buefy__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! buefy */ "./node_modules/buefy/dist/buefy.js");
 /* harmony import */ var buefy__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(buefy__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var google_charts__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! google-charts */ "./node_modules/google-charts/dist/googleCharts.esm.js");
+/* harmony import */ var vue_chartkick__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! vue-chartkick */ "./node_modules/vue-chartkick/dist/vue-chartkick.esm.js");
 /**
  * First we will load all of this project's JavaScript dependencies which
  * includes Vue and other libraries. It is a great starting point when
@@ -15550,7 +19032,12 @@ window.Vue = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.common.
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default));
 
 Vue.component('edit-project', __webpack_require__(/*! ./components/editproject.vue */ "./resources/js/components/editproject.vue").default);
+Vue.component('consult-entries', __webpack_require__(/*! ./components/consultentries.vue */ "./resources/js/components/consultentries.vue").default);
 Vue.use(buefy__WEBPACK_IMPORTED_MODULE_0___default.a);
+
+
+Vue.use(vue_chartkick__WEBPACK_IMPORTED_MODULE_2__["default"]);
+Vue.use(google_charts__WEBPACK_IMPORTED_MODULE_1__["GoogleCharts"]);
 /**
  * Next, we will create a fresh Vue application instance and attach it to
  * the page. Then, you may begin adding components to this application
@@ -15566,6 +19053,32 @@ var app = new Vue({
     }
   },
   watch: {
+    'newproject.duration.selectedUnit': function newprojectDurationSelectedUnit(newVal, OldVal) {
+      if (!_.isEmpty(this.newproject.duration.input)) {
+        console.log(newVal);
+        if (newVal == 'week') var numberOfDaysToAdd = parseInt(this.newproject.duration.input) * 7;else var numberOfDaysToAdd = parseInt(this.newproject.duration.input);
+        var today = new Date();
+        today.setDate(today.getDate() + numberOfDaysToAdd);
+        var dd = today.getDate();
+        var mm = today.getMonth() + 1;
+        var y = today.getFullYear();
+        this.newproject.duration.message = dd + '.' + mm + '.' + y;
+      }
+    },
+    'newproject.duration.input': function newprojectDurationInput(newVal, OldVal) {
+      this.newproject.duration.input = newVal.replace(/\D/g, '');
+
+      if (!_.isEmpty(this.newproject.duration.selectedUnit)) {
+        console.log(newVal);
+        if (this.newproject.duration.selectedUnit == 'week') var numberOfDaysToAdd = parseInt(newVal) * 7;else var numberOfDaysToAdd = parseInt(newVal);
+        var today = new Date();
+        today.setDate(today.getDate() + numberOfDaysToAdd);
+        var dd = today.getDate();
+        var mm = today.getMonth() + 1;
+        var y = today.getFullYear();
+        this.newproject.duration.message = dd + '.' + mm + '.' + y;
+      }
+    },
     'newproject.ninputs': function newprojectNinputs(newVal, oldVal) {
       console.log("token number watcher fired");
 
@@ -15580,6 +19093,7 @@ var app = new Vue({
         var inputtemplate = {
           name: "",
           type: "",
+          mandatory: true,
           numberofanswer: 0,
           answers: []
         };
@@ -15607,6 +19121,12 @@ var app = new Vue({
     },
     newproject: {
       name: "",
+      duration: {
+        input: "",
+        selectedUnit: "",
+        allowedUnits: ["day(s)", "week(s)"],
+        message: ""
+      },
       ninputs: 0,
       inputs: [],
       config: window.inputs,
@@ -15693,6 +19213,93 @@ if (token) {
 //     cluster: process.env.MIX_PUSHER_APP_CLUSTER,
 //     encrypted: true
 // });
+
+/***/ }),
+
+/***/ "./resources/js/components/consultentries.vue":
+/*!****************************************************!*\
+  !*** ./resources/js/components/consultentries.vue ***!
+  \****************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _consultentries_vue_vue_type_template_id_38b5f7a2_scoped_true___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./consultentries.vue?vue&type=template&id=38b5f7a2&scoped=true& */ "./resources/js/components/consultentries.vue?vue&type=template&id=38b5f7a2&scoped=true&");
+/* harmony import */ var _consultentries_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./consultentries.vue?vue&type=script&lang=js& */ "./resources/js/components/consultentries.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _consultentries_vue_vue_type_style_index_0_id_38b5f7a2_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./consultentries.vue?vue&type=style&index=0&id=38b5f7a2&scoped=true&lang=css& */ "./resources/js/components/consultentries.vue?vue&type=style&index=0&id=38b5f7a2&scoped=true&lang=css&");
+/* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+
+
+
+/* normalize component */
+
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_3__["default"])(
+  _consultentries_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _consultentries_vue_vue_type_template_id_38b5f7a2_scoped_true___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _consultentries_vue_vue_type_template_id_38b5f7a2_scoped_true___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  "38b5f7a2",
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/components/consultentries.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/components/consultentries.vue?vue&type=script&lang=js&":
+/*!*****************************************************************************!*\
+  !*** ./resources/js/components/consultentries.vue?vue&type=script&lang=js& ***!
+  \*****************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_consultentries_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/babel-loader/lib??ref--4-0!../../../node_modules/vue-loader/lib??vue-loader-options!./consultentries.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/consultentries.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_consultentries_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./resources/js/components/consultentries.vue?vue&type=style&index=0&id=38b5f7a2&scoped=true&lang=css&":
+/*!*************************************************************************************************************!*\
+  !*** ./resources/js/components/consultentries.vue?vue&type=style&index=0&id=38b5f7a2&scoped=true&lang=css& ***!
+  \*************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_consultentries_vue_vue_type_style_index_0_id_38b5f7a2_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/style-loader!../../../node_modules/css-loader??ref--6-1!../../../node_modules/vue-loader/lib/loaders/stylePostLoader.js!../../../node_modules/postcss-loader/src??ref--6-2!../../../node_modules/vue-loader/lib??vue-loader-options!./consultentries.vue?vue&type=style&index=0&id=38b5f7a2&scoped=true&lang=css& */ "./node_modules/style-loader/index.js!./node_modules/css-loader/index.js?!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/src/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/consultentries.vue?vue&type=style&index=0&id=38b5f7a2&scoped=true&lang=css&");
+/* harmony import */ var _node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_consultentries_vue_vue_type_style_index_0_id_38b5f7a2_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_consultentries_vue_vue_type_style_index_0_id_38b5f7a2_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_0__);
+/* harmony reexport (unknown) */ for(var __WEBPACK_IMPORT_KEY__ in _node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_consultentries_vue_vue_type_style_index_0_id_38b5f7a2_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_0__) if(__WEBPACK_IMPORT_KEY__ !== 'default') (function(key) { __webpack_require__.d(__webpack_exports__, key, function() { return _node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_consultentries_vue_vue_type_style_index_0_id_38b5f7a2_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_0__[key]; }) }(__WEBPACK_IMPORT_KEY__));
+ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_style_loader_index_js_node_modules_css_loader_index_js_ref_6_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_src_index_js_ref_6_2_node_modules_vue_loader_lib_index_js_vue_loader_options_consultentries_vue_vue_type_style_index_0_id_38b5f7a2_scoped_true_lang_css___WEBPACK_IMPORTED_MODULE_0___default.a); 
+
+/***/ }),
+
+/***/ "./resources/js/components/consultentries.vue?vue&type=template&id=38b5f7a2&scoped=true&":
+/*!***********************************************************************************************!*\
+  !*** ./resources/js/components/consultentries.vue?vue&type=template&id=38b5f7a2&scoped=true& ***!
+  \***********************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_consultentries_vue_vue_type_template_id_38b5f7a2_scoped_true___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../node_modules/vue-loader/lib??vue-loader-options!./consultentries.vue?vue&type=template&id=38b5f7a2&scoped=true& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/consultentries.vue?vue&type=template&id=38b5f7a2&scoped=true&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_consultentries_vue_vue_type_template_id_38b5f7a2_scoped_true___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_consultentries_vue_vue_type_template_id_38b5f7a2_scoped_true___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
 
 /***/ }),
 

@@ -36,6 +36,7 @@
 				<tr>
 					<th><abbr title="id">#</abbr></th>
 					<th>Case name</th>
+					<th>Assigned User</th>
 				</tr>
 			</thead>
 			@forelse($project->cases as $case)
@@ -46,6 +47,7 @@
 				<tr>
 					<td>{{$case->id}}</td>
 					<td><a href="{{$case->path()}}" target="_blank">{{$case->name}}</a></td>
+					<td>{{$case->user? $case->user->email : 'no user assigned'}}</td>
 				</tr>
 			</tbody>
 			@empty

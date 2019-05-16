@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Project;
 use App\Cases;
+use App\User;
+use Str;
 
 class ProjectCasesController extends Controller
 {
@@ -29,7 +31,9 @@ class ProjectCasesController extends Controller
             abort(403);
         }
 
-        return view('cases.create',compact('project'));
+        $users = User::all();
+
+        return view('cases.create',compact('project','users'));
 
 	}
 
@@ -40,16 +44,29 @@ class ProjectCasesController extends Controller
 	 */
 	public function store(Project $project)
 	{
-		$this->authorize('update',$project);
+
+	    $this->authorize('update',$project);
 
 		request()->validate(
 			['name' => 'required']
 		);
 
+		$email = request('email');
 
-		$project->addCase(request('name'));
+		$case = $project->addCase(request('name'));
+        $user = User::firstOrNew(['email' => $email]);
+        if (!$user->exists)
+        {
+            $user->username = request('email');
+            $user->email = request('email');
+            $p = Str::random(2);
+            $user->password = bcrypt($p);
+            $user->save();
+        }
 
-		return redirect($project->path());
+		$case->addUser($user);
+
+		return redirect($project->path())->with(['message' => isset($p)? $user->email.' can now enter with the password: '.$p : 'user was already registered']);
 	}
 
 	public function update(Project $project,Cases $case)
