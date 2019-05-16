@@ -14,10 +14,11 @@
 	</div>
 </div>
 
+
 <div class="columns">
 	<div class="column">
 		<h1>Create a Case</h1>
-		<form method="POST" action="{{$project->path().'/cases'}}" class="" style="padding-top: 40px" >
+		<form method="POST" action="{{$project->path().'/cases'}}" class="" style="padding-top: 40px" id="addcase" autocomplete="off">
 			@csrf
 			<div class="field">
 				<label for="name" class="label">
@@ -29,17 +30,26 @@
 
 				</div>
 			</div>
-		<div class="field">
-			<div class="control">
-				<button class="button is-link" >Create Case</button>
+
+
+			<div class="field">
+				<div class="control">
+					<input type="text" class="input" name="email" list="email">
+
+
+					<datalist id="email">
+						@foreach($users as $u)
+						<option value="{{$u->email}}">{{$u->email}}</option>
+						@endforeach
+					</datalist>
+
+				</div>
 			</div>
-		</div>
-		</div>
-
-
-
-
-
+		<div class="field">
+				<div class="control">
+					<button class="button is-link" >Create Case</button>
+				</div>
+			</div>
 
 	</form>
 </div>

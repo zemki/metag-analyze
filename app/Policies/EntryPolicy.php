@@ -13,6 +13,6 @@ class EntryPolicy
 	public function update(User $user,\App\Cases $c)
 	{
 
-		return $user->is($c->user());
+		return $user->is($c->user);
 	}
 }

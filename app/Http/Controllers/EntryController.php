@@ -7,6 +7,7 @@ use App\Http\Resources\Entry as EntryResource;
 use App\Entry;
 use App\Cases;
 use App\Project;
+use App\Media;
 
 class EntryController extends Controller
 {
@@ -21,10 +22,10 @@ class EntryController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request,Project $project,Cases $case)
+    public function store(Request $request,Cases $case)
     {
 
-		//$this->authorize('update',[Entry::class,$case]);
+		$this->authorize('update',[Entry::class,$case]);
 
      	$attributes = request()->validate([
             'begin' => 'required',
@@ -37,10 +38,27 @@ class EntryController extends Controller
             'comment' => 'nullable',
             'inputs' => 'nullable',
         ]);
-
+     	$attributes['inputs'] = json_encode($attributes['inputs']);
         Entry::create($attributes);
 
     	return response('Entry registered', 200);
+
+    }
+
+    /**
+     * Test function to consult data with d3js
+     */
+    public function consult(Cases $case)
+    {
+        $i = 0;
+        //$data['entries'] = $case->entries->map->only(['media_id','begin','end'])->flatten()->chunk(3);
+        $data['entries'] = $case->entries()->join('media','entries.media_id','=','media.id')->get()->map->only(['name','begin','end'])
+            ->flatten()->chunk(3)->toArray();
+        $data['entries'] = array_map('array_values', $data['entries']);
+
+
+
+        return view('entries.index',$data);
 
     }
 }

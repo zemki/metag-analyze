@@ -65,15 +65,21 @@ class ApiController extends Controller
 
          }
          else{
-            $inputs['media'] = $response->project->media;
+            $inputs['inputs']['media'] = $response->project->media;
             $nullItem = (object)array('id' => 0,'name' => '');
-            $inputs['media']->prepend($nullItem);
-            $inputs['places'] = $response->project->places;
-            $inputs['places']->prepend($nullItem);
-            $inputs['communication_partners'] = $response->project->communication_partners;
-            $inputs['communication_partners']->prepend($nullItem);
+            $inputs['inputs']['media']->prepend($nullItem);
+            $inputs['inputs']['places'] = $response->project->places;
+            $inputs['inputs']['places']->prepend($nullItem);
+            $inputs['inputs']['communication_partners'] = $response->project->communication_partners;
+            $inputs['inputs']['communication_partners']->prepend($nullItem);
+            $inputs['inputs']['custominputs'] = $response->project->inputs;
 
-            return response()->json(['media' => $inputs['media'],'places' => $inputs['places'], 'cp' => $inputs['communication_partners'],'case' => $response, 'token' => $token,'inputs' => $inputs], 200);
+            return response()->json([
+                'inputs' => $inputs['inputs'],
+                'case' => $response,
+                'token' => $token,
+                'custominputs' => $inputs['inputs']['custominputs']
+                ], 200);
 
         }
 

@@ -84,15 +84,12 @@
             </div>
             <div class="column">
                 <div class="field">
-                    <label class="label">Type</label>
-                    <div class="control">
-                        <div class="select">
-                            <select v-model="thisproject.inputs[index].type">
-                                <option v-for="type in thisproject.config.available" :value="type">{{type}}</option>
-                            </select>
-                        </div>
-                    </div>
+                    <label class="checkbox">
+                        <input type="checkbox" v-model="thisproject.inputs[index].mandatory" checked="checked">
+                        Mandatory
+                    </label>
                 </div>
+
                 <span v-if="(thisproject.inputs[index].type == 'multiple choice' || thisproject.inputs[index].type == 'one choice')">
                     <div class="field">
                         <label class="label">Number of Answers</label>
@@ -220,8 +217,9 @@
                         name: "",
                         type: "",
                         numberofanswer: 0,
+                        mandatory: true,
                         answers: []
-                    }
+                    };
 
                     for (var i = 0; i < direction; i++) {
                         this.thisproject.inputs.push(inputtemplate);
