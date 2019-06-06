@@ -22,8 +22,6 @@ class CreateProjectsTable extends Migration
 
             $table->text('inputs')->nullable();
 
-            // how long the users can submit data
-            $table->string('duration', 100);
             $table->integer('created_by')->unsigned()->references('id')->on('users')->onDelete('cascade');
             $table->integer('is_locked')->unsigned();
             $table->timestamps();

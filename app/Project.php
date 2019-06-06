@@ -51,9 +51,9 @@ public function created_by()
 
 
 
-public function addCase($name)
+public function addCase($name,$duration)
 {
-    return $this->cases()->create(compact('name'));
+    return $this->cases()->create(compact('name','duration'));
 }
 
 }

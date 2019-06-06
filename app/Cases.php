@@ -28,7 +28,7 @@ class Cases extends Model
 
   public function path()
   {
-   return "projects/{$this->project->id}/cases/{$this->id}";
+   return "/cases/{$this->id}";
  }
 
 

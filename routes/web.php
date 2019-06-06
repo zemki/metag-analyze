@@ -12,7 +12,7 @@
 */
 
 Auth::routes();
-Route::get('cases/{case}/d3test','EntryController@consult');
+
 
 Route::group(['middleware' => 'auth'], function(){
 

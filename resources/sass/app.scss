@@ -2,17 +2,17 @@
 
 // Bootstrap
 @import '~bootstrap/scss/bootstrap';
-
 @import 'typos';
 @import 'variables';
 @import 'bulma_custom';
 @import 'bulma';
+@import "~tailwindcss/base";
 
-// Fonts
-@import url('https://fonts.googleapis.com/css?family=Nunito');
+@import "~tailwindcss/components";
+
+@import "~tailwindcss/utilities";
 
 
-.navbar-laravel {
-  background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+.cards-projects{
+  background-color: $body-bg;
 }

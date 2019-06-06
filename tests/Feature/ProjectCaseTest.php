@@ -93,7 +93,7 @@ public function a_case_require_a_name()
 public function a_case_can_have_entries()
 {
     $this->withoutExceptionHandling();
-
+    $this->signIn();
   $project = ProjectFactory::createdBy($this->signIn())
   ->withCases(1)
   ->create();
@@ -102,7 +102,7 @@ public function a_case_can_have_entries()
 
   $newentry = factory('App\Entry')->make(['case_id' => $case->id])->toArray();
 
-  $this->actingAs($case->user()->first())->post($case->path().'/entries',$newentry);
+  $this->actingAs($case->user()->first())->post('/api/v1'.$case->path().'/entries',$newentry);
   $this->assertDatabaseHas('entries',['begin' => $newentry['begin']]);
 
 }

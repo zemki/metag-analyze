@@ -33,15 +33,7 @@
 
         </div>
     </div>
-    <div class="level">
-        <div class="field">
-            <h3> Duration</h3>
-            <p v-if="!thisproject.edit" v-html="thisproject.duration"></p>
-            <div class="field has-addons" v-if="thisproject.edit">
-                <input name="duration" v-model="thisproject.duration" class="input text">
-            </div>
-        </div>
-    </div>
+
     <h2>Inputs</h2>
 
 
@@ -272,7 +264,6 @@
                     this.thisproject.ninputs = this.project.inputs.length;
                     this.thisproject.name = this.project.name;
                     this.thisproject.description = this.project.description;
-                    this.thisproject.duration = this.project.duration;
 
                     this.thisproject.checkedmedia = this.project.media;
                     this.thisproject.checkedplaces = this.project.places;
@@ -283,7 +274,7 @@
 
 
                     let submitObject = {};
-                    _.merge(submitObject,{id: this.project.id},{name: this.thisproject.name},{description: this.thisproject.description},{duration: this.thisproject.duration},{inputs: this.formattedinputstring},{media: this.thisproject.checkedmedia},{places: this.thisproject.checkedplaces},{cp: this.thisproject.checkedcp});
+                    _.merge(submitObject,{id: this.project.id},{name: this.thisproject.name},{description: this.thisproject.description},{inputs: this.formattedinputstring},{media: this.thisproject.checkedmedia},{places: this.thisproject.checkedplaces},{cp: this.thisproject.checkedcp});
 
                     window.axios.patch('../projects/'+submitObject.id, submitObject).then(response => {
 

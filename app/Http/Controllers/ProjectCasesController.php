@@ -17,9 +17,16 @@ class ProjectCasesController extends Controller
 		if(auth()->user()->isNot($project->created_by()->first())) {
 			abort(403);
 		}
+        $i = 0;
+        //$data['entries'] = $case->entries->map->only(['media_id','begin','end'])->flatten()->chunk(3);
+        $data['entries'] = $case->entries()->join('media','entries.media_id','=','media.id')->get()->map->only(['name','begin','end'])
+            ->flatten()->chunk(3)->toArray();
+        $data['entries'] = array_map('array_values', $data['entries']);
 
 
-		return view('cases.show',compact('project','case'));
+
+        return view('entries.index',$data);
+
 
 	}
 
@@ -53,7 +60,7 @@ class ProjectCasesController extends Controller
 
 		$email = request('email');
 
-		$case = $project->addCase(request('name'));
+		$case = $project->addCase(request('name'),request('duration'));
         $user = User::firstOrNew(['email' => $email]);
         if (!$user->exists)
         {
