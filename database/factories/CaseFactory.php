@@ -7,6 +7,7 @@ use Faker\Generator as Faker;
 $factory->define(App\Cases::class, function (Faker $faker,$params) {
 	return [
 		'name' => $faker->name,
+        'duration' => $faker->sentence,
 		'project_id' => function() {
 			return (isset($params['project_id']) ? $params['project_id'] : factory(App\Project::class)->create()->id);
 

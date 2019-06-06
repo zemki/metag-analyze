@@ -1,42 +1,35 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="columns">
-	<div class="column is-half">
-		<nav class="breadcrumb has-succeeds-separator is-small" aria-label="breadcrumbs">
-			<ul>
-				<li><a href="#">Metag</a></li>
-				<li class="is-active" aria-current="page"><a href="{{url('/')}}">Projects</a></li>
-			</ul>
-		</nav>
-	</div>
+
+<div class="flex flex-row py-4">
+	<a href="{{url('projects/new')}}"><button class="button bg-blue-500 hover:bg-blue-700 text-white mr-2 focus:border-gray-100">New Project</button></a>
+
 </div>
 
+<div class="columns is-multiline subpixel-antialiased">
+@forelse($projects as $project)
 
-<table class="table">
-	<thead>
-		<tr>
-			<th><abbr title="id">#</abbr></th>
-			<th>Project name</th>
-			<th><abbr title="Description">Description</abbr></th>
-			<th><abbr title="Cases">Number of cases</abbr></th>
-			<th><abbr title="Creator">Created by</abbr></th>
-		</tr>
-	</thead>
-	<tbody>
-		@forelse($projects as $project)
-		<tr>
-			<td>{{$project->id}}</td>
-			<td><a href="{{url($project->path())}}" target="_blank">{{$project->name}}</a></td>
-			<td>{{$project->description}}</td>
-			<td>{{$project->cases->count()}}</td>
-			<td>{{\App\User::where('id',$project->created_by)->first()->email}}</td>
-		</tr>
-		@empty
-		no projects yet
-		@endforelse
-	</tbody>
-</table>
+		<div class="column is-4 overflow-auto ">
+<article class="cards-projects items-stretch .flex-grow-0 h-56 px-2 border-solid border-4 border-gray-100">
+	<div class="mb-2">
+		<p class="text-2xl font-bold "><a class="align-middle" href="{{url($project->path())}}" target="_blank">{{$project->name}} <i class="">&rsaquo;</i></a></p>
+		<p class="text-sm text-gray-600">Created by {{\App\User::where('id',$project->created_by)->first()->email}}</p>
+
+	</div>
+	<div>
+		Cases: {{$project->cases->count()}}
+	</div>
+	<div class="">
+	<p class="text-base">{{$project->description}} </p>
+	</div>
 
 
+</article>
+		</div>
+
+@empty
+	no projects yet
+@endforelse
+</div>
 @endsection

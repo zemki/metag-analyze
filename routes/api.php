@@ -17,7 +17,6 @@ use Illuminate\Http\Request;
 
 
 
-
 // Route::post('register', 'PassportController@register');
 Route::post('login', 'ApiController@login');
 
@@ -27,6 +26,8 @@ Route::get('/project/{project}','ApiController@a');
 
 Route::get('/inputs/{project}','ApiController@getInputs');
 Route::get('/entry/{case}','EntryController@entriesByCase');
+
 Route::post('/cases/{case}/entries','EntryController@store');
+Route::delete('/cases/{case}/entries/{entry}','EntryController@destroy');
 
 });

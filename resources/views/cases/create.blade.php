@@ -30,7 +30,31 @@
 
 				</div>
 			</div>
+			<div class="field">
+				<label for="duration" class="label">
+					Duration
+				</label>
+				<div class="columns">
+					<div class="column">
+						<div class="control">
+							<input type="text" class="input" v-model="newcase.duration.input" >
+						</div>
+					</div>
+					<div class="column">
+						<div class="select">
+							<select v-model="newcase.duration.selectedUnit">
+								<option>Select a value</option>
+								<option value="days">day(s)</option>
+								<option value="week">week(s)</option>
+							</select>
+						</div>
+					</div>
+					<div class="column" v-show="newcase.duration.message != ''" v-html="'Estimated end: ' +newcase.duration.message">
 
+					</div>
+				</div>
+			</div>
+			<input type="hidden"  :value="newcase.duration.value" name="duration">
 
 			<div class="field">
 				<div class="control">

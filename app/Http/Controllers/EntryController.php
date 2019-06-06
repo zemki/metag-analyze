@@ -61,4 +61,19 @@ class EntryController extends Controller
         return view('entries.index',$data);
 
     }
+
+    public function destroy(Cases $case,Entry $entry)
+    {
+      //  $entry = Entry::where('id','=',$entryid)->first();
+
+        try {
+            $entry->delete();
+        } catch (Exception $e) {
+            echo 'Caught exception: ',  $e->getMessage(), "\n";
+        }
+
+
+        return response("entry deleted", 200);
+
+    }
 }

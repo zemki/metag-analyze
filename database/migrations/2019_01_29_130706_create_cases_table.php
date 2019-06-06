@@ -22,6 +22,9 @@ class CreateCasesTable extends Migration
             // places
             // communication partners
 
+            // how long the users can submit data
+            $table->string('duration', 100);
+
 
             $table->integer('project_id')->unsigned()->references('id')->on('projects')->onDelete('cascade');
             $table->integer('user_id')->nullable()->unsigned()->references('id')->on('users')->onDelete('cascade');

@@ -12,14 +12,25 @@ use App\CaseInput;
 class CaseEntriesTest extends TestCase
 {
 
-    /**
-     *
-     * @return
-     *
-     */
-    public function a_case_can_have_entries()
-    {
-    	$this->withoutExceptionHandling();
 
+    /**
+     * testing entry delete
+     * @test
+     */
+    public function user_can_delete_entries()
+    {
+        $this->withoutExceptionHandling();
+
+        $this->signIn();
+
+        $project = auth()->user()->projects()->create(factory(Project::class)->raw());
+
+        $case = $project->addCase("test case");
+
+        $case->addUser(auth()->user());
+
+        $this->assertDatabaseHas('cases',[
+            'user_id' => auth()->user()->id
+        ]);
     }
 }

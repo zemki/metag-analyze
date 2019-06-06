@@ -47,8 +47,6 @@ class UserController extends Controller
         $attributes->api_token= str_random(60);
         User::create($attributes);
 
-
-
     }
 
     /**

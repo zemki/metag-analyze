@@ -230,14 +230,6 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: ['project', 'data'],
   computed: {
@@ -315,7 +307,6 @@ __webpack_require__.r(__webpack_exports__);
       this.thisproject.ninputs = this.project.inputs.length;
       this.thisproject.name = this.project.name;
       this.thisproject.description = this.project.description;
-      this.thisproject.duration = this.project.duration;
       this.thisproject.checkedmedia = this.project.media;
       this.thisproject.checkedplaces = this.project.places;
       this.thisproject.checkedcp = this.project.communication_partners;
@@ -331,8 +322,6 @@ __webpack_require__.r(__webpack_exports__);
         name: this.thisproject.name
       }, {
         description: this.thisproject.description
-      }, {
-        duration: this.thisproject.duration
       }, {
         inputs: this.formattedinputstring
       }, {
@@ -16300,7 +16289,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n.line[data-v-38b5f7a2] {\n    fill: none;\n    stroke: steelblue;\n    stroke-width: 2px;\n}\n.axisRed line[data-v-38b5f7a2]{\n    stroke: red;\n}\n.axisRed path[data-v-38b5f7a2]{\n    stroke: red;\n}\n.axisRed text[data-v-38b5f7a2]{\n    fill: red;\n}\n\n", ""]);
+exports.push([module.i, ".line[data-v-38b5f7a2] {\n  fill: none;\n  stroke: steelblue;\n  stroke-width: 2px;\n}\n.axisRed line[data-v-38b5f7a2]{\n  stroke: red;\n}\n.axisRed path[data-v-38b5f7a2]{\n  stroke: red;\n}\n.axisRed text[data-v-38b5f7a2]{\n  fill: red;\n}\n\n", ""]);
 
 // exports
 
@@ -18114,44 +18103,6 @@ var render = function() {
       _c("div", { staticClass: "level-right" })
     ]),
     _vm._v(" "),
-    _c("div", { staticClass: "level" }, [
-      _c("div", { staticClass: "field" }, [
-        _c("h3", [_vm._v(" Duration")]),
-        _vm._v(" "),
-        !_vm.thisproject.edit
-          ? _c("p", {
-              domProps: { innerHTML: _vm._s(_vm.thisproject.duration) }
-            })
-          : _vm._e(),
-        _vm._v(" "),
-        _vm.thisproject.edit
-          ? _c("div", { staticClass: "field has-addons" }, [
-              _c("input", {
-                directives: [
-                  {
-                    name: "model",
-                    rawName: "v-model",
-                    value: _vm.thisproject.duration,
-                    expression: "thisproject.duration"
-                  }
-                ],
-                staticClass: "input text",
-                attrs: { name: "duration" },
-                domProps: { value: _vm.thisproject.duration },
-                on: {
-                  input: function($event) {
-                    if ($event.target.composing) {
-                      return
-                    }
-                    _vm.$set(_vm.thisproject, "duration", $event.target.value)
-                  }
-                }
-              })
-            ])
-          : _vm._e()
-      ])
-    ]),
-    _vm._v(" "),
     _c("h2", [_vm._v("Inputs")]),
     _vm._v(" "),
     _c(
@@ -19053,35 +19004,47 @@ var app = new Vue({
     }
   },
   watch: {
-    'newproject.duration.selectedUnit': function newprojectDurationSelectedUnit(newVal, OldVal) {
-      if (!_.isEmpty(this.newproject.duration.input)) {
-        console.log(newVal);
-        if (newVal == 'week') var numberOfDaysToAdd = parseInt(this.newproject.duration.input) * 7;else var numberOfDaysToAdd = parseInt(this.newproject.duration.input);
-        var today = new Date();
-        today.setDate(today.getDate() + numberOfDaysToAdd);
-        var dd = today.getDate();
-        var mm = today.getMonth() + 1;
-        var y = today.getFullYear();
-        this.newproject.duration.message = dd + '.' + mm + '.' + y;
+    'newcase.duration.selectedUnit': function newcaseDurationSelectedUnit(newVal, OldVal) {
+      if (!_.isEmpty(this.newcase.duration.input)) {
+        if (newVal == 'week') var numberOfDaysToAdd = parseInt(this.newcase.duration.input) * 7;else var numberOfDaysToAdd = parseInt(this.newcase.duration.input);
+        var calculatedDate = new Date(); //get today date
+
+        var dd = calculatedDate.getDate();
+        var mm = calculatedDate.getMonth() + 1;
+        var y = calculatedDate.getFullYear();
+        calculatedDate.setDate(calculatedDate.getDate() + numberOfDaysToAdd);
+        var cdd = calculatedDate.getDate();
+        var cmm = calculatedDate.getMonth() + 1;
+        var cy = calculatedDate.getFullYear();
+        this.newcase.duration.message = cdd + '.' + cmm + '.' + cy;
+        this.newcase.duration.value = "start:" + dd + '.' + mm + '.' + y + '|end:' + this.newcase.duration.message;
+      } else {
+        this.newcase.duration.message = "";
+        this.newcase.duration.value = "";
       }
     },
-    'newproject.duration.input': function newprojectDurationInput(newVal, OldVal) {
-      this.newproject.duration.input = newVal.replace(/\D/g, '');
+    'newcase.duration.input': function newcaseDurationInput(newVal, OldVal) {
+      this.newcase.duration.input = newVal.replace(/\D/g, '');
 
-      if (!_.isEmpty(this.newproject.duration.selectedUnit)) {
-        console.log(newVal);
-        if (this.newproject.duration.selectedUnit == 'week') var numberOfDaysToAdd = parseInt(newVal) * 7;else var numberOfDaysToAdd = parseInt(newVal);
-        var today = new Date();
-        today.setDate(today.getDate() + numberOfDaysToAdd);
-        var dd = today.getDate();
-        var mm = today.getMonth() + 1;
-        var y = today.getFullYear();
-        this.newproject.duration.message = dd + '.' + mm + '.' + y;
+      if (!_.isEmpty(this.newcase.duration.selectedUnit)) {
+        if (this.newcase.duration.selectedUnit == 'week') var numberOfDaysToAdd = parseInt(newVal) * 7;else var numberOfDaysToAdd = parseInt(newVal);
+        var calculatedDate = new Date(); //get today date
+
+        var dd = calculatedDate.getDate();
+        var mm = calculatedDate.getMonth() + 1;
+        var y = calculatedDate.getFullYear();
+        calculatedDate.setDate(calculatedDate.getDate() + numberOfDaysToAdd);
+        var cdd = calculatedDate.getDate();
+        var cmm = calculatedDate.getMonth() + 1;
+        var cy = calculatedDate.getFullYear();
+        this.newcase.duration.message = cdd + '.' + cmm + '.' + cy;
+        this.newcase.duration.value = "start:" + dd + '.' + mm + '.' + y + '|end:' + this.newcase.duration.message;
+      } else {
+        this.newcase.duration.message = "";
+        this.newcase.duration.value = "";
       }
     },
     'newproject.ninputs': function newprojectNinputs(newVal, oldVal) {
-      console.log("token number watcher fired");
-
       if (newVal < 0 || oldVal < 0) {
         newVal = 0;
         oldVal = 0;
@@ -19119,14 +19082,17 @@ var app = new Vue({
       inputtypemissing: "input type is required. <br>",
       multipleinputnoanswer: "provide a valid number of answers. <br>"
     },
-    newproject: {
-      name: "",
+    newcase: {
       duration: {
         input: "",
         selectedUnit: "",
         allowedUnits: ["day(s)", "week(s)"],
-        message: ""
-      },
+        message: "",
+        value: ""
+      }
+    },
+    newproject: {
+      name: "",
       ninputs: 0,
       inputs: [],
       config: window.inputs,

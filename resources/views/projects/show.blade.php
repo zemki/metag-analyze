@@ -36,6 +36,7 @@
 				<tr>
 					<th><abbr title="id">#</abbr></th>
 					<th>Case name</th>
+					<th>Case duration</th>
 					<th>Assigned User</th>
 				</tr>
 			</thead>
@@ -47,6 +48,7 @@
 				<tr>
 					<td>{{$case->id}}</td>
 					<td><a href="{{$case->path()}}" target="_blank">{{$case->name}}</a></td>
+					<td>{{$case->duration}}</td>
 					<td>{{$case->user? $case->user->email : 'no user assigned'}}</td>
 				</tr>
 			</tbody>

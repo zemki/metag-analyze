@@ -47,30 +47,7 @@
                     </div>
                 </div>
 
-                <div class="field">
-                    <label for="duration" class="label">
-                        Duration
-                    </label>
-                    <div class="columns">
-                    <div class="column">
-                        <div class="control">
-                            <input type="text" class="input" name="duration" v-model="newproject.duration.input" >
-                        </div>
-                    </div>
-                <div class="column">
-                    <div class="select">
-                        <select v-model="newproject.duration.selectedUnit">
-                            <option>Select a value</option>
-                            <option value="days">day(s)</option>
-                            <option value="week">week(s)</option>
-                        </select>
-                    </div>
-                </div>
-                        <div class="column" v-show="newproject.duration.message != ''" v-html="'Estimated end: ' +newproject.duration.message">
 
-                        </div>
-                </div>
-                </div>
                 <input type="hidden" :value="JSON.stringify(newproject.inputs)" name="inputs">
 
                 <div class="field">
