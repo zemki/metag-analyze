@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Project;
 use App\Cases;
 use App\User;
+use App\Role;
 use Str;
 
 class ProjectCasesController extends Controller
@@ -18,11 +19,37 @@ class ProjectCasesController extends Controller
 			abort(403);
 		}
         $i = 0;
-        //$data['entries'] = $case->entries->map->only(['media_id','begin','end'])->flatten()->chunk(3);
-        $data['entries'] = $case->entries()->join('media','entries.media_id','=','media.id')->get()->map->only(['name','begin','end'])
-            ->flatten()->chunk(3)->toArray();
-        $data['entries'] = array_map('array_values', $data['entries']);
 
+        $data['entriesByMedia'] = $case->entries()
+            ->join('media','entries.media_id','=','media.id')
+            ->get()
+            ->map
+            ->only(['name','begin','end'])
+            ->flatten()
+            ->chunk(3)
+            ->toArray();
+        $data['entriesByPlace'] = $case->entries()
+            ->join('places','entries.place_id','=','places.id')
+            ->get()
+            ->map
+            ->only(['name','begin','end'])
+            ->flatten()
+            ->chunk(3)
+            ->toArray();
+        $data['entriesByCommunicationPartner'] = $case->entries()
+            ->join('communication_partners','entries.communication_partner_id','=','communication_partners.id')
+            ->get()
+            ->map
+            ->only(['name','begin','end'])
+            ->flatten()
+            ->chunk(3)
+            ->toArray();
+        // GET MEDIA, PLACES, COMMUNICATION PARTNERS
+
+        $data['entriesByMedia'] = array_map('array_values', $data['entriesByMedia']);
+        $data['entriesByPlace'] = array_map('array_values', $data['entriesByPlace']);
+        $data['entriesByCommunicationPartner'] = array_map('array_values', $data['entriesByCommunicationPartner']);
+        $data['case'] = $case;
 
 
         return view('entries.index',$data);
@@ -62,13 +89,16 @@ class ProjectCasesController extends Controller
 
 		$case = $project->addCase(request('name'),request('duration'));
         $user = User::firstOrNew(['email' => $email]);
+
         if (!$user->exists)
         {
             $user->username = request('email');
             $user->email = request('email');
-            $p = Str::random(2);
+            $role = Role::where('name','=','user')->first();
+            $p = Str::random(request('passwordLength'));
             $user->password = bcrypt($p);
             $user->save();
+            $user->roles()->sync($role);
         }
 
 		$case->addUser($user);

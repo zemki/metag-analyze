@@ -22128,6 +22128,54 @@ label.panel-block:hover {
   border-color: #4099FF;
 }
 
+.b-checkbox.checkbox input[type=checkbox]:focus + .check {
+  box-shadow: 0 0 0.5em rgba(122, 122, 122, 0.8);
+}
+
+.b-checkbox.checkbox input[type=checkbox]:focus:checked + .check {
+  box-shadow: 0 0 0.5em rgba(35, 209, 96, 0.8);
+}
+
+.b-checkbox.checkbox input[type=checkbox]:focus:checked + .check.is-white {
+  box-shadow: 0 0 0.5em rgba(255, 255, 255, 0.8);
+}
+
+.b-checkbox.checkbox input[type=checkbox]:focus:checked + .check.is-black {
+  box-shadow: 0 0 0.5em rgba(0, 0, 0, 0.8);
+}
+
+.b-checkbox.checkbox input[type=checkbox]:focus:checked + .check.is-light {
+  box-shadow: 0 0 0.5em rgba(248, 249, 250, 0.8);
+}
+
+.b-checkbox.checkbox input[type=checkbox]:focus:checked + .check.is-dark {
+  box-shadow: 0 0 0.5em rgba(52, 58, 64, 0.8);
+}
+
+.b-checkbox.checkbox input[type=checkbox]:focus:checked + .check.is-primary {
+  box-shadow: 0 0 0.5em rgba(35, 209, 96, 0.8);
+}
+
+.b-checkbox.checkbox input[type=checkbox]:focus:checked + .check.is-info {
+  box-shadow: 0 0 0.5em rgba(23, 162, 184, 0.8);
+}
+
+.b-checkbox.checkbox input[type=checkbox]:focus:checked + .check.is-success {
+  box-shadow: 0 0 0.5em rgba(4, 108, 190, 0.8);
+}
+
+.b-checkbox.checkbox input[type=checkbox]:focus:checked + .check.is-warning {
+  box-shadow: 0 0 0.5em rgba(255, 193, 7, 0.8);
+}
+
+.b-checkbox.checkbox input[type=checkbox]:focus:checked + .check.is-danger {
+  box-shadow: 0 0 0.5em rgba(217, 36, 66, 0.8);
+}
+
+.b-checkbox.checkbox input[type=checkbox]:focus:checked + .check.is-twitter {
+  box-shadow: 0 0 0.5em rgba(64, 153, 255, 0.8);
+}
+
 .b-checkbox.checkbox .control-label {
   padding-left: 0.5em;
 }
@@ -22180,54 +22228,6 @@ label.panel-block:hover {
   border-color: #4099FF;
 }
 
-.b-checkbox.checkbox:focus input[type=checkbox] + .check {
-  box-shadow: 0 0 0.5em rgba(122, 122, 122, 0.8);
-}
-
-.b-checkbox.checkbox:focus input[type=checkbox]:checked + .check {
-  box-shadow: 0 0 0.5em rgba(35, 209, 96, 0.8);
-}
-
-.b-checkbox.checkbox:focus input[type=checkbox]:checked + .check.is-white {
-  box-shadow: 0 0 0.5em rgba(255, 255, 255, 0.8);
-}
-
-.b-checkbox.checkbox:focus input[type=checkbox]:checked + .check.is-black {
-  box-shadow: 0 0 0.5em rgba(0, 0, 0, 0.8);
-}
-
-.b-checkbox.checkbox:focus input[type=checkbox]:checked + .check.is-light {
-  box-shadow: 0 0 0.5em rgba(248, 249, 250, 0.8);
-}
-
-.b-checkbox.checkbox:focus input[type=checkbox]:checked + .check.is-dark {
-  box-shadow: 0 0 0.5em rgba(52, 58, 64, 0.8);
-}
-
-.b-checkbox.checkbox:focus input[type=checkbox]:checked + .check.is-primary {
-  box-shadow: 0 0 0.5em rgba(35, 209, 96, 0.8);
-}
-
-.b-checkbox.checkbox:focus input[type=checkbox]:checked + .check.is-info {
-  box-shadow: 0 0 0.5em rgba(23, 162, 184, 0.8);
-}
-
-.b-checkbox.checkbox:focus input[type=checkbox]:checked + .check.is-success {
-  box-shadow: 0 0 0.5em rgba(4, 108, 190, 0.8);
-}
-
-.b-checkbox.checkbox:focus input[type=checkbox]:checked + .check.is-warning {
-  box-shadow: 0 0 0.5em rgba(255, 193, 7, 0.8);
-}
-
-.b-checkbox.checkbox:focus input[type=checkbox]:checked + .check.is-danger {
-  box-shadow: 0 0 0.5em rgba(217, 36, 66, 0.8);
-}
-
-.b-checkbox.checkbox:focus input[type=checkbox]:checked + .check.is-twitter {
-  box-shadow: 0 0 0.5em rgba(64, 153, 255, 0.8);
-}
-
 .b-checkbox.checkbox.is-small {
   border-radius: 2px;
   font-size: 0.75rem;
@@ -22239,10 +22239,6 @@ label.panel-block:hover {
 
 .b-checkbox.checkbox.is-large {
   font-size: 1.5rem;
-}
-
-.b-clockpicker {
-  display: inline-block;
 }
 
 .b-clockpicker .card-header {
@@ -22454,8 +22450,23 @@ label.panel-block:hover {
   color: #fff;
 }
 
-.b-clockpicker .dropdown-content {
+.b-clockpicker .dropdown-menu {
+  min-width: 0;
+}
+
+.b-clockpicker .dropdown,
+.b-clockpicker .dropdown-trigger {
+  width: 100%;
+}
+
+.b-clockpicker .dropdown-item, .b-clockpicker .dropdown .dropdown-menu .has-link a, .dropdown .dropdown-menu .has-link .b-clockpicker a {
+  font-size: inherit;
   padding: 0;
+}
+
+.b-clockpicker .dropdown-content {
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 .b-clockpicker .card-content {
@@ -22646,6 +22657,19 @@ label.panel-block:hover {
   padding: 12px;
 }
 
+.b-clockpicker.is-small {
+  border-radius: 2px;
+  font-size: 0.75rem;
+}
+
+.b-clockpicker.is-medium {
+  font-size: 1.25rem;
+}
+
+.b-clockpicker.is-large {
+  font-size: 1.5rem;
+}
+
 .collapse .collapse-trigger {
   display: inline;
   cursor: pointer;
@@ -22714,25 +22738,40 @@ label.panel-block:hover {
   display: table-row;
 }
 
-.datepicker .datepicker-table .datepicker-body .datepicker-row .datepicker-cell.is-unselectable {
+.datepicker .datepicker-table .datepicker-body .datepicker-months {
+  display: inline-flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  width: 17rem;
+}
+
+.datepicker .datepicker-table .datepicker-body .datepicker-months .datepicker-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 33.33%;
+  height: 2.5rem;
+}
+
+.datepicker .datepicker-table .datepicker-body .datepicker-cell.is-unselectable {
   color: #b5b5b5;
 }
 
-.datepicker .datepicker-table .datepicker-body .datepicker-row .datepicker-cell.is-today {
+.datepicker .datepicker-table .datepicker-body .datepicker-cell.is-today {
   border: solid 1px rgba(35, 209, 96, 0.5);
 }
 
-.datepicker .datepicker-table .datepicker-body .datepicker-row .datepicker-cell.is-selectable {
+.datepicker .datepicker-table .datepicker-body .datepicker-cell.is-selectable {
   color: #4a4a4a;
 }
 
-.datepicker .datepicker-table .datepicker-body .datepicker-row .datepicker-cell.is-selectable:hover:not(.is-selected), .datepicker .datepicker-table .datepicker-body .datepicker-row .datepicker-cell.is-selectable:focus:not(.is-selected) {
+.datepicker .datepicker-table .datepicker-body .datepicker-cell.is-selectable:hover:not(.is-selected), .datepicker .datepicker-table .datepicker-body .datepicker-cell.is-selectable:focus:not(.is-selected) {
   background-color: #fdfbf7;
   color: #000;
   cursor: pointer;
 }
 
-.datepicker .datepicker-table .datepicker-body .datepicker-row .datepicker-cell.is-selected {
+.datepicker .datepicker-table .datepicker-body .datepicker-cell.is-selected {
   background-color: #23d160;
   color: #fff;
 }
@@ -22920,7 +22959,7 @@ label.panel-block:hover {
   top: 0;
   position: fixed;
   background-color: rgba(0, 0, 0, 0.86);
-  z-index: 10;
+  z-index: 40;
   cursor: pointer;
 }
 
@@ -22998,6 +23037,7 @@ label.panel-block:hover {
             transform: translate3d(-50%, -25%, 0);
     white-space: normal;
     overflow-y: auto;
+    z-index: 50;
   }
 
   .dropdown.is-mobile-modal .dropdown-menu .dropdown-item, .dropdown.is-mobile-modal .dropdown-menu .has-link a {
@@ -23393,6 +23433,33 @@ label.panel-block:hover {
   }
 }
 
+.b-numberinput.field {
+  margin-bottom: 0;
+}
+
+.b-numberinput.field.is-grouped div.control {
+  flex-grow: 1;
+  flex-shrink: 1;
+}
+
+.b-numberinput input[type=number]::-webkit-inner-spin-button,
+.b-numberinput input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+
+.b-numberinput input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.b-numberinput input[type=number] {
+  text-align: center;
+}
+
+.b-numberinput .button.is-rounded {
+  padding-left: 0.75em;
+  padding-right: 0.75em;
+}
+
 .pagination .pagination-next,
 .pagination .pagination-previous {
   padding-left: 0.25em;
@@ -23448,27 +23515,33 @@ label.panel-block:hover {
 
 .b-radio.radio input[type=radio] + .check {
   display: flex;
-  align-items: center;
-  justify-content: center;
   flex-shrink: 0;
+  position: relative;
+  cursor: pointer;
   width: 1.25em;
   height: 1.25em;
-  border: 2px solid #7a7a7a;
-  border-radius: 50%;
   transition: background 150ms ease-out;
+  border-radius: 50%;
+  border: 2px solid #7a7a7a;
 }
 
 .b-radio.radio input[type=radio] + .check:before {
   content: "";
-  border-radius: 50%;
-  width: 0.625em;
-  height: 0.625em;
-  background: #23d160;
-  -webkit-transform: scale(0);
-          transform: scale(0);
+  display: flex;
+  position: absolute;
+  left: 50%;
+  margin-left: calc(-1.25em/2);
+  bottom: 50%;
+  margin-bottom: calc(-1.25em/2);
+  width: 1.25em;
+  height: 1.25em;
   transition: -webkit-transform 150ms ease-out;
   transition: transform 150ms ease-out;
   transition: transform 150ms ease-out, -webkit-transform 150ms ease-out;
+  border-radius: 50%;
+  -webkit-transform: scale(0);
+          transform: scale(0);
+  background-color: #23d160;
 }
 
 .b-radio.radio input[type=radio] + .check.is-white:before {
@@ -23556,8 +23629,8 @@ label.panel-block:hover {
 }
 
 .b-radio.radio input[type=radio]:checked + .check:before {
-  -webkit-transform: scale(1);
-          transform: scale(1);
+  -webkit-transform: scale(0.5);
+          transform: scale(0.5);
 }
 
 .b-radio.radio .control-label {
@@ -23805,6 +23878,58 @@ label.panel-block:hover {
           transform: translate3d(36.36363636%, 0, 0);
 }
 
+.switch input[type=checkbox]:focus {
+  outline: none;
+}
+
+.switch input[type=checkbox]:focus + .check {
+  box-shadow: 0 0 0.5em rgba(122, 122, 122, 0.6);
+}
+
+.switch input[type=checkbox]:focus:checked + .check {
+  box-shadow: 0 0 0.5em rgba(35, 209, 96, 0.8);
+}
+
+.switch input[type=checkbox]:focus:checked + .check.is-white {
+  box-shadow: 0 0 0.5em rgba(255, 255, 255, 0.8);
+}
+
+.switch input[type=checkbox]:focus:checked + .check.is-black {
+  box-shadow: 0 0 0.5em rgba(0, 0, 0, 0.8);
+}
+
+.switch input[type=checkbox]:focus:checked + .check.is-light {
+  box-shadow: 0 0 0.5em rgba(248, 249, 250, 0.8);
+}
+
+.switch input[type=checkbox]:focus:checked + .check.is-dark {
+  box-shadow: 0 0 0.5em rgba(52, 58, 64, 0.8);
+}
+
+.switch input[type=checkbox]:focus:checked + .check.is-primary {
+  box-shadow: 0 0 0.5em rgba(35, 209, 96, 0.8);
+}
+
+.switch input[type=checkbox]:focus:checked + .check.is-info {
+  box-shadow: 0 0 0.5em rgba(23, 162, 184, 0.8);
+}
+
+.switch input[type=checkbox]:focus:checked + .check.is-success {
+  box-shadow: 0 0 0.5em rgba(4, 108, 190, 0.8);
+}
+
+.switch input[type=checkbox]:focus:checked + .check.is-warning {
+  box-shadow: 0 0 0.5em rgba(255, 193, 7, 0.8);
+}
+
+.switch input[type=checkbox]:focus:checked + .check.is-danger {
+  box-shadow: 0 0 0.5em rgba(217, 36, 66, 0.8);
+}
+
+.switch input[type=checkbox]:focus:checked + .check.is-twitter {
+  box-shadow: 0 0 0.5em rgba(64, 153, 255, 0.8);
+}
+
 .switch .control-label {
   padding-left: 0.5em;
 }
@@ -23855,58 +23980,6 @@ label.panel-block:hover {
 
 .switch:hover input[type=checkbox]:checked + .check.is-twitter {
   background: rgba(64, 153, 255, 0.9);
-}
-
-.switch:focus {
-  outline: none;
-}
-
-.switch:focus input[type=checkbox] + .check {
-  box-shadow: 0 0 0.5em rgba(122, 122, 122, 0.6);
-}
-
-.switch:focus input[type=checkbox]:checked + .check {
-  box-shadow: 0 0 0.5em rgba(35, 209, 96, 0.8);
-}
-
-.switch:focus input[type=checkbox]:checked + .check.is-white {
-  box-shadow: 0 0 0.5em rgba(255, 255, 255, 0.8);
-}
-
-.switch:focus input[type=checkbox]:checked + .check.is-black {
-  box-shadow: 0 0 0.5em rgba(0, 0, 0, 0.8);
-}
-
-.switch:focus input[type=checkbox]:checked + .check.is-light {
-  box-shadow: 0 0 0.5em rgba(248, 249, 250, 0.8);
-}
-
-.switch:focus input[type=checkbox]:checked + .check.is-dark {
-  box-shadow: 0 0 0.5em rgba(52, 58, 64, 0.8);
-}
-
-.switch:focus input[type=checkbox]:checked + .check.is-primary {
-  box-shadow: 0 0 0.5em rgba(35, 209, 96, 0.8);
-}
-
-.switch:focus input[type=checkbox]:checked + .check.is-info {
-  box-shadow: 0 0 0.5em rgba(23, 162, 184, 0.8);
-}
-
-.switch:focus input[type=checkbox]:checked + .check.is-success {
-  box-shadow: 0 0 0.5em rgba(4, 108, 190, 0.8);
-}
-
-.switch:focus input[type=checkbox]:checked + .check.is-warning {
-  box-shadow: 0 0 0.5em rgba(255, 193, 7, 0.8);
-}
-
-.switch:focus input[type=checkbox]:checked + .check.is-danger {
-  box-shadow: 0 0 0.5em rgba(217, 36, 66, 0.8);
-}
-
-.switch:focus input[type=checkbox]:checked + .check.is-twitter {
-  box-shadow: 0 0 0.5em rgba(64, 153, 255, 0.8);
 }
 
 .switch.is-small {
@@ -24160,7 +24233,7 @@ label.panel-block:hover {
   flex-shrink: 0;
 }
 
-.b-tabs .is-disabled {
+.b-tabs .tabs li.is-disabled {
   pointer-events: none;
   cursor: not-allowed;
   opacity: 0.5;
@@ -24789,8 +24862,12 @@ label.panel-block:hover {
   top: 0;
   left: 0;
   width: 100%;
+  height: 100%;
   opacity: 0;
   outline: none;
+}
+
+.upload input[type=file].file-draggable {
   z-index: -1;
 }
 
@@ -32430,7 +32507,14 @@ video {
 }
 
 .cards-projects {
-  background-color: #fdfbf7;
+  background-color: #f5f5f5;
+  color: black;
+}
+
+a {
+  color: #046cbe;
+  cursor: pointer;
+  text-decoration: none;
 }
 
 @media (min-width: 640px){

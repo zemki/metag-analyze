@@ -27,8 +27,6 @@ $factory->define(Entry::class, function (Faker $faker,$params) {
 		'begin' => $begin,
 		'end' => $end,
 		'inputs' => '{}',
-		'content' => $faker->sentence,
-		'comment' => $faker->sentence,
 		'case_id' => function() {
 			return  (isset($params['case_id']) ? $params['case_id'] : factory(App\Cases::class)->create()->id);
 		},

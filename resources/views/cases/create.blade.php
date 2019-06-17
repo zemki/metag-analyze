@@ -49,7 +49,7 @@
 							</select>
 						</div>
 					</div>
-					<div class="column" v-show="newcase.duration.message != ''" v-html="'Estimated end: ' +newcase.duration.message">
+					<div class="column" v-show="newcase.duration.message != ''" v-html="'Estimated end (if the user log-in today): ' +newcase.duration.message">
 
 					</div>
 				</div>
@@ -58,7 +58,10 @@
 
 			<div class="field">
 				<div class="control">
-					<input type="text" class="input" name="email" list="email">
+					<label for="duration" class="label">
+						User
+					</label>
+					<input type="text" class="input" name="email" list="email" autocomplete="off">
 
 
 					<datalist id="email">
@@ -67,6 +70,13 @@
 						@endforeach
 					</datalist>
 
+				</div>
+			</div>
+			<div class="field">
+				<div class="control">
+					<b-field label="Password length">
+						<b-numberinput name="passwordLength"  controls-position="compact" type="is-light" min="3" max="12" :editable="false" steps="1"></b-numberinput>
+					</b-field>
 				</div>
 			</div>
 		<div class="field">

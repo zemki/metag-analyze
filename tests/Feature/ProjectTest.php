@@ -23,7 +23,6 @@ class ProjectTest extends TestCase
             'name' => $this->faker->name,
             'description' => $this->faker->name,
             'created_by' => auth()->user()->id,
-            'duration' => 'a lot',
             'is_locked' => 0
         ];
 

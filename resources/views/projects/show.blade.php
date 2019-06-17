@@ -6,7 +6,7 @@
 
 		<nav class="breadcrumb has-succeeds-separator is-small" aria-label="breadcrumbs">
 			<ul>
-				<li><a href="#">Metag</a></li>
+				<li>Metag</li>
 				<li><a href="{{url('/')}}">Projects</a></li>
 				<li class="is-active" aria-current="page"><a href="#">{{$project->name}}</a></li>
 			</ul>
@@ -31,32 +31,38 @@
 				{{$project->description}}
 			</p>
 		</div>
-		<table class="table">
-			<thead>
-				<tr>
-					<th><abbr title="id">#</abbr></th>
-					<th>Case name</th>
-					<th>Case duration</th>
-					<th>Assigned User</th>
-				</tr>
-			</thead>
-			@forelse($project->cases as $case)
 
+			<div class="columns is-multiline subpixel-antialiased">
+				@forelse($project->cases as $case)
 
-			<tbody>
+					<div class="column is-4 overflow-auto ">
+						<article class="cards-projects items-stretch .flex-grow-0 h-56 px-2 border-solid border-4 border-gray-100">
+							<div class="mb-2">
+								<p class="text-2xl font-bold ">
+										<a href="{{$project->id.$case->path()}}" target="_blank">
+											{{$case->name}}
+										</a>
+										<i class="">&rsaquo;</i>
+									</a>
+								</p>
+								<p class="text-sm text-gray-600">
+									{{$case->user? $case->user->email : 'no user assigned'}}
+								</p>
 
-				<tr>
-					<td>{{$case->id}}</td>
-					<td><a href="{{$case->path()}}" target="_blank">{{$case->name}}</a></td>
-					<td>{{$case->duration}}</td>
-					<td>{{$case->user? $case->user->email : 'no user assigned'}}</td>
-				</tr>
-			</tbody>
-			@empty
-			<br>
-			no cases yet
-			@endforelse
-		</table>
+							</div>
+							<div>
+								Entries: {{$case->entries->count()}}
+							</div>
+							<div class="">
+								<p class="text-base">{{$case->duration}} </p>
+							</div>
+						</article>
+					</div>
+
+				@empty
+					no cases yet
+				@endforelse
+			</div>
 	</b-tab-item>
 
 	<b-tab-item label="Inputs"><edit-project :data="{{json_encode($data)}}" :project="{{$project}}"></edit-project></b-tab-item>

@@ -14,7 +14,7 @@
 Auth::routes();
 
 
-Route::group(['middleware' => 'auth'], function(){
+Route::group(['middleware' => ['auth','authorised']], function(){
 
 	Route::get('/','ProjectController@index');
 
@@ -57,9 +57,6 @@ Route::group(['middleware' => 'auth'], function(){
 	Route::get('/media/{project}','MediaController@show');
 
 	Route::post('/users','UserController@store');
-
-
-
 
 });
 

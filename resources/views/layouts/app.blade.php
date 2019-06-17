@@ -31,13 +31,12 @@
     <div id="app">
         @include('layouts.nav')
         @if(session()->has('message'))
-            <div class="notification is-info">
-                <button class="delete"></button>
+            <b-notification :active.sync="mainNotification" aria-close-label="Close notification">
                 {{session()->get('message')}}
-            </div>
+            </b-notification>
 
             @endif
-        <main class="py-4 container">
+        <main class="py-4 container mx-auto px-40">
             @yield('content')
         </main>
     </div>

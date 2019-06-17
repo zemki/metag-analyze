@@ -40,6 +40,16 @@ class User extends Authenticatable
         return $this->belongsToMany('App\Role','user_roles')->withTimestamps();
     }
 
+    public function isAdmin()
+    {
+        return in_array('admin',$this->roles()->pluck('roles.name')->toArray());
+    }
+
+    public function isResearcher()
+    {
+        return in_array('researcher',$this->roles()->pluck('roles.name')->toArray());
+    }
+
     public function profile()
     {
        return $this->hasOne(Profile::class);

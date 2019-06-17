@@ -25,7 +25,7 @@ class CaseEntriesTest extends TestCase
 
         $project = auth()->user()->projects()->create(factory(Project::class)->raw());
 
-        $case = $project->addCase("test case");
+        $case = $project->addCase("test case","test duration");
 
         $case->addUser(auth()->user());
 

@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Middleware;
-
+use Illuminate\Support\Facades\Auth;
 use Closure;
 
 class Researcher
@@ -23,6 +23,6 @@ class Researcher
     }
 
 
-    return $next($request);
+        return abort(401);
     }
 }

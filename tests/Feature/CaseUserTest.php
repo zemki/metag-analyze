@@ -20,7 +20,7 @@ class CaseUserTest extends TestCase
 
         $project = auth()->user()->projects()->create(factory(Project::class)->raw());
 
-        $case = $project->addCase("test case");
+        $case = $project->addCase("test case","test duration");
 
         $user = [
             'username' => $this->faker->name,
@@ -39,19 +39,13 @@ class CaseUserTest extends TestCase
     /** @test */
     public function mutliple_cases_can_have_one_user()
     {
-        $this->signIn();
+        $user = $this->signIn();
 
         $project = auth()->user()->projects()->create(factory(Project::class)->raw());
 
-        $case = $project->addCase("test case");
 
-        $user = [
-            'username' => $this->faker->name,
-            'email' => $this->faker->email,
-            'password' => "test"
-        ];
 
-        $user = $this->create_user();
+      //  $user = $this->create_user();
 
         $this->create_multiple_cases_in_project($project,$user,10);
 
@@ -62,7 +56,7 @@ class CaseUserTest extends TestCase
     public function create_multiple_cases_in_project($project,$user,$numberofcases = 3)
     {
         for ($i=0; $i < $numberofcases; $i++) {
-           $case = $project->addCase("test case");
+           $case = $project->addCase("test case","test duration");
            $u = $case->addUser($user);
        }
    }

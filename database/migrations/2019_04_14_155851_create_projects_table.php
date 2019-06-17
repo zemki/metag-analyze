@@ -18,15 +18,18 @@ class CreateProjectsTable extends Migration
             $table->string('name', 200);
             $table->string('description', 250);
 
-            // inputs are binded to project because every case in a project needs to have same inputs
-
+            // inputs are bind to project because every case in a project needs to have same inputs
             $table->text('inputs')->nullable();
 
-            $table->integer('created_by')->unsigned()->references('id')->on('users')->onDelete('cascade');
-            $table->integer('is_locked')->unsigned();
+            // nullable because they might be optional
+
+            $table->unsignedInteger('created_by')->references('id')->on('users')->onDelete('cascade');
+            $table->unsignedInteger('is_locked');
             $table->timestamps();
 
             $table->foreign('created_by')->references('id')->on('users');
+
+
 
 
         });

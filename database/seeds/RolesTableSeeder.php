@@ -14,13 +14,9 @@ class RolesTableSeeder extends Seeder
     public function run()
     {
 
-	    DB::table('roles')->insert([
+	    DB::table('roles')->insert([[
 	            'name' => "admin",
 	            'description' => "user with all privileges"
-	        ],
-	    	[
-	            'name' => "supervisor",
-	            'description' => "create projects and monitor them"
 	        ],
 	    	[
 	            'name' => "researcher",
@@ -29,7 +25,7 @@ class RolesTableSeeder extends Seeder
 	    	[
 	            'name' => "user",
 	            'description' => "user of the app and data provider"
-	        ]);
+	        ]]);
 
     }
 }

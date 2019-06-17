@@ -13,13 +13,13 @@ class CreateMediaGroupsTable extends Migration
      */
     public function up()
     {
-        Schema::create('media_groups', function (Blueprint $table) {
+/*        Schema::create('media_groups', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name', 200);
             $table->string('description', 250)->nullable();
 
             $table->timestamps();
-        });
+        });*/
     }
 
     /**

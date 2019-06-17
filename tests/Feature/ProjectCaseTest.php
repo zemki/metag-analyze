@@ -22,23 +22,26 @@ class ProjectCaseTest extends TestCase
   ->withCases(1)
   ->create();
 
-  $this->patch($project->cases[0]->path(),[
+  $this->patch("/projects/".$project->id.$project->cases[0]->path(),[
     'name' => 'changed'
   ]);
 
   $this->assertDatabaseHas('cases',[
     'name' => 'changed'
   ]);
+
 }
 
 /** @test */
 public function a_project_can_have_cases()
 {
-
-  $project = ProjectFactory::create();
+    $this->withoutExceptionHandling();
+  $project = ProjectFactory::createdBy($this->signIn())->create();
 
   $this->actingAs($project->created_by())->post($project->path().'/cases',[
-    'name' => 'Test case'
+    'name' => 'Test case',
+      'duration' => 'test duration',
+      'email' => $project->created_by()->email
   ]);
 
   $this->get($project->path())->assertSee('Test case');
@@ -93,8 +96,9 @@ public function a_case_require_a_name()
 public function a_case_can_have_entries()
 {
     $this->withoutExceptionHandling();
-    $this->signIn();
-  $project = ProjectFactory::createdBy($this->signIn())
+   $user =  $this->signIn();
+
+  $project = ProjectFactory::createdBy($user)
   ->withCases(1)
   ->create();
 
@@ -102,6 +106,7 @@ public function a_case_can_have_entries()
 
   $newentry = factory('App\Entry')->make(['case_id' => $case->id])->toArray();
 
+    // @TODO build a test with api authentication
   $this->actingAs($case->user()->first())->post('/api/v1'.$case->path().'/entries',$newentry);
   $this->assertDatabaseHas('entries',['begin' => $newentry['begin']]);
 
