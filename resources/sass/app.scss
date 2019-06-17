@@ -13,6 +13,13 @@
 @import "~tailwindcss/utilities";
 
 
-.cards-projects{
-  background-color: $body-bg;
+.cards-projects {
+  background-color: $whitesmoke;
+  color: black;
+}
+
+a {
+  color: $text-blue;
+  cursor: pointer;
+  text-decoration: none;
 }

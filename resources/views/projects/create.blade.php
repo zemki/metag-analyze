@@ -59,78 +59,34 @@
                     </div>
                 </div>
                 <div class="columns">
-                    <div class="column is-4">
-                        <details>
-                            <summary>
+                    <div class="column ">
                                 <label for="media" class="label" style="display: inline-flex;">
                                     Media
-                                    <label id="media[]" class="checkbox" style="display: inline-block;margin-left: 5px;" onclick="selectAllHandler(this.id)">
-                                        <input type="checkbox" id="media[]i">
-                                        Select all
-                                    </label>
                                 </label>
-                            </summary>
-                            <div class="field">
-                                @forelse($media as $m)
-                                    <label class="checkbox">
-                                        <input type="checkbox" name="media[]" value="{{$m->id}}">
-                                        {{$m->name}}
-                                    </label><br>
-                                @empty
-                                    No media, please contact the administrator
-                                @endforelse
+                        <div class="control" v-for="(m,index) in newproject.media">
+                            <input type="text" name="media[]" class="input" v-model="newproject.media[index]" @keyup="handleMediaInputs(index,m)" autocomplete="off"  @keydown.enter.prevent @keydown.tab.prevent>
+                        </div>
 
-                            </div>
-                        </details>
                     </div>
-                    <div class="column is-4">
-                        <details>
-                            <summary>
-                                <label for="places" class="label" style="display: inline-flex;">
+                    <div class="column ">
+                                <label for="media" class="label" style="display: inline-flex;">
                                     Places
-                                    <label id="places[]" class="checkbox" style="display: inline-block;margin-left: 5px;" onclick="selectAllHandler(this.id)">
-                                        <input type="checkbox" id="places[]i">
-                                        Select all
-                                    </label>
                                 </label>
-                            </summary>
-                            <div class="field">
-                                @forelse($places as $place)
-                                    <label class="checkbox" >
-                                        <input type="checkbox" name="places[]" value="{{$place->id}}">
-                                        {{$place->name}}
-                                    </label><br>
-                                @empty
-                                    No Places, please contact the administrator
-                                @endforelse
+                        <div class="control" v-for="(m,index) in newproject.places">
+                            <input type="text" name="places[]" class="input" v-model="newproject.places[index]" @keyup="handlePlacesInputs(index,m)" autocomplete="off"  @keydown.enter.prevent @keydown.tab.prevent>
+                        </div>
 
-                            </div>
-                        </details>
                     </div>
-                    <div class="column is-4">
-                        <details>
-                            <summary>
-                                <label for="cp" class="label" style="display: inline-flex;">
-                                    Communication Partner
-                                    <label id="cp[]" class="checkbox" style="display: inline-block;margin-left: 5px;" onclick="selectAllHandler(this.id)">
-                                        <input type="checkbox" id="cp[]i">
-                                        Select all
-                                    </label>
+                    <div class="column ">
+                                <label for="media" class="label" style="display: inline-flex;">
+                                    Communication Partners
                                 </label>
-                            </summary>
-                            <div class="field">
-                                @forelse($cp as $c)
-                                    <label class="checkbox">
-                                        <input type="checkbox" name="cp[]" value="{{$c->id}}">
-                                        {{$c->name}}
-                                    </label><br>
-                                @empty
-                                    No Communication Partner, please contact the administrator
-                                @endforelse
+                        <div class="control" v-for="(m,index) in newproject.cp">
+                            <input type="text" name="cp[]" class="input" v-model="newproject.cp[index]" @keyup="handleCommunicationPartnerInputs(index,m)" autocomplete="off"  @keydown.enter.prevent @keydown.tab.prevent>
+                        </div>
 
-                            </div>
-                        </details>
                     </div>
+
                 </div>
 
 

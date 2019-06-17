@@ -5,7 +5,7 @@
     Metag Analyze
     </a>
 </div>
- <div class="navbar-dropdown is-right ">
+ <div class="navbar-item is-right ">
      <a class="navbar-item" href="{{ route('logout') }}"
      onclick="event.preventDefault();
      document.getElementById('logout-form').submit();">

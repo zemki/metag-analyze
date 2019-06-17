@@ -133,6 +133,7 @@ Vue.use(GoogleCharts)
         }
     },
     data: {
+        mainNotification: true,
         errormessages:{
             namemissing: "name is required. <br>",
             inputnamemissing: "input name is required. <br>",
@@ -154,7 +155,11 @@ Vue.use(GoogleCharts)
           ninputs: 0,
           inputs:[],
           config: window.inputs,
-          response: ""
+          response: "",
+            media: [""],
+            places: [""],
+            cp: [""]
+
       }
   },
   methods: {
@@ -177,6 +182,45 @@ Vue.use(GoogleCharts)
       if(this.newproject.response == "") return true
         else return false
 
-    }
+    },
+      handleMediaInputs(index,string)
+      {
+
+
+
+          if(index+1 == this.newproject.media.length)
+          {
+              if(string != "")this.newproject.media.push("");
+
+          }
+          if(index != 0 && string == "")this.newproject.media.splice(index,1);
+
+      },
+      handlePlacesInputs(index,string)
+      {
+
+
+
+          if(index+1 == this.newproject.places.length)
+          {
+              if(string != "")this.newproject.places.push("");
+
+          }
+          if(index != 0 && string == "")this.newproject.places.splice(index,1);
+
+      },
+      handleCommunicationPartnerInputs(index,string)
+      {
+
+
+
+          if(index+1 == this.newproject.cp.length)
+          {
+              if(string != "")this.newproject.cp.push("");
+
+          }
+          if(index != 0 && string == "")this.newproject.cp.splice(index,1);
+
+      }
 }
 });

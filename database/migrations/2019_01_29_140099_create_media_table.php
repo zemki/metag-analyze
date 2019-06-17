@@ -21,9 +21,7 @@ class CreateMediaTable extends Migration
             // json column about color in graph
             // probably not necessary?
             $table->text('properties')->nullable();
-            $table->integer('media_group_id')->unsigned()->references('id')->on('media_group')->onDelete('cascade');
 
-            $table->foreign('media_group_id')->references('id')->on('media_groups');
 
             $table->timestamps();
         });

@@ -36,21 +36,6 @@
 
     <h2>Inputs</h2>
 
-
-    <div class="columns is-multiline is-mobile">
-
-        <div class="inputs column is-4" v-for="(c,index) in project.inputs" :key="index">
-            <h4 v-html="c.name"></h4>
-
-
-            <p v-html="c.type"></p>
-
-            <div v-if="c.answers" v-for="(answer,index) in c.answers">
-                <p v-html="answer"></p>
-            </div>
-        </div>
-    </div>
-
     <input type="hidden" :value="JSON.stringify(thisproject.inputs)" name="inputs">
 
     <div class="field">
@@ -63,6 +48,7 @@
     </div>
     <div class="columns is-multiline is-mobile">
         <div class="inputs" v-for="(t,index) in thisproject.inputs" :key="index">
+
             <div class="column">
                 <div class="field">
                     <label for="name" class="label">
@@ -98,72 +84,6 @@
                 </span>
             </div>
         </span>
-    </div>
-</div>
-<div class="columns">
-    <div class="column is-4">
-        <details>
-            <summary>
-                <label for="media" class="label" style="display: inline-flex;">
-                    Media
-                    <label id="media[]" class="checkbox" style="display: inline-block;margin-left: 5px;" @click="selectAllHandler('media')">
-                        <input type="checkbox" id="mediai">
-                        Select all
-                    </label>
-                </label>
-            </summary>
-            <div class="field" v-for="m in data.media">
-                <label class="checkbox">
-
-                    <input type="checkbox" :id="m.id" name="media" :value="m.id" v-model="thisproject.checkedmedia">
-                    {{m.name}}
-                </label><br>
-
-
-            </div>
-        </details>
-    </div>
-    <div class="column is-4">
-        <details>
-            <summary>
-                <label for="places" class="label" style="display: inline-flex;">
-                    Places
-                    <label id="places" class="checkbox" style="display: inline-block;margin-left: 5px;" @click="selectAllHandler('places')">
-                        <input type="checkbox" id="placesi">
-                        Select all
-                    </label>
-                </label>
-            </summary>
-            <div class="field" v-for="p in data.places">
-                <label class="checkbox" >
-                    <input type="checkbox" :id="p.id" name="places" :value="p.id" v-model="thisproject.checkedplaces">
-                    {{p.name}}
-                </label><br>
-
-            </div>
-        </details>
-    </div>
-    <div class="column is-4">
-        <details>
-            <summary>
-                <label for="cp" class="label" style="display: inline-flex;">
-                    Communication Partner
-                    <label id="cp" class="checkbox" style="display: inline-block;margin-left: 5px;" @click="selectAllHandler('cp')">
-                        <input type="checkbox" id="cpi">
-                        Select all
-                    </label>
-                </label>
-            </summary>
-            <div class="field" v-for="c in data.cp">
-
-                <label class="checkbox">
-                    <input type="checkbox" :id="c.id" name="cp" :value="c.id" v-model="thisproject.checkedcp">
-                    {{c.name}}
-                </label><br>
-
-
-            </div>
-        </details>
     </div>
 </div>
 <div class="field">
@@ -259,9 +179,10 @@
                 fillInputs: function()
                 {
 
-                    console.log(this.project);
-                    this.thisproject.inputs = this.project.inputs;
-                    this.thisproject.ninputs = this.project.inputs.length;
+
+                    this.thisproject.inputs = JSON.parse(this.project.inputs);
+                    this.thisproject.ninputs = JSON.parse(this.project.inputs,true).length;
+                    console.log(this.thisproject.inputs);
                     this.thisproject.name = this.project.name;
                     this.thisproject.description = this.project.description;
 
@@ -292,32 +213,6 @@
                         }
 
                     });
-
-                },
-                selectAllHandler: function(which)
-                {
-
-                    var items = document.getElementsByName(which);
-                    var element = document.getElementById(which+"i");
-                    console.log(which);
-                    console.log(element.checked);
-                    var varname = 'checked'+which;
-                    if(!element.checked){
-                        for (var i = 0; i < items.length; i++) {
-                            if (items[i].type == 'checkbox')
-                                items[i].checked = false;
-                        }
-                        console.log(varname);
-                        this.thisproject[varname] = [];
-                    }else{
-                        for (var i = 0; i < items.length; i++) {
-                            if (items[i].type == 'checkbox'){
-                                items[i].checked = true;
-                            }
-                             this.thisproject[varname] = this.data[which];
-                        }
-                    }
-
 
                 }
             }

@@ -67,27 +67,39 @@ class ProjectController extends Controller
             'name' => 'required',
             'description' => 'required',
             'created_by' => 'required',
-            'duration' => 'nullable',
             'is_locked' => 'nullable ',
             'inputs' => 'nullable'
         ]);
 
-
-        if(!isset($attributes['is_locked'])) $attributes['is_locked'] = 0;
-        else{
-
-            if($attributes['is_locked'] != 0 && $attributes['is_locked'] != 1)
-            {
-                if($attributes['is_locked'] == "on")$attributes['is_locked'] = 1;
-                elseif($attributes['is_locked'] == "off") $attributes['is_locked'] = 0;
-            }
-        }
+        $attributes = $this->handleLockedValue($attributes);
 
         $project = auth()->user()->projects()->create($attributes);
 
-        $project->media()->sync(Media::whereIn('id',$media)->get());
-        $project->places()->sync(Place::whereIn('id',$places)->get());
-        $project->communication_partners()->sync(Communication_partner::whereIn('id',$cp)->get());
+        if($media){
+            $mToSync = array();
+            foreach (array_filter($media) as $m){
+                array_push($mToSync,Media::firstOrCreate(['name' => $m])->id);
+
+            }
+            $project->media()->sync(Media::whereIn('id',$mToSync)->get());
+        }
+        if($places){
+            $pToSync = array();
+            foreach (array_filter($places) as $p){
+                array_push($pToSync,Place::firstOrCreate(['name' => $p])->id);
+
+            }
+            $project->places()->sync(Place::whereIn('id',$pToSync)->get());
+        }
+        if($cp){
+            $cToSync = array();
+            foreach (array_filter($cp) as $c){
+                array_push($cToSync,Communication_partner::firstOrCreate(['name' => $c])->id);
+
+            }
+            $project->communication_partners()->sync(Communication_partner::whereIn('id',$cToSync)->get());
+        }
+
 
 
         return redirect('/projects');
@@ -122,5 +134,22 @@ class ProjectController extends Controller
         return response("Updated project successfully");
 
 
+    }
+
+    /**
+     * @param $attributes
+     * @return mixed
+     */
+    public function handleLockedValue($attributes)
+    {
+        if (!isset($attributes['is_locked'])) $attributes['is_locked'] = 0;
+        else {
+
+            if ($attributes['is_locked'] != 0 && $attributes['is_locked'] != 1) {
+                if ($attributes['is_locked'] == "on") $attributes['is_locked'] = 1;
+                elseif ($attributes['is_locked'] == "off") $attributes['is_locked'] = 0;
+            }
+        }
+        return $attributes;
     }
 }

@@ -26,27 +26,6 @@ class ProjectFactory
 		return $this;
 	}
 
-	public function withMedia($count)
-	{
-		$this->mediaCount = $count;
-
-		return $this;
-	}
-
-	public function withPlaces($count)
-	{
-		$this->placeCount = $count;
-
-		return $this;
-	}
-
-	public function withCommunicationPartners($count)
-	{
-		$this->communicationpartnerCount = $count;
-
-		return $this;
-	}
-
 	public function withInputs($inputs)
 	{
 		$this->inputs = $inputs;
@@ -68,9 +47,9 @@ class ProjectFactory
 			'inputs' => $this->inputs ?? ''
 		]);
 
-		$project->media()->sync(factory(Media::class,$this->mediaCount)->create());
+/*		$project->media()->sync(factory(Media::class,$this->mediaCount)->create());
 		$project->places()->sync(factory(Place::class,$this->placeCount)->create());
-		$project->communication_partners()->sync(factory(Communication_Partner::class,$this->communicationpartnerCount)->create());
+		$project->communication_partners()->sync(factory(Communication_Partner::class,$this->communicationpartnerCount)->create());*/
 
 		factory(Cases::class,$this->casesCount)->create([
 			'project_id' => $project->id,
