@@ -15,12 +15,14 @@
 </div>
 <div class="content">
 	<b-tabs position="is-centered" class="block">
-		<b-tab-item label="Details"><div class="level">
+		<b-tab-item label="Case List"><div class="level">
 			<div class="level-left"><h1>{{$project->name}}</h1></div>
 			<div class="level-right">
 				<div class="field">
 					<div class="control">
-						<a href="{{$project->path().'/cases/new'}}"><button  class="button is-link is-primary">Create Case</button></a>
+						<a href="{{$project->path().'/cases/new'}}">
+							<button  class="button is-link is-primary">Create Case</button>
+						</a>
 					</div>
 				</div>
 			</div>
@@ -39,7 +41,7 @@
 						<article class="cards-projects items-stretch .flex-grow-0 h-56 px-2 border-solid border-4 border-gray-100">
 							<div class="mb-2">
 								<p class="text-2xl font-bold ">
-										<a href="{{$project->id.$case->path()}}" target="_blank">
+										<a href="{{$project->id.$case->path()}}">
 											{{$case->name}}
 										</a>
 										<i class="">&rsaquo;</i>
@@ -56,6 +58,13 @@
 							<div class="">
 								<p class="text-base">{{$case->duration}} </p>
 							</div>
+							<div class="mt-3" style="float:right;">
+								<form action="{{url($project->path().'/cases/'.$case->id)}}" method="POST">
+									{{ csrf_field() }}
+									{{ method_field('DELETE') }}
+									<button type="submit" class="button is-danger text-white">Delete Case</button>
+								</form>
+							</div>
 						</article>
 					</div>
 
@@ -65,7 +74,24 @@
 			</div>
 	</b-tab-item>
 
-	<b-tab-item label="Inputs"><edit-project :data="{{json_encode($data)}}" :project="{{$project}}"></edit-project></b-tab-item>
+	<b-tab-item label="Inputs">
+
+			@if($project->isEditable())
+
+			@else
+			<b-notification
+					:active.sync="mainNotification"
+					aria-close-label="Close notification"
+					type="is-danger"
+					role="alert"
+			>
+				You created a case, project is not editable
+			</b-notification>
+
+		@endif
+
+		<edit-project :editable="{{$project->isEditable() ? 'true' : 'false'}}" :project="{{$project}}"></edit-project>
+	</b-tab-item>
 
 </b-tabs>
 

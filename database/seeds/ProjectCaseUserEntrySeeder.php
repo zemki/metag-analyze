@@ -33,8 +33,6 @@ class ProjectCaseUserEntrySeeder extends Seeder
             $c = $alessandrobelli->latestCase;
             $entriesCount = (int)$this->command->ask('How many entries for this case do you need ?', 1);
             $p->media()->sync(\App\Media::inRandomOrder()->limit(10)->get());
-            $p->places()->sync(factory(App\Place::class, 10)->create());
-            $p->communication_partners()->sync(factory(App\Communication_Partner::class, 10)->create());
             factory(App\Entry::class, $entriesCount)->create(['case_id'=>$c->id]);
 
 

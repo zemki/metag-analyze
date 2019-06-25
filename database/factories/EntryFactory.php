@@ -32,12 +32,6 @@ $factory->define(Entry::class, function (Faker $faker,$params) {
 		},
 		'media_id' => function() {
 			return factory(App\Media::class)->create()->id;
-		},
-		'place_id' => function() {
-			return factory(App\Place::class)->create()->id;
-		},
-		'communication_partner_id' => function() {
-			return factory(App\Communication_Partner::class)->create()->id;
 		}
     ];
 });

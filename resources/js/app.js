@@ -40,7 +40,8 @@ Vue.use(GoogleCharts)
     el: '#app',
     computed: {
         'newproject.formattedinputstring': function(){
-          console.log("computed formattedstring");
+            console.log("computed formattedstring");
+
             return JSON.stringify(this.newproject.inputs);
         }
     },
@@ -48,6 +49,7 @@ Vue.use(GoogleCharts)
         'newcase.duration.selectedUnit': function (newVal,OldVal){
             if(!_.isEmpty(this.newcase.duration.input)){
 
+        /*
             if(newVal == 'week') var numberOfDaysToAdd = parseInt(this.newcase.duration.input)*7;
             else var numberOfDaysToAdd = parseInt(this.newcase.duration.input);
 
@@ -64,6 +66,7 @@ Vue.use(GoogleCharts)
 
             this.newcase.duration.message = cdd + '.'+ cmm + '.'+ cy;
             this.newcase.duration.value = "start:"+dd + '.'+ mm + '.'+ y+'|end:'+this.newcase.duration.message;
+        */
             }else{
                 this.newcase.duration.message = "";
                 this.newcase.duration.value = "";
@@ -90,6 +93,7 @@ Vue.use(GoogleCharts)
                 var cmm = calculatedDate.getMonth() + 1;
                 var cy = calculatedDate.getFullYear();
 
+                // duration in days and change to this after first login
                 this.newcase.duration.message = cdd + '.'+ cmm + '.'+ cy;
                 this.newcase.duration.value = "start:"+dd + '.'+ mm + '.'+ y+'|end:'+this.newcase.duration.message;
 
@@ -114,7 +118,7 @@ Vue.use(GoogleCharts)
                     type: "",
                     mandatory: true,
                     numberofanswer: 0,
-                    answers: []
+                    answers: [""]
                 }
 
                 for (var i = 0; i < direction; i++) {
@@ -134,6 +138,7 @@ Vue.use(GoogleCharts)
     },
     data: {
         mainNotification: true,
+        selectedEntriesData: [],
         errormessages:{
             namemissing: "name is required. <br>",
             inputnamemissing: "input name is required. <br>",
@@ -153,12 +158,11 @@ Vue.use(GoogleCharts)
         newproject:{
           name: "",
           ninputs: 0,
-          inputs:[],
+          inputs:[
+          ],
           config: window.inputs,
           response: "",
-            media: [""],
-            places: [""],
-            cp: [""]
+            media: [""]
 
       }
   },
@@ -183,43 +187,34 @@ Vue.use(GoogleCharts)
         else return false
 
     },
-      handleMediaInputs(index,string)
+      handleMediaInputs(index,mediaName)
       {
 
 
-
-          if(index+1 == this.newproject.media.length)
+          let isLastElement = index+1 == this.newproject.media.length;
+          if(isLastElement)
           {
-              if(string != "")this.newproject.media.push("");
+              if(mediaName != "")this.newproject.media.push("");
 
           }
-          if(index != 0 && string == "")this.newproject.media.splice(index,1);
+          if(index != 0 && mediaName == "")this.newproject.media.splice(index,1);
 
       },
-      handlePlacesInputs(index,string)
+      handleAdditionalInputs(questionindex,answerindex,answer)
       {
+          let isLastElement = answerindex+1 == this.newproject.inputs[questionindex].answers.length;
 
-
-
-          if(index+1 == this.newproject.places.length)
+          if(isLastElement)
           {
-              if(string != "")this.newproject.places.push("");
+              if(answer != "")this.newproject.inputs[questionindex].answers.push("");
 
           }
-          if(index != 0 && string == "")this.newproject.places.splice(index,1);
-
-      },
-      handleCommunicationPartnerInputs(index,string)
-      {
 
 
-
-          if(index+1 == this.newproject.cp.length)
-          {
-              if(string != "")this.newproject.cp.push("");
-
+          let middleElementRemoved = answerindex != 0 && answer == "";
+          if(middleElementRemoved){
+              this.newproject.inputs[questionindex].answers.splice(answerindex,1);
           }
-          if(index != 0 && string == "")this.newproject.cp.splice(index,1);
 
       }
 }

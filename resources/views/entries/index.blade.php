@@ -13,11 +13,35 @@
             </nav>
         </div>
     </div>
+
+    <div class="mb-3">
+    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            @click="selectedEntriesData={{json_encode($entriesByMedia)}}"
+    >
+        Media
+    </button>
+    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+    @click="selectedEntriesData={{json_encode($entriesByPlace)}}"
+    >
+        Places
+    </button>
+    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+    @click="selectedEntriesData={{json_encode($entriesByCommunicationPartner)}}"
+    >
+        Communication Partner
+    </button>
+    </div>
+
+
     @if($entriesByMedia != [])
-    <timeline :data="{{ json_encode($entriesByMedia) }}" :discrete="true" xtitle="time" ytitle="media" :download="true">
+    <timeline :data="selectedEntriesData" :discrete="true" xtitle="time" ytitle="media" :download="true">
     @else
         No entries for this study
     @endif
     </timeline>
+
+@endsection
+
+@section('pagespecificscripts')
 
 @endsection

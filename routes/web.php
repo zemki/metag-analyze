@@ -29,6 +29,7 @@ Route::group(['middleware' => ['auth','authorised']], function(){
 	Route::get('/projects/new','ProjectController@create');
 	Route::get('/projects/{project}','ProjectController@show');
 	Route::patch('/projects/{project}','ProjectController@update');
+	Route::delete('/projects/{project}','ProjectController@destroy');
 
 	/**
 	 * Case Routes
@@ -39,6 +40,7 @@ Route::group(['middleware' => ['auth','authorised']], function(){
 	Route::post('/projects/{project}/cases','ProjectCasesController@store');
 	Route::get('/projects/{project}/cases/{case}','ProjectCasesController@show');
 	Route::patch('/projects/{project}/cases/{case}','ProjectCasesController@update');
+	Route::delete('/projects/{project}/cases/{case}','ProjectCasesController@destroy');
 
 	/**
 	 * Media Group Routes

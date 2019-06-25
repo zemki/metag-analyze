@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Cases;
 use Illuminate\Http\Request;
 use App\Project;
 use App\Media;
@@ -31,13 +32,10 @@ class ProjectController extends Controller
 
         $this->authorize('update',$project);
 
-        $project->media = $project->media()->pluck('media.id')->toArray();
-        $project->places = $project->places()->pluck('places.id')->toArray();
-        $project->communication_partners = $project->communication_partners()->pluck('communication_partners.id')->toArray();
+        $project->media = $project->media()->pluck('media.name')->toArray();
 
-        $data['data']['media'] = Media::all();
-        $data['data']['places'] = Place::all();
-        $data['data']['cp'] = Communication_partner::all();
+         $data['data']['media'] = Media::all();
+
         $data['project'] = $project;
 
         return view('projects.show',$data);
@@ -50,8 +48,7 @@ class ProjectController extends Controller
     public function create()
     {
         $data['media'] = Media::all();
-        $data['places'] = Place::all();
-        $data['cp'] = Communication_partner::all();
+
 
         return view('projects.create',$data);
     }
@@ -59,9 +56,7 @@ class ProjectController extends Controller
 
     public function store(Request $request){
 
-        $cp = request()->cp;
         $media = request()->media;
-        $places = request()->places;
 
         $attributes = request()->validate([
             'name' => 'required',
@@ -73,6 +68,7 @@ class ProjectController extends Controller
 
         $attributes = $this->handleLockedValue($attributes);
 
+
         $project = auth()->user()->projects()->create($attributes);
 
         if($media){
@@ -83,37 +79,20 @@ class ProjectController extends Controller
             }
             $project->media()->sync(Media::whereIn('id',$mToSync)->get());
         }
-        if($places){
-            $pToSync = array();
-            foreach (array_filter($places) as $p){
-                array_push($pToSync,Place::firstOrCreate(['name' => $p])->id);
-
-            }
-            $project->places()->sync(Place::whereIn('id',$pToSync)->get());
-        }
-        if($cp){
-            $cToSync = array();
-            foreach (array_filter($cp) as $c){
-                array_push($cToSync,Communication_partner::firstOrCreate(['name' => $c])->id);
-
-            }
-            $project->communication_partners()->sync(Communication_partner::whereIn('id',$cToSync)->get());
-        }
-
 
 
         return redirect('/projects');
 
     }
 
+
+
     public function update(Project $project,Request $request)
     {
 
         $this->authorize('update',$project);
 
-        $cp = request()->cp;
         $media = request()->media;
-        $places = request()->places;
 
         $attributes = request()->validate([
             'name' => 'required',
@@ -122,13 +101,18 @@ class ProjectController extends Controller
             'is_locked' => 'nullable ',
             'inputs' => 'nullable'
         ]);
+
         $project->update($request->all());
         $project->save();
 
-        $project->media()->sync(Media::whereIn('id',$media)->get());
-        $project->places()->sync(Place::whereIn('id',$places)->get());
-        $project->communication_partners()->sync(Communication_partner::whereIn('id',$cp)->get());
+        if($media){
+            $mToSync = array();
+            foreach (array_filter($media) as $m){
+                array_push($mToSync,Media::firstOrCreate(['name' => $m])->id);
 
+            }
+            $project->media()->sync(Media::whereIn('id',$mToSync)->get());
+        }
 
 
         return response("Updated project successfully");
@@ -151,5 +135,19 @@ class ProjectController extends Controller
             }
         }
         return $attributes;
+    }
+
+
+    public function destroy(Project $project)
+    {
+        if($project->isEditable()){
+            $project->delete();
+        }else{
+            return redirect()->back()->with('message', 'Project has entries, you cannot delete it');
+        }
+
+
+        return redirect(url(''))->with('message','Project deleted');
+
     }
 }

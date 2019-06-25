@@ -28,27 +28,14 @@ class ProjectCasesController extends Controller
             ->flatten()
             ->chunk(3)
             ->toArray();
-        $data['entriesByPlace'] = $case->entries()
-            ->join('places','entries.place_id','=','places.id')
-            ->get()
-            ->map
-            ->only(['name','begin','end'])
-            ->flatten()
-            ->chunk(3)
-            ->toArray();
-        $data['entriesByCommunicationPartner'] = $case->entries()
-            ->join('communication_partners','entries.communication_partner_id','=','communication_partners.id')
-            ->get()
-            ->map
-            ->only(['name','begin','end'])
-            ->flatten()
-            ->chunk(3)
-            ->toArray();
-        // GET MEDIA, PLACES, COMMUNICATION PARTNERS
+
+        // THEN GET ENTRIES BY INPUTS
+        // EXTRACT FROM ENTRIES->INPUT THE LIST OF THEM, THEN DO THE SAME THING
+        // DYNAMIC VAR NAME?
+
 
         $data['entriesByMedia'] = array_map('array_values', $data['entriesByMedia']);
-        $data['entriesByPlace'] = array_map('array_values', $data['entriesByPlace']);
-        $data['entriesByCommunicationPartner'] = array_map('array_values', $data['entriesByCommunicationPartner']);
+
         $data['case'] = $case;
 
 
@@ -119,4 +106,17 @@ class ProjectCasesController extends Controller
 
 		return redirect($project->path());
 	}
+
+    public function destroy(Project $project,Cases $case)
+    {
+     if($case->isEditable()){
+         $case->delete();
+     }else{
+         return redirect()->back()->with('message', 'case has entries, you cannot delete it');
+     }
+
+
+        return redirect($project->path())->with('message','case deleted');
+
+    }
 }
