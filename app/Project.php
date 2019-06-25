@@ -11,14 +11,19 @@ class Project extends Model
 	];
 
 
-  public function entries()
+  public function entries($class)
   {
-    return $this->hasMany(Entry::class,'case_id');
-}
+    return $this->hasMany($class,'case_id');
+    }
 /*public function getInputsAttribute($value)
 {
   return is_array($value) ? $value : (array) json_decode($value);
 }*/
+
+public function isEditable()
+{
+    return $this->cases()->count() == 0;
+}
 
 public function cases()
 {
@@ -30,14 +35,6 @@ public function media()
     return $this->belongsToMany(Media::class,'media_projects');
 }
 
-public function places()
-{
-    return $this->belongsToMany(Place::class,'place_projects');
-}
-public function communication_partners()
-{
-    return $this->belongsToMany(Communication_Partner::class,'communication_partner_projects','project_id','communication_partner_id');
-}
 
 public function path()
 {

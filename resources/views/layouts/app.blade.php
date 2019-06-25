@@ -30,13 +30,19 @@
 <body>
     <div id="app">
         @include('layouts.nav')
-        @if(session()->has('message'))
-            <b-notification :active.sync="mainNotification" aria-close-label="Close notification">
-                {{session()->get('message')}}
-            </b-notification>
+
+        <main class="py-4 container mx-auto px-40">
+            @if(session()->has('message'))
+                <b-notification
+                        :active.sync="mainNotification"
+                        aria-close-label="Close notification"
+                        type="is-danger"
+                        role="alert"
+                >
+                    {{session()->get('message')}}
+                </b-notification>
 
             @endif
-        <main class="py-4 container mx-auto px-40">
             @yield('content')
         </main>
     </div>

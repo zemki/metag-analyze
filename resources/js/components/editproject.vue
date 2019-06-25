@@ -2,7 +2,7 @@
 
     <div class="content">
         <label class="checkbox">
-          <input type="checkbox" v-model="thisproject.edit">
+          <input :disabled="!editable" type="checkbox" v-model="thisproject.edit">
           Edit name and description
       </label>
       <div class="level">
@@ -25,30 +25,34 @@
             <p v-if="!thisproject.edit" v-html="thisproject.description"></p>
             <div class="field has-addons" v-if="thisproject.edit">
                 <textarea name="description" v-model="thisproject.description" class="input textarea"></textarea>
-                <div class="control">
-                </div>
             </div>
+
         </div>
         <div class="level-right">
 
         </div>
     </div>
+        <div class="level">
+            <div class="column is-3">
+                <label for="media" class="label" style="display: inline-flex;">
+                    Media
+                </label>
+                <div class="control" v-for="(m,index) in thisproject.media">
+                    <input :disabled="!editable" type="text" name="media[]" class="input inputcreatecase" v-model="thisproject.media[index]" @keyup="handleMediaInputs(index,m)" autocomplete="off"  @keydown.enter.prevent @keydown.tab.prevent>
+                </div>
+
+            </div>
+        </div>
 
     <h2>Inputs</h2>
 
     <input type="hidden" :value="JSON.stringify(thisproject.inputs)" name="inputs">
+        <b-field label="Number of additional inputs" :disabled="!editable">
+            <b-numberinput :disabled="!editable" name="inputs" id="ninputs" controls-position="compact" type="is-light" min="0" max="3" :editable="false" steps="1" v-model.number="thisproject.ninputs"></b-numberinput>
+        </b-field>
 
-    <div class="field">
-        <label for="ninputs" class="label">
-            Number of inputs
-        </label>
-        <div class="control">
-            <input type="number" class="input" id="ninputs" min="0" max="10" value="1" v-model.number="thisproject.ninputs">
-        </div>
-    </div>
     <div class="columns is-multiline is-mobile">
         <div class="inputs" v-for="(t,index) in thisproject.inputs" :key="index">
-
             <div class="column">
                 <div class="field">
                     <label for="name" class="label">
@@ -88,7 +92,7 @@
 </div>
 <div class="field">
     <div class="control">
-        <button class="button is-link" @click.preventdefault="save">Edit Project</button>
+        <button class="button is-link" @click.preventdefault="save" :disabled="!editable">Edit Project</button>
     </div>
 </div>
 <div class="level">
@@ -105,7 +109,7 @@
 
 <script>
     export default {
-        props:['project','data'],
+        props:['project','data','editable'],
         computed: {
             'formattedinputstring': function(){
               console.log("computed formattedstring");
@@ -163,11 +167,6 @@
                         config: window.inputs,
                         response: "",
                         media: "",
-                        places: "",
-                        cp: "",
-                        checkedmedia: [],
-                        checkedplaces: [],
-                        checkedcp: []
                     }
                 }
             },
@@ -179,23 +178,24 @@
                 fillInputs: function()
                 {
 
-
                     this.thisproject.inputs = JSON.parse(this.project.inputs);
                     this.thisproject.ninputs = JSON.parse(this.project.inputs,true).length;
-                    console.log(this.thisproject.inputs);
+
+                    this.thisproject.inputs = this.thisproject.inputs.map(function(item) {
+                        item.numberofanswer = item.answers.length;
+                        return item;
+                    });
+
                     this.thisproject.name = this.project.name;
                     this.thisproject.description = this.project.description;
+                    this.thisproject.media = this.project.media;
 
-                    this.thisproject.checkedmedia = this.project.media;
-                    this.thisproject.checkedplaces = this.project.places;
-                    this.thisproject.checkedcp = this.project.communication_partners;
                 },
                 save: function()
                 {
 
-
                     let submitObject = {};
-                    _.merge(submitObject,{id: this.project.id},{name: this.thisproject.name},{description: this.thisproject.description},{inputs: this.formattedinputstring},{media: this.thisproject.checkedmedia},{places: this.thisproject.checkedplaces},{cp: this.thisproject.checkedcp});
+                    _.merge(submitObject,{id: this.project.id},{name: this.thisproject.name},{description: this.thisproject.description},{inputs: this.formattedinputstring},{media: this.thisproject.media});
 
                     window.axios.patch('../projects/'+submitObject.id, submitObject).then(response => {
 
@@ -213,6 +213,19 @@
                         }
 
                     });
+
+                },
+                handleMediaInputs(index,mediaName)
+                {
+
+
+                    let isLastElement = index+1 == this.thisproject.media.length;
+                    if(isLastElement)
+                    {
+                        if(mediaName != "")this.thisproject.media.push("");
+
+                    }
+                    if(index != 0 && mediaName == "")this.thisproject.media.splice(index,1);
 
                 }
             }

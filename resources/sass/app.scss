@@ -11,6 +11,7 @@
 @import "~tailwindcss/components";
 
 @import "~tailwindcss/utilities";
+@import '../../node_modules/@mdi/font/scss/materialdesignicons.scss';
 
 
 .cards-projects {
@@ -22,4 +23,15 @@ a {
   color: $text-blue;
   cursor: pointer;
   text-decoration: none;
+}
+
+.inputcreatecase{
+  box-shadow: none;
+    outline: 0;
+    border-width: 0 0 2px;
+    border-color: $text-blue;
+}
+
+.inputcreatecase:focus{
+  border-color: $kofi5;
 }

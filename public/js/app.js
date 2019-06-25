@@ -150,8 +150,12 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
-  props: ['project', 'data'],
+  props: ['project', 'data', 'editable'],
   computed: {
     'formattedinputstring': function formattedinputstring() {
       console.log("computed formattedstring");
@@ -208,12 +212,7 @@ __webpack_require__.r(__webpack_exports__);
         inputs: [],
         config: window.inputs,
         response: "",
-        media: "",
-        places: "",
-        cp: "",
-        checkedmedia: [],
-        checkedplaces: [],
-        checkedcp: []
+        media: ""
       }
     };
   },
@@ -224,12 +223,13 @@ __webpack_require__.r(__webpack_exports__);
     fillInputs: function fillInputs() {
       this.thisproject.inputs = JSON.parse(this.project.inputs);
       this.thisproject.ninputs = JSON.parse(this.project.inputs, true).length;
-      console.log(this.thisproject.inputs);
+      this.thisproject.inputs = this.thisproject.inputs.map(function (item) {
+        item.numberofanswer = item.answers.length;
+        return item;
+      });
       this.thisproject.name = this.project.name;
       this.thisproject.description = this.project.description;
-      this.thisproject.checkedmedia = this.project.media;
-      this.thisproject.checkedplaces = this.project.places;
-      this.thisproject.checkedcp = this.project.communication_partners;
+      this.thisproject.media = this.project.media;
     },
     save: function save() {
       var _this = this;
@@ -245,11 +245,7 @@ __webpack_require__.r(__webpack_exports__);
       }, {
         inputs: this.formattedinputstring
       }, {
-        media: this.thisproject.checkedmedia
-      }, {
-        places: this.thisproject.checkedplaces
-      }, {
-        cp: this.thisproject.checkedcp
+        media: this.thisproject.media
       });
 
       window.axios.patch('../projects/' + submitObject.id, submitObject).then(function (response) {
@@ -262,6 +258,15 @@ __webpack_require__.r(__webpack_exports__);
           _this.$snackbar.open(error.response.data);
         }
       });
+    },
+    handleMediaInputs: function handleMediaInputs(index, mediaName) {
+      var isLastElement = index + 1 == this.thisproject.media.length;
+
+      if (isLastElement) {
+        if (mediaName != "") this.thisproject.media.push("");
+      }
+
+      if (index != 0 && mediaName == "") this.thisproject.media.splice(index, 1);
     }
   }
 });
@@ -17663,38 +17668,6 @@ const GoogleCharts = new GoogleChartsManager();
 
 /***/ }),
 
-/***/ "./node_modules/is-buffer/index.js":
-/*!*****************************************!*\
-  !*** ./node_modules/is-buffer/index.js ***!
-  \*****************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-/*!
- * Determine if an object is a Buffer
- *
- * @author   Feross Aboukhadijeh <https://feross.org>
- * @license  MIT
- */
-
-// The _isBuffer check is for Safari 5-7 support, because it's missing
-// Object.prototype.constructor. Remove this eventually
-module.exports = function (obj) {
-  return obj != null && (isBuffer(obj) || isSlowBuffer(obj) || !!obj._isBuffer)
-}
-
-function isBuffer (obj) {
-  return !!obj.constructor && typeof obj.constructor.isBuffer === 'function' && obj.constructor.isBuffer(obj)
-}
-
-// For Node v0.10 support. Remove this eventually.
-function isSlowBuffer (obj) {
-  return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer(obj.slice(0, 0))
-}
-
-
-/***/ }),
-
 /***/ "./node_modules/process/browser.js":
 /*!*****************************************!*\
   !*** ./node_modules/process/browser.js ***!
@@ -18875,7 +18848,7 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("svg", { attrs: { width: "200", height: "500" } })
+  return _c("svg", { attrs: { width: "200", height: "600" } })
 }
 var staticRenderFns = []
 render._withStripped = true
@@ -18899,461 +18872,549 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "content" }, [
-    _c("label", { staticClass: "checkbox" }, [
-      _c("input", {
-        directives: [
-          {
-            name: "model",
-            rawName: "v-model",
-            value: _vm.thisproject.edit,
-            expression: "thisproject.edit"
-          }
-        ],
-        attrs: { type: "checkbox" },
-        domProps: {
-          checked: Array.isArray(_vm.thisproject.edit)
-            ? _vm._i(_vm.thisproject.edit, null) > -1
-            : _vm.thisproject.edit
-        },
-        on: {
-          change: function($event) {
-            var $$a = _vm.thisproject.edit,
-              $$el = $event.target,
-              $$c = $$el.checked ? true : false
-            if (Array.isArray($$a)) {
-              var $$v = null,
-                $$i = _vm._i($$a, $$v)
-              if ($$el.checked) {
-                $$i < 0 && _vm.$set(_vm.thisproject, "edit", $$a.concat([$$v]))
-              } else {
-                $$i > -1 &&
-                  _vm.$set(
-                    _vm.thisproject,
-                    "edit",
-                    $$a.slice(0, $$i).concat($$a.slice($$i + 1))
-                  )
-              }
-            } else {
-              _vm.$set(_vm.thisproject, "edit", $$c)
-            }
-          }
-        }
-      }),
-      _vm._v("\n          Edit name and description\n      ")
-    ]),
-    _vm._v(" "),
-    _c("div", { staticClass: "level" }, [
-      _c("input", {
-        attrs: { type: "hidden", name: "id" },
-        domProps: { value: _vm.project.id }
-      }),
-      _vm._v(" "),
-      _c("div", { staticClass: "level-left" }, [
-        !_vm.thisproject.edit
-          ? _c("h1", { domProps: { innerHTML: _vm._s(_vm.thisproject.name) } })
-          : _vm._e(),
-        _vm._v(" "),
-        _vm.thisproject.edit
-          ? _c("div", { staticClass: "field has-addons" }, [
-              _c("input", {
-                directives: [
-                  {
-                    name: "model",
-                    rawName: "v-model",
-                    value: _vm.thisproject.name,
-                    expression: "thisproject.name"
-                  }
-                ],
-                staticClass: "input text is-large",
-                attrs: { name: "name" },
-                domProps: { value: _vm.thisproject.name },
-                on: {
-                  input: function($event) {
-                    if ($event.target.composing) {
-                      return
-                    }
-                    _vm.$set(_vm.thisproject, "name", $event.target.value)
-                  }
-                }
-              }),
-              _vm._v(" "),
-              _c("div", { staticClass: "control" })
-            ])
-          : _vm._e()
-      ]),
-      _vm._v(" "),
-      _vm._m(0)
-    ]),
-    _vm._v(" "),
-    _c("div", { staticClass: "level" }, [
-      _c("input", {
-        attrs: { type: "hidden", name: "id" },
-        domProps: { value: _vm.project.id }
-      }),
-      _vm._v(" "),
-      _c("div", { staticClass: "level-left" }, [
-        !_vm.thisproject.edit
-          ? _c("p", {
-              domProps: { innerHTML: _vm._s(_vm.thisproject.description) }
-            })
-          : _vm._e(),
-        _vm._v(" "),
-        _vm.thisproject.edit
-          ? _c("div", { staticClass: "field has-addons" }, [
-              _c("textarea", {
-                directives: [
-                  {
-                    name: "model",
-                    rawName: "v-model",
-                    value: _vm.thisproject.description,
-                    expression: "thisproject.description"
-                  }
-                ],
-                staticClass: "input textarea",
-                attrs: { name: "description" },
-                domProps: { value: _vm.thisproject.description },
-                on: {
-                  input: function($event) {
-                    if ($event.target.composing) {
-                      return
-                    }
-                    _vm.$set(
-                      _vm.thisproject,
-                      "description",
-                      $event.target.value
-                    )
-                  }
-                }
-              }),
-              _vm._v(" "),
-              _c("div", { staticClass: "control" })
-            ])
-          : _vm._e()
-      ]),
-      _vm._v(" "),
-      _c("div", { staticClass: "level-right" })
-    ]),
-    _vm._v(" "),
-    _c("h2", [_vm._v("Inputs")]),
-    _vm._v(" "),
-    _c("input", {
-      attrs: { type: "hidden", name: "inputs" },
-      domProps: { value: JSON.stringify(_vm.thisproject.inputs) }
-    }),
-    _vm._v(" "),
-    _c("div", { staticClass: "field" }, [
-      _c("label", { staticClass: "label", attrs: { for: "ninputs" } }, [
-        _vm._v("\n            Number of inputs\n        ")
-      ]),
-      _vm._v(" "),
-      _c("div", { staticClass: "control" }, [
+  return _c(
+    "div",
+    { staticClass: "content" },
+    [
+      _c("label", { staticClass: "checkbox" }, [
         _c("input", {
           directives: [
             {
               name: "model",
-              rawName: "v-model.number",
-              value: _vm.thisproject.ninputs,
-              expression: "thisproject.ninputs",
-              modifiers: { number: true }
+              rawName: "v-model",
+              value: _vm.thisproject.edit,
+              expression: "thisproject.edit"
             }
           ],
-          staticClass: "input",
-          attrs: {
-            type: "number",
-            id: "ninputs",
-            min: "0",
-            max: "10",
-            value: "1"
+          attrs: { disabled: !_vm.editable, type: "checkbox" },
+          domProps: {
+            checked: Array.isArray(_vm.thisproject.edit)
+              ? _vm._i(_vm.thisproject.edit, null) > -1
+              : _vm.thisproject.edit
           },
-          domProps: { value: _vm.thisproject.ninputs },
           on: {
-            input: function($event) {
-              if ($event.target.composing) {
-                return
+            change: function($event) {
+              var $$a = _vm.thisproject.edit,
+                $$el = $event.target,
+                $$c = $$el.checked ? true : false
+              if (Array.isArray($$a)) {
+                var $$v = null,
+                  $$i = _vm._i($$a, $$v)
+                if ($$el.checked) {
+                  $$i < 0 &&
+                    _vm.$set(_vm.thisproject, "edit", $$a.concat([$$v]))
+                } else {
+                  $$i > -1 &&
+                    _vm.$set(
+                      _vm.thisproject,
+                      "edit",
+                      $$a.slice(0, $$i).concat($$a.slice($$i + 1))
+                    )
+                }
+              } else {
+                _vm.$set(_vm.thisproject, "edit", $$c)
               }
-              _vm.$set(_vm.thisproject, "ninputs", _vm._n($event.target.value))
-            },
-            blur: function($event) {
-              return _vm.$forceUpdate()
             }
           }
-        })
-      ])
-    ]),
-    _vm._v(" "),
-    _c(
-      "div",
-      { staticClass: "columns is-multiline is-mobile" },
-      _vm._l(_vm.thisproject.inputs, function(t, index) {
-        return _c("div", { key: index, staticClass: "inputs" }, [
-          _c("div", { staticClass: "column" }, [
-            _c("div", { staticClass: "field" }, [
-              _c("label", { staticClass: "label", attrs: { for: "name" } }, [
-                _vm._v(
-                  "\n                        Input Name\n                    "
-                )
-              ]),
-              _vm._v(" "),
-              _c("div", { staticClass: "control" }, [
+        }),
+        _vm._v("\n          Edit name and description\n      ")
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "level" }, [
+        _c("input", {
+          attrs: { type: "hidden", name: "id" },
+          domProps: { value: _vm.project.id }
+        }),
+        _vm._v(" "),
+        _c("div", { staticClass: "level-left" }, [
+          !_vm.thisproject.edit
+            ? _c("h1", {
+                domProps: { innerHTML: _vm._s(_vm.thisproject.name) }
+              })
+            : _vm._e(),
+          _vm._v(" "),
+          _vm.thisproject.edit
+            ? _c("div", { staticClass: "field has-addons" }, [
                 _c("input", {
                   directives: [
                     {
                       name: "model",
                       rawName: "v-model",
-                      value: _vm.thisproject.inputs[index].name,
-                      expression: "thisproject.inputs[index].name"
+                      value: _vm.thisproject.name,
+                      expression: "thisproject.name"
                     }
                   ],
-                  staticClass: "input",
-                  attrs: { type: "text" },
-                  domProps: { value: _vm.thisproject.inputs[index].name },
+                  staticClass: "input text is-large",
+                  attrs: { name: "name" },
+                  domProps: { value: _vm.thisproject.name },
+                  on: {
+                    input: function($event) {
+                      if ($event.target.composing) {
+                        return
+                      }
+                      _vm.$set(_vm.thisproject, "name", $event.target.value)
+                    }
+                  }
+                }),
+                _vm._v(" "),
+                _c("div", { staticClass: "control" })
+              ])
+            : _vm._e()
+        ]),
+        _vm._v(" "),
+        _vm._m(0)
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "level" }, [
+        _c("input", {
+          attrs: { type: "hidden", name: "id" },
+          domProps: { value: _vm.project.id }
+        }),
+        _vm._v(" "),
+        _c("div", { staticClass: "level-left" }, [
+          !_vm.thisproject.edit
+            ? _c("p", {
+                domProps: { innerHTML: _vm._s(_vm.thisproject.description) }
+              })
+            : _vm._e(),
+          _vm._v(" "),
+          _vm.thisproject.edit
+            ? _c("div", { staticClass: "field has-addons" }, [
+                _c("textarea", {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.thisproject.description,
+                      expression: "thisproject.description"
+                    }
+                  ],
+                  staticClass: "input textarea",
+                  attrs: { name: "description" },
+                  domProps: { value: _vm.thisproject.description },
                   on: {
                     input: function($event) {
                       if ($event.target.composing) {
                         return
                       }
                       _vm.$set(
-                        _vm.thisproject.inputs[index],
-                        "name",
+                        _vm.thisproject,
+                        "description",
                         $event.target.value
                       )
                     }
                   }
                 })
               ])
-            ])
-          ]),
-          _vm._v(" "),
-          _c("div", { staticClass: "column" }, [
-            _c("div", { staticClass: "field" }, [
-              _c("label", { staticClass: "checkbox" }, [
+            : _vm._e()
+        ]),
+        _vm._v(" "),
+        _c("div", { staticClass: "level-right" })
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "level" }, [
+        _c(
+          "div",
+          { staticClass: "column is-3" },
+          [
+            _c(
+              "label",
+              {
+                staticClass: "label",
+                staticStyle: { display: "inline-flex" },
+                attrs: { for: "media" }
+              },
+              [_vm._v("\n                    Media\n                ")]
+            ),
+            _vm._v(" "),
+            _vm._l(_vm.thisproject.media, function(m, index) {
+              return _c("div", { staticClass: "control" }, [
                 _c("input", {
                   directives: [
                     {
                       name: "model",
                       rawName: "v-model",
-                      value: _vm.thisproject.inputs[index].mandatory,
-                      expression: "thisproject.inputs[index].mandatory"
+                      value: _vm.thisproject.media[index],
+                      expression: "thisproject.media[index]"
                     }
                   ],
-                  attrs: { type: "checkbox", checked: "checked" },
-                  domProps: {
-                    checked: Array.isArray(
-                      _vm.thisproject.inputs[index].mandatory
-                    )
-                      ? _vm._i(_vm.thisproject.inputs[index].mandatory, null) >
-                        -1
-                      : _vm.thisproject.inputs[index].mandatory
+                  staticClass: "input inputcreatecase",
+                  attrs: {
+                    disabled: !_vm.editable,
+                    type: "text",
+                    name: "media[]",
+                    autocomplete: "off"
                   },
+                  domProps: { value: _vm.thisproject.media[index] },
                   on: {
-                    change: function($event) {
-                      var $$a = _vm.thisproject.inputs[index].mandatory,
-                        $$el = $event.target,
-                        $$c = $$el.checked ? true : false
-                      if (Array.isArray($$a)) {
-                        var $$v = null,
-                          $$i = _vm._i($$a, $$v)
-                        if ($$el.checked) {
-                          $$i < 0 &&
-                            _vm.$set(
-                              _vm.thisproject.inputs[index],
-                              "mandatory",
-                              $$a.concat([$$v])
-                            )
-                        } else {
-                          $$i > -1 &&
-                            _vm.$set(
-                              _vm.thisproject.inputs[index],
-                              "mandatory",
-                              $$a.slice(0, $$i).concat($$a.slice($$i + 1))
-                            )
-                        }
-                      } else {
-                        _vm.$set(
-                          _vm.thisproject.inputs[index],
-                          "mandatory",
-                          $$c
-                        )
-                      }
-                    }
-                  }
-                }),
-                _vm._v(
-                  "\n                        Mandatory\n                    "
-                )
-              ])
-            ]),
-            _vm._v(" "),
-            _vm.thisproject.inputs[index].type == "multiple choice" ||
-            _vm.thisproject.inputs[index].type == "one choice"
-              ? _c(
-                  "span",
-                  [
-                    _c("div", { staticClass: "field" }, [
-                      _c("label", { staticClass: "label" }, [
-                        _vm._v("Number of Answers")
-                      ]),
-                      _vm._v(" "),
-                      _c("div", { staticClass: "control" }, [
-                        _c("input", {
-                          directives: [
-                            {
-                              name: "model",
-                              rawName: "v-model.number",
-                              value:
-                                _vm.thisproject.inputs[index].numberofanswer,
-                              expression:
-                                "thisproject.inputs[index].numberofanswer",
-                              modifiers: { number: true }
-                            }
-                          ],
-                          staticClass: "input",
-                          attrs: { type: "number", placeholder: "" },
-                          domProps: {
-                            value: _vm.thisproject.inputs[index].numberofanswer
-                          },
-                          on: {
-                            input: function($event) {
-                              if ($event.target.composing) {
-                                return
-                              }
-                              _vm.$set(
-                                _vm.thisproject.inputs[index],
-                                "numberofanswer",
-                                _vm._n($event.target.value)
-                              )
-                            },
-                            blur: function($event) {
-                              return _vm.$forceUpdate()
-                            }
-                          }
-                        })
-                      ])
-                    ]),
-                    _vm._v(" "),
-                    _vm._l(
-                      _vm.thisproject.inputs[index].numberofanswer,
-                      function(na) {
-                        return _c("div", { staticClass: "field" }, [
-                          _c("label", { staticClass: "label" }, [
-                            _vm._v("Answers")
-                          ]),
-                          _vm._v(" "),
-                          _c("div", { staticClass: "control" }, [
-                            _c("input", {
-                              directives: [
-                                {
-                                  name: "model",
-                                  rawName: "v-model",
-                                  value:
-                                    _vm.thisproject.inputs[index].answers[
-                                      na - 1
-                                    ],
-                                  expression:
-                                    "thisproject.inputs[index].answers[na-1]"
-                                }
-                              ],
-                              staticClass: "input",
-                              attrs: { type: "text", placeholder: "" },
-                              domProps: {
-                                value:
-                                  _vm.thisproject.inputs[index].answers[na - 1]
-                              },
-                              on: {
-                                input: function($event) {
-                                  if ($event.target.composing) {
-                                    return
-                                  }
-                                  _vm.$set(
-                                    _vm.thisproject.inputs[index].answers,
-                                    na - 1,
-                                    $event.target.value
-                                  )
-                                }
-                              }
-                            })
-                          ])
-                        ])
-                      }
-                    )
-                  ],
-                  2
-                )
-              : _vm._e()
-          ])
-        ])
-      }),
-      0
-    ),
-    _vm._v(" "),
-    _c("div", { staticClass: "field" }, [
-      _c("div", { staticClass: "control" }, [
-        _c(
-          "button",
-          {
-            staticClass: "button is-link",
-            on: {
-              click: function($event) {
-                if (
-                  !$event.type.indexOf("key") &&
-                  _vm._k(
-                    $event.keyCode,
-                    "preventdefault",
-                    undefined,
-                    $event.key,
-                    undefined
-                  )
-                ) {
-                  return null
-                }
-                return _vm.save($event)
-              }
-            }
-          },
-          [_vm._v("Edit Project")]
-        )
-      ])
-    ]),
-    _vm._v(" "),
-    _c("div", { staticClass: "level" }, [
-      _c("div", { staticClass: "columns" }, [
-        _c("div", { staticClass: "column" }, [
-          _vm.response != ""
-            ? _c(
-                "div",
-                {
-                  staticClass: "notification is-danger",
-                  domProps: { innerHTML: _vm._s(_vm.response) }
-                },
-                [
-                  _c("button", {
-                    staticClass: "delete",
-                    on: {
-                      click: function($event) {
+                    keyup: function($event) {
+                      return _vm.handleMediaInputs(index, m)
+                    },
+                    keydown: [
+                      function($event) {
                         if (
                           !$event.type.indexOf("key") &&
                           _vm._k(
                             $event.keyCode,
-                            "preventdefault",
-                            undefined,
+                            "enter",
+                            13,
                             $event.key,
-                            undefined
+                            "Enter"
                           )
                         ) {
                           return null
                         }
-                        _vm.response = ""
+                        $event.preventDefault()
+                      },
+                      function($event) {
+                        if (
+                          !$event.type.indexOf("key") &&
+                          _vm._k($event.keyCode, "tab", 9, $event.key, "Tab")
+                        ) {
+                          return null
+                        }
+                        $event.preventDefault()
+                      }
+                    ],
+                    input: function($event) {
+                      if ($event.target.composing) {
+                        return
+                      }
+                      _vm.$set(
+                        _vm.thisproject.media,
+                        index,
+                        $event.target.value
+                      )
+                    }
+                  }
+                })
+              ])
+            })
+          ],
+          2
+        )
+      ]),
+      _vm._v(" "),
+      _c("h2", [_vm._v("Inputs")]),
+      _vm._v(" "),
+      _c("input", {
+        attrs: { type: "hidden", name: "inputs" },
+        domProps: { value: JSON.stringify(_vm.thisproject.inputs) }
+      }),
+      _vm._v(" "),
+      _c(
+        "b-field",
+        {
+          attrs: {
+            label: "Number of additional inputs",
+            disabled: !_vm.editable
+          }
+        },
+        [
+          _c("b-numberinput", {
+            attrs: {
+              disabled: !_vm.editable,
+              name: "inputs",
+              id: "ninputs",
+              "controls-position": "compact",
+              type: "is-light",
+              min: "0",
+              max: "3",
+              editable: false,
+              steps: "1"
+            },
+            model: {
+              value: _vm.thisproject.ninputs,
+              callback: function($$v) {
+                _vm.$set(_vm.thisproject, "ninputs", _vm._n($$v))
+              },
+              expression: "thisproject.ninputs"
+            }
+          })
+        ],
+        1
+      ),
+      _vm._v(" "),
+      _c(
+        "div",
+        { staticClass: "columns is-multiline is-mobile" },
+        _vm._l(_vm.thisproject.inputs, function(t, index) {
+          return _c("div", { key: index, staticClass: "inputs" }, [
+            _c("div", { staticClass: "column" }, [
+              _c("div", { staticClass: "field" }, [
+                _c("label", { staticClass: "label", attrs: { for: "name" } }, [
+                  _vm._v(
+                    "\n                        Input Name\n                    "
+                  )
+                ]),
+                _vm._v(" "),
+                _c("div", { staticClass: "control" }, [
+                  _c("input", {
+                    directives: [
+                      {
+                        name: "model",
+                        rawName: "v-model",
+                        value: _vm.thisproject.inputs[index].name,
+                        expression: "thisproject.inputs[index].name"
+                      }
+                    ],
+                    staticClass: "input",
+                    attrs: { type: "text" },
+                    domProps: { value: _vm.thisproject.inputs[index].name },
+                    on: {
+                      input: function($event) {
+                        if ($event.target.composing) {
+                          return
+                        }
+                        _vm.$set(
+                          _vm.thisproject.inputs[index],
+                          "name",
+                          $event.target.value
+                        )
                       }
                     }
                   })
-                ]
-              )
-            : _vm._e()
+                ])
+              ])
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "column" }, [
+              _c("div", { staticClass: "field" }, [
+                _c("label", { staticClass: "checkbox" }, [
+                  _c("input", {
+                    directives: [
+                      {
+                        name: "model",
+                        rawName: "v-model",
+                        value: _vm.thisproject.inputs[index].mandatory,
+                        expression: "thisproject.inputs[index].mandatory"
+                      }
+                    ],
+                    attrs: { type: "checkbox", checked: "checked" },
+                    domProps: {
+                      checked: Array.isArray(
+                        _vm.thisproject.inputs[index].mandatory
+                      )
+                        ? _vm._i(
+                            _vm.thisproject.inputs[index].mandatory,
+                            null
+                          ) > -1
+                        : _vm.thisproject.inputs[index].mandatory
+                    },
+                    on: {
+                      change: function($event) {
+                        var $$a = _vm.thisproject.inputs[index].mandatory,
+                          $$el = $event.target,
+                          $$c = $$el.checked ? true : false
+                        if (Array.isArray($$a)) {
+                          var $$v = null,
+                            $$i = _vm._i($$a, $$v)
+                          if ($$el.checked) {
+                            $$i < 0 &&
+                              _vm.$set(
+                                _vm.thisproject.inputs[index],
+                                "mandatory",
+                                $$a.concat([$$v])
+                              )
+                          } else {
+                            $$i > -1 &&
+                              _vm.$set(
+                                _vm.thisproject.inputs[index],
+                                "mandatory",
+                                $$a.slice(0, $$i).concat($$a.slice($$i + 1))
+                              )
+                          }
+                        } else {
+                          _vm.$set(
+                            _vm.thisproject.inputs[index],
+                            "mandatory",
+                            $$c
+                          )
+                        }
+                      }
+                    }
+                  }),
+                  _vm._v(
+                    "\n                        Mandatory\n                    "
+                  )
+                ])
+              ]),
+              _vm._v(" "),
+              _vm.thisproject.inputs[index].type == "multiple choice" ||
+              _vm.thisproject.inputs[index].type == "one choice"
+                ? _c(
+                    "span",
+                    [
+                      _c("div", { staticClass: "field" }, [
+                        _c("label", { staticClass: "label" }, [
+                          _vm._v("Number of Answers")
+                        ]),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "control" }, [
+                          _c("input", {
+                            directives: [
+                              {
+                                name: "model",
+                                rawName: "v-model.number",
+                                value:
+                                  _vm.thisproject.inputs[index].numberofanswer,
+                                expression:
+                                  "thisproject.inputs[index].numberofanswer",
+                                modifiers: { number: true }
+                              }
+                            ],
+                            staticClass: "input",
+                            attrs: { type: "number", placeholder: "" },
+                            domProps: {
+                              value:
+                                _vm.thisproject.inputs[index].numberofanswer
+                            },
+                            on: {
+                              input: function($event) {
+                                if ($event.target.composing) {
+                                  return
+                                }
+                                _vm.$set(
+                                  _vm.thisproject.inputs[index],
+                                  "numberofanswer",
+                                  _vm._n($event.target.value)
+                                )
+                              },
+                              blur: function($event) {
+                                return _vm.$forceUpdate()
+                              }
+                            }
+                          })
+                        ])
+                      ]),
+                      _vm._v(" "),
+                      _vm._l(
+                        _vm.thisproject.inputs[index].numberofanswer,
+                        function(na) {
+                          return _c("div", { staticClass: "field" }, [
+                            _c("label", { staticClass: "label" }, [
+                              _vm._v("Answers")
+                            ]),
+                            _vm._v(" "),
+                            _c("div", { staticClass: "control" }, [
+                              _c("input", {
+                                directives: [
+                                  {
+                                    name: "model",
+                                    rawName: "v-model",
+                                    value:
+                                      _vm.thisproject.inputs[index].answers[
+                                        na - 1
+                                      ],
+                                    expression:
+                                      "thisproject.inputs[index].answers[na-1]"
+                                  }
+                                ],
+                                staticClass: "input",
+                                attrs: { type: "text", placeholder: "" },
+                                domProps: {
+                                  value:
+                                    _vm.thisproject.inputs[index].answers[
+                                      na - 1
+                                    ]
+                                },
+                                on: {
+                                  input: function($event) {
+                                    if ($event.target.composing) {
+                                      return
+                                    }
+                                    _vm.$set(
+                                      _vm.thisproject.inputs[index].answers,
+                                      na - 1,
+                                      $event.target.value
+                                    )
+                                  }
+                                }
+                              })
+                            ])
+                          ])
+                        }
+                      )
+                    ],
+                    2
+                  )
+                : _vm._e()
+            ])
+          ])
+        }),
+        0
+      ),
+      _vm._v(" "),
+      _c("div", { staticClass: "field" }, [
+        _c("div", { staticClass: "control" }, [
+          _c(
+            "button",
+            {
+              staticClass: "button is-link",
+              attrs: { disabled: !_vm.editable },
+              on: {
+                click: function($event) {
+                  if (
+                    !$event.type.indexOf("key") &&
+                    _vm._k(
+                      $event.keyCode,
+                      "preventdefault",
+                      undefined,
+                      $event.key,
+                      undefined
+                    )
+                  ) {
+                    return null
+                  }
+                  return _vm.save($event)
+                }
+              }
+            },
+            [_vm._v("Edit Project")]
+          )
+        ])
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "level" }, [
+        _c("div", { staticClass: "columns" }, [
+          _c("div", { staticClass: "column" }, [
+            _vm.response != ""
+              ? _c(
+                  "div",
+                  {
+                    staticClass: "notification is-danger",
+                    domProps: { innerHTML: _vm._s(_vm.response) }
+                  },
+                  [
+                    _c("button", {
+                      staticClass: "delete",
+                      on: {
+                        click: function($event) {
+                          if (
+                            !$event.type.indexOf("key") &&
+                            _vm._k(
+                              $event.keyCode,
+                              "preventdefault",
+                              undefined,
+                              $event.key,
+                              undefined
+                            )
+                          ) {
+                            return null
+                          }
+                          _vm.response = ""
+                        }
+                      }
+                    })
+                  ]
+                )
+              : _vm._e()
+          ])
         ])
       ])
-    ])
-  ])
+    ],
+    1
+  )
 }
 var staticRenderFns = [
   function() {
@@ -19598,18 +19659,21 @@ var app = new Vue({
   watch: {
     'newcase.duration.selectedUnit': function newcaseDurationSelectedUnit(newVal, OldVal) {
       if (!_.isEmpty(this.newcase.duration.input)) {
-        if (newVal == 'week') var numberOfDaysToAdd = parseInt(this.newcase.duration.input) * 7;else var numberOfDaysToAdd = parseInt(this.newcase.duration.input);
-        var calculatedDate = new Date(); //get today date
-
-        var dd = calculatedDate.getDate();
-        var mm = calculatedDate.getMonth() + 1;
-        var y = calculatedDate.getFullYear();
-        calculatedDate.setDate(calculatedDate.getDate() + numberOfDaysToAdd);
-        var cdd = calculatedDate.getDate();
-        var cmm = calculatedDate.getMonth() + 1;
-        var cy = calculatedDate.getFullYear();
-        this.newcase.duration.message = cdd + '.' + cmm + '.' + cy;
-        this.newcase.duration.value = "start:" + dd + '.' + mm + '.' + y + '|end:' + this.newcase.duration.message;
+        /*
+            if(newVal == 'week') var numberOfDaysToAdd = parseInt(this.newcase.duration.input)*7;
+            else var numberOfDaysToAdd = parseInt(this.newcase.duration.input);
+             var calculatedDate = new Date();
+            //get today date
+            var dd = calculatedDate.getDate();
+            var mm = calculatedDate.getMonth() + 1;
+            var y = calculatedDate.getFullYear();
+             calculatedDate.setDate(calculatedDate.getDate() + numberOfDaysToAdd);
+            var cdd = calculatedDate.getDate();
+            var cmm = calculatedDate.getMonth() + 1;
+            var cy = calculatedDate.getFullYear();
+             this.newcase.duration.message = cdd + '.'+ cmm + '.'+ cy;
+            this.newcase.duration.value = "start:"+dd + '.'+ mm + '.'+ y+'|end:'+this.newcase.duration.message;
+        */
       } else {
         this.newcase.duration.message = "";
         this.newcase.duration.value = "";
@@ -19628,7 +19692,8 @@ var app = new Vue({
         calculatedDate.setDate(calculatedDate.getDate() + numberOfDaysToAdd);
         var cdd = calculatedDate.getDate();
         var cmm = calculatedDate.getMonth() + 1;
-        var cy = calculatedDate.getFullYear();
+        var cy = calculatedDate.getFullYear(); // duration in days and change to this after first login
+
         this.newcase.duration.message = cdd + '.' + cmm + '.' + cy;
         this.newcase.duration.value = "start:" + dd + '.' + mm + '.' + y + '|end:' + this.newcase.duration.message;
       } else {
@@ -19650,7 +19715,7 @@ var app = new Vue({
           type: "",
           mandatory: true,
           numberofanswer: 0,
-          answers: []
+          answers: [""]
         };
 
         for (var i = 0; i < direction; i++) {
@@ -19669,6 +19734,7 @@ var app = new Vue({
   },
   data: {
     mainNotification: true,
+    selectedEntriesData: [],
     errormessages: {
       namemissing: "name is required. <br>",
       inputnamemissing: "input name is required. <br>",
@@ -19690,9 +19756,7 @@ var app = new Vue({
       inputs: [],
       config: window.inputs,
       response: "",
-      media: [""],
-      places: [""],
-      cp: [""]
+      media: [""]
     }
   },
   methods: {
@@ -19715,26 +19779,27 @@ var app = new Vue({
 
       if (this.newproject.response == "") return true;else return false;
     },
-    handleMediaInputs: function handleMediaInputs(index, string) {
-      if (index + 1 == this.newproject.media.length) {
-        if (string != "") this.newproject.media.push("");
+    handleMediaInputs: function handleMediaInputs(index, mediaName) {
+      var isLastElement = index + 1 == this.newproject.media.length;
+
+      if (isLastElement) {
+        if (mediaName != "") this.newproject.media.push("");
       }
 
-      if (index != 0 && string == "") this.newproject.media.splice(index, 1);
+      if (index != 0 && mediaName == "") this.newproject.media.splice(index, 1);
     },
-    handlePlacesInputs: function handlePlacesInputs(index, string) {
-      if (index + 1 == this.newproject.places.length) {
-        if (string != "") this.newproject.places.push("");
+    handleAdditionalInputs: function handleAdditionalInputs(questionindex, answerindex, answer) {
+      var isLastElement = answerindex + 1 == this.newproject.inputs[questionindex].answers.length;
+
+      if (isLastElement) {
+        if (answer != "") this.newproject.inputs[questionindex].answers.push("");
       }
 
-      if (index != 0 && string == "") this.newproject.places.splice(index, 1);
-    },
-    handleCommunicationPartnerInputs: function handleCommunicationPartnerInputs(index, string) {
-      if (index + 1 == this.newproject.cp.length) {
-        if (string != "") this.newproject.cp.push("");
-      }
+      var middleElementRemoved = answerindex != 0 && answer == "";
 
-      if (index != 0 && string == "") this.newproject.cp.splice(index, 1);
+      if (middleElementRemoved) {
+        this.newproject.inputs[questionindex].answers.splice(answerindex, 1);
+      }
     }
   }
 });

@@ -9,9 +9,18 @@ abstract class TestCase extends BaseTestCase
 {
 	use CreatesApplication,WithFaker;
 
-	protected function signIn($user = null)
+    /**
+     * @param null $user  Either give the user model or create a new one
+     * @param string $roleName Default:Admin
+     * @return mixed the user model
+     */
+    protected function signIn($user = null, $roleName = 'admin')
 	{
 		$user = $user ?: factory('App\User')->create();
+
+		$role =factory('App\Role')->create(['name' => $roleName]);
+		$user->roles()->sync($role);
+
 		$this->actingAs($user);
 
 		return $user;

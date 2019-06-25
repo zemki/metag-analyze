@@ -14,8 +14,6 @@ class ProjectFactory
 
 	protected $casesCount = 0;
 	protected $mediaCount = 0;
-	protected $placeCount = 0;
-	protected $communicationpartnerCount = 0;
 	protected $user;
 	protected $inputs;
 
