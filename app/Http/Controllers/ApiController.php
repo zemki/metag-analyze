@@ -8,14 +8,15 @@ use App\Role;
 use App\Project;
 use Auth;
 use DB;
+use Helper;
 
 class ApiController extends Controller
 {
     public function returnUser($id) {
 
 
-        if($id == 0){
-            $user = new User;
+        if($id === 0){
+            $user = new User();
             return response($user, 200);
 
         }
@@ -43,8 +44,6 @@ class ApiController extends Controller
      */
     public function login(Request $request)
     {
-
-
         $credentials = [
             'email' => $request->email,
             'password' => $request->password
@@ -52,37 +51,28 @@ class ApiController extends Controller
 
         if (auth()->attempt($credentials)) {
 
-        $token = str_random(60);
+        $token = Helper::str_random(60);
 
         auth()->user()->forceFill([
             'api_token' => hash('sha256', $token),
         ])->save();
 
-          $response = auth()->user()->latestCase;
-          if(!$response){
-             $response = 'No cases';
-             return response()->json(['case' => $response], 200);
+          $userHasACase = auth()->user()->latestCase;
 
-         }
-         else{
-            $inputs['inputs']['media'] = $response->project->media;
-            $nullItem = (object)array('id' => 0,'name' => '');
-            $inputs['inputs']['media']->prepend($nullItem);
-            $inputs['inputs']['places'] = $response->project->places;
-            $inputs['inputs']['places']->prepend($nullItem);
-            $inputs['inputs']['communication_partners'] = $response->project->communication_partners;
-            $inputs['inputs']['communication_partners']->prepend($nullItem);
-            $inputs['inputs']['custominputs'] = $response->project->inputs;
-
-            return response()->json([
+          if(!$userHasACase)
+          {
+              $response = 'No cases';
+              return response()->json(['case' => $response], 200);
+          }else{
+              $inputs = $this->formatLoginResponse($userHasACase);
+              return response()->json([
                 'inputs' => $inputs['inputs'],
-                'case' => $response,
+                'case' => $userHasACase,
                 'token' => $token,
                 'custominputs' => $inputs['inputs']['custominputs']
                 ], 200);
 
         }
-
     } else {
         return response()->json(['error' => 'invalid credentials'], 401);
     }
@@ -93,7 +83,7 @@ class ApiController extends Controller
 
 public function register(Request $request)
 {
-    dd("NOT POSSIBLE");
+    abort(403,"NOT POSSIBLE");
     $request->validate([
         'name' => 'required|string|max:255',
         'email' => 'required|string|email|max:255|unique:users',
@@ -113,9 +103,9 @@ public function logout()
     return response()->json('Logged out successfully', 200);
 }
 
-public function a(Project $p)
+public function a(Project $project)
 {
-    return response()->json(compact($p),200);
+    return response()->json(compact($project),200);
 }
 
     /**
@@ -145,6 +135,24 @@ public function getInputs(Project $project)
             return response()->json($data, 200);
 
 }
+
+    /**
+     * @param $response
+     * @param $inputs
+     * @return mixed
+     */
+    protected function formatLoginResponse($response)
+    {
+        $data['inputs']['media'] = $response->project->media;
+        $nullItem = (object)array('id' => 0, 'name' => '');
+        $data['inputs']['media']->prepend($nullItem);
+        $data['inputs']['places'] = $response->project->places;
+        $data['inputs']['places']->prepend($nullItem);
+        $data['inputs']['communication_partners'] = $response->project->communication_partners;
+        $data['inputs']['communication_partners']->prepend($nullItem);
+        $data['inputs']['custominputs'] = $response->project->inputs;
+        return $data;
+    }
 
 
 }

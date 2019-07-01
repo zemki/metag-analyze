@@ -7,7 +7,7 @@ return [
 		'text',
 		'multiple choice',
 		'one choice',
-		'date'
+		'scale'
 	],
 	'limit' => 10,
 	'random' => 0,

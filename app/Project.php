@@ -22,7 +22,7 @@ class Project extends Model
 
 public function isEditable()
 {
-    return $this->cases()->count() == 0;
+    return $this->cases()->count() === 0;
 }
 
 public function cases()

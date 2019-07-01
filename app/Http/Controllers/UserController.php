@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use \App\Http\Requests\StoreUser;
-use \App\User;
-use \App\Profile;
+use App\Http\Requests\StoreUser;
+use App\User;
+use App\Profile;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\VerificationEmail;
 
@@ -55,7 +55,7 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show()
     {
         //
     }
@@ -66,7 +66,7 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit()
     {
         //
     }
@@ -81,15 +81,15 @@ class UserController extends Controller
     public function update(Request $request, $id)
     {
 
-        $updateduser = User::where('id', $id)->first();
-        $updateduser->username = $request->get('username');
-        $updateduser->email = $request->get('email');
-        $updateduser->roles()->sync($request->get('roles'));
-        $updateduser->profile->update($request->get('profile'));
-        $updateduser->save();
+        $updateUser = User::where('id', $id)->first();
+        $updateUser->username = $request->get('username');
+        $updateUser->email = $request->get('email');
+        $updateUser->roles()->sync($request->get('roles'));
+        $updateUser->profile->update($request->get('profile'));
+        $updateUser->save();
 
 
-        return $updateduser;
+        return $updateUser;
     }
 
     /**

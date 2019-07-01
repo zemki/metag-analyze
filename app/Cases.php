@@ -49,7 +49,7 @@ public function addUser($user)
 
 /**
  * edit the case only if has no entries
- * @return boolean
+ * @return bool
  */
 public function isEditable()
 {

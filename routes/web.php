@@ -15,9 +15,7 @@ Auth::routes();
 
 
 Route::group(['middleware' => ['auth','authorised']], function(){
-
 	Route::get('/','ProjectController@index');
-
 
 	/**
 	 * Project Routes

@@ -7,19 +7,21 @@ use App\Project;
 use App\Cases;
 use App\User;
 use App\Role;
-use Str;
+use Helper;
 
 class ProjectCasesController extends Controller
 {
 
-	public function show(Project $project,Cases $case)
+    /**
+     * @param Project $project
+     * @param Cases $case
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function show(Project $project, Cases $case)
 	{
-
 		if(auth()->user()->isNot($project->created_by()->first())) {
 			abort(403);
 		}
-        $i = 0;
-
         $data['entriesByMedia'] = $case->entries()
             ->join('media','entries.media_id','=','media.id')
             ->get()
@@ -28,86 +30,83 @@ class ProjectCasesController extends Controller
             ->flatten()
             ->chunk(3)
             ->toArray();
-
-        // THEN GET ENTRIES BY INPUTS
-        // EXTRACT FROM ENTRIES->INPUT THE LIST OF THEM, THEN DO THE SAME THING
-        // DYNAMIC VAR NAME?
-
+        // THEN GET ENTRIES BY INPUTS - EXTRACT FROM ENTRIES->INPUT THE LIST OF THEM, THEN DO THE SAME THING - DYNAMIC VAR NAME?
 
         $data['entriesByMedia'] = array_map('array_values', $data['entriesByMedia']);
-
         $data['case'] = $case;
-
-
         return view('entries.index',$data);
-
-
 	}
 
 
-	public function create(Project $project)
+    /**
+     * @param Project $project
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function create(Project $project)
 	{
+        $data['breadcrumb'] = [
+            url('/') => 'Projects',
+            $project->path() => $project->name,
+            '#' => 'Create Case'
+            ];
 
         if(auth()->user()->isNot($project->created_by()->first())) {
             abort(403);
         }
 
-        $users = User::all();
+        $data['users'] = User::all();
+        $data['project'] = $project;
 
-        return view('cases.create',compact('project','users'));
+        return view('cases.create',$data);
 
 	}
 
 	/**
 	 * Store a new case binded to the project
+     *
 	 * @param  Project $project
 	 * @return the project view with the new stored data
 	 */
 	public function store(Project $project)
 	{
-
 	    $this->authorize('update',$project);
-
 		request()->validate(
 			['name' => 'required']
 		);
-
 		$email = request('email');
-
 		$case = $project->addCase(request('name'),request('duration'));
         $user = User::firstOrNew(['email' => $email]);
 
-        if (!$user->exists)
-        {
-            $user->username = request('email');
-            $user->email = request('email');
-            $role = Role::where('name','=','user')->first();
-            $p = Str::random(request('passwordLength'));
-            $user->password = bcrypt($p);
-            $user->save();
-            $user->roles()->sync($role);
-        }
+        $this->createUserIfDoesNotExists($user, $password);
 
-		$case->addUser($user);
+        $case->addUser($user);
 
-		return redirect($project->path())->with(['message' => isset($p)? $user->email.' can now enter with the password: '.$p : 'user was already registered']);
+		return redirect($project->path())->with(['message' => isset($password)? $user->email.' can now enter with the password: '.$password : 'user was already registered']);
 	}
 
-	public function update(Project $project,Cases $case)
+    /**
+     * @param Project $project
+     * @param Cases $case
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
+    public function update(Project $project, Cases $case)
 	{
         $this->authorize('update',$case->project);
-
-
 		request()->validate(['name' => 'required']);
-
 		$case->update([
 			'name' => request('name')
 		]);
-
 		return redirect($project->path());
 	}
 
-    public function destroy(Project $project,Cases $case)
+    /**
+     * @param Project $project
+     * @param Cases $case
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     * @throws \Exception
+     */
+    public function destroy(Project $project, Cases $case)
     {
      if($case->isEditable()){
          $case->delete();
@@ -115,8 +114,24 @@ class ProjectCasesController extends Controller
          return redirect()->back()->with('message', 'case has entries, you cannot delete it');
      }
 
-
         return redirect($project->path())->with('message','case deleted');
 
+    }
+
+    /**
+     * @param $user
+     * @param $password
+     */
+    protected function createUserIfDoesNotExists($user, &$password): void
+    {
+        if (!$user->exists) {
+            $user->username = request('email');
+            $user->email = request('email');
+            $role = Role::where('name', '=', 'user')->first();
+            $password = Helper::random_str(request('passwordLength'));
+            $user->password = bcrypt($password);
+            $user->save();
+            $user->roles()->sync($role);
+        }
     }
 }

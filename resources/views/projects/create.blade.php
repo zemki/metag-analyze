@@ -1,18 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="columns">
-        <div class="column is-half">
-            <nav class="breadcrumb has-succeeds-separator is-small" aria-label="breadcrumbs">
-                <ul>
-                    <li><a href="#">Metag</a></li>
-                    <li ><a href="{{url('/')}}">Projects</a></li>
-                    <li class="is-active" aria-current="page"><a href="#">Create</a></li>
-                </ul>
-            </nav>
-        </div>
-    </div>
-
+    @component('layouts.breadcrumb', ['breadcrumb'=>$breadcrumb])
+    @endcomponent
 
     <div class="columns">
 
@@ -27,7 +17,7 @@
                         You can enter up to 3 additional inputs giving them name and details,
                         this will be reflected in the mobile app.</p>
                     </div>
-                    <form method="POST" action="/projects" class="container" style="padding-top: 40px">
+                    <form method="POST" action="/projects" class="container" style="padding-top: 40px" @submit="validateProject">
                         @csrf
                         <input type="hidden" value="{{auth()->user()->id}}" name="created_by">
                         <div class="field">
@@ -35,7 +25,7 @@
                                 Title
                             </label>
                             <div class="control">
-                                <input type="text" class="input" name="name">
+                                <input type="text" class="input" name="name" v-model="newproject.name">
                             </div>
                         </div>
 
@@ -45,14 +35,14 @@
                             </label>
 
                             <div class="control">
-                                <textarea name="description" id="textarea" class="textarea"></textarea>
+                                <textarea name="description" id="textarea" class="textarea" v-model="newproject.description"></textarea>
                             </div>
                         </div>
 
                         <div class="field">
                             <div class="control">
                                 <label class="checkbox">
-                                    <input type="checkbox" name="is_locked">
+                                    <input type="hidden" name="is_locked">
                                     lock project
                                 </label>
                             </div>
@@ -131,16 +121,11 @@
                         <div class="level">
                             <div class="field">
                                 <div class="control">
-                                    <button class="button is-link">Create Project</button>
+                                    <button class="button is-link" >Create Project</button>
                                 </div>
                             </div>
 
                         </div>
-
-
-
-
-
                     </form>
                 </div>
             </div>
