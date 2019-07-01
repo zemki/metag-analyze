@@ -10,9 +10,9 @@ class EntryPolicy
 {
 	use HandlesAuthorization;
 
-	public function update(User $user,\App\Cases $c)
+	public function update(User $user,\App\Cases $cases)
 	{
 
-		return $user->is($c->user);
+		return $user->is($cases->user);
 	}
 }

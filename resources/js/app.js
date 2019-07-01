@@ -40,33 +40,20 @@ Vue.use(GoogleCharts)
     el: '#app',
     computed: {
         'newproject.formattedinputstring': function(){
-            console.log("computed formattedstring");
-
             return JSON.stringify(this.newproject.inputs);
         }
-    },
-    watch: {
+    }, watch: {
         'newcase.duration.selectedUnit': function (newVal,OldVal){
             if(!_.isEmpty(this.newcase.duration.input)){
 
-        /*
-            if(newVal == 'week') var numberOfDaysToAdd = parseInt(this.newcase.duration.input)*7;
+            if(newVal === 'week') var numberOfDaysToAdd = parseInt(this.newcase.duration.input)*7;
             else var numberOfDaysToAdd = parseInt(this.newcase.duration.input);
 
-            var calculatedDate = new Date();
-            //get today date
-            var dd = calculatedDate.getDate();
-            var mm = calculatedDate.getMonth() + 1;
-            var y = calculatedDate.getFullYear();
-
-            calculatedDate.setDate(calculatedDate.getDate() + numberOfDaysToAdd);
-            var cdd = calculatedDate.getDate();
-            var cmm = calculatedDate.getMonth() + 1;
-            var cy = calculatedDate.getFullYear();
+            let {cdd, cmm, cy} = this.formatDurationMessage(numberOfDaysToAdd);
 
             this.newcase.duration.message = cdd + '.'+ cmm + '.'+ cy;
-            this.newcase.duration.value = "start:"+dd + '.'+ mm + '.'+ y+'|end:'+this.newcase.duration.message;
-        */
+                this.newcase.duration.value = "value:"+numberOfDaysToAdd*24+"|days:"+numberOfDaysToAdd;
+
             }else{
                 this.newcase.duration.message = "";
                 this.newcase.duration.value = "";
@@ -79,23 +66,14 @@ Vue.use(GoogleCharts)
 
             if(!_.isEmpty(this.newcase.duration.selectedUnit)){
 
-            if(this.newcase.duration.selectedUnit == 'week') var numberOfDaysToAdd = parseInt(newVal)*7;
+            if(this.newcase.duration.selectedUnit === 'week') var numberOfDaysToAdd = parseInt(newVal)*7;
             else var numberOfDaysToAdd = parseInt(newVal);
 
-                var calculatedDate = new Date();
-                //get today date
-                var dd = calculatedDate.getDate();
-                var mm = calculatedDate.getMonth() + 1;
-                var y = calculatedDate.getFullYear();
-
-                calculatedDate.setDate(calculatedDate.getDate() + numberOfDaysToAdd);
-                var cdd = calculatedDate.getDate();
-                var cmm = calculatedDate.getMonth() + 1;
-                var cy = calculatedDate.getFullYear();
+                let {cdd, cmm, cy} = this.formatDurationMessage(numberOfDaysToAdd);
 
                 // duration in days and change to this after first login
                 this.newcase.duration.message = cdd + '.'+ cmm + '.'+ cy;
-                this.newcase.duration.value = "start:"+dd + '.'+ mm + '.'+ y+'|end:'+this.newcase.duration.message;
+                this.newcase.duration.value = "value:"+numberOfDaysToAdd*24+"|days:"+numberOfDaysToAdd;
 
             }else{
                 this.newcase.duration.message = "";
@@ -187,6 +165,19 @@ Vue.use(GoogleCharts)
         else return false
 
     },
+      formatDurationMessage(numberOfDaysToAdd) {
+          var calculatedDate = new Date();
+          //get today date
+          var dd = calculatedDate.getDate();
+          var mm = calculatedDate.getMonth() + 1;
+          var y = calculatedDate.getFullYear();
+
+          calculatedDate.setDate(calculatedDate.getDate() + numberOfDaysToAdd);
+          var cdd = calculatedDate.getDate();
+          var cmm = calculatedDate.getMonth() + 1;
+          var cy = calculatedDate.getFullYear();
+          return {cdd, cmm, cy};
+      },
       handleMediaInputs(index,mediaName)
       {
 
@@ -216,6 +207,24 @@ Vue.use(GoogleCharts)
               this.newproject.inputs[questionindex].answers.splice(answerindex,1);
           }
 
+          this.newproject.inputs[questionindex].numberofanswer = this.newproject.inputs[questionindex].answers.length-1;
+      },
+      validateProject(e)
+      {
+          var self = this;
+          self.newproject.response = "";
+          if(this.newproject.name === "") this.newproject.response = "Enter a project name <br>";
+          if(this.newproject.description === "") this.newproject.response = "Enter a project description <br>";
+          if(this.newproject.media.length === 0 || this.newproject.media[0] === "")this.newproject.response +="Enter the list of media<br>";
+
+          _.forEach(this.newproject.inputs, function(value) {
+              console.log(value);
+              if(value.numberofanswer == 0 && (value.type !== "text" && value.type !== "scale")) self.newproject.response +="Enter answers for each input<br>";
+              if(value.name === "")self.newproject.response +="Enter a name for each input. <br>";
+
+          });
+
+          if(this.newproject.response !== "")e.preventDefault();
       }
 }
 });

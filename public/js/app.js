@@ -45,6 +45,12 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+//
+//
+//
+//
 //
 //
 //
@@ -159,11 +165,11 @@ __webpack_require__.r(__webpack_exports__);
   computed: {
     'formattedinputstring': function formattedinputstring() {
       console.log("computed formattedstring");
-      return JSON.stringify(this.thisproject.inputs);
+      return JSON.stringify(this.projectData.inputs);
     }
   },
   watch: {
-    'thisproject.ninputs': function thisprojectNinputs(newVal, oldVal) {
+    'projectData.ninputs': function projectDataNinputs(newVal, oldVal) {
       if (!this.firstLoading) {
         console.log(this.firstLoading);
         console.log("token number watcher fired");
@@ -185,15 +191,15 @@ __webpack_require__.r(__webpack_exports__);
           };
 
           for (var i = 0; i < direction; i++) {
-            this.thisproject.inputs.push(inputtemplate);
+            this.projectData.inputs.push(inputtemplate);
           }
         } else if (newVal == 0) {
           // special case
-          this.thisproject.inputs = [];
+          this.projectData.inputs = [];
         } else {
           // decrease
           for (var i = 0; i < Math.abs(direction); i++) {
-            this.thisproject.inputs.pop();
+            this.projectData.inputs.pop();
           }
         }
       } else {
@@ -205,7 +211,7 @@ __webpack_require__.r(__webpack_exports__);
     return {
       response: '',
       firstLoading: true,
-      thisproject: {
+      projectData: _defineProperty({
         edit: false,
         name: "",
         ninputs: 0,
@@ -213,7 +219,7 @@ __webpack_require__.r(__webpack_exports__);
         config: window.inputs,
         response: "",
         media: ""
-      }
+      }, "config", window.inputs)
     };
   },
   created: function created() {
@@ -221,15 +227,12 @@ __webpack_require__.r(__webpack_exports__);
   },
   methods: {
     fillInputs: function fillInputs() {
-      this.thisproject.inputs = JSON.parse(this.project.inputs);
-      this.thisproject.ninputs = JSON.parse(this.project.inputs, true).length;
-      this.thisproject.inputs = this.thisproject.inputs.map(function (item) {
-        item.numberofanswer = item.answers.length;
-        return item;
-      });
-      this.thisproject.name = this.project.name;
-      this.thisproject.description = this.project.description;
-      this.thisproject.media = this.project.media;
+      this.projectData.inputs = JSON.parse(this.project.inputs);
+      this.projectData.ninputs = JSON.parse(this.project.inputs, true).length;
+      this.projectData.name = this.project.name;
+      this.projectData.description = this.project.description;
+      this.projectData.media = this.project.media;
+      this.projectData.media.push("");
     },
     save: function save() {
       var _this = this;
@@ -239,19 +242,20 @@ __webpack_require__.r(__webpack_exports__);
       _.merge(submitObject, {
         id: this.project.id
       }, {
-        name: this.thisproject.name
+        name: this.projectData.name
       }, {
-        description: this.thisproject.description
+        description: this.projectData.description
       }, {
         inputs: this.formattedinputstring
       }, {
-        media: this.thisproject.media
+        media: this.projectData.media
       });
 
       window.axios.patch('../projects/' + submitObject.id, submitObject).then(function (response) {
         if (response.message) _this.response = response.message;else {
           _this.$snackbar.open(response.data);
         }
+        setTimeout(location.reload(true), 2000);
       }).catch(function (error) {
         console.log(error);
         if (error.message) _this.$snackbar.open(error.message);else {
@@ -260,13 +264,28 @@ __webpack_require__.r(__webpack_exports__);
       });
     },
     handleMediaInputs: function handleMediaInputs(index, mediaName) {
-      var isLastElement = index + 1 == this.thisproject.media.length;
+      var isLastElement = index + 1 == this.projectData.media.length;
 
       if (isLastElement) {
-        if (mediaName != "") this.thisproject.media.push("");
+        if (mediaName != "") this.projectData.media.push("");
       }
 
-      if (index != 0 && mediaName == "") this.thisproject.media.splice(index, 1);
+      if (index != 0 && mediaName == "") this.projectData.media.splice(index, 1);
+    },
+    handleAdditionalInputs: function handleAdditionalInputs(questionindex, answerindex, answer) {
+      var isLastElement = answerindex + 1 == this.projectData.inputs[questionindex].answers.length;
+
+      if (isLastElement) {
+        if (answer != "") this.projectData.inputs[questionindex].answers.push("");
+      }
+
+      var middleElementRemoved = answerindex != 0 && answer == "";
+
+      if (middleElementRemoved) {
+        this.projectData.inputs[questionindex].answers.splice(answerindex, 1);
+      }
+
+      this.projectData.inputs[questionindex].numberofanswer = this.projectData.inputs[questionindex].answers.length - 1;
     }
   }
 });
@@ -18882,19 +18901,19 @@ var render = function() {
             {
               name: "model",
               rawName: "v-model",
-              value: _vm.thisproject.edit,
-              expression: "thisproject.edit"
+              value: _vm.projectData.edit,
+              expression: "projectData.edit"
             }
           ],
           attrs: { disabled: !_vm.editable, type: "checkbox" },
           domProps: {
-            checked: Array.isArray(_vm.thisproject.edit)
-              ? _vm._i(_vm.thisproject.edit, null) > -1
-              : _vm.thisproject.edit
+            checked: Array.isArray(_vm.projectData.edit)
+              ? _vm._i(_vm.projectData.edit, null) > -1
+              : _vm.projectData.edit
           },
           on: {
             change: function($event) {
-              var $$a = _vm.thisproject.edit,
+              var $$a = _vm.projectData.edit,
                 $$el = $event.target,
                 $$c = $$el.checked ? true : false
               if (Array.isArray($$a)) {
@@ -18902,17 +18921,17 @@ var render = function() {
                   $$i = _vm._i($$a, $$v)
                 if ($$el.checked) {
                   $$i < 0 &&
-                    _vm.$set(_vm.thisproject, "edit", $$a.concat([$$v]))
+                    _vm.$set(_vm.projectData, "edit", $$a.concat([$$v]))
                 } else {
                   $$i > -1 &&
                     _vm.$set(
-                      _vm.thisproject,
+                      _vm.projectData,
                       "edit",
                       $$a.slice(0, $$i).concat($$a.slice($$i + 1))
                     )
                 }
               } else {
-                _vm.$set(_vm.thisproject, "edit", $$c)
+                _vm.$set(_vm.projectData, "edit", $$c)
               }
             }
           }
@@ -18920,50 +18939,52 @@ var render = function() {
         _vm._v("\n          Edit name and description\n      ")
       ]),
       _vm._v(" "),
-      _c("div", { staticClass: "level" }, [
-        _c("input", {
-          attrs: { type: "hidden", name: "id" },
-          domProps: { value: _vm.project.id }
-        }),
-        _vm._v(" "),
-        _c("div", { staticClass: "level-left" }, [
-          !_vm.thisproject.edit
-            ? _c("h1", {
-                domProps: { innerHTML: _vm._s(_vm.thisproject.name) }
-              })
-            : _vm._e(),
-          _vm._v(" "),
-          _vm.thisproject.edit
-            ? _c("div", { staticClass: "field has-addons" }, [
-                _c("input", {
-                  directives: [
-                    {
-                      name: "model",
-                      rawName: "v-model",
-                      value: _vm.thisproject.name,
-                      expression: "thisproject.name"
-                    }
-                  ],
-                  staticClass: "input text is-large",
-                  attrs: { name: "name" },
-                  domProps: { value: _vm.thisproject.name },
-                  on: {
-                    input: function($event) {
-                      if ($event.target.composing) {
-                        return
+      _vm.projectData.edit
+        ? _c("div", { staticClass: "level" }, [
+            _c("input", {
+              attrs: { type: "hidden", name: "id" },
+              domProps: { value: _vm.project.id }
+            }),
+            _vm._v(" "),
+            _c("div", { staticClass: "level-left" }, [
+              !_vm.projectData.edit
+                ? _c("h1", {
+                    domProps: { innerHTML: _vm._s(_vm.projectData.name) }
+                  })
+                : _vm._e(),
+              _vm._v(" "),
+              _vm.projectData.edit
+                ? _c("div", { staticClass: "field has-addons" }, [
+                    _c("input", {
+                      directives: [
+                        {
+                          name: "model",
+                          rawName: "v-model",
+                          value: _vm.projectData.name,
+                          expression: "projectData.name"
+                        }
+                      ],
+                      staticClass: "input text is-large",
+                      attrs: { name: "name" },
+                      domProps: { value: _vm.projectData.name },
+                      on: {
+                        input: function($event) {
+                          if ($event.target.composing) {
+                            return
+                          }
+                          _vm.$set(_vm.projectData, "name", $event.target.value)
+                        }
                       }
-                      _vm.$set(_vm.thisproject, "name", $event.target.value)
-                    }
-                  }
-                }),
-                _vm._v(" "),
-                _c("div", { staticClass: "control" })
-              ])
-            : _vm._e()
-        ]),
-        _vm._v(" "),
-        _vm._m(0)
-      ]),
+                    }),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "control" })
+                  ])
+                : _vm._e()
+            ]),
+            _vm._v(" "),
+            _vm._m(0)
+          ])
+        : _vm._e(),
       _vm._v(" "),
       _c("div", { staticClass: "level" }, [
         _c("input", {
@@ -18972,33 +18993,33 @@ var render = function() {
         }),
         _vm._v(" "),
         _c("div", { staticClass: "level-left" }, [
-          !_vm.thisproject.edit
+          !_vm.projectData.edit
             ? _c("p", {
-                domProps: { innerHTML: _vm._s(_vm.thisproject.description) }
+                domProps: { innerHTML: _vm._s(_vm.projectData.description) }
               })
             : _vm._e(),
           _vm._v(" "),
-          _vm.thisproject.edit
+          _vm.projectData.edit
             ? _c("div", { staticClass: "field has-addons" }, [
                 _c("textarea", {
                   directives: [
                     {
                       name: "model",
                       rawName: "v-model",
-                      value: _vm.thisproject.description,
-                      expression: "thisproject.description"
+                      value: _vm.projectData.description,
+                      expression: "projectData.description"
                     }
                   ],
                   staticClass: "input textarea",
                   attrs: { name: "description" },
-                  domProps: { value: _vm.thisproject.description },
+                  domProps: { value: _vm.projectData.description },
                   on: {
                     input: function($event) {
                       if ($event.target.composing) {
                         return
                       }
                       _vm.$set(
-                        _vm.thisproject,
+                        _vm.projectData,
                         "description",
                         $event.target.value
                       )
@@ -19027,15 +19048,15 @@ var render = function() {
               [_vm._v("\n                    Media\n                ")]
             ),
             _vm._v(" "),
-            _vm._l(_vm.thisproject.media, function(m, index) {
+            _vm._l(_vm.projectData.media, function(m, index) {
               return _c("div", { staticClass: "control" }, [
                 _c("input", {
                   directives: [
                     {
                       name: "model",
                       rawName: "v-model",
-                      value: _vm.thisproject.media[index],
-                      expression: "thisproject.media[index]"
+                      value: _vm.projectData.media[index],
+                      expression: "projectData.media[index]"
                     }
                   ],
                   staticClass: "input inputcreatecase",
@@ -19045,7 +19066,7 @@ var render = function() {
                     name: "media[]",
                     autocomplete: "off"
                   },
-                  domProps: { value: _vm.thisproject.media[index] },
+                  domProps: { value: _vm.projectData.media[index] },
                   on: {
                     keyup: function($event) {
                       return _vm.handleMediaInputs(index, m)
@@ -19081,7 +19102,7 @@ var render = function() {
                         return
                       }
                       _vm.$set(
-                        _vm.thisproject.media,
+                        _vm.projectData.media,
                         index,
                         $event.target.value
                       )
@@ -19099,7 +19120,7 @@ var render = function() {
       _vm._v(" "),
       _c("input", {
         attrs: { type: "hidden", name: "inputs" },
-        domProps: { value: JSON.stringify(_vm.thisproject.inputs) }
+        domProps: { value: JSON.stringify(_vm.projectData.inputs) }
       }),
       _vm._v(" "),
       _c(
@@ -19124,11 +19145,11 @@ var render = function() {
               steps: "1"
             },
             model: {
-              value: _vm.thisproject.ninputs,
+              value: _vm.projectData.ninputs,
               callback: function($$v) {
-                _vm.$set(_vm.thisproject, "ninputs", _vm._n($$v))
+                _vm.$set(_vm.projectData, "ninputs", _vm._n($$v))
               },
-              expression: "thisproject.ninputs"
+              expression: "projectData.ninputs"
             }
           })
         ],
@@ -19138,7 +19159,7 @@ var render = function() {
       _c(
         "div",
         { staticClass: "columns is-multiline is-mobile" },
-        _vm._l(_vm.thisproject.inputs, function(t, index) {
+        _vm._l(_vm.projectData.inputs, function(t, index) {
           return _c("div", { key: index, staticClass: "inputs" }, [
             _c("div", { staticClass: "column" }, [
               _c("div", { staticClass: "field" }, [
@@ -19154,20 +19175,20 @@ var render = function() {
                       {
                         name: "model",
                         rawName: "v-model",
-                        value: _vm.thisproject.inputs[index].name,
-                        expression: "thisproject.inputs[index].name"
+                        value: _vm.projectData.inputs[index].name,
+                        expression: "projectData.inputs[index].name"
                       }
                     ],
                     staticClass: "input",
                     attrs: { type: "text" },
-                    domProps: { value: _vm.thisproject.inputs[index].name },
+                    domProps: { value: _vm.projectData.inputs[index].name },
                     on: {
                       input: function($event) {
                         if ($event.target.composing) {
                           return
                         }
                         _vm.$set(
-                          _vm.thisproject.inputs[index],
+                          _vm.projectData.inputs[index],
                           "name",
                           $event.target.value
                         )
@@ -19186,24 +19207,24 @@ var render = function() {
                       {
                         name: "model",
                         rawName: "v-model",
-                        value: _vm.thisproject.inputs[index].mandatory,
-                        expression: "thisproject.inputs[index].mandatory"
+                        value: _vm.projectData.inputs[index].mandatory,
+                        expression: "projectData.inputs[index].mandatory"
                       }
                     ],
                     attrs: { type: "checkbox", checked: "checked" },
                     domProps: {
                       checked: Array.isArray(
-                        _vm.thisproject.inputs[index].mandatory
+                        _vm.projectData.inputs[index].mandatory
                       )
                         ? _vm._i(
-                            _vm.thisproject.inputs[index].mandatory,
+                            _vm.projectData.inputs[index].mandatory,
                             null
                           ) > -1
-                        : _vm.thisproject.inputs[index].mandatory
+                        : _vm.projectData.inputs[index].mandatory
                     },
                     on: {
                       change: function($event) {
-                        var $$a = _vm.thisproject.inputs[index].mandatory,
+                        var $$a = _vm.projectData.inputs[index].mandatory,
                           $$el = $event.target,
                           $$c = $$el.checked ? true : false
                         if (Array.isArray($$a)) {
@@ -19212,21 +19233,21 @@ var render = function() {
                           if ($$el.checked) {
                             $$i < 0 &&
                               _vm.$set(
-                                _vm.thisproject.inputs[index],
+                                _vm.projectData.inputs[index],
                                 "mandatory",
                                 $$a.concat([$$v])
                               )
                           } else {
                             $$i > -1 &&
                               _vm.$set(
-                                _vm.thisproject.inputs[index],
+                                _vm.projectData.inputs[index],
                                 "mandatory",
                                 $$a.slice(0, $$i).concat($$a.slice($$i + 1))
                               )
                           }
                         } else {
                           _vm.$set(
-                            _vm.thisproject.inputs[index],
+                            _vm.projectData.inputs[index],
                             "mandatory",
                             $$c
                           )
@@ -19240,104 +19261,148 @@ var render = function() {
                 ])
               ]),
               _vm._v(" "),
-              _vm.thisproject.inputs[index].type == "multiple choice" ||
-              _vm.thisproject.inputs[index].type == "one choice"
-                ? _c(
-                    "span",
-                    [
-                      _c("div", { staticClass: "field" }, [
+              _c("div", { staticClass: "field" }, [
+                _c("label", { staticClass: "label" }, [_vm._v("Type")]),
+                _vm._v(" "),
+                _c("div", { staticClass: "control" }, [
+                  _c("div", { staticClass: "select" }, [
+                    _c(
+                      "select",
+                      {
+                        directives: [
+                          {
+                            name: "model",
+                            rawName: "v-model",
+                            value: _vm.projectData.inputs[index].type,
+                            expression: "projectData.inputs[index].type"
+                          }
+                        ],
+                        on: {
+                          change: function($event) {
+                            var $$selectedVal = Array.prototype.filter
+                              .call($event.target.options, function(o) {
+                                return o.selected
+                              })
+                              .map(function(o) {
+                                var val = "_value" in o ? o._value : o.value
+                                return val
+                              })
+                            _vm.$set(
+                              _vm.projectData.inputs[index],
+                              "type",
+                              $event.target.multiple
+                                ? $$selectedVal
+                                : $$selectedVal[0]
+                            )
+                          }
+                        }
+                      },
+                      _vm._l(_vm.projectData.config.available, function(type) {
+                        return _c("option", { domProps: { value: type } }, [
+                          _vm._v(_vm._s(type))
+                        ])
+                      }),
+                      0
+                    )
+                  ])
+                ])
+              ]),
+              _vm._v(" "),
+              _vm.projectData.inputs[index].type == "multiple choice" ||
+              _vm.projectData.inputs[index].type == "one choice"
+                ? _c("span", [
+                    _c(
+                      "div",
+                      { staticClass: "field" },
+                      [
                         _c("label", { staticClass: "label" }, [
-                          _vm._v("Number of Answers")
+                          _vm._v("Answers")
                         ]),
                         _vm._v(" "),
-                        _c("div", { staticClass: "control" }, [
-                          _c("input", {
-                            directives: [
-                              {
-                                name: "model",
-                                rawName: "v-model.number",
-                                value:
-                                  _vm.thisproject.inputs[index].numberofanswer,
-                                expression:
-                                  "thisproject.inputs[index].numberofanswer",
-                                modifiers: { number: true }
-                              }
-                            ],
-                            staticClass: "input",
-                            attrs: { type: "number", placeholder: "" },
-                            domProps: {
-                              value:
-                                _vm.thisproject.inputs[index].numberofanswer
-                            },
-                            on: {
-                              input: function($event) {
-                                if ($event.target.composing) {
-                                  return
+                        _vm._l(_vm.projectData.inputs[index].answers, function(
+                          m,
+                          answerindex
+                        ) {
+                          return _c("div", { staticClass: "control" }, [
+                            _c("input", {
+                              directives: [
+                                {
+                                  name: "model",
+                                  rawName: "v-model",
+                                  value:
+                                    _vm.projectData.inputs[index].answers[
+                                      answerindex
+                                    ],
+                                  expression:
+                                    "projectData.inputs[index].answers[answerindex]"
                                 }
-                                _vm.$set(
-                                  _vm.thisproject.inputs[index],
-                                  "numberofanswer",
-                                  _vm._n($event.target.value)
-                                )
+                              ],
+                              staticClass: "input inputcreatecase",
+                              attrs: { type: "text", autocomplete: "off" },
+                              domProps: {
+                                value:
+                                  _vm.projectData.inputs[index].answers[
+                                    answerindex
+                                  ]
                               },
-                              blur: function($event) {
-                                return _vm.$forceUpdate()
-                              }
-                            }
-                          })
-                        ])
-                      ]),
-                      _vm._v(" "),
-                      _vm._l(
-                        _vm.thisproject.inputs[index].numberofanswer,
-                        function(na) {
-                          return _c("div", { staticClass: "field" }, [
-                            _c("label", { staticClass: "label" }, [
-                              _vm._v("Answers")
-                            ]),
-                            _vm._v(" "),
-                            _c("div", { staticClass: "control" }, [
-                              _c("input", {
-                                directives: [
-                                  {
-                                    name: "model",
-                                    rawName: "v-model",
-                                    value:
-                                      _vm.thisproject.inputs[index].answers[
-                                        na - 1
-                                      ],
-                                    expression:
-                                      "thisproject.inputs[index].answers[na-1]"
+                              on: {
+                                keyup: function($event) {
+                                  return _vm.handleAdditionalInputs(
+                                    index,
+                                    answerindex,
+                                    m
+                                  )
+                                },
+                                keydown: [
+                                  function($event) {
+                                    if (
+                                      !$event.type.indexOf("key") &&
+                                      _vm._k(
+                                        $event.keyCode,
+                                        "enter",
+                                        13,
+                                        $event.key,
+                                        "Enter"
+                                      )
+                                    ) {
+                                      return null
+                                    }
+                                    $event.preventDefault()
+                                  },
+                                  function($event) {
+                                    if (
+                                      !$event.type.indexOf("key") &&
+                                      _vm._k(
+                                        $event.keyCode,
+                                        "tab",
+                                        9,
+                                        $event.key,
+                                        "Tab"
+                                      )
+                                    ) {
+                                      return null
+                                    }
+                                    $event.preventDefault()
                                   }
                                 ],
-                                staticClass: "input",
-                                attrs: { type: "text", placeholder: "" },
-                                domProps: {
-                                  value:
-                                    _vm.thisproject.inputs[index].answers[
-                                      na - 1
-                                    ]
-                                },
-                                on: {
-                                  input: function($event) {
-                                    if ($event.target.composing) {
-                                      return
-                                    }
-                                    _vm.$set(
-                                      _vm.thisproject.inputs[index].answers,
-                                      na - 1,
-                                      $event.target.value
-                                    )
+                                input: function($event) {
+                                  if ($event.target.composing) {
+                                    return
                                   }
+                                  _vm.$set(
+                                    _vm.projectData.inputs[index].answers,
+                                    answerindex,
+                                    $event.target.value
+                                  )
                                 }
-                              })
-                            ])
+                              }
+                            })
                           ])
-                        }
-                      )
-                    ],
-                    2
-                  )
+                        })
+                      ],
+                      2
+                    )
+                  ])
                 : _vm._e()
             ])
           ])
@@ -19652,28 +19717,21 @@ var app = new Vue({
   el: '#app',
   computed: {
     'newproject.formattedinputstring': function newprojectFormattedinputstring() {
-      console.log("computed formattedstring");
       return JSON.stringify(this.newproject.inputs);
     }
   },
   watch: {
     'newcase.duration.selectedUnit': function newcaseDurationSelectedUnit(newVal, OldVal) {
       if (!_.isEmpty(this.newcase.duration.input)) {
-        /*
-            if(newVal == 'week') var numberOfDaysToAdd = parseInt(this.newcase.duration.input)*7;
-            else var numberOfDaysToAdd = parseInt(this.newcase.duration.input);
-             var calculatedDate = new Date();
-            //get today date
-            var dd = calculatedDate.getDate();
-            var mm = calculatedDate.getMonth() + 1;
-            var y = calculatedDate.getFullYear();
-             calculatedDate.setDate(calculatedDate.getDate() + numberOfDaysToAdd);
-            var cdd = calculatedDate.getDate();
-            var cmm = calculatedDate.getMonth() + 1;
-            var cy = calculatedDate.getFullYear();
-             this.newcase.duration.message = cdd + '.'+ cmm + '.'+ cy;
-            this.newcase.duration.value = "start:"+dd + '.'+ mm + '.'+ y+'|end:'+this.newcase.duration.message;
-        */
+        if (newVal === 'week') var numberOfDaysToAdd = parseInt(this.newcase.duration.input) * 7;else var numberOfDaysToAdd = parseInt(this.newcase.duration.input);
+
+        var _this$formatDurationM = this.formatDurationMessage(numberOfDaysToAdd),
+            cdd = _this$formatDurationM.cdd,
+            cmm = _this$formatDurationM.cmm,
+            cy = _this$formatDurationM.cy;
+
+        this.newcase.duration.message = cdd + '.' + cmm + '.' + cy;
+        this.newcase.duration.value = "value:" + numberOfDaysToAdd * 24 + "|days:" + numberOfDaysToAdd;
       } else {
         this.newcase.duration.message = "";
         this.newcase.duration.value = "";
@@ -19683,19 +19741,16 @@ var app = new Vue({
       this.newcase.duration.input = newVal.replace(/\D/g, '');
 
       if (!_.isEmpty(this.newcase.duration.selectedUnit)) {
-        if (this.newcase.duration.selectedUnit == 'week') var numberOfDaysToAdd = parseInt(newVal) * 7;else var numberOfDaysToAdd = parseInt(newVal);
-        var calculatedDate = new Date(); //get today date
+        if (this.newcase.duration.selectedUnit === 'week') var numberOfDaysToAdd = parseInt(newVal) * 7;else var numberOfDaysToAdd = parseInt(newVal);
 
-        var dd = calculatedDate.getDate();
-        var mm = calculatedDate.getMonth() + 1;
-        var y = calculatedDate.getFullYear();
-        calculatedDate.setDate(calculatedDate.getDate() + numberOfDaysToAdd);
-        var cdd = calculatedDate.getDate();
-        var cmm = calculatedDate.getMonth() + 1;
-        var cy = calculatedDate.getFullYear(); // duration in days and change to this after first login
+        var _this$formatDurationM2 = this.formatDurationMessage(numberOfDaysToAdd),
+            cdd = _this$formatDurationM2.cdd,
+            cmm = _this$formatDurationM2.cmm,
+            cy = _this$formatDurationM2.cy; // duration in days and change to this after first login
+
 
         this.newcase.duration.message = cdd + '.' + cmm + '.' + cy;
-        this.newcase.duration.value = "start:" + dd + '.' + mm + '.' + y + '|end:' + this.newcase.duration.message;
+        this.newcase.duration.value = "value:" + numberOfDaysToAdd * 24 + "|days:" + numberOfDaysToAdd;
       } else {
         this.newcase.duration.message = "";
         this.newcase.duration.value = "";
@@ -19779,6 +19834,22 @@ var app = new Vue({
 
       if (this.newproject.response == "") return true;else return false;
     },
+    formatDurationMessage: function formatDurationMessage(numberOfDaysToAdd) {
+      var calculatedDate = new Date(); //get today date
+
+      var dd = calculatedDate.getDate();
+      var mm = calculatedDate.getMonth() + 1;
+      var y = calculatedDate.getFullYear();
+      calculatedDate.setDate(calculatedDate.getDate() + numberOfDaysToAdd);
+      var cdd = calculatedDate.getDate();
+      var cmm = calculatedDate.getMonth() + 1;
+      var cy = calculatedDate.getFullYear();
+      return {
+        cdd: cdd,
+        cmm: cmm,
+        cy: cy
+      };
+    },
     handleMediaInputs: function handleMediaInputs(index, mediaName) {
       var isLastElement = index + 1 == this.newproject.media.length;
 
@@ -19800,6 +19871,23 @@ var app = new Vue({
       if (middleElementRemoved) {
         this.newproject.inputs[questionindex].answers.splice(answerindex, 1);
       }
+
+      this.newproject.inputs[questionindex].numberofanswer = this.newproject.inputs[questionindex].answers.length - 1;
+    },
+    validateProject: function validateProject(e) {
+      var self = this;
+      self.newproject.response = "";
+      if (this.newproject.name === "") this.newproject.response = "Enter a project name <br>";
+      if (this.newproject.description === "") this.newproject.response = "Enter a project description <br>";
+      if (this.newproject.media.length === 0 || this.newproject.media[0] === "") this.newproject.response += "Enter the list of media<br>";
+
+      _.forEach(this.newproject.inputs, function (value) {
+        console.log(value);
+        if (value.numberofanswer == 0 && value.type !== "text" && value.type !== "scale") self.newproject.response += "Enter answers for each input<br>";
+        if (value.name === "") self.newproject.response += "Enter a name for each input. <br>";
+      });
+
+      if (this.newproject.response !== "") e.preventDefault();
     }
   }
 });

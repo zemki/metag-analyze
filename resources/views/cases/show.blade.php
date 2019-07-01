@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="columns">
-	<div class="column is-half">
+	<div class="column is-full">
 
 		<nav class="breadcrumb has-succeeds-separator is-small" aria-label="breadcrumbs">
 			<ul>

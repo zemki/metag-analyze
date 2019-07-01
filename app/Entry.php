@@ -22,7 +22,7 @@ class Entry extends Model
 
     public function project()
     {
-        return$this->belongsTo(Project::class);
+        return $this->belongsTo(Project::class);
     }
 
     public function place()

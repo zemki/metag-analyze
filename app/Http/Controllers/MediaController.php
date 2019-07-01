@@ -24,14 +24,13 @@ class MediaController extends Controller
      */
     public function show(Project $media)
     {
-    	// @TODO
-    	// insert role filter for not admin
 
         return view('media.show',compact('media'));
     }
 
     /**
      * Show Create form
+     *
      * @return View return view with the form to insert a new media
      */
     public function create()
@@ -41,7 +40,7 @@ class MediaController extends Controller
     }
 
 
-    public function store(Request $request){
+    public function store(){
 
     	$attributes = request()->validate([
             'name' => 'required',

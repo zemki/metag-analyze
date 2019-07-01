@@ -42,6 +42,7 @@ class AuthServiceProvider extends ServiceProvider
 
     /**
      * Retrieve a user via a given identifier and API token
+     *
      * @param  int $user_id
      * @param  string $token   api_token
      * @return token          return the token
@@ -56,7 +57,7 @@ class AuthServiceProvider extends ServiceProvider
 
         $user = User::find($user_id);
 
-        return decrypt($user->api_token) == $token ? $user : null;
+        return decrypt($user->api_token) === $token ? $user : null;
 
     }
 }

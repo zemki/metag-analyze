@@ -31,33 +31,32 @@ class ProjectController extends Controller
     {
 
         $this->authorize('update',$project);
+        $data['breadcrumb'] = [url('/') => 'Projects', '#' => $project->name];
 
         $project->media = $project->media()->pluck('media.name')->toArray();
 
          $data['data']['media'] = Media::all();
 
-        $data['project'] = $project;
+         $data['project'] = $project;
 
         return view('projects.show',$data);
     }
 
     /**
      * Show Create form
+     *
      * @return View return view with the form to insert a new project
      */
     public function create()
     {
-        $data['media'] = Media::all();
-
+        $data['breadcrumb'] = [url('/') => 'Projects','#'=>'Create'];
 
         return view('projects.create',$data);
     }
 
 
-    public function store(Request $request){
-
+    public function store(){
         $media = request()->media;
-
         $attributes = request()->validate([
             'name' => 'required',
             'description' => 'required',
@@ -68,18 +67,9 @@ class ProjectController extends Controller
 
         $attributes = $this->handleLockedValue($attributes);
 
-
         $project = auth()->user()->projects()->create($attributes);
 
-        if($media){
-            $mToSync = array();
-            foreach (array_filter($media) as $m){
-                array_push($mToSync,Media::firstOrCreate(['name' => $m])->id);
-
-            }
-            $project->media()->sync(Media::whereIn('id',$mToSync)->get());
-        }
-
+        $this->syncMedia($media, $project, $mToSync);
 
         return redirect('/projects');
 
@@ -87,13 +77,10 @@ class ProjectController extends Controller
 
 
 
-    public function update(Project $project,Request $request)
+    public function update(Project $project)
     {
-
         $this->authorize('update',$project);
-
         $media = request()->media;
-
         $attributes = request()->validate([
             'name' => 'required',
             'description' => 'required',
@@ -101,23 +88,10 @@ class ProjectController extends Controller
             'is_locked' => 'nullable ',
             'inputs' => 'nullable'
         ]);
-
-        $project->update($request->all());
+        $project->update($attributes);
         $project->save();
-
-        if($media){
-            $mToSync = array();
-            foreach (array_filter($media) as $m){
-                array_push($mToSync,Media::firstOrCreate(['name' => $m])->id);
-
-            }
-            $project->media()->sync(Media::whereIn('id',$mToSync)->get());
-        }
-
-
+        $this->syncMedia($media, $project, $mToSync);
         return response("Updated project successfully");
-
-
     }
 
     /**
@@ -126,12 +100,19 @@ class ProjectController extends Controller
      */
     public function handleLockedValue($attributes)
     {
-        if (!isset($attributes['is_locked'])) $attributes['is_locked'] = 0;
-        else {
-
-            if ($attributes['is_locked'] != 0 && $attributes['is_locked'] != 1) {
-                if ($attributes['is_locked'] == "on") $attributes['is_locked'] = 1;
-                elseif ($attributes['is_locked'] == "off") $attributes['is_locked'] = 0;
+        if (!isset($attributes['is_locked']))
+        {
+            $attributes['is_locked'] = 0;
+        } else {
+                if ($attributes['is_locked'] !== 0 && $attributes['is_locked'] !== 1) {
+                    if ($attributes['is_locked'] === "on")
+                    {
+                        $attributes['is_locked'] = 1;
+                    }
+                    elseif ($attributes['is_locked'] === "off")
+                    {
+                        $attributes['is_locked'] = 0;
+                    }
             }
         }
         return $attributes;
@@ -149,5 +130,22 @@ class ProjectController extends Controller
 
         return redirect(url(''))->with('message','Project deleted');
 
+    }
+
+    /**
+     * @param $media
+     * @param $project
+     * @param $mToSync
+     */
+    protected function syncMedia($media, $project, &$mToSync): void
+    {
+        if ($media) {
+            $mToSync = array();
+            foreach (array_filter($media) as $singleMedia) {
+                array_push($mToSync, Media::firstOrCreate(['name' => $singleMedia])->id);
+
+            }
+            $project->media()->sync(Media::whereIn('id', $mToSync)->get());
+        }
     }
 }

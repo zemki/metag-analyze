@@ -21,7 +21,7 @@ class RegisterAction
         $action['user_id'] = (Auth::user() ? Auth::user()->id : null );
         $action['url'] = $request->fullUrl();
 // Get the currently authenticated user...
-        $user = Auth::user();
+
         DB::table('actions')->insert([$action]);
         return $next($request);
     }

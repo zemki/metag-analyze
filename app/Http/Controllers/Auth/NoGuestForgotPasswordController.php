@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\Password;
  */
 class NoGuestForgotPasswordController extends ForgotPasswordController
 {
-
     /**
      * NoGuestForgotPasswordController constructor.
      *

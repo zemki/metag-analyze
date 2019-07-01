@@ -11,6 +11,10 @@ use App\Media;
 
 class EntryController extends Controller
 {
+    /**
+     * @param Cases $case
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
     public function entriesByCase(Cases $case)
     {
     	return EntryResource::collection($case->entries->sortByDesc('begin'));
@@ -46,13 +50,14 @@ class EntryController extends Controller
     }
 
     /**
+     * @param Cases $case
      * Test function to consult data with d3js
      */
     public function consult(Cases $case)
     {
-        $i = 0;
         //$data['entries'] = $case->entries->map->only(['media_id','begin','end'])->flatten()->chunk(3);
-        $data['entries'] = $case->entries()->join('media','entries.media_id','=','media.id')->get()->map->only(['name','begin','end'])
+        $data['entries'] = $case->entries()
+            ->join('media','entries.media_id','=','media.id')->get()->map->only(['name','begin','end'])
             ->flatten()->chunk(3)->toArray();
         $data['entries'] = array_map('array_values', $data['entries']);
 
@@ -62,14 +67,20 @@ class EntryController extends Controller
 
     }
 
-    public function destroy(Cases $case,Entry $entry)
+    /**
+     * @param Cases $case
+     * @param Entry $entry
+     * @return \Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\Response
+     * @throws \Exception
+     */
+    public function destroy(Cases $case, Entry $entry)
     {
       //  $entry = Entry::where('id','=',$entryid)->first();
 
         try {
             $entry->delete();
-        } catch (Exception $e) {
-            echo 'Caught exception: ',  $e->getMessage(), "\n";
+        } catch (Exception $error) {
+            echo 'Caught exception: ',  $error->getMessage(), "\n";
         }
 
 
