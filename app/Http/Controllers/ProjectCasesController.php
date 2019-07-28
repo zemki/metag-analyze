@@ -130,6 +130,7 @@ class ProjectCasesController extends Controller
             $role = Role::where('name', '=', 'user')->first();
             $password = Helper::random_str(request('passwordLength'));
             $user->password = bcrypt($password);
+
             $user->save();
             $user->roles()->sync($role);
         }

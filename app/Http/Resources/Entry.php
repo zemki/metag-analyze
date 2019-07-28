@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Media;
 
 class Entry extends JsonResource
 {
@@ -13,7 +14,7 @@ class Entry extends JsonResource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function toArray()
+    public function toArray($request)
     {
 
         return [
@@ -25,6 +26,7 @@ class Entry extends JsonResource
             "comment" => $this->comment,
             "case_id" => $this->case_id,
             "media_id" => $this->media_id,
+            "media_name" => Media::where('id',$this->media_id)->first()->name,
             "place_id" => $this->place_id,
             "communication_partner_id" => $this->communication_partner_id,
             'created_at' => $this->created_at,

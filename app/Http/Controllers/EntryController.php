@@ -34,19 +34,35 @@ class EntryController extends Controller
      	$attributes = request()->validate([
             'begin' => 'required',
             'end' => 'required',
-            'content' => 'required',
             'case_id' => 'required',
-            'place_id' => 'required',
             'media_id' => 'required',
-            'communication_partner_id' => 'required',
-            'comment' => 'nullable',
             'inputs' => 'nullable',
         ]);
      	$attributes['inputs'] = json_encode($attributes['inputs']);
-        Entry::create($attributes);
+        $entry = Entry::create($attributes);
 
-    	return response('Entry registered', 200);
+    	return response(['id' => $entry->id ], 200);
 
+    }
+
+    public function update(Request $request,Cases $case,Entry $entry)
+    {
+
+        $this->authorize('update',[Entry::class,$case]);
+
+        $attributes = request()->validate([
+            'begin' => 'required',
+            'end' => 'required',
+            'case_id' => 'required',
+            'media_id' => 'required',
+            'inputs' => 'nullable',
+        ]);
+        $attributes['inputs'] = json_encode($attributes['inputs']);
+
+        $entry->update($attributes);
+        $entry->save();
+
+        return response(['id' => $entry->id ], 200);
     }
 
     /**
