@@ -12,6 +12,10 @@ use Helper;
 
 class ApiController extends Controller
 {
+    /**
+     * @param $id
+     * @return \Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\Response
+     */
     public function returnUser($id) {
 
 
@@ -28,11 +32,18 @@ class ApiController extends Controller
 
         return response($user->jsonSerialize(), 200);
     }
+
+    /**
+     * @return \Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\Response
+     */
     public function returnAllUsers(){
        return response(User::all()->jsonSerialize(), 200);
    }
 
-   public function returnAllRoles(){
+    /**
+     * @return \Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\Response
+     */
+    public function returnAllRoles(){
        return response(Role::all()->jsonSerialize(), 200);
    }
 
@@ -51,7 +62,7 @@ class ApiController extends Controller
 
         if (auth()->attempt($credentials)) {
 
-        $token = Helper::str_random(60);
+        $token = Helper::random_str(60);
 
         auth()->user()->forceFill([
             'api_token' => hash('sha256', $token),
@@ -64,11 +75,26 @@ class ApiController extends Controller
               $response = 'No cases';
               return response()->json(['case' => $response], 200);
           }else{
+
+              $lastDayPos = strpos($userHasACase->duration,"lastDay:");
+
+              if($lastDayPos !== false){
+                  $important=substr($userHasACase->duration, $lastDayPos+strlen('lastDay:'), strlen($userHasACase->duration)-1);
+
+                  $duration = $important;
+              }else{
+                  $duration = $this->calculateDuration($request->datetime,$userHasACase->duration);
+                  $userHasACase->duration = $userHasACase->duration."|lastDay:".$duration;
+                  $userHasACase->save();
+              }
+
+
               $inputs = $this->formatLoginResponse($userHasACase);
               return response()->json([
                 'inputs' => $inputs['inputs'],
                 'case' => $userHasACase,
                 'token' => $token,
+                'duration' => $duration,
                 'custominputs' => $inputs['inputs']['custominputs']
                 ], 200);
 
@@ -79,9 +105,11 @@ class ApiController extends Controller
 }
 
 
-
-
-public function register(Request $request)
+    /**
+     * @param Request $request
+     * @return mixed
+     */
+    public function register(Request $request)
 {
     abort(403,"NOT POSSIBLE");
     $request->validate([
@@ -95,7 +123,11 @@ public function register(Request $request)
         'password' => Hash::make($request->password),
     ]);
 }
-public function logout()
+
+    /**
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function logout()
 {
     auth()->user()->tokens->each(function ($token, $key) {
         $token->delete();
@@ -103,7 +135,11 @@ public function logout()
     return response()->json('Logged out successfully', 200);
 }
 
-public function a(Project $project)
+    /**
+     * @param Project $project
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getProject(Project $project)
 {
     return response()->json(compact($project),200);
 }
@@ -125,12 +161,14 @@ public function a(Project $project)
         return ['token' => $token];
     }
 
-public function getInputs(Project $project)
+    /**
+     * @param Project $project
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getInputs(Project $project)
 {
 
             $data['media'] = $project->media;
-            $data['places'] = $project->places;
-            $data['communication_partners'] = $project->communication_partners;
 
             return response()->json($data, 200);
 
@@ -146,12 +184,23 @@ public function getInputs(Project $project)
         $data['inputs']['media'] = $response->project->media;
         $nullItem = (object)array('id' => 0, 'name' => '');
         $data['inputs']['media']->prepend($nullItem);
-        $data['inputs']['places'] = $response->project->places;
-        $data['inputs']['places']->prepend($nullItem);
-        $data['inputs']['communication_partners'] = $response->project->communication_partners;
-        $data['inputs']['communication_partners']->prepend($nullItem);
         $data['inputs']['custominputs'] = $response->project->inputs;
         return $data;
+    }
+
+    /**
+     * @param $datetime
+     * @param $caseDuration
+     * @return false|string
+     */
+    protected function calculateDuration(int $datetime, $caseDuration)
+    {
+
+        $sub = substr($caseDuration, strpos($caseDuration,":")+strlen(":"),strlen($caseDuration));
+        $realDuration = (int)substr($sub,0,strpos($sub,"|"));
+        $finalDuration = date( "d.m.Y",  $datetime  + $realDuration * 3600 );
+
+        return $finalDuration;
     }
 
 
