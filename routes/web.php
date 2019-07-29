@@ -56,7 +56,18 @@ Route::group(['middleware' => ['auth','authorised']], function(){
 	Route::get('/media/new','MediaController@create');
 	Route::get('/media/{project}','MediaController@show');
 
+
+    /**
+     * User Routes
+     */
 	Route::post('/users','UserController@store');
+    Route::post('/users/exist','UserController@userExists');
+    Route::get('/admin/users/new','UserController@create');
+
+
+    Route::post('/cases/exist','CaseController@caseExists');
+
+
 
 });
 

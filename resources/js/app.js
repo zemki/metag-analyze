@@ -42,7 +42,8 @@ Vue.use(GoogleCharts)
         'newproject.formattedinputstring': function(){
             return JSON.stringify(this.newproject.inputs);
         }
-    }, watch: {
+    },
+    watch: {
         'newcase.duration.selectedUnit': function (newVal,OldVal){
             if(!_.isEmpty(this.newcase.duration.input)){
 
@@ -79,6 +80,89 @@ Vue.use(GoogleCharts)
                 this.newcase.duration.message = "";
                 this.newcase.duration.value = "";
 
+            }
+        },
+        'newuser.case.duration.input': function (newVal,OldVal){
+
+            this.newuser.case.duration.input = newVal.replace(/\D/g,'');
+
+            if(!_.isEmpty(this.newuser.case.duration.selectedUnit)){
+
+            if(this.newuser.case.duration.selectedUnit === 'week') var numberOfDaysToAdd = parseInt(newVal)*7;
+            else var numberOfDaysToAdd = parseInt(newVal);
+
+                let {cdd, cmm, cy} = this.formatDurationMessage(numberOfDaysToAdd);
+
+                // duration in days and change to this after first login
+                this.newuser.case.duration.message = cdd + '.'+ cmm + '.'+ cy;
+                this.newuser.case.duration.value = "value:"+numberOfDaysToAdd*24+"|days:"+numberOfDaysToAdd;
+
+            }else{
+                this.newuser.case.duration.message = "";
+                this.newuser.case.duration.value = "";
+
+            }
+        },
+        'newuser.case.duration.selectedUnit': function (newVal,OldVal){
+            if(!_.isEmpty(this.newuser.case.duration.input)){
+
+                if(newVal === 'week') var numberOfDaysToAdd = parseInt(this.newuser.case.duration.input)*7;
+                else var numberOfDaysToAdd = parseInt(this.newuser.case.duration.input);
+
+                let {cdd, cmm, cy} = this.formatDurationMessage(numberOfDaysToAdd);
+
+                this.newuser.case.duration.message = cdd + '.'+ cmm + '.'+ cy;
+                this.newuser.case.duration.value = "value:"+numberOfDaysToAdd*24+"|days:"+numberOfDaysToAdd;
+
+            }else{
+                this.newuser.case.duration.message = "";
+                this.newuser.case.duration.value = "";
+
+            }
+        },
+        'newuser.email': function(newVal,oldVal){
+
+            window.axios.post('/users/exist',{email: newVal}).then(response =>{
+                this.newuser.emailexist = response.data;
+                if(response.data){
+                    this.newuser.emailexistmessage = "This user will be invited.";
+                }else{
+                    this.newuser.emailexistmessage = "This user is not registered, an invitation email will be sent.";
+                }
+
+            }).catch(error =>{
+                console.log(error);
+            });
+        },
+        'newuser.case.name': function (newVal,oldVal) {
+            if(this.newuser.case.project !== 0){
+                window.axios.post('/cases/exist',{name: newVal,project:this.newuser.case.project}).then(response =>{
+                    this.newuser.case.caseexist = response.data;
+                    if(response.data){
+                        this.newuser.case.caseexistmessage = "This case exist!";
+                    }else{
+                        this.newuser.case.caseexistmessage = "This case will be created.";
+                    }
+
+                }).catch(error =>{
+                    console.log(error);
+                });
+            }
+
+        },
+        'newuser.case.project': function (newVal,oldVal) {
+            if(this.newuser.case.name.length > 0){
+                window.axios.post('/cases/exist',{name: newVal,project:this.newuser.case.project}).then(response =>{
+                    this.newuser.case.caseexist = response.data;
+                    if(response.data){
+                        this.newuser.case.caseexistmessage = "This case exist!";
+                    }else{
+                        this.newuser.case.caseexistmessage = "This case will be created.";
+                    }
+
+                }).catch(error =>{
+                    console.log(error);
+                });
             }
         },
     	'newproject.ninputs': function (newVal,oldVal) {
@@ -130,7 +214,7 @@ Vue.use(GoogleCharts)
                 selectedUnit: "",
                 allowedUnits: ["day(s)","week(s)"],
                 message: "",
-                value:""
+                value:"",
             }
         },
         newproject:{
@@ -140,9 +224,29 @@ Vue.use(GoogleCharts)
           ],
           config: window.inputs,
           response: "",
-            media: [""]
+          media: [""]
+      },
+        newuser:{
+            role: 2,
+            email: "",
+            emailexist: false,
+            emailexistmessage: "",
+            assignToCase: false,
+            case:{
+                duration: {
+                    input: "",
+                    selectedUnit: "",
+                    allowedUnits: ["day(s)","week(s)"],
+                    message: "",
+                    value:"",
+                },
+                name: "",
+                caseexistmessage:"",
+                caseexist: false
+            },
+            project: 0,
 
-      }
+        }
   },
   methods: {
     validateSubmitCaseForm()

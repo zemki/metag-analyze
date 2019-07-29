@@ -127,7 +127,6 @@ class ProjectController extends Controller
             return redirect()->back()->with('message', 'Project has entries, you cannot delete it');
         }
 
-
         return redirect(url(''))->with('message','Project deleted');
 
     }
