@@ -30,7 +30,7 @@
 				@forelse($project->cases as $case)
 
 					<div class="column is-4 overflow-auto ">
-						<article class="cards-projects items-stretch .flex-grow-0 h-56 px-2 border-solid border-4 border-gray-100">
+						<article class="cards-projects items-stretch flex-grow-0 h-auto px-2 py-2 border-solid border-4 border-gray-100">
 							<div class="mb-2">
 								<p class="text-2xl font-bold ">
 										<a href="{{$project->id.$case->path()}}">
@@ -48,7 +48,7 @@
 								Entries: {{$case->entries->count()}}
 							</div>
 							<div class="">
-								<p class="text-base">{{$case->duration}} </p>
+								<p class="text-base">{!!$case->formattedDuration()!!} </p>
 							</div>
 							<div class="mt-3" style="float:right;">
 								<form action="{{url($project->path().'/cases/'.$case->id)}}" method="POST">

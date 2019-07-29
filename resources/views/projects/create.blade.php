@@ -15,7 +15,8 @@
                         <strong>End Date/time</strong> and
                         <strong>Media </strong> used.
                         You can enter up to 3 additional inputs giving them name and details,
-                        this will be reflected in the mobile app.</p>
+                        this will be reflected in the mobile app.
+                    </p>
                     </div>
                     <form method="POST" action="/projects" class="container" style="padding-top: 40px" @submit="validateProject">
                         @csrf

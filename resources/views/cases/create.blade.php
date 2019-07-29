@@ -7,7 +7,15 @@
 
 <div class="columns">
 	<div class="column">
-		<h1>Create a Case</h1>
+
+			<h1 class="title">Create a Case</h1>
+			<p class="subtitle text-sm">The duration start from the moment  <strong>when the user log in in the app.</strong> <br>
+				The user field define the login username in the app.<br>
+				We advice to create the user with a prefix, referring the project. (example: P12_user0)
+
+			</p>
+
+
 		<form method="POST" action="{{$project->path().'/cases'}}" class="" style="padding-top: 40px" id="addcase" autocomplete="off">
 			@csrf
 			<div class="field">

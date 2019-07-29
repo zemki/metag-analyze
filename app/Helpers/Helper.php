@@ -60,4 +60,22 @@ class Helper
         $type = explode(';', $ini);
         return $type[0];
     }
+
+    /**
+     * @param $string
+     * @param $start
+     * @param $end
+     * @return bool|string
+     */
+    public static function get_string_between($string, $start, $end){
+        $string = ' ' . $string;
+        $ini = strpos($string, $start);
+        if ($ini == 0) return '';
+        $ini += strlen($start);
+        $len = strpos($string, $end, $ini) - $ini;
+        if(strpos($string, $end, $ini) == false ){
+            $len=strlen($string) -1;
+        }
+        return substr($string, $ini, $len);
+    }
 }

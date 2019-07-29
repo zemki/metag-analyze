@@ -17,13 +17,14 @@ class Authorised
     public function handle($request, Closure $next)
     {
         if (
-                Auth::check() && (Auth::user()->isAdmin()
+        (Auth::check() && Auth::user()->isAdmin())
                 ||
-                Auth::check() && Auth::user()->isResearcher())
+        (Auth::check() && Auth::user()->isResearcher())
         )
         {
             return $next($request);
         }
 
-        return abort(401);    }
+        return abort(401);
+    }
 }

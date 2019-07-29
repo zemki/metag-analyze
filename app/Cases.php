@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Helper;
 
 class Cases extends Model
 {
@@ -54,6 +55,22 @@ public function addUser($user)
 public function isEditable()
 {
   return $this->entries()->count() > 0 ? false : true;
+}
+
+public function formattedDuration()
+{
+    $duration = $this->duration;
+    $formattedString = "<p><strong class=\"title\">Duration</strong><br><strong>Hours</strong>: ";
+    $formattedString .= Helper::get_string_between($this->duration, 'value:', '|');
+    $formattedString .= "<br> Days: ".Helper::get_string_between($duration, 'days:', '|');
+
+    $lastDay = Helper::get_string_between($duration, 'lastDay:', '|');
+
+    if($lastDay != ''){
+        $formattedString .= "<br> Last day: ".$lastDay;
+    }
+
+    return $formattedString;
 }
 
 }

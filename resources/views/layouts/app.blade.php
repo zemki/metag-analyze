@@ -43,6 +43,7 @@
                 </b-notification>
 
             @endif
+
             @yield('content')
         </main>
     </div>

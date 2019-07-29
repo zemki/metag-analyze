@@ -19756,6 +19756,98 @@ var app = new Vue({
         this.newcase.duration.value = "";
       }
     },
+    'newuser.case.duration.input': function newuserCaseDurationInput(newVal, OldVal) {
+      this.newuser.case.duration.input = newVal.replace(/\D/g, '');
+
+      if (!_.isEmpty(this.newuser.case.duration.selectedUnit)) {
+        if (this.newuser.case.duration.selectedUnit === 'week') var numberOfDaysToAdd = parseInt(newVal) * 7;else var numberOfDaysToAdd = parseInt(newVal);
+
+        var _this$formatDurationM3 = this.formatDurationMessage(numberOfDaysToAdd),
+            cdd = _this$formatDurationM3.cdd,
+            cmm = _this$formatDurationM3.cmm,
+            cy = _this$formatDurationM3.cy; // duration in days and change to this after first login
+
+
+        this.newuser.case.duration.message = cdd + '.' + cmm + '.' + cy;
+        this.newuser.case.duration.value = "value:" + numberOfDaysToAdd * 24 + "|days:" + numberOfDaysToAdd;
+      } else {
+        this.newuser.case.duration.message = "";
+        this.newuser.case.duration.value = "";
+      }
+    },
+    'newuser.case.duration.selectedUnit': function newuserCaseDurationSelectedUnit(newVal, OldVal) {
+      if (!_.isEmpty(this.newuser.case.duration.input)) {
+        if (newVal === 'week') var numberOfDaysToAdd = parseInt(this.newuser.case.duration.input) * 7;else var numberOfDaysToAdd = parseInt(this.newuser.case.duration.input);
+
+        var _this$formatDurationM4 = this.formatDurationMessage(numberOfDaysToAdd),
+            cdd = _this$formatDurationM4.cdd,
+            cmm = _this$formatDurationM4.cmm,
+            cy = _this$formatDurationM4.cy;
+
+        this.newuser.case.duration.message = cdd + '.' + cmm + '.' + cy;
+        this.newuser.case.duration.value = "value:" + numberOfDaysToAdd * 24 + "|days:" + numberOfDaysToAdd;
+      } else {
+        this.newuser.case.duration.message = "";
+        this.newuser.case.duration.value = "";
+      }
+    },
+    'newuser.email': function newuserEmail(newVal, oldVal) {
+      var _this = this;
+
+      window.axios.post('/users/exist', {
+        email: newVal
+      }).then(function (response) {
+        _this.newuser.emailexist = response.data;
+
+        if (response.data) {
+          _this.newuser.emailexistmessage = "This user will be invited.";
+        } else {
+          _this.newuser.emailexistmessage = "This user is not registered, an invitation email will be sent.";
+        }
+      }).catch(function (error) {
+        console.log(error);
+      });
+    },
+    'newuser.case.name': function newuserCaseName(newVal, oldVal) {
+      var _this2 = this;
+
+      if (this.newuser.case.project !== 0) {
+        window.axios.post('/cases/exist', {
+          name: newVal,
+          project: this.newuser.case.project
+        }).then(function (response) {
+          _this2.newuser.case.caseexist = response.data;
+
+          if (response.data) {
+            _this2.newuser.case.caseexistmessage = "This case exist!";
+          } else {
+            _this2.newuser.case.caseexistmessage = "This case will be created.";
+          }
+        }).catch(function (error) {
+          console.log(error);
+        });
+      }
+    },
+    'newuser.case.project': function newuserCaseProject(newVal, oldVal) {
+      var _this3 = this;
+
+      if (this.newuser.case.name.length > 0) {
+        window.axios.post('/cases/exist', {
+          name: newVal,
+          project: this.newuser.case.project
+        }).then(function (response) {
+          _this3.newuser.case.caseexist = response.data;
+
+          if (response.data) {
+            _this3.newuser.case.caseexistmessage = "This case exist!";
+          } else {
+            _this3.newuser.case.caseexistmessage = "This case will be created.";
+          }
+        }).catch(function (error) {
+          console.log(error);
+        });
+      }
+    },
     'newproject.ninputs': function newprojectNinputs(newVal, oldVal) {
       if (newVal < 0 || oldVal < 0) {
         newVal = 0;
@@ -19812,6 +19904,26 @@ var app = new Vue({
       config: window.inputs,
       response: "",
       media: [""]
+    },
+    newuser: {
+      role: 2,
+      email: "",
+      emailexist: false,
+      emailexistmessage: "",
+      assignToCase: false,
+      case: {
+        duration: {
+          input: "",
+          selectedUnit: "",
+          allowedUnits: ["day(s)", "week(s)"],
+          message: "",
+          value: ""
+        },
+        name: "",
+        caseexistmessage: "",
+        caseexist: false
+      },
+      project: 0
     }
   },
   methods: {

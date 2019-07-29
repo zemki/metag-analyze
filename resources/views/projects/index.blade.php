@@ -8,6 +8,13 @@
 			<i class="px-1">+</i> New Project
 		</button>
 	</a>
+@if(Auth::user()->isAdmin())
+	<a href="{{url('admin/users/new')}}">
+		<button class="button bg-blue-500 hover:bg-blue-700 text-white mr-2 focus:border-gray-100">
+			<i class="px-1">+</i> New User
+		</button>
+	</a>
+@endif
 </div>
 
 <div class="columns is-multiline subpixel-antialiased">

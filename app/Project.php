@@ -50,7 +50,7 @@ public function created_by()
 
 public function addCase($name,$duration)
 {
-    return $this->cases()->create(compact('name','duration'));
+    return $this->cases()->firstOrCreate(['name' => $name, 'duration' => $duration]);
 }
 
 }
