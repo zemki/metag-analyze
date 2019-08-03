@@ -26,6 +26,9 @@
 
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    <style>
+        @yield('pagespecificcss')
+    </style>
 </head>
 <body>
     <div id="app">

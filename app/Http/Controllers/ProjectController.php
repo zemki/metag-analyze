@@ -71,7 +71,7 @@ class ProjectController extends Controller
 
         $this->syncMedia($media, $project, $mToSync);
 
-        return redirect('/projects');
+        return redirect('projects');
 
     }
 

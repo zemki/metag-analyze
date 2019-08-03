@@ -16,7 +16,7 @@
 			</p>
 
 
-		<form method="POST" action="{{$project->path().'/cases'}}" class="" style="padding-top: 40px" id="addcase" autocomplete="off">
+		<form method="POST" action="{{url($project->path().'/cases')}}" class="" style="padding-top: 40px" id="addcase" autocomplete="off">
 			@csrf
 			<div class="field">
 				<label for="name" class="label">
