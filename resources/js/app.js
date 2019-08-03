@@ -136,6 +136,7 @@ Vue.use(GoogleCharts)
         },
         'newuser.case.name': function (newVal,oldVal) {
             if(this.newuser.case.project !== 0){
+
                 window.axios.post('/cases/exist',{name: newVal,project:this.newuser.case.project}).then(response =>{
                     this.newuser.case.caseexist = response.data;
                     if(response.data){
