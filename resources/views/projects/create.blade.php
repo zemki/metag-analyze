@@ -40,14 +40,6 @@
                             </div>
                         </div>
 
-                        <div class="field">
-                            <div class="control">
-                                <label class="checkbox">
-                                    <input type="hidden" name="is_locked">
-                                    lock project
-                                </label>
-                            </div>
-                        </div>
 
 
                         <input type="hidden" :value="JSON.stringify(newproject.inputs)" name="inputs">

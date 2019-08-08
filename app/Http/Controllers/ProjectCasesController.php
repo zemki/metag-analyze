@@ -20,7 +20,7 @@ class ProjectCasesController extends Controller
      */
     public function show(Project $project, Cases $case)
     {
-        if (auth()->user()->isNot($project->created_by()->first())) {
+        if (auth()->user()->isNot($project->created_by())) {
             abort(403);
         }
         $data['entriesByMedia'] = $case->entries()
@@ -141,7 +141,7 @@ class ProjectCasesController extends Controller
             '#' => 'Create Case'
         ];
 
-        if (auth()->user()->isNot($project->created_by()->first())) {
+        if (auth()->user()->isNot($project->created_by())) {
             abort(403);
         }
 

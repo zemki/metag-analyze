@@ -53,9 +53,9 @@ Route::group(['middleware' => ['auth','authorised']], function(){
     /**
      * User Routes
      */
-	Route::post('/users','UserController@store');
+	Route::post('/users','UserController@store')->name('users');
     Route::post('/users/exist','UserController@userExists');
-    Route::get('/admin/users/new','UserController@create');
+    Route::get('/admin/users/new','UserController@create')->name('newadminusers');
 
 
     Route::post('/cases/exist','CaseController@caseExists');

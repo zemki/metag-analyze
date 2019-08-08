@@ -18,7 +18,7 @@
 			@if($errors->any())
 				<h4>{{$errors->first()}}</h4>
 			@endif
-			<form method="POST" action="{{url('users')}}" class="" style="padding-top: 40px" id="adduser" autocomplete="off">
+			<form method="POST" action="{{route('users')}}" class="" style="padding-top: 40px" id="adduser" autocomplete="off">
 				@csrf
 				<div class="field">
 					<div class="control">
