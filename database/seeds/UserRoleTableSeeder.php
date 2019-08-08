@@ -21,7 +21,7 @@ class UserRoleTableSeeder extends Seeder
                 'role_id' => 1
             ],[
 	            'user_id' => 2,
-	            'role_id' => 3
+	            'role_id' => 1
 	        ]);
     }
 }

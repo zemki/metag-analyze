@@ -19,24 +19,23 @@ class UsersTableSeeder extends Seeder
 
     	DB::table('users')->insert([
     		'username' => "admin",
-    		'email' => "belli@uni-bremen.de",
-    		'password' => bcrypt('1234'),
+    		'email' => "alessandro",
+    		'password' => bcrypt('1q2w3e4r5t'),
     		'api_token' => hash('sha256',str_random(60)),
     		'created_at' => $faker->dateTime($max = 'now', $timezone = "Europe/Berlin"),
     		'updated_at' => $faker->dateTime($max = 'now', $timezone = "Europe/Berlin")
     	],
     	[
     		'username' => "test_user",
-    		'email' => "belli@uni.de",
-    		'password' => bcrypt('1234'),
+    		'email' => "florian",
+    		'password' => bcrypt('q1w2e3r4t5'),
     		'api_token' =>  hash('sha256',str_random(60)),
-
     		'created_at' => $faker->dateTime($max = 'now', $timezone = "Europe/Berlin"),
     		'updated_at' => $faker->dateTime($max = 'now', $timezone = "Europe/Berlin")
     	]);
 
     	$this->command->info('Admin user seeded');
-    	$fakeusers = 1;
+    	$fakeusers = 0;
 
     	$this->command->info('Seeding fake users');
 	    /// create fake data

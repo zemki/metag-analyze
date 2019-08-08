@@ -37,13 +37,13 @@ class UserController extends Controller
     {
         $data['breadcrumb'] = [url('/') => 'Admin', '#' => 'Create User'];
         $data['projects'] = Project::all();
-        return view('admin.createUser',$data);
+        return view('admin.createUser', $data);
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
@@ -56,7 +56,7 @@ class UserController extends Controller
 
         $email = request('email');
         $user = User::firstOrNew(['email' => $email]);
-        $project = Project::where('id', '=', request('project'))->firstOrFail();
+
 
         if (!$user->exists) {
             $user->username = request('email');
@@ -70,16 +70,15 @@ class UserController extends Controller
 
         }
 
-        if(request('assignToCase'))
-        {
-               $case = $project->addCase(request('caseName'),request('duration'));
-               $case->addUser($user);
+        if (request('assignToCase')) {
+            $project = Project::where('id', '=', request('project'))->firstOrFail();
+            $case = $project->addCase(request('caseName'), request('duration'));
+            $case->addUser($user);
 
         }
 
-        return redirect()->back()->with('message',isset($password)? $user->email.' can now enter with the password: '.$password : 'User was already registered');
 
-
+        return redirect()->back()->with('message', isset($password) ? $user->email . ' can now enter with the password: ' . $password : 'User was already registered');
 
 
     }
@@ -87,7 +86,7 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param int $id
      * @return \Illuminate\Http\Response
      */
     public function show()
@@ -98,7 +97,7 @@ class UserController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int  $id
+     * @param int $id
      * @return \Illuminate\Http\Response
      */
     public function edit()
@@ -109,8 +108,8 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
@@ -130,7 +129,7 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param int $id
      * @return \Illuminate\Http\Response
      */
     public function destroy($id)
@@ -142,8 +141,8 @@ class UserController extends Controller
 
     /**
      * @param Request $request
-     * @todo consider adding filter by role, same email AND role user.
      * @return \Illuminate\Http\JsonResponse
+     * @todo consider adding filter by role, same email AND role user.
      */
     public function userExists(Request $request)
     {
