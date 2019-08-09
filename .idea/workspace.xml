@@ -3,16 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="49b2948e-19cc-4195-90cc-e5d3bf8d67f6" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/ProjectCasesController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/ProjectCasesController.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/ProjectController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/ProjectController.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/UserController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/UserController.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Providers/AppServiceProvider.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Providers/AppServiceProvider.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Providers/TelescopeServiceProvider.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Providers/TelescopeServiceProvider.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/seeds/UserRoleTableSeeder.php" beforeDir="false" afterPath="$PROJECT_DIR$/database/seeds/UserRoleTableSeeder.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/seeds/UsersTableSeeder.php" beforeDir="false" afterPath="$PROJECT_DIR$/database/seeds/UsersTableSeeder.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/admin/createUser.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/admin/createUser.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/projects/create.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/projects/create.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/web.php" beforeDir="false" afterPath="$PROJECT_DIR$/routes/web.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/EntryController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/EntryController.php" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -327,6 +318,7 @@
       <workItem from="1565082069312" duration="2484000" />
       <workItem from="1565166260329" duration="827000" />
       <workItem from="1565181565148" duration="406000" />
+      <workItem from="1565347884024" duration="2009000" />
     </task>
     <servers />
   </component>
