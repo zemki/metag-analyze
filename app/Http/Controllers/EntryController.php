@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 use App\Http\Resources\Entry as EntryResource;
 use App\Entry;
 use App\Cases;
 use App\Project;
 use App\Media;
+use Illuminate\Http\Response;
 
 class EntryController extends Controller
 {
@@ -23,8 +25,9 @@ class EntryController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @return Response
+     * @throws AuthorizationException
      */
     public function store(Request $request,Cases $case)
     {
@@ -38,8 +41,18 @@ class EntryController extends Controller
             'media_id' => 'required',
             'inputs' => 'nullable',
         ]);
-     	$attributes['inputs'] = json_encode($attributes['inputs']);
-        $entry = Entry::create($attributes);
+
+     	if(is_numeric($attributes['media_id'])){
+
+            $attributes['inputs'] = json_encode($attributes['inputs']);
+            $entry = Entry::create($attributes);
+        }else{
+            $attributes['media_id'] = Media::firstOrCreate(['name' => $attributes['media_id']])->id;
+            $attributes['inputs'] = json_encode($attributes['inputs']);
+            $entry = Entry::create($attributes);
+        }
+
+
 
     	return response(['id' => $entry->id ], 200);
 
@@ -86,7 +99,7 @@ class EntryController extends Controller
     /**
      * @param Cases $case
      * @param Entry $entry
-     * @return \Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Routing\ResponseFactory|Response
      * @throws \Exception
      */
     public function destroy(Cases $case, Entry $entry)
