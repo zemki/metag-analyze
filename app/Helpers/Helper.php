@@ -2,6 +2,9 @@
 
 namespace App\Helpers;
 
+use RecursiveArrayIterator;
+use RecursiveIteratorIterator;
+
 class Helper
 {
 
@@ -77,5 +80,70 @@ class Helper
             $len=strlen($string) -1;
         }
         return substr($string, $ini, $len);
+    }
+
+
+    /**
+     * Search for an element in array recursively
+     *
+     * @param $needle
+     * @param $haystack
+     * @return bool
+     */
+    public static function in_array_recursive($needle, $haystack) {
+        $it = new RecursiveIteratorIterator(new RecursiveArrayIterator($haystack));
+        foreach($it AS $element) {
+            if($element == $needle) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    /**
+     * @param $myArray
+     * @param $MAXDEPTH
+     * @param int $depth
+     * @param array $arrayKeys
+     * @return array
+     */
+    public static function array_keys_recursive($myArray, $arrayKeys = array(), $MAXDEPTH = INF, $depth = 0){
+        if($depth < $MAXDEPTH){
+            $depth++;
+            $keys = array_keys($myArray);
+            foreach($keys as $key){
+                if(is_array($myArray[$key])){
+                    $arrayKeys[$key] = Helper::array_keys_recursive($myArray[$key], $MAXDEPTH, $depth);
+                }
+            }
+        }
+
+        return $arrayKeys;
+    }
+
+    /*
+ * Searches for $needle in the multidimensional array $haystack.
+ *
+ * @param mixed $needle The item to search for
+ * @param array $haystack The array to search
+ * @return array|bool The indices of $needle in $haystack across the
+ *  various dimensions. FALSE if $needle was not found.
+ */
+    public static function recursive_array_search($needle, $haystack, $currentKey = '') {
+        foreach($haystack as $key=>$value) {
+            dd(is_array($value));
+            if (is_array($value)) {
+
+                $nextKey = recursive_array_search($needle,$value, $currentKey . '[' . $key . ']');
+                if ($nextKey) {
+                    return $nextKey;
+                }
+            }
+            else if($value==$needle) {
+                return is_numeric($key) ? $currentKey . '[' .$key . ']' : $currentKey;
+            }
+        }
+        return false;
     }
 }

@@ -10,7 +10,7 @@
 		<div class="level-right">
 			<div class="field">
 				<div class="control">
-					<a href="{{$project->path().'/cases/new'}}">
+					<a href="{{url($project->path().'/cases/new')}}">
 						<button  class="button is-link is-primary">Create Case</button>
 					</a>
 				</div>

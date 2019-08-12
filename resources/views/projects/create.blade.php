@@ -18,7 +18,7 @@
                         this will be reflected in the mobile app.
                     </p>
                     </div>
-                    <form method="POST" action="/projects" class="container" style="padding-top: 40px" @submit="validateProject">
+                    <form method="POST" action="{{route('projects')}}" class="container" style="padding-top: 40px" @submit="validateProject">
                         @csrf
                         <input type="hidden" value="{{auth()->user()->id}}" name="created_by">
                         <div class="field">
@@ -40,14 +40,6 @@
                             </div>
                         </div>
 
-                        <div class="field">
-                            <div class="control">
-                                <label class="checkbox">
-                                    <input type="hidden" name="is_locked">
-                                    lock project
-                                </label>
-                            </div>
-                        </div>
 
 
                         <input type="hidden" :value="JSON.stringify(newproject.inputs)" name="inputs">

@@ -62,9 +62,24 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
     protected function gate()
     {
         Gate::define('viewTelescope', function ($user) {
+
             return in_array($user->email, [
-                'belli@uni-bremen.de'
+                'florian',
+                'alessandro'
             ]);
+        });
+    }
+    /**
+     * Configure the Telescope authorization services.
+     *
+     * @return void
+     */
+    protected function authorization()
+    {
+        $this->gate();
+
+        Telescope::auth(function ($request) {
+            return Gate::check('viewTelescope', [$request->user()]);
         });
     }
 }
