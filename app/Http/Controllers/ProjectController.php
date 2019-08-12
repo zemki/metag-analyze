@@ -18,28 +18,28 @@ class ProjectController extends Controller
 
         $projects = auth()->user()->projects()->get();
 
-        return view('projects.index',compact('projects'));
+        return view('projects.index', compact('projects'));
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param int $id
      * @return \Illuminate\Http\Response
      */
     public function show(Project $project)
     {
 
-        $this->authorize('update',$project);
+        $this->authorize('update', $project);
         $data['breadcrumb'] = [url('/') => 'Projects', '#' => $project->name];
 
         $project->media = $project->media()->pluck('media.name')->toArray();
 
-         $data['data']['media'] = Media::all();
+        $data['data']['media'] = Media::all();
 
-         $data['project'] = $project;
+        $data['project'] = $project;
 
-        return view('projects.show',$data);
+        return view('projects.show', $data);
     }
 
     /**
@@ -49,13 +49,14 @@ class ProjectController extends Controller
      */
     public function create()
     {
-        $data['breadcrumb'] = [url('/') => 'Projects','#'=>'Create'];
+        $data['breadcrumb'] = [url('/') => 'Projects', '#' => 'Create'];
 
-        return view('projects.create',$data);
+        return view('projects.create', $data);
     }
 
 
-    public function store(){
+    public function store()
+    {
         $media = request()->media;
         $attributes = request()->validate([
             'name' => 'required',
@@ -71,15 +72,14 @@ class ProjectController extends Controller
 
         $this->syncMedia($media, $project, $mToSync);
 
-        return redirect('/projects');
+        return redirect('projects');
 
     }
 
 
-
     public function update(Project $project)
     {
-        $this->authorize('update',$project);
+        $this->authorize('update', $project);
         $media = request()->media;
         $attributes = request()->validate([
             'name' => 'required',
@@ -100,19 +100,15 @@ class ProjectController extends Controller
      */
     public function handleLockedValue($attributes)
     {
-        if (!isset($attributes['is_locked']))
-        {
+        if (!isset($attributes['is_locked'])) {
             $attributes['is_locked'] = 0;
         } else {
-                if ($attributes['is_locked'] !== 0 && $attributes['is_locked'] !== 1) {
-                    if ($attributes['is_locked'] === "on")
-                    {
-                        $attributes['is_locked'] = 1;
-                    }
-                    elseif ($attributes['is_locked'] === "off")
-                    {
-                        $attributes['is_locked'] = 0;
-                    }
+            if ($attributes['is_locked'] !== 0 && $attributes['is_locked'] !== 1) {
+                if ($attributes['is_locked'] === "on") {
+                    $attributes['is_locked'] = 1;
+                } elseif ($attributes['is_locked'] === "off") {
+                    $attributes['is_locked'] = 0;
+                }
             }
         }
         return $attributes;
@@ -121,13 +117,13 @@ class ProjectController extends Controller
 
     public function destroy(Project $project)
     {
-        if($project->isEditable()){
+        if ($project->isEditable()) {
             $project->delete();
-        }else{
+        } else {
             return redirect()->back()->with('message', 'Project has entries, you cannot delete it');
         }
 
-        return redirect(url(''))->with('message','Project deleted');
+        return redirect(url(''))->with('message', 'Project deleted');
 
     }
 

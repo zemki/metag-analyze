@@ -3,22 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="49b2948e-19cc-4195-90cc-e5d3bf8d67f6" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Cases.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Cases.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Helpers/Helper.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Helpers/Helper.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/CaseController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/CaseController.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/ProjectController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/ProjectController.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/UserController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/UserController.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Http/Middleware/Authorised.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Middleware/Authorised.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Project.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Project.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/js/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/app.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/mix-manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/public/mix-manifest.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/js/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/resources/js/app.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/cases/create.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/cases/create.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/layouts/app.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/layouts/app.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/projects/create.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/projects/create.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/projects/index.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/projects/index.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/projects/show.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/projects/show.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/web.php" beforeDir="false" afterPath="$PROJECT_DIR$/routes/web.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/EntryController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/EntryController.php" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -190,7 +175,7 @@
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="nodejs_package_manager_path" value="yarn" />
-    <property name="settings.editor.selected.configurable" value="MTConfigurable" />
+    <property name="settings.editor.selected.configurable" value="MTCustomThemeConfigurable" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -317,43 +302,24 @@
       <workItem from="1562149941439" duration="3399000" />
       <workItem from="1562759814014" duration="162000" />
       <workItem from="1564389693406" duration="148000" />
-      <workItem from="1564389910381" duration="24000" />
-      <workItem from="1564389969499" duration="15981000" />
-      <workItem from="1564677946176" duration="1219000" />
+      <workItem from="1564389969499" duration="16080000" />
+      <workItem from="1564471204935" duration="2771000" />
+      <workItem from="1564476689988" duration="11130000" />
+      <workItem from="1564558280528" duration="20322000" />
+      <workItem from="1564682777948" duration="417000" />
+      <workItem from="1564683830610" duration="2191000" />
+      <workItem from="1564742263507" duration="480000" />
+      <workItem from="1564945445441" duration="98000" />
+      <workItem from="1564945570581" duration="1153000" />
+      <workItem from="1564948431430" duration="174000" />
+      <workItem from="1564948808106" duration="619000" />
+      <workItem from="1564988501133" duration="2041000" />
+      <workItem from="1565082069312" duration="2484000" />
+      <workItem from="1565166260329" duration="827000" />
+      <workItem from="1565181565148" duration="406000" />
+      <workItem from="1565347884024" duration="2009000" />
     </task>
     <servers />
-  </component>
-  <component name="TestHistory">
-    <history-entry file="ProjectCaseTest_a_case_can_have_entries - 2019.06.18 at 15h 06m 31s.xml">
-      <configuration name="ProjectCaseTest.a_case_can_have_entries" configurationId="PHPUnitRunConfigurationType" />
-    </history-entry>
-    <history-entry file="ProjectMediaTest_a_project_can_have_media - 2019.06.18 at 15h 06m 43s.xml">
-      <configuration name="ProjectMediaTest.a_project_can_have_media" configurationId="PHPUnitRunConfigurationType" />
-    </history-entry>
-    <history-entry file="ProjectTest_a_project_needs_name - 2019.06.18 at 15h 06m 53s.xml">
-      <configuration name="ProjectTest.a_project_needs_name" configurationId="PHPUnitRunConfigurationType" />
-    </history-entry>
-    <history-entry file="ProjectTest_a_project_needs_owner - 2019.06.18 at 15h 06m 57s.xml">
-      <configuration name="ProjectTest.a_project_needs_owner" configurationId="PHPUnitRunConfigurationType" />
-    </history-entry>
-    <history-entry file="ProjectTest_a_user_can_create_a_project - 2019.06.18 at 15h 07m 01s.xml">
-      <configuration name="ProjectTest.a_user_can_create_a_project" configurationId="PHPUnitRunConfigurationType" />
-    </history-entry>
-    <history-entry file="ProjectTest_a_user_can_view_a_project - 2019.06.18 at 15h 07m 05s.xml">
-      <configuration name="ProjectTest.a_user_can_view_a_project" configurationId="PHPUnitRunConfigurationType" />
-    </history-entry>
-    <history-entry file="ProjectTest_a_user_auth_cannot_view_other_projects - 2019.06.18 at 15h 07m 10s.xml">
-      <configuration name="ProjectTest.a_user_auth_cannot_view_other_projects" configurationId="PHPUnitRunConfigurationType" />
-    </history-entry>
-    <history-entry file="ProjectTest_a_user_auth_cannot_update_other_projects - 2019.06.18 at 15h 07m 16s.xml">
-      <configuration name="ProjectTest.a_user_auth_cannot_update_other_projects" configurationId="PHPUnitRunConfigurationType" />
-    </history-entry>
-    <history-entry file="ProjectTest_guests_cannot_manage_projects - 2019.06.18 at 15h 07m 20s.xml">
-      <configuration name="ProjectTest.guests_cannot_manage_projects" configurationId="PHPUnitRunConfigurationType" />
-    </history-entry>
-    <history-entry file="ProjectTest_project_inputs_can_be_edited_only_when_zero_entries - 2019.06.18 at 15h 07m 30s.xml">
-      <configuration name="ProjectTest.project_inputs_can_be_edited_only_when_zero_entries" configurationId="PHPUnitRunConfigurationType" />
-    </history-entry>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />

@@ -23,7 +23,7 @@ Route::group(['middleware' => ['auth','authorised']], function(){
 
 	Route::get('/home','ProjectController@index');
 	Route::get('/projects','ProjectController@index');
-	Route::post('/projects','ProjectController@store');
+	Route::post('/projects','ProjectController@store')->name('projects');
 	Route::get('/projects/new','ProjectController@create');
 	Route::get('/projects/{project}','ProjectController@show');
 	Route::patch('/projects/{project}','ProjectController@update');
@@ -40,13 +40,6 @@ Route::group(['middleware' => ['auth','authorised']], function(){
 	Route::patch('/projects/{project}/cases/{case}','ProjectCasesController@update');
 	Route::delete('/projects/{project}/cases/{case}','ProjectCasesController@destroy');
 
-	/**
-	 * Media Group Routes
-	 */
-	Route::get('/media_groups','Media_groupController@index');
-	Route::post('/media_groups','Media_groupController@store');
-	Route::get('/media_groups/new','Media_groupController@create');
-	Route::get('/media_groups/{project}','Media_groupController@show');
 
 	/**
 	 * Media Routes
@@ -60,9 +53,9 @@ Route::group(['middleware' => ['auth','authorised']], function(){
     /**
      * User Routes
      */
-	Route::post('/users','UserController@store');
+	Route::post('/users','UserController@store')->name('users');
     Route::post('/users/exist','UserController@userExists');
-    Route::get('/admin/users/new','UserController@create');
+    Route::get('/admin/users/new','UserController@create')->name('newadminusers');
 
 
     Route::post('/cases/exist','CaseController@caseExists');
