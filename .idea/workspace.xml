@@ -3,7 +3,12 @@
   <component name="ChangeListManager">
     <list default="true" id="49b2948e-19cc-4195-90cc-e5d3bf8d67f6" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/EntryController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/EntryController.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/ProjectController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/ProjectController.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/migrations/2019_04_14_155851_create_projects_table.php" beforeDir="false" afterPath="$PROJECT_DIR$/database/migrations/2019_04_14_155851_create_projects_table.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/js/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/app.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/mix-manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/public/mix-manifest.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/js/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/resources/js/app.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/views/projects/create.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/projects/create.blade.php" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -211,10 +216,6 @@
       <TestRunner class="Tests\Feature\ProjectTest" file="$PROJECT_DIR$/tests/Feature/ProjectTest.php" method="a_user_auth_cannot_update_other_projects" scope="Method" />
       <method v="2" />
     </configuration>
-    <configuration name="ProjectTest.a_user_auth_cannot_view_other_projects" type="PHPUnitRunConfigurationType" factoryName="PHPUnit" temporary="true">
-      <TestRunner class="Tests\Feature\ProjectTest" file="$PROJECT_DIR$/tests/Feature/ProjectTest.php" method="a_user_auth_cannot_view_other_projects" scope="Method" />
-      <method v="2" />
-    </configuration>
     <configuration name="ProjectTest.guests_cannot_manage_projects" type="PHPUnitRunConfigurationType" factoryName="PHPUnit" temporary="true">
       <TestRunner class="Tests\Feature\ProjectTest" file="$PROJECT_DIR$/tests/Feature/ProjectTest.php" method="guests_cannot_manage_projects" scope="Method" />
       <method v="2" />
@@ -225,6 +226,16 @@
     </configuration>
     <configuration name="phpunit.xml" type="PHPUnitRunConfigurationType" factoryName="PHPUnit">
       <TestRunner scope="XML" />
+      <method v="2" />
+    </configuration>
+    <configuration name="dev" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="dev" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
       <method v="2" />
     </configuration>
     <configuration name="watch" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
@@ -240,18 +251,18 @@
     <list>
       <item itemvalue="npm.watch" />
       <item itemvalue="PHPUnit.phpunit.xml" />
-      <item itemvalue="PHPUnit.ProjectTest.a_user_auth_cannot_view_other_projects" />
       <item itemvalue="PHPUnit.ProjectTest.a_user_auth_cannot_update_other_projects" />
       <item itemvalue="PHPUnit.ProjectTest.guests_cannot_manage_projects" />
       <item itemvalue="PHPUnit.ProjectTest.project_inputs_can_be_edited_only_when_zero_entries" />
+      <item itemvalue="npm.dev" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="npm.watch" />
+        <item itemvalue="npm.dev" />
         <item itemvalue="PHPUnit.ProjectTest.project_inputs_can_be_edited_only_when_zero_entries" />
         <item itemvalue="PHPUnit.ProjectTest.guests_cannot_manage_projects" />
         <item itemvalue="PHPUnit.ProjectTest.a_user_auth_cannot_update_other_projects" />
-        <item itemvalue="PHPUnit.ProjectTest.a_user_auth_cannot_view_other_projects" />
       </list>
     </recent_temporary>
   </component>
@@ -318,6 +329,7 @@
       <workItem from="1565166260329" duration="827000" />
       <workItem from="1565181565148" duration="406000" />
       <workItem from="1565347884024" duration="2009000" />
+      <workItem from="1565687654217" duration="7186000" />
     </task>
     <servers />
   </component>

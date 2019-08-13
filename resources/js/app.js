@@ -40,8 +40,24 @@ Vue.use(GoogleCharts)
     el: '#app',
     computed: {
         'newproject.formattedinputstring': function(){
+            console.log("WOWOWOa --> ");
+
+
             return JSON.stringify(this.newproject.inputs);
         }
+    },
+    mounted(){
+        window.addEventListener("keydown", function(e) {
+            this.lastPressedKey = e.keyCode;
+        });
+        let replaceUndefinedOrNull = function(key, value) {
+            if (value === null || value === undefined || value === "") {
+                return undefined;
+            }
+
+            return value;
+        };
+
     },
     watch: {
         'newcase.duration.selectedUnit': function (newVal,OldVal){
@@ -201,6 +217,7 @@ Vue.use(GoogleCharts)
     },
     data: {
         mainNotification: true,
+        lastPressedKey: "",
         selectedEntriesData: [],
         errormessages:{
             namemissing: "name is required. <br>",
@@ -250,6 +267,9 @@ Vue.use(GoogleCharts)
         }
   },
   methods: {
+        replaceUndefinedOrNull(){
+
+      },
     validateSubmitCaseForm()
     {
         this.newproject.response = "";
@@ -266,7 +286,7 @@ Vue.use(GoogleCharts)
       }
 
 
-      if(this.newproject.response == "") return true
+      if(this.newproject.response == "") return true;
         else return false
 
     },
@@ -285,15 +305,15 @@ Vue.use(GoogleCharts)
       },
       handleMediaInputs(index,mediaName)
       {
-
-
+          let tabKey = 9;
           let isLastElement = index+1 == this.newproject.media.length;
+
           if(isLastElement)
           {
               if(mediaName != "")this.newproject.media.push("");
 
           }
-          if(index != 0 && mediaName == "")this.newproject.media.splice(index,1);
+          if(index != 0 && mediaName == "" && lastPressedKey != tabKey)this.newproject.media.splice(index,1);
 
       },
       handleAdditionalInputs(questionindex,answerindex,answer)
@@ -306,9 +326,9 @@ Vue.use(GoogleCharts)
 
           }
 
-
+          let tabKey = 9;
           let middleElementRemoved = answerindex != 0 && answer == "";
-          if(middleElementRemoved){
+          if(middleElementRemoved && lastPressedKey != tabKey){
               this.newproject.inputs[questionindex].answers.splice(answerindex,1);
           }
 
