@@ -19717,8 +19717,22 @@ var app = new Vue({
   el: '#app',
   computed: {
     'newproject.formattedinputstring': function newprojectFormattedinputstring() {
+      console.log("WOWOWOa --> ");
       return JSON.stringify(this.newproject.inputs);
     }
+  },
+  mounted: function mounted() {
+    window.addEventListener("keydown", function (e) {
+      this.lastPressedKey = e.keyCode;
+    });
+
+    var replaceUndefinedOrNull = function replaceUndefinedOrNull(key, value) {
+      if (value === null || value === undefined || value === "") {
+        return undefined;
+      }
+
+      return value;
+    };
   },
   watch: {
     'newcase.duration.selectedUnit': function newcaseDurationSelectedUnit(newVal, OldVal) {
@@ -19881,6 +19895,7 @@ var app = new Vue({
   },
   data: {
     mainNotification: true,
+    lastPressedKey: "",
     selectedEntriesData: [],
     errormessages: {
       namemissing: "name is required. <br>",
@@ -19927,6 +19942,7 @@ var app = new Vue({
     }
   },
   methods: {
+    replaceUndefinedOrNull: function replaceUndefinedOrNull() {},
     validateSubmitCaseForm: function validateSubmitCaseForm() {
       this.newproject.response = "";
       if (this.newproject.name == "") this.newproject.response += this.errormessages.namemissing;
@@ -19963,13 +19979,14 @@ var app = new Vue({
       };
     },
     handleMediaInputs: function handleMediaInputs(index, mediaName) {
+      var tabKey = 9;
       var isLastElement = index + 1 == this.newproject.media.length;
 
       if (isLastElement) {
         if (mediaName != "") this.newproject.media.push("");
       }
 
-      if (index != 0 && mediaName == "") this.newproject.media.splice(index, 1);
+      if (index != 0 && mediaName == "" && lastPressedKey != tabKey) this.newproject.media.splice(index, 1);
     },
     handleAdditionalInputs: function handleAdditionalInputs(questionindex, answerindex, answer) {
       var isLastElement = answerindex + 1 == this.newproject.inputs[questionindex].answers.length;
@@ -19978,9 +19995,10 @@ var app = new Vue({
         if (answer != "") this.newproject.inputs[questionindex].answers.push("");
       }
 
+      var tabKey = 9;
       var middleElementRemoved = answerindex != 0 && answer == "";
 
-      if (middleElementRemoved) {
+      if (middleElementRemoved && lastPressedKey != tabKey) {
         this.newproject.inputs[questionindex].answers.splice(answerindex, 1);
       }
 

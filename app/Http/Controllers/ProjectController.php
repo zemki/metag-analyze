@@ -66,7 +66,11 @@ class ProjectController extends Controller
             'inputs' => 'nullable'
         ]);
 
-        $attributes = $this->handleLockedValue($attributes);
+        $inputs = json_decode($attributes['inputs']);
+        foreach ($inputs as $input){
+            $input->answers = array_filter($input->answers);
+        }
+        $attributes['inputs'] = json_encode($inputs);
 
         $project = auth()->user()->projects()->create($attributes);
 
@@ -94,25 +98,6 @@ class ProjectController extends Controller
         return response("Updated project successfully");
     }
 
-    /**
-     * @param $attributes
-     * @return mixed
-     */
-    public function handleLockedValue($attributes)
-    {
-        if (!isset($attributes['is_locked'])) {
-            $attributes['is_locked'] = 0;
-        } else {
-            if ($attributes['is_locked'] !== 0 && $attributes['is_locked'] !== 1) {
-                if ($attributes['is_locked'] === "on") {
-                    $attributes['is_locked'] = 1;
-                } elseif ($attributes['is_locked'] === "off") {
-                    $attributes['is_locked'] = 0;
-                }
-            }
-        }
-        return $attributes;
-    }
 
 
     public function destroy(Project $project)

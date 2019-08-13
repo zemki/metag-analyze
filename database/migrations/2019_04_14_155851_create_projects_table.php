@@ -24,7 +24,7 @@ class CreateProjectsTable extends Migration
             // nullable because they might be optional
 
             $table->unsignedInteger('created_by')->references('id')->on('users')->onDelete('cascade');
-            $table->unsignedInteger('is_locked');
+            $table->unsignedInteger('is_locked')->default(0);
             $table->timestamps();
 
             $table->foreign('created_by')->references('id')->on('users');
