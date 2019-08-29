@@ -220,8 +220,8 @@ class ProjectCasesController extends Controller
         if (!$user->exists) {
             $user->email = request('email');
             $role = Role::where('name', '=', 'user')->first();
-            $password = Helper::random_str(60);
-            $user->password = bcrypt($password);
+            $user->password = bcrypt(Helper::random_str(60));
+            $user->password_token = bcrypt(Helper::random_str(60));
             $user->save();
             $user->roles()->sync($role);
             Mail::to($user->email)->send(new VerificationEmail($user, config('utilities.emailDefaultText')));
