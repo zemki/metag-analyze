@@ -174,7 +174,7 @@ class ProjectCasesController extends Controller
 
         $case->addUser($user);
 
-        return redirect($project->path())->with(['message' => isset($password) ? $user->email . ' can now enter with the password: ' . $password : 'user was already registered']);
+        return redirect($project->path())->with(['message' => $user->email . 'will receive an email to set the password.']);
     }
 
     /**
