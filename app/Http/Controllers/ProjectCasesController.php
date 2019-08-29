@@ -174,7 +174,7 @@ class ProjectCasesController extends Controller
 
         $case->addUser($user);
 
-        return redirect($project->path())->with(['message' => $user->email . 'will receive an email to set the password.']);
+        return redirect($project->path())->with(['message' => $user->email . ' will receive an email to set the password.']);
     }
 
     /**

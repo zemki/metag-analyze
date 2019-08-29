@@ -85,7 +85,7 @@ class UserController extends Controller
         }
 
 
-        return redirect()->back()->with('message', isset($password) ? $user->email . ' can now enter with the password: ' . $password : 'User was already registered');
+        return redirect()->back()->with('message', $user->email . ' will receive an email to set the password.');
 
 
     }
