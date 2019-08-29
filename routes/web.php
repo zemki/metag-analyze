@@ -13,6 +13,16 @@
 
 Auth::routes();
 
+Route::get('/setpassword', 'UserController@showresetpassword');
+Route::post('/newpassword', 'UserController@newpassword');
+
+Route::group(['middlware' => ['auth','authorised']], function(){
+    /**
+     * Group Routes
+     */
+    Route::get('/groups/new','GroupController@create')->name('new_group');
+    Route::post('/groups/store','GroupController@store')->name('store_groups');
+});
 
 Route::group(['middleware' => ['auth','authorised']], function(){
 	Route::get('/','ProjectController@index');
@@ -29,6 +39,9 @@ Route::group(['middleware' => ['auth','authorised']], function(){
 	Route::patch('/projects/{project}','ProjectController@update');
 	Route::delete('/projects/{project}','ProjectController@destroy');
 
+    Route::post('/projects/invite','ProjectController@inviteUser');
+    Route::post('/projects/invite/{user}','ProjectController@removeFromProject');
+
 	/**
 	 * Case Routes
 	 * Case is dependant of project, so we concatenate with it
@@ -39,6 +52,7 @@ Route::group(['middleware' => ['auth','authorised']], function(){
 	Route::get('/projects/{project}/cases/{case}','ProjectCasesController@show');
 	Route::patch('/projects/{project}/cases/{case}','ProjectCasesController@update');
 	Route::delete('/projects/{project}/cases/{case}','ProjectCasesController@destroy');
+
 
 
 	/**
@@ -59,6 +73,14 @@ Route::group(['middleware' => ['auth','authorised']], function(){
 
 
     Route::post('/cases/exist','CaseController@caseExists');
+
+
+
+    /**
+     * Group Routes
+     */
+
+    //Route::get('/groups','GroupController@index')->name('list_groups');
 
 
 

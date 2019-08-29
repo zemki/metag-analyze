@@ -53,4 +53,12 @@ class Project extends Model
         return $this->cases()->firstOrCreate(['name' => $name, 'duration' => $duration]);
     }
 
+
+    public function invited()
+    {
+        return $this->belongsToMany(User::class, 'user_projects');
+
+    }
+
+
 }

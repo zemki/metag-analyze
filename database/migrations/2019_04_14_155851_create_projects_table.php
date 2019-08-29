@@ -21,7 +21,7 @@ class CreateProjectsTable extends Migration
             // inputs are bind to project because every case in a project needs to have same inputs
             $table->text('inputs')->nullable();
 
-            // nullable because they might be optional
+            $table->integer('is_private')->nullable()->default(0);
 
             $table->unsignedInteger('created_by')->references('id')->on('users')->onDelete('cascade');
             $table->unsignedInteger('is_locked')->default(0);

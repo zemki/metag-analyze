@@ -19,11 +19,11 @@ class VerificationEmail extends Mailable
      *
      * @return void
      */
-    public function __construct(User $user)
+    public function __construct(User $user, $emailtext)
     {
         $this->user = $user;
+        $this->emailtext = $emailtext;
     }
-
 
     /**
      * Build the message.
@@ -32,6 +32,6 @@ class VerificationEmail extends Mailable
      */
     public function build()
     {
-        return $this->from('example@example.com')->markdown('email.setpassword')->with(['user'=>$this->user]);
+        return $this->from('no_reply@kommunikative-figurationen.de')->markdown('email.setpassword')->with(['user' => $this->user, 'text' => $this->emailtext]);
     }
 }

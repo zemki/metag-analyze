@@ -8,44 +8,11 @@ use App\Media_group;
 
 class MediaController extends Controller
 {
-
-    public function index()
-    {
-        $media = Media::all();
-
-        return view('media.index',compact('media'));
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Project $media)
-    {
-
-        return view('media.show',compact('media'));
-    }
-
-    /**
-     * Show Create form
-     *
-     * @return View return view with the form to insert a new media
-     */
-    public function create()
-    {
-    	$media_groups = Media_group::all();
-        return view('media.create',compact('media_groups'));
-    }
-
-
     public function store(){
 
     	$attributes = request()->validate([
             'name' => 'required',
             'properties' => 'required',
-            'media_group_id' => 'required',
             'description' => 'nullable',
         ]);
 

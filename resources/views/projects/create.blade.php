@@ -55,7 +55,7 @@
 						</div>
 						<div class="columns is-multiline">
 							<div class="column is-3">
-								<label for="media" class="label" style="display: inline-flex;">
+								<label for="media" class="label inline-flex">
 									Media
 								</label>
 								<p class="subtitle text-sm">

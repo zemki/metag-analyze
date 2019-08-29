@@ -34,7 +34,7 @@
     </div>
         <div class="level">
             <div class="column is-3">
-                <label for="media" class="label" style="display: inline-flex;">
+                <label for="media" class="label inline-flex">
                     Media
                 </label>
                 <div class="control" v-for="(m,index) in projectData.media">
@@ -205,7 +205,7 @@
 
                         if(response.message) this.response = response.message;
                         else{
-                            this.$snackbar.open(response.data);
+                            this.$buefy.snackbar.open(response.data);
                         }
 
                         setTimeout(location.reload(true), 2000);
@@ -213,9 +213,9 @@
 
                     }).catch(error => {
                         console.log(error);
-                        if(error.message)this.$snackbar.open(error.message);
+                        if(error.message)this.$buefy.snackbar.open(error.message);
                         else {
-                            this.$snackbar.open(error.response.data);
+                            this.$buefy.snackbar.open(error.response.data);
                         }
 
                     });

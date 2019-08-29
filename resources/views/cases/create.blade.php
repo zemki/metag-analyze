@@ -59,7 +59,7 @@
 					<label for="duration" class="label">
 						User
 					</label>
-					<input type="text" class="input" name="email" list="email" autocomplete="off">
+					<input type="email" class="input" name="email" list="email" autocomplete="off" required>
 
 
 					<datalist id="email">
@@ -68,13 +68,6 @@
 						@endforeach
 					</datalist>
 
-				</div>
-			</div>
-			<div class="field">
-				<div class="control">
-					<b-field label="Password length">
-						<b-numberinput name="passwordLength"  controls-position="compact" type="is-light" min="3" max="12" :editable="false" steps="1"></b-numberinput>
-					</b-field>
 				</div>
 			</div>
 		<div class="field">
