@@ -47,7 +47,7 @@
                 //validate email
                 console.log(this.toInvite);
             let self = this;
-                window.axios.post('../projects/invite/', {
+                window.axios.post('../projects/invite', {
                     email: this.toInvite,
                     project: this.project
                 }).then(response => {
