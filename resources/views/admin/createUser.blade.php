@@ -48,13 +48,6 @@
 				</div>
 				<div class="field">
 					<div class="control">
-						<b-field label="Password length">
-							<b-numberinput name="passwordLength"  controls-position="compact" type="is-light" :min="newuser.role == 1 ? 5 : 3" :value="newuser.role == 1 ? 5 : 3" max="12" :editable="false" steps="1"></b-numberinput>
-						</b-field>
-					</div>
-				</div>
-				<div class="field">
-					<div class="control">
 						<label class="checkbox">
 							<input type="checkbox" name="assignToCase" v-model="newuser.assignToCase">
 							Assign To a Case
