@@ -16,6 +16,9 @@ Auth::routes();
 Route::get('/setpassword', 'UserController@showresetpassword');
 Route::post('/newpassword', 'UserController@newpassword');
 
+
+Route::post('deploy', 'DeployController@deploy');
+
 Route::group(['middlware' => ['auth','authorised']], function(){
     /**
      * Group Routes
