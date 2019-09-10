@@ -3,8 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="49b2948e-19cc-4195-90cc-e5d3bf8d67f6" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/ProjectCasesController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/ProjectCasesController.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/UserController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/UserController.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/seeds/UsersTableSeeder.php" beforeDir="false" afterPath="$PROJECT_DIR$/database/seeds/UsersTableSeeder.php" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -246,8 +245,8 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="npm.watch" />
       <item itemvalue="npm.dev" />
+      <item itemvalue="npm.watch" />
       <item itemvalue="PHPUnit.phpunit.xml" />
       <item itemvalue="PHPUnit.ProjectTest.a_user_auth_cannot_update_other_projects" />
       <item itemvalue="PHPUnit.ProjectTest.guests_cannot_manage_projects" />
@@ -338,6 +337,9 @@
       <workItem from="1566981427783" duration="308000" />
       <workItem from="1566981800205" duration="14112000" />
       <workItem from="1567071050159" duration="2642000" />
+      <workItem from="1567692135957" duration="1714000" />
+      <workItem from="1567781647072" duration="364000" />
+      <workItem from="1568103030999" duration="57000" />
     </task>
     <servers />
   </component>
