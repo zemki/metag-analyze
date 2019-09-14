@@ -24,6 +24,7 @@ class UsersTableSeeder extends Seeder
     		'created_at' => $faker->dateTime($max = 'now', $timezone = "Europe/Berlin"),
     		'updated_at' => $faker->dateTime($max = 'now', $timezone = "Europe/Berlin")
     	]);
+
     	DB::table('users')->insert([
             'email' => "fhohmann@uni-bremen.de",
             'password' => bcrypt('q1w2e3r4t5'),
