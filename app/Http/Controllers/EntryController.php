@@ -10,6 +10,7 @@ use App\Cases;
 use App\Project;
 use App\Media;
 use Illuminate\Http\Response;
+use Helper;
 
 class EntryController extends Controller
 {
