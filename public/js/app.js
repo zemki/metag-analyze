@@ -351,7 +351,7 @@ __webpack_require__.r(__webpack_exports__);
       //validate email
       console.log(this.toInvite);
       var self = this;
-      window.axios.post('../projects/invite/', {
+      window.axios.post('../projects/invite', {
         email: this.toInvite,
         project: this.project
       }).then(function (response) {
