@@ -46,15 +46,15 @@
 		@endforeach
 	</div>
 
-	<div id="graphs" style="height: auto; width: 100%;"></div>
-
 	@if($entriesByMedia !== [])
 		<h1 class="title media">Media</h1>
-		<timeline :data="{{json_encode($entriesByMedia)}}" class="chart-left media" style="width: 100%;display: show;" :lang="de">
+		<timeline :data="{{json_encode($entriesByMedia)}}" class="chart-left media" style="width: 100%;display: show;" :lang="'de'" :discrete="true">
 		</timeline>
 	@else
 		No entries for this study
 	@endif
+
+	<div id="graphs" style="height: auto; width: 100%;"></div>
 
 @endsection
 @section('pagespecificcss')
@@ -105,18 +105,21 @@
         function drawChart() {
 
 
-            /*
-			$inputsEntries EXAMPLE
+            /* myChart
+			   .data(<myData>)
+		   (<myDOMElement>);
 
-			"Value your experience" => 1
-			"name" => "Value your experience"
-			"type" => "scale"
-			"mandatory" => true
-			"numberofanswer" => 0
-			"answers" => array:1 [▶]
-			"begin" => "2019-07-22 13:08:26.411507"
-			"end" => "2019-07-22 16:08:51.166203"
-			*/
+		   $inputsEntries EXAMPLE
+
+		   "Value your experience" => 1
+		   "name" => "Value your experience"
+		   "type" => "scale"
+		   "mandatory" => true
+		   "numberofanswer" => 0
+		   "answers" => array:1 [▶]
+		   "begin" => "2019-07-22 13:08:26.411507"
+		   "end" => "2019-07-22 16:08:51.166203"
+		   */
                 <?php
                 $realEntry = array();
                 ?>
@@ -136,7 +139,8 @@
                 entries[i] = [];
                 for (var j = 0; j < e.length; j++) {
                     var entry = [];
-                    entry.push(e[j][e[j]['name']].toString());
+                    if(_.isNull(e[j][e[j]['name']])) continue;
+					else entry.push(e[j][e[j]['name']].toString());
                     entry.push(e[j]['name']);
                     entry.push('opacity: 1');
                     entry.push(new Date(Date.parse(e[j]['begin'])));
@@ -218,7 +222,7 @@
 
             };
 
-
+				console.log(entries);
             for (var i = 0; i < entries.length; i++) {
 
                 var div = document.createElement("div");
@@ -227,11 +231,13 @@
 
                 div.style.height = "400px";
 
-
-                div.classList.add(entries[i][0][1].toString().split(' ').join(''));
+				var className = _.find(entries[i],function(x){
+				    return x[1] != "";
+				});
+                div.classList.add(className.toString().split(' ').join(''));
                 h.appendChild(t);
                 h.classList.add("title");
-                h.classList.add(entries[i][0][1].toString().split(' ').join(''));
+                h.classList.add(className.toString().split(' ').join(''));
                 div.classList.add("chart-left");
                 h.classList.add("title-chart");
 

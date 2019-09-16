@@ -12,6 +12,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Http\Request;
 
 class ProjectCasesController extends Controller
 {
@@ -42,6 +43,7 @@ class ProjectCasesController extends Controller
             ->select('entries.id', 'entries.inputs', 'projects.inputs as pr_inputs', 'entries.begin', 'entries.end')
             ->get()
             ->toArray();
+
         $inputsEntries = array();
         $types = array();
         $finalArray = array();
@@ -92,30 +94,9 @@ class ProjectCasesController extends Controller
                 }
 
             }
-            /*
-                        $inputName = (string)$entries[$i]['pr_inputs']->first()->name;
-
-                        $inputsEntries[$inputName][$i] = array();
-                        $inputsEntries[$inputName][$i] = $entries[$i]['inputs']->merge($entries[$i]['pr_inputs'][0]);
-                        $inputsEntries[$inputName][$i]->put('begin', $entries[$i]['begin']);
-                        $inputsEntries[$inputName][$i]->put('end', $entries[$i]['end']);
 
 
-                        $finalArray[$inputName][$i] = array();
-                        array_push($finalArray[$inputName][$i], (string)$entries[$i]['inputs']->first());
-                        array_push($finalArray[$inputName][$i], (string)$entries[$i]['pr_inputs']->first()->name);
-                        $dateBegin = date("D M d Y H:i:s \G\M\TO (T)", strtotime($entries[$i]['begin']));
-                        $dateEnd = date("D M d Y H:i:s \G\M\TO (T)", strtotime($entries[$i]['end']));
 
-                        array_push($finalArray[$inputName][$i], $dateBegin);
-                        array_push($finalArray[$inputName][$i], $dateEnd);
-
-                        if (!Helper::in_array_recursive($inputsEntries[$inputName][$i]['type'], $types) ||
-                            !Helper::in_array_recursive($inputsEntries[$inputName][$i]['name'], $types)) {
-                            $types[$k]['type'] = $inputsEntries[$inputName][$i]['type'];
-                            $types[$k]['name'] = $inputsEntries[$inputName][$i]['name'];
-                            $k++;
-                        }*/
         }
 
 
@@ -159,13 +140,15 @@ class ProjectCasesController extends Controller
      * @return RedirectResponse|Redirector
      * @throws AuthorizationException
      */
-    public function store(Project $project)
+    public function store(Project $project,Request $request)
     {
         $this->authorize('update', $project);
         request()->validate(
             ['name' => 'required'],
             ['email' => 'required']
         );
+
+        if (!$request->filled('duration')) return redirect()->back()->with(['message' => 'Duration is mandatory.']);
         $email = request('email');
         $case = $project->addCase(request('name'), request('duration'));
         $user = User::firstOrNew(['email' => $email]);
@@ -174,7 +157,7 @@ class ProjectCasesController extends Controller
 
         $case->addUser($user);
 
-        return redirect($project->path())->with(['message' => $user->email . ' will receive an email to set the password.']);
+        return redirect($project->path())->with(['message' => $user->email . ' has been invited.']);
     }
 
     /**

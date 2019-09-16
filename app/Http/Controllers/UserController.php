@@ -85,8 +85,8 @@ class UserController extends Controller
         }
 
 
-        return redirect()->back()->with('message', $user->email . ' will receive an email to set the password.');
-
+        if (!$user->exists) return redirect()->back()->with('message', $user->email . ' will receive an email to set the password.');
+        else return redirect()->back()->with('message', $user->email . ' was invited to the case.');
 
     }
 
