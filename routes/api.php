@@ -20,7 +20,7 @@ use Illuminate\Http\Request;
 // Route::post('register', 'PassportController@register');
 Route::post('login', 'ApiController@login');
 
-Route::group(['prefix' => 'v1', 'middleware' =>  ['auth:api','RefreshApiToken']], function () {
+Route::group(['prefix' => 'v1', 'middleware' =>  ['auth:api']], function () {
 Route::get('/inputs/{project}','ApiController@getInputs');
 Route::get('/project/{project}','ApiController@getProject');
 
