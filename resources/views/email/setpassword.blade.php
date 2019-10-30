@@ -1,5 +1,6 @@
 @component('mail::message')
-	@component('mail::panel')
+
+
 
 		{!! (new Parsedown)->text($text) !!}
 
@@ -12,7 +13,7 @@
 		Thanks,
 		{{ config('app.name') }} Team
 
-	@endcomponent
+
 
 
 @endcomponent

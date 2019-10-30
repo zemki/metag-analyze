@@ -24,6 +24,8 @@ class ProjectCasesController extends Controller
      */
     public function show(Project $project, Cases $case)
     {
+
+
         if (auth()->user()->isNot($project->created_by()) && !in_array($project->id, auth()->user()->invites()->pluck('project_id')->toArray())) {
             abort(403);
         }
@@ -105,6 +107,13 @@ class ProjectCasesController extends Controller
         $data['entriesbyInputs'] = array_map('array_values', $data['entriesbyInputs']);
         $data['types'] = $types;
         $data['case'] = $case;
+
+        $data['breadcrumb'] = [
+            url('/') => 'Metag',
+            url('/') => 'Projects',
+            $project->path() => $project->name,
+            $case->path() => $case->name
+        ];
 
 
         return view('entries.index', $data);

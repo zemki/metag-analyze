@@ -13,6 +13,21 @@ class User extends Authenticatable
 {
     use Notifiable;
 
+
+
+    // this is a recommended way to declare event handlers
+    public static function boot()
+    {
+        parent::boot();
+        static::deleting(function ($user) {
+            $user->roles()->detach();
+            $user->groups()->detach();
+         //   $user->case()->detach();
+            //$user->projects()->detach();
+        });
+    }
+
+
     /**
      * The attributes that are mass assignable.
      *
