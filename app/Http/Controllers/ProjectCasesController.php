@@ -128,7 +128,7 @@ class ProjectCasesController extends Controller
     {
         $data['breadcrumb'] = [
             url('/') => 'Projects',
-            $project->path() => $project->name,
+            url($project->path()) => $project->name,
             '#' => 'Create Case'
         ];
 
