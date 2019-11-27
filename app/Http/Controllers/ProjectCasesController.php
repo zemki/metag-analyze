@@ -86,7 +86,7 @@ class ProjectCasesController extends Controller
         foreach ($availableOptions as $availableOption) {
             $availableOptions[$availableOption->type] = $availableOption;
         }
-
+        dd($availableOptions);
 
         foreach ($availableInputs as $availableInput) {
             //if ($availableInput == "text") continue;
@@ -100,14 +100,14 @@ class ProjectCasesController extends Controller
                 $data['entries']['inputs'][$availableInput]['available'] = [];
                 // loop through the values you already have and make it part of the 'available'
                 foreach ($inputValues as $inputValue) {
-                    if ($inputValue['name'] == "text")array_push($data['entries']['inputs'][$availableInput]['available'],$inputValue['value']);
+                    if ($inputValue['type'] == "text")array_push($data['entries']['inputs'][$availableInput]['available'],$inputValue['value']);
                 }
             }
 
 
             // set here available inputs
             foreach ($inputValues as $inputValue) {
-                if ($inputValue['name'] == $availableInput) array_push($data['entries']['inputs'][$availableInput], $inputValue);
+                if ($inputValue['type'] == $availableInput) array_push($data['entries']['inputs'][$availableInput], $inputValue);
             }
 
 
