@@ -94,6 +94,7 @@ class ProjectCasesController extends Controller
             $data['entries']['inputs'][$availableInput]['title'] = $availableInput;
 
             if ($availableInput == "multiple inputs") $data['entries']['inputs'][$availableInput]['available'] = $availableOptions["multiple choice"]->answers;
+            else if ($availableInput == "one choice") $data['entries']['inputs'][$availableInput]['available'] = $availableOptions["one choice"]->answers;
             else if ($availableInput == "stars") $data['entries']['inputs'][$availableInput]['available'] = [1, 2, 3, 4, 5];
             else if ($availableInput == "text") {
                 $data['entries']['inputs'][$availableInput]['available'] = [];
@@ -112,7 +113,7 @@ class ProjectCasesController extends Controller
 
         }
 
-        
+
         $data['entries']['media'] = $mediaValues;
         $data['entries']['availablemedia'] = $availableMedia;
 
