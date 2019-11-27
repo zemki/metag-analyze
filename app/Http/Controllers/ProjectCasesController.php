@@ -48,11 +48,13 @@ class ProjectCasesController extends Controller
             ->get()
             ->toArray();
 
-        $getInputNameFunction = function ($o) {
-            return $o->name;
+
+
+        $getInputTypeFunction = function ($o) {
+            return $o->type;
         };
 
-        $availableInputs = array_map($getInputNameFunction, json_decode($entries[0]['pr_inputs']));
+        $availableInputs = array_map($getInputTypeFunction, json_decode($entries[0]['pr_inputs']));
 
         $inputValues = [];
         $mediaValues = [];
@@ -65,13 +67,18 @@ class ProjectCasesController extends Controller
 
         foreach ($entries as $entry) {
             $inputs = json_decode($entry["inputs"], true);
+            $pr_inputs = json_decode($entry["pr_inputs"],true);
 
             foreach ($inputs as $key => $index) {
-                array_push($inputValues, ["value" => $index, "name" => $key, "start" => $entry["begin"], "end" => $entry["end"]]);
+
+                foreach ($pr_inputs as $pr){
+
+                    if($pr['name'] == $key)array_push($inputValues, ["value" => $index,"type" => $pr['type'], "name" => $key, "start" => $entry["begin"], "end" => $entry["end"]]);
+
+                }
             }
 
         }
-
 
         foreach (array_map('array_values', $mediaEntries) as $media) {
             array_push($mediaValues, ["value" => $media[0], "start" => $media[1], "end" => $media[2]]);
@@ -87,15 +94,16 @@ class ProjectCasesController extends Controller
             $availableOptions[$availableOption->type] = $availableOption;
         }
 
-        
+
+
         foreach ($availableInputs as $availableInput) {
             //if ($availableInput == "text") continue;
             $data['entries']['inputs'][$availableInput] = array();
             $data['entries']['inputs'][$availableInput]['title'] = $availableInput;
 
-            if ($availableInput == "multiple inputs") $data['entries']['inputs'][$availableInput]['available'] = $availableOptions["multiple choice"]->answers;
+            if ($availableInput == "multiple choice") $data['entries']['inputs'][$availableInput]['available'] = $availableOptions["multiple choice"]->answers;
             else if ($availableInput == "one choice") $data['entries']['inputs'][$availableInput]['available'] = $availableOptions["one choice"]->answers;
-            else if ($availableInput == "stars") $data['entries']['inputs'][$availableInput]['available'] = [1, 2, 3, 4, 5];
+            else if ($availableInput == "scale") $data['entries']['inputs'][$availableInput]['available'] = [1, 2, 3, 4, 5];
             else if ($availableInput == "text") {
                 $data['entries']['inputs'][$availableInput]['available'] = [];
                 // loop through the values you already have and make it part of the 'available'
@@ -114,6 +122,7 @@ class ProjectCasesController extends Controller
         }
 
 
+       
         $data['entries']['media'] = $mediaValues;
         $data['entries']['availablemedia'] = $availableMedia;
 
