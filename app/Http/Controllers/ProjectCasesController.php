@@ -86,8 +86,8 @@ class ProjectCasesController extends Controller
         foreach ($availableOptions as $availableOption) {
             $availableOptions[$availableOption->type] = $availableOption;
         }
-        dd($availableOptions);
 
+        
         foreach ($availableInputs as $availableInput) {
             //if ($availableInput == "text") continue;
             $data['entries']['inputs'][$availableInput] = array();
