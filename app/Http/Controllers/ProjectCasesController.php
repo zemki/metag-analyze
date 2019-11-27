@@ -10,9 +10,9 @@ use App\User;
 use Helper;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Http\Request;
 
 class ProjectCasesController extends Controller
 {
@@ -29,7 +29,7 @@ class ProjectCasesController extends Controller
         if (auth()->user()->isNot($project->created_by()) && !in_array($project->id, auth()->user()->invites()->pluck('project_id')->toArray())) {
             abort(403);
         }
-        $data['entriesByMedia'] = $case->entries()
+        $mediaEntries = $case->entries()
             ->join('media', 'entries.media_id', '=', 'media.id')
             ->get()
             ->map
@@ -39,73 +39,86 @@ class ProjectCasesController extends Controller
             ->toArray();
         // THEN GET ENTRIES BY INPUTS - EXTRACT FROM ENTRIES->INPUT THE LIST OF THEM, THEN DO THE SAME THING - DYNAMIC VAR NAME?
 
+
         $entries = $case->entries()
             ->join('cases', 'entries.case_id', '=', 'cases.id')
             ->join('projects', 'cases.project_id', '=', 'projects.id')
-            ->select('entries.id', 'entries.inputs', 'projects.inputs as pr_inputs', 'entries.begin', 'entries.end')
+            ->select('entries.inputs', 'entries.begin', 'entries.end', 'projects.inputs as pr_inputs')
+            ->where('entries.inputs', '<>', '[]')
             ->get()
             ->toArray();
 
-        $inputsEntries = array();
-        $types = array();
-        $finalArray = array();
+        $getInputNameFunction = function ($o) {
+            return $o->name;
+        };
 
-        $k = 0;
+        $availableInputs = array_map($getInputNameFunction, json_decode($entries[0]['pr_inputs']));
 
-        /*
-         * FORMAT FOR THE GRAPH IN JS
-         * [1] VALUE
-         * [2] NAME TO SHOW
-         * [3] STYLE
-         * [4] BEGIN <- js format
-         * [5] END <- js format
-         * AVOID TO CREATE SAME NAME INPUTS
-         */
+        $inputValues = [];
+        $mediaValues = [];
 
-        for ($i = 0; $i < count($entries); $i++) {
-            $entries[$i]['inputs'] = collect(json_decode($entries[$i]['inputs']));
-            $entries[$i]['pr_inputs'] = collect(json_decode($entries[$i]['pr_inputs']));
+        // STRUCTURE CHANGE:
+        // a graph for each type of input
+        // complete multiple inputs and one choice with the pr_input field
+        // complete scale with numbers 1 to 5
+        // complete means at least one value for each available input
 
-            foreach ($entries[$i]['inputs'] as $key => $entry) {
+        foreach ($entries as $entry) {
+            $inputs = json_decode($entry["inputs"], true);
 
-                $currentType = "";
-                $currentName = "";
-                $pr_inputKey = 0;
-
-                for ($j = 0; $j < count($entries[$i]['pr_inputs']); $j++) {
-                    if ($entries[$i]['pr_inputs'][$j]->name == $key) {
-                        $currentType = $entries[$i]['pr_inputs'][$j]->type;
-                        $currentName = $entries[$i]['pr_inputs'][$j]->name;
-                        $pr_inputKey = $j;
-                    }
-                }
-
-                $inputName = $currentName;
-
-                $inputsEntries[$inputName][$i] = array();
-                $inputsEntries[$inputName][$i] = $entries[$i]['inputs']->merge($entries[$i]['pr_inputs'][$pr_inputKey]);
-                $inputsEntries[$inputName][$i]->put('begin', $entries[$i]['begin']);
-                $inputsEntries[$inputName][$i]->put('end', $entries[$i]['end']);
-
-
-                if (!Helper::in_array_recursive($inputsEntries[$inputName][$i]['type'], $types) ||
-                    !Helper::in_array_recursive($inputsEntries[$inputName][$i]['name'], $types)) {
-                    $types[$k]['type'] = $inputsEntries[$inputName][$i]['type'];
-                    $types[$k]['name'] = $inputsEntries[$inputName][$i]['name'];
-                    $k++;
-                }
-
+            foreach ($inputs as $key => $index) {
+                array_push($inputValues, ["value" => $index, "name" => $key, "start" => $entry["begin"], "end" => $entry["end"]]);
             }
-
-
 
         }
 
 
-        $data['entriesbyInputs'] = $inputsEntries;
-        $data['entriesByMedia'] = array_map('array_values', $data['entriesByMedia']);
-        $data['entriesbyInputs'] = array_map('array_values', $data['entriesbyInputs']);
-        $data['types'] = $types;
+        foreach (array_map('array_values', $mediaEntries) as $media) {
+            array_push($mediaValues, ["value" => $media[0], "start" => $media[1], "end" => $media[2]]);
+        }
+
+        $availableMedia = $case->entries()
+            ->leftJoin('media', 'entries.media_id', '=', 'media.id')
+            ->pluck('media.name')->unique()->toArray();
+
+
+        $availableOptions = json_decode($entries[0]['pr_inputs']);
+        foreach ($availableOptions as $availableOption) {
+            $availableOptions[$availableOption->type] = $availableOption;
+        }
+
+
+        foreach ($availableInputs as $availableInput) {
+            //if ($availableInput == "text") continue;
+            $data['entries']['inputs'][$availableInput] = array();
+            $data['entries']['inputs'][$availableInput]['title'] = $availableInput;
+
+            if ($availableInput == "multiple inputs") $data['entries']['inputs'][$availableInput]['available'] = $availableOptions["multiple choice"]->answers;
+            else if ($availableInput == "stars") $data['entries']['inputs'][$availableInput]['available'] = [1, 2, 3, 4, 5];
+            else if ($availableInput == "text") {
+                $data['entries']['inputs'][$availableInput]['available'] = [];
+                // loop through the values you already have and make it part of the 'available'
+                foreach ($inputValues as $inputValue) {
+                    if ($inputValue['name'] == "text")array_push($data['entries']['inputs'][$availableInput]['available'],$inputValue['value']);
+                }
+            }
+
+
+            // set here available inputs
+            foreach ($inputValues as $inputValue) {
+                if ($inputValue['name'] == $availableInput) array_push($data['entries']['inputs'][$availableInput], $inputValue);
+            }
+
+
+        }
+
+        
+        $data['entries']['media'] = $mediaValues;
+        $data['entries']['availablemedia'] = $availableMedia;
+
+        //$data['entries']['inputs'] = $inputValues;
+        $data['entries']['availableinputs'] = $availableInputs;
+
         $data['case'] = $case;
 
         $data['breadcrumb'] = [
@@ -114,7 +127,6 @@ class ProjectCasesController extends Controller
             $project->path() => $project->name,
             $case->path() => $case->name
         ];
-
 
         return view('entries.index', $data);
     }
@@ -149,7 +161,7 @@ class ProjectCasesController extends Controller
      * @return RedirectResponse|Redirector
      * @throws AuthorizationException
      */
-    public function store(Project $project,Request $request)
+    public function store(Project $project, Request $request)
     {
         $this->authorize('update', $project);
         request()->validate(
