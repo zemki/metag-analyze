@@ -7,8 +7,14 @@
 require('./bootstrap');
 import "vue-material-design-icons/styles.css"
 import Buefy from 'buefy'
-window.Vue = require('vue');
+import {GoogleCharts} from 'google-charts';
+import VueChartkick from 'vue-chartkick'
 
+window.Vue = require('vue');
+var Highcharts = require('highcharts');
+// Load module after Highcharts is loaded
+require('highcharts/modules/exporting')(Highcharts);
+require('highcharts/modules/gantt')(Highcharts);
 /**
  * The following block of code may be used to automatically register your
  * Vue components. It will recursively scan this directory for the Vue
@@ -23,10 +29,9 @@ window.Vue = require('vue');
 Vue.component('edit-project', require('./components/editproject.vue').default);
 Vue.component('consult-entries', require('./components/consultentries.vue').default);
 Vue.component('project-invites', require('./components/projectsInvites.vue').default);
+Vue.component('graph', require('./components/graph.vue').default);
 
 Vue.use(Buefy);
-import {GoogleCharts} from 'google-charts';
-import VueChartkick from 'vue-chartkick'
 
 Vue.use(VueChartkick)
 Vue.use(GoogleCharts)
@@ -57,6 +62,7 @@ const app = new Vue({
 
             return value;
         };
+
 
     },
     watch: {
@@ -344,7 +350,7 @@ const app = new Vue({
 
             if (this.newproject.response !== "") e.preventDefault();
         },
-        confirmLeaveProject: function (userToDetach,project) {
+        confirmLeaveProject: function (userToDetach, project) {
 
             let confirmDelete = this.$buefy.dialog.confirm(
                 {
@@ -354,21 +360,21 @@ const app = new Vue({
                     confirmText: 'YES remove me',
                     hasIcon: true,
                     type: 'is-danger',
-                    onConfirm: () => this.detachUser(userToDetach,project)
+                    onConfirm: () => this.detachUser(userToDetach, project)
                 }
             );
         },
-        detachUser: function (userToDetach,project) {
+        detachUser: function (userToDetach, project) {
 
             let self = this;
-            window.axios.post('/projects/invite/'+userToDetach.id, {email: userToDetach.email, project: project})
+            window.axios.post('/projects/invite/' + userToDetach.id, {email: userToDetach.email, project: project})
                 .then(response => {
 
                     self.$buefy.snackbar.open(response.data.message);
 
-                    setTimeout(function(){
+                    setTimeout(function () {
                         window.location.reload();
-                    },1000)
+                    }, 1000)
 
 
                 }).catch(function (error) {
@@ -393,14 +399,14 @@ const app = new Vue({
         deleteProject: function (project) {
 
             let self = this;
-            window.axios.delete('/projects/'+project, {project: project})
+            window.axios.delete('/projects/' + project, {project: project})
                 .then(response => {
 
                     self.$buefy.snackbar.open(response.data.message);
 
-                    setTimeout(function(){
+                    setTimeout(function () {
                         window.location.reload();
-                    },1000)
+                    }, 1000)
 
 
                 }).catch(function (error) {
