@@ -22,8 +22,8 @@ class User extends Authenticatable
         static::deleting(function ($user) {
             $user->roles()->detach();
             $user->groups()->detach();
-         //   $user->case()->detach();
-            //$user->projects()->detach();
+            $user->case()->detach();
+            $user->projects()->detach();
         });
     }
 
