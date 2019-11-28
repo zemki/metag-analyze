@@ -1,5 +1,5 @@
 <template>
-    <div :id="'chart'+graphid" style="width:100%; height:100%;"></div>
+    <div :id="'chart'+graphid"></div>
 </template>
 
 <script>
@@ -13,7 +13,7 @@
             let self = this;
             this.preparedata();
             setTimeout(function () {
-
+                self.setChartTheme();
                 self.drawChart();
 
             }, 30);
@@ -26,6 +26,35 @@
             }
         },
         methods: {
+            setChartTheme: function(){
+                Highcharts.theme = {
+                    colors: ['#058DC7', '#50B432', '#ED561B', '#DDDF00', '#24CBE5', '#64E572',
+                        '#FF9655', '#FFF263', '#6AF9C4'],
+                    title: {
+                        style: {
+                            color: '#000',
+                            fontSize: '25px',
+                            textTransform: 'uppercase'
+                        }
+                    },
+                    subtitle: {
+                        style: {
+                            color: '#666666',
+                            font: 'bold 12px "Trebuchet MS", Verdana, sans-serif'
+                        }
+                    },
+                    legend: {
+                        itemHoverStyle:{
+                            color: 'gray'
+                        }
+                    }
+                };
+// Apply the theme
+                Highcharts.setOptions(Highcharts.theme);
+
+
+
+            },
             preparedata: function () {
                 let self = this;
                 if(this.title == "" || !this.title)this.title = "Media";
@@ -71,6 +100,7 @@
                     },
                     chart: {
                         zoomType: 'x'
+
                     },
                     navigator: {
                         enabled: true,
@@ -95,5 +125,17 @@
 </script>
 
 <style scoped>
+    [id^="chart"]{
+        width: 100%;
+        height: 100%;
+        overflow: visible !important;
+        margin: 0 auto;
 
+    }
+
+
+    .highcharts-root {
+        font-family: 'Courier New', monospace;
+
+    }
 </style>
