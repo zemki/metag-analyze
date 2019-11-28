@@ -49,7 +49,8 @@
                         }
                     }
                 };
-// Apply the theme
+
+                // Apply the theme
                 Highcharts.setOptions(Highcharts.theme);
 
 
@@ -68,7 +69,17 @@
 
                     _.forEach(self.realdata, function (rl) {
                     if(data['value'] == rl.name || (_.isArray(data['value']) && data['value'].includes(rl.name))){
-                            rl.data.push({start: Date.parse(data['start']), end: Date.parse(data['end']), name: (data['value'] != "") ? data['value'] : "" })
+                        var split = data['start'].split(/[^0-9]/)
+                        console.log(split)
+
+                        let start = Date.UTC(...split);
+                        var split = data['end'].split(/[^0-9]/)
+                        console.log(split)
+                        let end = Date.UTC(...split);
+
+
+
+                            rl.data.push({start: start, end: end, name: (data['value'] != "") ? data['value'] : "" })
                         }
                     });
                 });
