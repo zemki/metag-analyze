@@ -84,7 +84,12 @@
                 let self = this;
                 console.log(this.info);
                 Highcharts.ganttChart('chart'+self.graphid, {
-
+                    plotOptions: {
+                        column: {
+                            grouping: false,
+                            shadow: false
+                        }
+                    },
                     title: {
                         text: self.title
                     },
