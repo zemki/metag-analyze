@@ -15,7 +15,7 @@
             setTimeout(function () {
                 self.setChartTheme();
                 self.drawChart();
-
+                self.$forceUpdate();
             }, 30);
 
         },
@@ -99,7 +99,8 @@
                         categories: self.availabledata
                     },
                     chart: {
-                        zoomType: 'x'
+                        zoomType: 'x',
+                        spacingRight: 10
 
                     },
                     navigator: {
@@ -129,7 +130,7 @@
         width: 100%;
         height: 100%;
         overflow: visible !important;
-        margin: 0 auto;
+        margin: 30px auto;
 
     }
 
