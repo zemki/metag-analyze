@@ -101,7 +101,12 @@
                         tickInterval: 1000 * 60 * 60 * 24, // Day,
                     },
                     yAxis: {
-                        categories: self.availabledata
+                        categories: self.availabledata,
+                        breaks: [{
+                            breakSize: 0.1,
+                            from: 0,
+                            to: 0
+                        }]
                     },
                     chart: {
                         zoomType: 'x',
