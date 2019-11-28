@@ -28,14 +28,13 @@
         methods: {
             preparedata: function () {
                 let self = this;
-                if(this.title == "")this.title = "Media";
+                if(this.title == "" || !this.title)this.title = "Media";
                 _.forEach(this.availabledata, function (o) {
                     self.realdata.push({name: o, data: []});
                 });
 
                 _.forEach(this.info, function (data,key) {
-                    console.log(data);
-                    console.log(key);
+
                 if(key == 'available' || key=="title")return;
 
                     _.forEach(self.realdata, function (rl) {

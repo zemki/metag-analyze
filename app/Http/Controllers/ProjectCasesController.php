@@ -97,15 +97,25 @@ class ProjectCasesController extends Controller
 
 
         foreach ($availableInputs as $availableInput) {
-            //if ($availableInput == "text") continue;
             $data['entries']['inputs'][$availableInput] = array();
             $data['entries']['inputs'][$availableInput]['title'] = $availableInput;
 
-            if ($availableInput == "multiple choice") $data['entries']['inputs'][$availableInput]['available'] = $availableOptions["multiple choice"]->answers;
-            else if ($availableInput == "one choice") $data['entries']['inputs'][$availableInput]['available'] = $availableOptions["one choice"]->answers;
-            else if ($availableInput == "scale") $data['entries']['inputs'][$availableInput]['available'] = [1, 2, 3, 4, 5];
-            else if ($availableInput == "text") {
+            if ($availableInput == "multiple choice"){
+                $data['entries']['inputs'][$availableInput]['title'] = $availableInput;
+                $data['entries']['inputs'][$availableInput]['available'] = $availableOptions["multiple choice"]->answers;
+                $data['entries']['inputs'][$availableInput]['title'] = $availableOptions["multiple choice"]->name;
+            }else if ($availableInput == "one choice"){
+                $data['entries']['inputs'][$availableInput]['available'] = $availableOptions["one choice"]->answers;
+                $data['entries']['inputs'][$availableInput]['title'] = $availableOptions["one choice"]->name;
+
+            }else if ($availableInput == "scale"){
+                $data['entries']['inputs'][$availableInput]['available'] = [1, 2, 3, 4, 5];
+                $data['entries']['inputs'][$availableInput]['title'] = $availableOptions["scale"]->name;
+
+            }else if ($availableInput == "text") {
                 $data['entries']['inputs'][$availableInput]['available'] = [];
+                $data['entries']['inputs'][$availableInput]['title'] = $availableOptions["text"]->name;
+
                 // loop through the values you already have and make it part of the 'available'
                 foreach ($inputValues as $inputValue) {
                     if ($inputValue['type'] == "text")array_push($data['entries']['inputs'][$availableInput]['available'],$inputValue['value']);
@@ -122,7 +132,7 @@ class ProjectCasesController extends Controller
         }
 
 
-       
+
         $data['entries']['media'] = $mediaValues;
         $data['entries']['availablemedia'] = $availableMedia;
 
