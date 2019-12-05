@@ -37,13 +37,13 @@
 
                                 </div>
                                 <p class="text-gray-700 text-base">
-
-                                    <button type="submit"
-                                            class="button backg text-white {{$case->isConsultable() ? '' : 'opacity-50 cursor-not-allowed'}}">
-                                        <a href="{{$case->isConsultable() ? $project->id.$case->path() : '#' }}">
-                                            {{$case->isConsultable() ? 'View
+                                    <a href="{{$case->isConsultable() && $case->entries()->count() > 0 ? $project->id.$case->path() : '#' }}">
+                                    <button
+                                            class="button text-gray-700 {{$case->isConsultable() ? '' : 'opacity-50 cursor-not-allowed'}}">
+                                            {{$case->isConsultable() && $case->entries()->count() > 0 ? 'View
                                             Entries' : 'User is sending the data . . .'}}
-                                        </a></button>
+                                       </button>
+                                    </a>
 
                                 <form action="" method="POST">
                                     {{ csrf_field() }}
