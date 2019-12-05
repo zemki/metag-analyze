@@ -239,7 +239,9 @@ const app = new Vue({
                 allowedUnits: ["day(s)", "week(s)"],
                 message: "",
                 value: "",
-            }
+            },
+            minDate: new Date()
+
         },
         newproject: {
             name: "",
@@ -268,10 +270,42 @@ const app = new Vue({
                 caseexist: false
             },
             project: 0,
+            tooltipActive: false
 
         }
     },
     methods: {
+        confirmdeletecase(url){
+            this.$buefy.dialog.confirm(
+                {
+                    title: 'Confirm Duplicate',
+                    message: 'Do you want to delete this case?',
+                    cancelText: 'No',
+                    confirmText: 'Yes DELETE',
+                    hasIcon: true,
+                    type: 'is-danger',
+                    onConfirm: () => this.deleteCase(url)
+                }
+            );
+        },
+        deleteCase(url){
+            let self = this;
+            axios.delete(url)
+                .then(response => {
+                    setTimeout(function () {
+                        self.loading = false;
+                        self.$buefy.snackbar.open("Case deleted");
+
+                        window.location.reload();
+
+                    }, 500);
+
+                }).catch(function (error) {
+                console.log(error);
+                self.loading = false;
+                self.$buefy.snackbar.open("There it was an error during the request - refresh page and try again");
+            });
+        },
         replaceUndefinedOrNull() {
 
         },
