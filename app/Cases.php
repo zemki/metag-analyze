@@ -56,24 +56,57 @@ class Cases extends Model
         return $this->entries()->count() > 0 ? false : true;
     }
 
+
+    public function isConsultable()
+    {
+        $timestampLastDay = strtotime($this->lastDay());
+        $now = strtotime(date("Y-m-d H:i:s"));
+
+        return ($timestampLastDay < $now);
+    }
+
+
+    public function notYetStarted()
+    {
+        $now = strtotime(date("Y-m-d H:i:s"));
+        $timestampFirstDay = strtotime($this->firstDay());
+
+        return $this->lastDay() == "" || ($now < $timestampFirstDay);
+
+    }
+
     /**
      * write the duration from the database value to a readable format
      * @return string
      */
-    public function formattedDuration()
+    public function lastDay()
     {
+
         $duration = $this->duration;
-        $formattedString = "<p><strong class=\"title\">Duration</strong><br><strong>Hours</strong>: ";
-        $formattedString .= Helper::get_string_between($this->duration, 'value:', '|');
-        $formattedString .= "<br> Days: " . Helper::get_string_between($duration, 'days:', '|');
+        //$formattedString = "<p><strong class=\"title\">Duration</strong><br><strong>Hours</strong>: ";
+       // $formattedString = Helper::get_string_between($this->duration, 'value:', '|');
+        //$formattedString = "Days: " . Helper::get_string_between($duration, 'days:', '|');
 
         $lastDay = Helper::get_string_between($duration, 'lastDay:', '|');
 
-        if ($lastDay != '') {
-            $formattedString .= "<br> Last day: " . $lastDay;
-        }
+        return $lastDay;
+    }
 
-        return $formattedString;
+    /**
+     * write the duration from the database value to a readable format
+     * @return string
+     */
+    public function firstDay()
+    {
+
+        $duration = $this->duration;
+        //$formattedString = "<p><strong class=\"title\">Duration</strong><br><strong>Hours</strong>: ";
+       // $formattedString = Helper::get_string_between($this->duration, 'value:', '|');
+        //$formattedString = "Days: " . Helper::get_string_between($duration, 'days:', '|');
+
+        $lastDay = Helper::get_string_between($duration, 'firstDay:', '|');
+
+        return $lastDay;
     }
 
 }

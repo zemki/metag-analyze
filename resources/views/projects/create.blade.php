@@ -1,8 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-	@component('layouts.breadcrumb', ['breadcrumb'=>$breadcrumb])
-	@endcomponent
 
 	<div class="columns">
 

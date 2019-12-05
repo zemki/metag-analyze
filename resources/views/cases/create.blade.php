@@ -1,18 +1,13 @@
 @extends('layouts.app')
 
 @section('content')
-	@component('layouts.breadcrumb', ['breadcrumb'=>$breadcrumb])
-	@endcomponent
-
 
 <div class="columns">
 	<div class="column">
 
 			<h1 class="title">Create a Case</h1>
-			<p class="subtitle text-sm">The duration start from the moment  <strong>when the user log in in the app.</strong> <br>
-				The user field define the login username in the app.<br>
-				We advice to create the user with a prefix, referring the project. (example: P12_user0)
-
+			<p class="subtitle text-sm mt-1">The duration start from the moment  <strong>when the user log in in the app.</strong> <br>
+				The user field define the login email in the app.<br>
 			</p>
 
 
@@ -52,6 +47,19 @@
 					</div>
 				</div>
 			</div>
+			@if(Auth::user()->isAdmin())
+			<label class="checkbox">
+				<input type="checkbox" checked>
+				The duration start when the user Log in
+			</label>
+			<b-field label="Or it start this day:">
+				<b-datepicker
+						:min-date="newcase.minDate"
+						placeholder="Click to select..."
+						icon="calendar-today">
+				</b-datepicker>
+			</b-field>
+			@endif
 			<input type="hidden"  :value="newcase.duration.value" name="duration">
 
 			<div class="field">
@@ -60,14 +68,9 @@
 						User
 					</label>
 					<input type="email" class="input" name="email" list="email" autocomplete="off" required>
-
-
-					<datalist id="email">
-						@foreach($users as $u)
-						<option value="{{$u->email}}">{{$u->email}}</option>
-						@endforeach
-					</datalist>
-
+				<p class="mt-3 bg-yellow-500 text-black font-bold p-3">If the user is not registered, he/she will receive an email to set a password.<br>
+				If the user was already registered, he/she will just need to log-in to see the new case.<br>
+				Please check beforehand if the user was already assigned to a case with the same email.</p>
 				</div>
 			</div>
 		<div class="field">
