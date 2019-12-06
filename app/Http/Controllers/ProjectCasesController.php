@@ -7,12 +7,13 @@ use App\Mail\VerificationEmail;
 use App\Project;
 use App\Role;
 use App\User;
-use Helper;
+
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Mail;
+
 
 class ProjectCasesController extends Controller
 {
@@ -24,111 +25,12 @@ class ProjectCasesController extends Controller
      */
     public function show(Project $project, Cases $case)
     {
-
-
-        if (auth()->user()->isNot($project->created_by()) && !in_array($project->id, auth()->user()->invites()->pluck('project_id')->toArray())) {
+        if (auth()->user()->notOwnerNorInvited($project)) {
             abort(403);
         }
-        $mediaEntries = $case->entries()
-            ->join('media', 'entries.media_id', '=', 'media.id')
-            ->get()
-            ->map
-            ->only(['name', 'begin', 'end'])
-            ->flatten()
-            ->chunk(3)
-            ->toArray();
-        // THEN GET ENTRIES BY INPUTS - EXTRACT FROM ENTRIES->INPUT THE LIST OF THEM, THEN DO THE SAME THING - DYNAMIC VAR NAME?
 
-
-        $entries = $case->entries()
-            ->join('cases', 'entries.case_id', '=', 'cases.id')
-            ->join('projects', 'cases.project_id', '=', 'projects.id')
-            ->select('entries.inputs', 'entries.begin', 'entries.end', 'projects.inputs as pr_inputs')
-            ->where('entries.inputs', '<>', '[]')
-            ->get()
-            ->toArray();
-
-
-        $getInputTypeFunction = function ($o) {
-            return $o->type;
-        };
-
-        $availableInputs = array_map($getInputTypeFunction, json_decode($entries[0]['pr_inputs']));
-
-        $inputValues = [];
-        $mediaValues = [];
-
-        // STRUCTURE CHANGE:
-        // a graph for each type of input
-        // complete multiple inputs and one choice with the pr_input field
-        // complete scale with numbers 1 to 5
-        // complete means at least one value for each available input
-
-        foreach ($entries as $entry) {
-            $inputs = json_decode($entry["inputs"], true);
-            $pr_inputs = json_decode($entry["pr_inputs"], true);
-
-            foreach ($inputs as $key => $index) {
-
-                foreach ($pr_inputs as $pr) {
-
-                    if ($pr['name'] == $key) array_push($inputValues, ["value" => $index, "type" => $pr['type'], "name" => $key, "start" => $entry["begin"], "end" => $entry["end"]]);
-
-                }
-            }
-
-        }
-
-        foreach (array_map('array_values', $mediaEntries) as $media) {
-            array_push($mediaValues, ["value" => $media[0], "start" => $media[1], "end" => $media[2]]);
-        }
-
-        $availableMedia = $case->entries()
-            ->leftJoin('media', 'entries.media_id', '=', 'media.id')
-            ->pluck('media.name')->unique()->toArray();
-
-
-        $availableOptions = json_decode($entries[0]['pr_inputs']);
-        foreach ($availableOptions as $availableOption) {
-            $availableOptions[$availableOption->type] = $availableOption;
-        }
-
-
-        foreach ($availableInputs as $availableInput) {
-            $data['entries']['inputs'][$availableInput] = array();
-            $data['entries']['inputs'][$availableInput]['title'] = $availableInput;
-
-            if ($availableInput == "multiple choice") {
-                $data['entries']['inputs'][$availableInput]['title'] = $availableInput;
-                $data['entries']['inputs'][$availableInput]['available'] = $availableOptions["multiple choice"]->answers;
-                $data['entries']['inputs'][$availableInput]['title'] = $availableOptions["multiple choice"]->name;
-            } else if ($availableInput == "one choice") {
-                $data['entries']['inputs'][$availableInput]['available'] = $availableOptions["one choice"]->answers;
-                $data['entries']['inputs'][$availableInput]['title'] = $availableOptions["one choice"]->name;
-
-            } else if ($availableInput == "scale") {
-                $data['entries']['inputs'][$availableInput]['available'] = [1, 2, 3, 4, 5];
-                $data['entries']['inputs'][$availableInput]['title'] = $availableOptions["scale"]->name;
-
-            } else if ($availableInput == "text") {
-                $data['entries']['inputs'][$availableInput]['available'] = [];
-                $data['entries']['inputs'][$availableInput]['title'] = $availableOptions["text"]->name;
-
-                // loop through the values you already have and make it part of the 'available'
-                foreach ($inputValues as $inputValue) {
-                    if ($inputValue['type'] == "text") array_push($data['entries']['inputs'][$availableInput]['available'], $inputValue['value']);
-                }
-            }
-
-
-            // set here available inputs
-            foreach ($inputValues as $inputValue) {
-                if ($inputValue['type'] == $availableInput) array_push($data['entries']['inputs'][$availableInput], $inputValue);
-            }
-
-
-        }
-
+        list($mediaValues, $availableMedia) = Cases::getMediaValues($case);
+        list($availableInputs, $inputValues, $data) = Cases::getInputValues($case,$data);
 
         $data['entries']['media'] = $mediaValues;
         $data['entries']['availablemedia'] = $availableMedia;
@@ -142,7 +44,7 @@ class ProjectCasesController extends Controller
             url('/') => 'Metag',
             url('/') => 'Projects',
             $project->path() => $project->name,
-            $case->path() => substr($case->name,0,15).'...'
+            $case->path() => substr($case->name, 0, 15) . '...'
         ];
 
         return view('entries.index', $data);
@@ -150,6 +52,7 @@ class ProjectCasesController extends Controller
 
 
     /**
+     * Create a case belonging to a project
      * @param Project $project
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
@@ -161,7 +64,7 @@ class ProjectCasesController extends Controller
             '#' => 'Create Case'
         ];
 
-        if (auth()->user()->isNot($project->created_by()) && !in_array($project->id, auth()->user()->invites()->pluck('project_id')->toArray())) {
+        if (auth()->user()->notOwnerNorInvited($project)) {
             abort(403);
         }
 
@@ -183,15 +86,14 @@ class ProjectCasesController extends Controller
         $this->authorize('update', $project);
         request()->validate(
             ['name' => 'required'],
-            ['email' => 'required']
+            ['email' => 'required'],
+            ['duration' => 'required']
         );
 
-        if (!$request->filled('duration')) return redirect()->back()->with(['message' => 'Duration is mandatory.']);
         $email = request('email');
         $case = $project->addCase(request('name'), request('duration'));
-        $user = User::firstOrNew(['email' => $email]);
 
-        $this->createUserIfDoesNotExists($user, $password);
+        $user = User::createIfDoesNotExists(User::firstOrNew(['email' => $email]));
 
         $case->addUser($user);
 
@@ -232,21 +134,6 @@ class ProjectCasesController extends Controller
 
     }
 
-    /**
-     * @param $user
-     * @param $password
-     */
-    protected function createUserIfDoesNotExists($user, &$password): void
-    {
-        if (!$user->exists) {
-            $user->email = request('email');
-            $role = Role::where('name', '=', 'user')->first();
-            $user->password = bcrypt(Helper::random_str(60));
-            $user->password_token = bcrypt(Helper::random_str(60));
-            $user->save();
-            $user->roles()->sync($role);
-            Mail::to($user->email)->send(new VerificationEmail($user, config('utilities.emailDefaultText')));
 
-        }
-    }
+
 }
