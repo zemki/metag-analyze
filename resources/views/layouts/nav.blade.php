@@ -9,8 +9,12 @@
 
 	<nav class="px-2 sm:flex sm:p-0 align-baseline">
 		<a href="{{url('projects/new')}}"  class="flex px-2 py-1 text-white font-semibold rounded hover:bg-red-600"><i class="px-1">+</i> {{ __('New Project') }}</a>
-		<a  href="{{ route('logout') }}" class="flex px-2 py-1 text-white font-semibold rounded hover:bg-red-600 sm:mt-0 sm:ml-2">	{{ __('Logout') }}</a>
-		<form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+		<a class="flex px-2 py-1 text-white font-semibold rounded hover:bg-red-600"
+		   href="{{ route('logout') }}"
+		   onclick="event.preventDefault();
+                        document.getElementById('logout-form').submit();">
+			{{ __('Logout') }}
+		</a>		<form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
 			@csrf
 		</form>
 	</nav>
