@@ -17,3 +17,6 @@ Homestead.json
 /.vagrant
 .idea/
 .idea/workspace.xml
+config/iosCertificates/pushcert.pem
+config/pushnotification.php
+composer.lock

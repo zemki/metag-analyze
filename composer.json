@@ -10,6 +10,8 @@
     "require": {
         "php": "^7.2.3",
         "barryvdh/laravel-translation-manager": "^0.5.1",
+        "edujugon/push-notification": "^4.1",
+        "facade/ignition": "^1.4",
         "fideloper/proxy": "^4.0",
         "laravel/framework": "^5.8",
         "laravel/telescope": "^2.0",
