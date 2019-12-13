@@ -76,6 +76,12 @@ class ApiController extends Controller
               return response()->json(['case' => $response], 200);
           }else{
 
+              $currentDeviceId = auth()->user()->deviceID == null ? [] : auth()->user()->deviceID ;
+
+              if($request->has('deviceID') && $request->deviceID != '' && !in_array($request->deviceID,$currentDeviceId)) array_push($currentDeviceId,$request->deviceID);
+              auth()->user()->forceFill(['deviceID' => $currentDeviceId ?? ''])->save();
+
+
               $lastDayPos = strpos($userHasACase->duration,"lastDay:");
 
               if($lastDayPos !== false){
