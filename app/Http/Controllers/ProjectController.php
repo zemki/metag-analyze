@@ -40,7 +40,7 @@ class ProjectController extends Controller
     {
 
         $this->authorize('update', $project);
-        $data['breadcrumb'] = [url('/') => 'Projects', '#' => $project->name];
+        $data['breadcrumb'] = [url('/') => 'Projects', '#' => substr($project->name,0,20).'...'];
 
         $project->media = $project->media()->pluck('media.name')->toArray();
 
