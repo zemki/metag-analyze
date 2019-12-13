@@ -19,7 +19,7 @@ Route::post('/newpassword', 'UserController@newpassword');
 
 Route::post('deploy', 'DeployController@deploy');
 
-Route::group(['middlware' => ['auth','authorised']], function(){
+Route::group(['middleware' => ['auth','authorised']], function(){
     /**
      * Group Routes
      */

@@ -10,6 +10,7 @@ use App\Cases;
 use App\Project;
 use App\Media;
 use Illuminate\Http\Response;
+use Helper;
 
 class EntryController extends Controller
 {
@@ -70,6 +71,11 @@ class EntryController extends Controller
             'media_id' => 'required',
             'inputs' => 'nullable',
         ]);
+
+        if(is_string($attributes['media_id'])){
+            $attributes['media_id'] = Media::firstOrCreate(['name' => $attributes['media_id']])->id;
+        }
+
         $attributes['inputs'] = json_encode($attributes['inputs']);
 
         $entry->update($attributes);
