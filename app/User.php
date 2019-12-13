@@ -13,13 +13,38 @@ class User extends Authenticatable
 {
     use Notifiable;
 
+<<<<<<< Updated upstream
+=======
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'deviceID' => 'array',
+    ];
+
+    // this is a recommended way to declare event handlers
+    public static function boot()
+    {
+        parent::boot();
+        static::deleting(function ($user) {
+            $user->roles()->detach();
+            $user->groups()->detach();
+            $user->case()->detach();
+            $user->projects()->detach();
+        });
+    }
+
+
+>>>>>>> Stashed changes
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'email', 'password', 'last_login_date'
+        'email', 'password', 'last_login_date','deviceID'
     ];
 
     /**
