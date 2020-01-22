@@ -18,10 +18,10 @@ class ProjectCaseUserEntrySeeder extends Seeder
      */
     public function run()
     {
- // How many genres you need, defaulting to 10
+
         $projectCount = (int)$this->command->ask('How many projects do you need ?', 1);
         if($projectCount > 0){
-        $casesCount = (int)$this->command->ask('How many cases do you need ? You"ll be asked how many entries for each case.', 1);
+        $casesCount = (int)$this->command->ask('How many cases do you need ? You\'ll be asked how many entries for each case.', 1);
 
         $alessandrobelli = User::where('email', '=', 'belli@uni-bremen.de')->first();
 
