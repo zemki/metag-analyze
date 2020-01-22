@@ -47,7 +47,7 @@ class User extends Authenticatable
 
             }
 
-            foreach ($user->cases as $case) {
+            foreach ($user->case as $case) {
                 foreach ($case->entries as $entry) {
                     $entry->delete();
                 }
