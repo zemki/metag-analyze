@@ -54,6 +54,8 @@ class User extends Authenticatable
                 $case->delete();
             }
 
+            $user->roles()->sync([]);
+
 
         });
 
