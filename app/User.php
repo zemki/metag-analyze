@@ -15,7 +15,7 @@ use Validator;
  */
 class User extends Authenticatable
 {
-    use Notifiable,SoftDeletes;
+    use Notifiable, SoftDeletes;
 
 
     // this is a recommended way to declare event handlers
@@ -34,8 +34,8 @@ class User extends Authenticatable
                         $newOwner = $project->invites()->random();
                         $project->created_by = $newOwner->id;
                     } else {
-                        foreach($project->cases as $case){
-                            foreach($case->entries as $entry){
+                        foreach ($project->cases as $case) {
+                            foreach ($case->entries as $entry) {
                                 $entry->delete();
                             }
                             $case->delete();
@@ -47,12 +47,19 @@ class User extends Authenticatable
 
             }
 
+            foreach ($user->cases as $case) {
+                foreach ($case->entries as $entry) {
+                    $entry->delete();
+                }
+                $case->delete();
+            }
+
+
         });
 
 
-
     }
-    
+
 
     /**
      * The attributes that are mass assignable.
