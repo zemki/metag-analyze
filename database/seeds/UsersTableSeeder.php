@@ -4,6 +4,7 @@ use Illuminate\Database\Seeder;
 use Faker\Factory as Faker;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use \App\Helpers\Helper;
 
 class UsersTableSeeder extends Seeder
 {
@@ -20,7 +21,7 @@ class UsersTableSeeder extends Seeder
     	DB::table('users')->insert([
     		'email' => "belli@uni-bremen.de",
     		'password' => bcrypt('1q2w3e4r5t'),
-    		'api_token' => hash('sha256',str_random(60)),
+    		'api_token' => hash('sha256',Helper::random_str(60)),
     		'created_at' => $faker->dateTime($max = 'now', $timezone = "Europe/Berlin"),
     		'updated_at' => $faker->dateTime($max = 'now', $timezone = "Europe/Berlin")
     	]);
@@ -28,7 +29,7 @@ class UsersTableSeeder extends Seeder
     	DB::table('users')->insert([
             'email' => "fhohmann@uni-bremen.de",
             'password' => bcrypt('q1w2e3r4t5'),
-            'api_token' =>  hash('sha256',str_random(60)),
+            'api_token' =>  hash('sha256',Helper::random_str(60)),
             'created_at' => $faker->dateTime($max = 'now', $timezone = "Europe/Berlin"),
             'updated_at' => $faker->dateTime($max = 'now', $timezone = "Europe/Berlin")
         ]);
@@ -42,3 +43,5 @@ class UsersTableSeeder extends Seeder
 
     }
 }
+
+

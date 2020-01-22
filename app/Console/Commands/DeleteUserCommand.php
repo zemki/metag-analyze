@@ -63,8 +63,12 @@ class DeleteUserCommand extends Command
             }
         }
 
+        $this->confirm('ARE YOU SURE YOU WANT TO DELETE THIS USER? '.$user->email, false);
+        $user->forceDelete();
+
+        /*
         if ($this->confirm('ARE YOU SURE YOU WANT TO DELETE THIS USER? '.$user->email, false)) {
-            $whichDelete = $this->choice('Soft or Force deletion?', ['Soft', 'Force']);
+            $whichDelete = $this->choice('Soft or Force deletion?', ['Soft - mark as deleted', 'Force - delete user and all associated data']);
             if ($whichDelete == 'Force') {
                 $user->forceDelete();
             } else {
@@ -73,6 +77,9 @@ class DeleteUserCommand extends Command
 
 
         }
+*/
+        $this->warn('user deleted!');
+
 
     }
 }
