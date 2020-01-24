@@ -50,11 +50,13 @@
                                     {{ method_field('DELETE') }}
                                 </form>
 
+                                @if($case->isConsultable() && $case->entries()->count() > 0)
                                 <a href="{{url('export/'.$case->id)}}" target="_blank">
                                 <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-2 rounded">
                                     Download
                                 </button>
                                 </a>
+                                @endif
 
                                 <button type="submit" class="button is-danger text-white"
                                         @click="confirmdeletecase('{{url('/cases/'.$case->id)}}')">
