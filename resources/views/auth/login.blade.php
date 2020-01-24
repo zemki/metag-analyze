@@ -1,78 +1,62 @@
 @extends('auth.app')
 
 @section('content')
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header">{{ __('Login') }}</div>
 
-                    <div class="card-body">
-                        <form method="POST" action="{{ route('login') }}">
-                            @csrf
+    <div class="container ">
+        <div class="columns is-centered">
 
-                            <div class="form-group row">
-                                <label for="email"
-                                       class="col-md-4 col-form-label text-md-right">{{ __('E-Mail Address') }}</label>
+            <div class="column is-6" style="margin-top: 10%">
+                <div class="box" style="top:50%;left: 50%;">
+                    <form method="POST" action="{{ route('login') }}">
+                        @csrf
 
-                                <div class="col-md-6">
-                                    <input id="email" type="text"
-                                           class="form-control{{ $errors->has('email') ? ' is-invalid' : '' }}"
-                                           name="email" value="{{ old('email') }}" required autofocus>
 
-                                    @if ($errors->has('email'))
-                                        <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $errors->first('email') }}</strong>
-                                    </span>
-                                    @endif
-                                </div>
+                        <div class='column' >
+
+                            <figure class="image is-64x64" style="margin: 0 auto; max-width: 100%;">
+                                <img src="{{config('utilities.base64logo')}}">
+
+                            </figure>
+                            <div class="column has-text-centered "  >
+                                <h1  class="title" style="margin: 0 auto; max-width: 100%;">Metag Analyze</h1>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="email" class="label">{{ __('E-Mail Address') }}</label>
+                            <div class="control">
+                                <input id="email" type="text" class="input {{ $errors->has('email') ? ' is-invalid' : '' }}" name="email" value="{{ old('email') }}" required autofocus>
+                            </div>
+                        </div>
+                        @if ($errors->has('email'))
+                            <div class="notification is-danger  is-small">
+                                <strong>{{ $errors->first('email') }}</strong>
                             </div>
 
-                            <div class="form-group row">
-                                <label for="password"
-                                       class="col-md-4 col-form-label text-md-right">{{ __('Password') }}</label>
+                        @endif
 
-                                <div class="col-md-6">
-                                    <input id="password" type="password"
-                                           class="form-control{{ $errors->has('password') ? ' is-invalid' : '' }}"
-                                           name="password" required>
-
-                                    @if ($errors->has('password'))
-                                        <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $errors->first('password') }}</strong>
-                                    </span>
-                                    @endif
-                                </div>
+                        <div class="field">
+                            <label for="password" class="label">{{ __('Password') }}</label>
+                            <p class="control has-icon-left">
+                                <input id="password" type="password" class="input {{ $errors->has('password') ? ' is-invalid' : '' }}" name="password" required>
+                                <span class="icon is-small is-left">
+            <i class="fas fa-lock"></i>
+          </span>
+                            </p>
+                        </div>
+                        @if ($errors->has('password'))
+                            <div class="notification is-danger  is-small">
+                                <strong>{{ $errors->first('password') }}</strong>
                             </div>
-
-                            <div class="form-group row">
-                                <div class="col-md-6 offset-md-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="remember"
-                                               id="remember" {{ old('remember') ? 'checked' : '' }}>
-
-                                        <label class="form-check-label" for="remember">
-                                            {{ __('Remember Me') }}
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="form-group row mb-0">
-                                <div class="col-md-8 offset-md-4">
-                                    <button type="submit" class="btn btn-primary">
-                                        {{ __('Login') }}
-                                    </button>
-
-                                    @if (Route::has('password.request'))
-                                        <a class="btn btn-link" href="{{ route('password.request') }}">
-                                            {{ __('Forgot Your Password?') }}
-                                        </a>
-                                    @endif
-                                </div>
-                            </div>
-                        </form>
-                    </div>
+                        @endif
+                        <div class="field">
+                            <p class="control">
+                                <button class="button is-dark">
+                                    Login
+                                </button>
+                            </p>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

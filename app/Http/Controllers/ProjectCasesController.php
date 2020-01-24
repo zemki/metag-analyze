@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Cases;
+use App\Exports\CasesExport;
 use App\Mail\VerificationEmail;
 use App\Project;
 use App\Role;
@@ -40,7 +41,7 @@ class ProjectCasesController extends Controller
 
         $data['case'] = $case;
 
-        $data['breadcrumb'] = [
+          $data['breadcrumb'] = [
             url('/') => 'Metag',
             url('/') => 'Projects',
             $project->path() => $project->name,
@@ -84,6 +85,11 @@ class ProjectCasesController extends Controller
     public function store(Project $project, Request $request)
     {
         $this->authorize('update', $project);
+
+        if(request('name') == "" || request('email') == "" || request('duration') == ""){
+            return redirect($project->path().'/cases/new')->with(['message' => 'Please fill all the required inputs.']);
+        }
+
         request()->validate(
             ['name' => 'required'],
             ['email' => 'required'],
@@ -122,16 +128,25 @@ class ProjectCasesController extends Controller
      * @return RedirectResponse|Redirector
      * @throws \Exception
      */
-    public function destroy(Project $project, Cases $case)
+    public function destroy(Cases $case)
     {
+
         if ($case->isEditable()) {
             $case->delete();
         } else {
-            return redirect()->back()->with('message', 'case has entries, you cannot delete it');
+            return response()->json(['message' => 'Case has entries, you cannot delete it'], 401);
         }
 
-        return redirect($project->path())->with('message', 'case deleted');
+        return redirect($case->project->path())->with('message', 'case deleted');
 
+    }
+
+    public function export(Cases $case)
+    {
+        if (auth()->user()->notOwnerNorInvited($case->project)) {
+        abort(403);
+    }
+        return (new CasesExport($case->id))->download('case '.$case->name.'.xlsx');
     }
 
 
