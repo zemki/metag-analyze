@@ -12,7 +12,6 @@ class EntryPolicy
 
 	public function update(User $user,\App\Cases $cases)
 	{
-
 		return $user->is($cases->user);
 	}
 }

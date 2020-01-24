@@ -49,8 +49,15 @@
                                     {{ csrf_field() }}
                                     {{ method_field('DELETE') }}
                                 </form>
+
+                                <a href="{{url('export/'.$case->id)}}" target="_blank">
+                                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-2 rounded">
+                                    Download
+                                </button>
+                                </a>
+
                                 <button type="submit" class="button is-danger text-white"
-                                        @click="confirmdeletecase('{{url($project->path().'/cases/'.$case->id)}}')">
+                                        @click="confirmdeletecase('{{url('/cases/'.$case->id)}}')">
                                     Delete Case
                                 </button>
 
@@ -102,10 +109,3 @@
 
 
 @endsection
-<script>
-    import ProjectsInvites from "../../js/components/projectsInvites";
-
-    export default {
-        components: {ProjectsInvites}
-    }
-</script>

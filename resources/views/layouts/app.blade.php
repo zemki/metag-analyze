@@ -7,13 +7,12 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ config('app.name', 'Metag') }}</title>
 
     <!-- Scripts -->
     <script src="{{ asset('js/manifest.js') }}" ></script>
     <script src="{{ asset('js/vendor.js') }}" ></script>
     <script src="{{ asset('js/app.js') }}" defer></script>
-    <script src="https://www.gstatic.com/charts/loader.js"></script>
 
     <script type="text/javascript">
     window.inputs = <?php echo json_encode(config('inputs')); ?>;
