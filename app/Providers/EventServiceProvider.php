@@ -29,6 +29,9 @@ class EventServiceProvider extends ServiceProvider
     {
         parent::boot();
 
-
+        Event::listen('Illuminate\Auth\Events\Login', function ($event) {
+            $event->user->last_login_date = \Carbon\Carbon::now();
+            $event->user->save();
+        });
     }
 }
