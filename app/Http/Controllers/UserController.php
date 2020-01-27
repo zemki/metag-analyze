@@ -69,7 +69,7 @@ class UserController extends Controller
             $role = Role::where('id', '=', request('role'))->first();
             $user->password = bcrypt(Helper::random_str(60));
             $user->password_token = bcrypt(Helper::random_str(60));
-            $user->api_token = str_random(60);
+            $user->api_token = Helper::random_str(60);
             $user->save();
             $user->roles()->sync($role);
 
