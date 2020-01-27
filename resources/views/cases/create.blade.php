@@ -42,24 +42,27 @@
 							</select>
 						</div>
 					</div>
-					<div class="column" v-show="newcase.duration.message != ''" v-html="'Estimated end (if the user log-in today): ' +newcase.duration.message">
+					<div class="column" v-show="newcase.duration.message != ''" v-html="'Estimated end: ' +newcase.duration.message">
 
 					</div>
 				</div>
 			</div>
-			@if(Auth::user()->isAdmin())
+
 			<label class="checkbox">
-				<input type="checkbox" checked>
+				<input type="checkbox" name="loginStart" checked v-model="newcase.duration.starts_with_login">
 				The duration start when the user Log in
 			</label>
-			<b-field label="Or it start this day:">
+			<b-field label="Or it start this day:" v-if="!newcase.duration.starts_with_login">
 				<b-datepicker
 						:min-date="newcase.minDate"
 						placeholder="Click to select..."
-						icon="calendar-today">
+						icon="calendar-today"
+						name="startdate"
+						v-model="newcase.duration.startdate"
+					>
 				</b-datepicker>
 			</b-field>
-			@endif
+
 			<input type="hidden"  :value="newcase.duration.value" name="duration">
 
 			<div class="field">

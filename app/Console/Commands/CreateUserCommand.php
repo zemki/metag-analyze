@@ -2,11 +2,11 @@
 
 namespace App\Console\Commands;
 
-use Helper;
+use App\Mail\VerificationEmail;
+use App\Permission;
 use App\Role;
 use App\User;
-use App\Permission;
-use App\Mail\VerificationEmail;
+use Helper;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
 
@@ -44,13 +44,15 @@ class CreateUserCommand extends Command
     public function handle()
     {
         $email = $this->ask('Enter email');
-        $this->info('0 -> Admin');
-        $this->info('1 -> Researcher');
-        $role = $this->choice('User role?', [0, 1]);
+        /*        $this->info('0 -> Admin');
+                $this->info('1 -> Researcher');
+                $role = $this->choice('User role?', [0, 1]);
+        */
+        $password = $this->secret('Enter password');
 
-        if ($this->store($role, $email, $user)) {
+        if ($this->store(1, $email, $password, $user)) {
             Mail::to($email)->send(new VerificationEmail($user, config('utilities.emailDefaultText')));
-            $this->info('An email was sent to '.$user->email.' he/she needs to set the password.');
+            $this->info('User ' . $email . ' created');
 
             return true;
         } else {
@@ -60,19 +62,20 @@ class CreateUserCommand extends Command
         }
     }
 
-    public function store($roleId, $email, &$user)
+    public function store($roleId, $email, $password, &$user)
     {
         $role = Role::where('id', $roleId)->first();
 
-            $user = new User();
+        $user = new User();
 
-            $user->email = $email;
-            $user->password = bcrypt(Helper::random_str(60));
-            $user->password_token = bcrypt(Helper::random_str(60));
-            $user->save();
-            $user->roles()->sync($role);
-            Mail::to($user->email)->send(new VerificationEmail($user, config('utilities.emailDefaultText')));
-            return true;
+        $user->email = $email;
+        $user->password = bcrypt($password);
+        $user->password_token = bcrypt(Helper::random_str(60));
+
+        $user->save();
+        $user->roles()->sync($role);
+        // Mail::to($user->email)->send(new VerificationEmail($user, config('utilities.emailDefaultText')));
+        return true;
 
     }
 }

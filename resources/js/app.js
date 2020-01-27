@@ -11,7 +11,9 @@ import {GoogleCharts} from 'google-charts';
 import VueChartkick from 'vue-chartkick'
 
 window.Vue = require('vue');
+
 var Highcharts = require('highcharts');
+
 // Load module after Highcharts is loaded
 require('highcharts/modules/exporting')(Highcharts);
 require('highcharts/modules/gantt')(Highcharts);
@@ -45,9 +47,6 @@ const app = new Vue({
     el: '#app',
     computed: {
         'newproject.formattedinputstring': function () {
-            console.log("WOWOWOa --> ");
-
-
             return JSON.stringify(this.newproject.inputs);
         }
     },
@@ -66,6 +65,36 @@ const app = new Vue({
 
     },
     watch: {
+        'newcase.duration.starts_with_login': function (newVal, OldVal) {
+          if(newVal){
+              if (!_.isEmpty(this.newcase.duration.selectedUnit) && !_.isEmpty(this.newcase.duration.input)) {
+
+                  if (this.newcase.duration.selectedUnit === 'week') var numberOfDaysToAdd = parseInt(this.newcase.duration.input) * 7;
+                  else var numberOfDaysToAdd = parseInt(this.newcase.duration.input);
+
+                  let {cdd, cmm, cy} = this.formatDurationMessage(numberOfDaysToAdd);
+
+                  // duration in days and change to this after first login
+                  this.newcase.duration.message = cdd + '.' + cmm + '.' + cy;
+                  this.newcase.duration.value = "value:" + numberOfDaysToAdd * 24 + "|days:" + numberOfDaysToAdd;
+
+              } else {
+                  this.newcase.duration.message = "";
+                  this.newcase.duration.value = "";
+
+              }
+          }
+        },
+        'newcase.duration.startdate': function (newVal, OldVal) {
+            if (!_.isEmpty(this.newcase.duration.input) && !_.isEmpty(this.newcase.duration.selectedUnit)) {
+
+                if (this.newcase.duration.selectedUnit === 'week') var numberOfDaysToAdd = parseInt(this.newcase.duration.input) * 7;
+                else var numberOfDaysToAdd = parseInt(this.newcase.duration.input);
+
+                this.formatdatestartingat();
+            }
+
+        },
         'newcase.duration.selectedUnit': function (newVal, OldVal) {
             if (!_.isEmpty(this.newcase.duration.input)) {
 
@@ -74,16 +103,19 @@ const app = new Vue({
 
                 let {cdd, cmm, cy} = this.formatDurationMessage(numberOfDaysToAdd);
 
+
                 this.newcase.duration.message = cdd + '.' + cmm + '.' + cy;
                 this.newcase.duration.value = "value:" + numberOfDaysToAdd * 24 + "|days:" + numberOfDaysToAdd;
+
+                this.formatdatestartingat();
+
 
             } else {
                 this.newcase.duration.message = "";
                 this.newcase.duration.value = "";
 
             }
-        },
-        'newcase.duration.input': function (newVal, OldVal) {
+        }, 'newcase.duration.input': function (newVal, OldVal) {
 
             this.newcase.duration.input = newVal.replace(/\D/g, '');
 
@@ -97,6 +129,7 @@ const app = new Vue({
                 // duration in days and change to this after first login
                 this.newcase.duration.message = cdd + '.' + cmm + '.' + cy;
                 this.newcase.duration.value = "value:" + numberOfDaysToAdd * 24 + "|days:" + numberOfDaysToAdd;
+                this.formatdatestartingat();
 
             } else {
                 this.newcase.duration.message = "";
@@ -119,6 +152,9 @@ const app = new Vue({
                 this.newuser.case.duration.message = cdd + '.' + cmm + '.' + cy;
                 this.newuser.case.duration.value = "value:" + numberOfDaysToAdd * 24 + "|days:" + numberOfDaysToAdd;
 
+                this.formatdatestartingat();
+
+
             } else {
                 this.newuser.case.duration.message = "";
                 this.newuser.case.duration.value = "";
@@ -135,6 +171,9 @@ const app = new Vue({
 
                 this.newuser.case.duration.message = cdd + '.' + cmm + '.' + cy;
                 this.newuser.case.duration.value = "value:" + numberOfDaysToAdd * 24 + "|days:" + numberOfDaysToAdd;
+
+                this.formatdatestartingat();
+
 
             } else {
                 this.newuser.case.duration.message = "";
@@ -235,6 +274,7 @@ const app = new Vue({
         newcase: {
             duration: {
                 input: "",
+                starts_with_login: true,
                 selectedUnit: "days",
                 allowedUnits: ["day(s)", "week(s)"],
                 message: "",
@@ -275,10 +315,36 @@ const app = new Vue({
         }
     },
     methods: {
-        confirmdeletecase(url){
+
+        formatdatestartingat: function () {
+
+            if (!this.newcase.duration.starts_with_login) {
+
+
+                if (this.newcase.duration.selectedUnit === 'week') var numberOfDaysToAdd = parseInt(this.newcase.duration.input) * 7;
+                else var numberOfDaysToAdd = parseInt(this.newcase.duration.input);
+
+                // calculate and format end date
+                let {cdd, cmm, cy} = this.formatDurationMessage(numberOfDaysToAdd, new Date(this.newcase.duration.startdate));
+                this.newcase.duration.message = cdd + '.' + cmm + '.' + cy;
+
+                // calculate and format starting date
+                let startingDate = new Date(this.newcase.duration.startdate);
+                var startingDay = startingDate.getDate();
+                var startingMonth = startingDate.getMonth() + 1;
+                var startingYear = startingDate.getFullYear();
+                let startingDateMessage = startingDay + '.' + startingMonth + '.' + startingYear;
+
+
+                this.newcase.duration.value = "startDay:" + startingDateMessage + "|" + this.newcase.duration.value;
+                this.newcase.duration.value += "|lastDay:" + this.newcase.duration.message;
+            }
+
+        },
+        confirmdeletecase(url) {
             this.$buefy.dialog.confirm(
                 {
-                    title: 'Confirm Duplicate',
+                    title: 'Confirm Case deletion',
                     message: 'Do you want to delete this case?',
                     cancelText: 'No',
                     confirmText: 'Yes DELETE',
@@ -288,7 +354,7 @@ const app = new Vue({
                 }
             );
         },
-        deleteCase(url){
+        deleteCase(url) {
             let self = this;
             axios.delete(url)
                 .then(response => {
@@ -301,9 +367,8 @@ const app = new Vue({
                     }, 500);
 
                 }).catch(function (error) {
-                console.log(error);
                 self.loading = false;
-                self.$buefy.snackbar.open("There it was an error during the request - refresh page and try again");
+                self.$buefy.snackbar.open(error.response.data.message);
             });
         },
         replaceUndefinedOrNull() {
@@ -328,8 +393,8 @@ const app = new Vue({
             else return false
 
         },
-        formatDurationMessage(numberOfDaysToAdd) {
-            var calculatedDate = new Date();
+        formatDurationMessage(numberOfDaysToAdd, startDate = new Date()) {
+            var calculatedDate = startDate;
             //get today date
             var dd = calculatedDate.getDate();
             var mm = calculatedDate.getMonth() + 1;
@@ -443,9 +508,8 @@ const app = new Vue({
                     }, 1000)
 
 
-                }).catch(function (error) {
-
-                self.$buefy.snackbar.open(response.data.message);
+                }).catch(function (error, message) {
+                self.$buefy.snackbar.open(error.response.data.message);
             });
         }
     }

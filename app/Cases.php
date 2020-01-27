@@ -37,6 +37,7 @@ class Cases extends Model
      * assign a user to this case
      * this will be the user that fills the entries
      * @param User $user user to assign to the case
+     * @return User
      */
     public function addUser($user)
     {
