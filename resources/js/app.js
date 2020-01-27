@@ -370,7 +370,7 @@ const app = new Vue({
                 let message = "A problem occurred";
                 if (error.response.data.message) message = error.response.data.message;
                 self.loading = false;
-                self.$buefy.snackbar.open();
+                self.$buefy.snackbar.open(message);
             });
         },
         replaceUndefinedOrNull() {
