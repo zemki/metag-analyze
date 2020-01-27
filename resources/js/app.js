@@ -66,24 +66,24 @@ const app = new Vue({
     },
     watch: {
         'newcase.duration.starts_with_login': function (newVal, OldVal) {
-          if(newVal){
-              if (!_.isEmpty(this.newcase.duration.selectedUnit) && !_.isEmpty(this.newcase.duration.input)) {
+            if (newVal) {
+                if (!_.isEmpty(this.newcase.duration.selectedUnit) && !_.isEmpty(this.newcase.duration.input)) {
 
-                  if (this.newcase.duration.selectedUnit === 'week') var numberOfDaysToAdd = parseInt(this.newcase.duration.input) * 7;
-                  else var numberOfDaysToAdd = parseInt(this.newcase.duration.input);
+                    if (this.newcase.duration.selectedUnit === 'week') var numberOfDaysToAdd = parseInt(this.newcase.duration.input) * 7;
+                    else var numberOfDaysToAdd = parseInt(this.newcase.duration.input);
 
-                  let {cdd, cmm, cy} = this.formatDurationMessage(numberOfDaysToAdd);
+                    let {cdd, cmm, cy} = this.formatDurationMessage(numberOfDaysToAdd);
 
-                  // duration in days and change to this after first login
-                  this.newcase.duration.message = cdd + '.' + cmm + '.' + cy;
-                  this.newcase.duration.value = "value:" + numberOfDaysToAdd * 24 + "|days:" + numberOfDaysToAdd;
+                    // duration in days and change to this after first login
+                    this.newcase.duration.message = cdd + '.' + cmm + '.' + cy;
+                    this.newcase.duration.value = "value:" + numberOfDaysToAdd * 24 + "|days:" + numberOfDaysToAdd;
 
-              } else {
-                  this.newcase.duration.message = "";
-                  this.newcase.duration.value = "";
+                } else {
+                    this.newcase.duration.message = "";
+                    this.newcase.duration.value = "";
 
-              }
-          }
+                }
+            }
         },
         'newcase.duration.startdate': function (newVal, OldVal) {
             if (!_.isEmpty(this.newcase.duration.input) && !_.isEmpty(this.newcase.duration.selectedUnit)) {
@@ -367,8 +367,10 @@ const app = new Vue({
                     }, 500);
 
                 }).catch(function (error) {
+                let message = "A problem occurred";
+                if (error.response.data.message) message = error.response.data.message;
                 self.loading = false;
-                self.$buefy.snackbar.open(error.response.data.message);
+                self.$buefy.snackbar.open();
             });
         },
         replaceUndefinedOrNull() {
