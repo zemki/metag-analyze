@@ -4,7 +4,9 @@ namespace App;
 
 use App\Mail\VerificationEmail;
 use Helper;
+
 use Illuminate\Database\Eloquent\SoftDeletes;
+
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Mail;
@@ -55,13 +57,20 @@ class User extends Authenticatable
             }
 
             $user->roles()->sync([]);
-
-
+            
         });
 
 
     }
 
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'deviceID' => 'array',
+    ];
 
     /**
      * The attributes that are mass assignable.
@@ -69,8 +78,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'email', 'password', 'last_login_date'
-
+        'email', 'password', 'last_login_date', 'deviceID'
     ];
 
     /**

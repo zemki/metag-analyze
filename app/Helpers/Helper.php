@@ -26,32 +26,6 @@ class Helper
     }
 
     /**
-     * Save and encrypt an image with custom extension
-     * @param  [type] $entity [description]
-     * @param  [type] $name   [description]
-     * @param  [type] $type   [description]
-     * @return String         path where the image is saved
-     */
-    public static function encrypt_image($entity, $name, $image, $type)
-    {
-
-                $name =  $t['name'];
-                $arr = explode(",", $t['base64'], 2);
-                $base64firstpart = $arr[0];
-
-
-                // open file a image resource
-                \Image::make($image)->fit(100, 100)->save(storage_path('app/tokens/'.$name));
-                $path = storage_path('app/tokens/'.$name);
-
-                $encryptedContent = encrypt($base64firstpart.",".base64_encode(file_get_contents($path)));
-
-                // Store the encrypted Content
-                Storage::put('tokens/'.$name.'.mtoken', $encryptedContent);
-                File::delete($path);
-    }
-
-    /**
      * return extension of base64 image
      * @param  String $uri base64 image uri
      * @return String      image extension
