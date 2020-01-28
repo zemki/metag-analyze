@@ -45,10 +45,6 @@
                                        </button>
                                     </a>
 
-                                <form action="" method="POST">
-                                    {{ csrf_field() }}
-                                    {{ method_field('DELETE') }}
-                                </form>
 
                                 @if($case->isConsultable() && $case->entries()->count() > 0)
                                 <a href="{{url('export/'.$case->id)}}" target="_blank">
