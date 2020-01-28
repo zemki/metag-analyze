@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Cases;
 use App\Exports\CasesExport;
 use App\Mail\VerificationEmail;
+use App\Media;
 use App\Project;
 use App\Role;
 use App\User;
@@ -123,13 +124,13 @@ class ProjectCasesController extends Controller
     }
 
     /**
-     * @param Project $project
      * @param Cases $case
      * @return RedirectResponse|Redirector
      * @throws \Exception
      */
     public function destroy(Cases $case)
     {
+        $project = $case->project;
 
         if ($case->isEditable()) {
             $case->delete();
@@ -137,7 +138,19 @@ class ProjectCasesController extends Controller
             return response()->json(['message' => 'Case has entries, you cannot delete it'], 401);
         }
 
-        return redirect($case->project->path())->with('message', 'case deleted');
+        $data['breadcrumb'] = [url('/') => 'Projects', '#' => substr($project->name,0,20).'...'];
+
+        $project->media = $project->media()->pluck('media.name')->toArray();
+
+        $data['data']['media'] = Media::all();
+
+        $data['project'] = $project;
+        $data['invites'] = $project->invited()->get();
+        $data['message'] = "Case deleted";
+
+        return view('projects.show', $data);
+
+
 
     }
 
