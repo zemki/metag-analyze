@@ -483,7 +483,7 @@ const app = new Vue({
                 self.$buefy.snackbar.open("There it was an error during the request - refresh page and try again");
             });
         },
-        confirmDeleteProject: function (project) {
+        confirmDeleteProject: function (project,url) {
 
             let confirmDelete = this.$buefy.dialog.confirm(
                 {
@@ -493,14 +493,14 @@ const app = new Vue({
                     confirmText: 'YES',
                     hasIcon: true,
                     type: 'is-danger',
-                    onConfirm: () => this.deleteProject(project)
+                    onConfirm: () => this.deleteProject(project,url)
                 }
             );
         },
-        deleteProject: function (project) {
+        deleteProject: function (project,url) {
 
             let self = this;
-            window.axios.delete('/projects/' + project, {project: project})
+            window.axios.delete(url, {project: project})
                 .then(response => {
 
                     self.$buefy.snackbar.open(response.data.message);

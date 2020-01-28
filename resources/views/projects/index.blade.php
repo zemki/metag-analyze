@@ -38,7 +38,7 @@
 
 					<button class="button is-danger mt-1" >
 						<a class="text-gray-100 hover:text-black"
-						   @click="confirmDeleteProject({{$project->id}})">Delete Project</a>
+						   @click="confirmDeleteProject({{$project->id}},'{{url('/projects/'.$project->id)}}')">Delete Project</a>
 					</button>
 					</p>
 				</div>
