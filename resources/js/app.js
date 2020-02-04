@@ -28,6 +28,16 @@ require('highcharts/modules/gantt')(Highcharts);
 // const files = require.context('./', true, /\.vue$/i);
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default));
 
+if (process.env.MIX_ENV_MODE === 'production') {
+    Vue.config.devtools = false;
+    Vue.config.debug = false;
+    Vue.config.silent = true;
+}else{
+    Vue.config.devtools = true;
+    Vue.config.debug = true;
+    Vue.config.silent = false;
+}
+
 Vue.component('edit-project', require('./components/editproject.vue').default);
 Vue.component('consult-entries', require('./components/consultentries.vue').default);
 Vue.component('project-invites', require('./components/projectsInvites.vue').default);
