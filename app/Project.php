@@ -21,6 +21,64 @@ class Project extends Model
       return is_array($value) ? $value : (array) json_decode($value);
     }*/
 
+    public function getInputs()
+    {
+        return json_decode($this->inputs);
+    }
+
+    public function getSpecificInput($name)
+    {
+        if ($this->inputs == "[]") return false;
+        $item = null;
+        foreach (json_decode($this->inputs) as $input) {
+            if ($name == $input->name) {
+                $item = $input;
+                break;
+            }
+        }
+        return $item;
+    }
+
+    public function getProjectInputNames()
+    {
+        if ($this->inputs == "[]") return false;
+
+        $inputNames = [];
+        foreach (json_decode($this->inputs) as $input) {
+            array_push($inputNames, $input->name);
+        }
+        return $inputNames;
+    }
+
+    public function getNumberOfAnswersByQuestion($question)
+    {
+        if ($this->inputs == "[]") return false;
+        $item = null;
+
+        foreach (json_decode($this->inputs) as $input) {
+            if ($question == $input->name) {
+                $item = $input->numberofanswer;
+                break;
+            }
+        }
+        return $item;
+    }
+
+    public function getAnswersByQuestion($question)
+    {
+        if ($this->inputs == "[]") return false;
+        $item = null;
+        $inputs = json_decode($this->inputs);
+
+        foreach ($inputs as $input) {
+            if ($question == $input->name) {
+                $item = $input->answers;
+                break;
+            }
+        }
+        return $item;
+    }
+
     public function isEditable()
     {
         return $this->cases()->count() === 0;

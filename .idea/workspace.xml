@@ -2,13 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="49b2948e-19cc-4195-90cc-e5d3bf8d67f6" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/composer.lock" beforeDir="false" afterPath="$PROJECT_DIR$/composer.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/js/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/app.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/mix-manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/public/mix-manifest.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/js/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/resources/js/app.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/CasesExport.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/CasesExport.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/ProjectCasesController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/ProjectCasesController.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/ProjectController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/ProjectController.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Project.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Project.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/resources/views/projects/index.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/projects/index.blade.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/views/projects/show.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/projects/show.blade.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -194,7 +194,7 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="com.intellij.ide.scratch.LRUPopupBuilder$1/New Scratch File" value="TEXT" />
     <property name="js.last.introduce.type" value="LET" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/app/Http/Controllers" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/app" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="nodejs_package_manager_path" value="yarn" />
@@ -202,16 +202,16 @@
     <property name="ts.external.directory.path" value="$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/app/Http/Controllers" />
-      <recent name="$PROJECT_DIR$/resources/views/errors" />
-      <recent name="$PROJECT_DIR$/app" />
-      <recent name="$PROJECT_DIR$/public" />
-      <recent name="$PROJECT_DIR$/database/oldmigrations" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/database/oldmigrations" />
       <recent name="$PROJECT_DIR$/database/migrations" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/app" />
+      <recent name="$PROJECT_DIR$/app/Http/Controllers" />
+      <recent name="$PROJECT_DIR$/resources/views/errors" />
+      <recent name="$PROJECT_DIR$/public" />
+      <recent name="$PROJECT_DIR$/database/oldmigrations" />
     </key>
   </component>
   <component name="RunAnythingCache">
@@ -399,6 +399,12 @@
       <workItem from="1579860292842" duration="13000" />
       <workItem from="1579860331205" duration="10528000" />
       <workItem from="1580199977577" duration="2704000" />
+      <workItem from="1580835633969" duration="463000" />
+      <workItem from="1581004677156" duration="4000" />
+      <workItem from="1581088099316" duration="969000" />
+      <workItem from="1581420656777" duration="21885000" />
+      <workItem from="1581783108115" duration="22000" />
+      <workItem from="1581783155281" duration="1052000" />
     </task>
     <servers />
   </component>
@@ -429,51 +435,56 @@
     </option>
   </component>
   <component name="WindowStateProjectService">
+    <state x="712" y="383" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog" timestamp="1581783124349">
+      <screen x="0" y="0" width="2048" height="1280" />
+    </state>
+    <state x="712" y="383" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog/0.0.2048.1280@0.0.2048.1280" timestamp="1581783124349" />
     <state x="2673" y="330" key="#com.jetbrains.php.actions.copyPaste.importReferences.PhpImportReferencesDialog" timestamp="1580207934335">
       <screen x="2048" y="0" width="1680" height="1050" />
     </state>
     <state x="762" y="402" key="#com.jetbrains.php.actions.copyPaste.importReferences.PhpImportReferencesDialog/-1680.0.1680.1050/2048.0.1680.1050/0.0.2048.1280@0.0.2048.1280" timestamp="1579706373511" />
     <state x="762" y="402" key="#com.jetbrains.php.actions.copyPaste.importReferences.PhpImportReferencesDialog/0.0.2048.1280@0.0.2048.1280" timestamp="1579532684073" />
     <state x="2673" y="330" key="#com.jetbrains.php.actions.copyPaste.importReferences.PhpImportReferencesDialog/2048.0.1680.1050/-1680.0.1680.1050/0.0.2048.1280@2048.0.1680.1050" timestamp="1580207934335" />
-    <state x="2650" y="62" key="#com.jetbrains.php.refactoring.extractMethod.PhpExtractMethodDialog#method1" timestamp="1579785879020">
+    <state x="2650" y="62" key="#com.jetbrains.php.refactoring.extractMethod.PhpExtractMethodDialog#method1" timestamp="1581429554084">
       <screen x="2048" y="0" width="1680" height="1050" />
     </state>
-    <state x="2650" y="62" key="#com.jetbrains.php.refactoring.extractMethod.PhpExtractMethodDialog#method1/2048.0.1680.1050/-1680.0.1680.1050/0.0.2048.1280@2048.0.1680.1050" timestamp="1579785879020" />
-    <state width="2006" height="149" key="GridCell.Tab.0.bottom" timestamp="1580156512617">
+    <state x="2650" y="62" key="#com.jetbrains.php.refactoring.extractMethod.PhpExtractMethodDialog#method1/2048.0.1680.1050/-1680.0.1680.1050/0.0.2048.1280@2048.0.1680.1050" timestamp="1581429554084" />
+    <state width="2006" height="148" key="GridCell.Tab.0.bottom" timestamp="1580824553230">
       <screen x="0" y="0" width="2048" height="1280" />
     </state>
     <state width="1398" height="140" key="GridCell.Tab.0.bottom/0.0.1440.900@0.0.1440.900" timestamp="1575542733354" />
-    <state width="2006" height="149" key="GridCell.Tab.0.bottom/0.0.2048.1280@0.0.2048.1280" timestamp="1580156512617" />
+    <state width="2006" height="148" key="GridCell.Tab.0.bottom/0.0.2048.1280@0.0.2048.1280" timestamp="1580824553230" />
     <state width="2006" height="217" key="GridCell.Tab.0.bottom/2048.0.1680.1050/-1680.0.1680.1050/0.0.2048.1280@0.0.2048.1280" timestamp="1579610149357" />
     <state width="1638" height="150" key="GridCell.Tab.0.bottom/2048.0.1680.1050/-1680.0.1680.1050/0.0.2048.1280@2048.0.1680.1050" timestamp="1579795904309" />
-    <state width="2006" height="149" key="GridCell.Tab.0.center" timestamp="1580156512616">
+    <state width="2006" height="148" key="GridCell.Tab.0.center" timestamp="1580824553228">
       <screen x="0" y="0" width="2048" height="1280" />
     </state>
     <state width="1398" height="140" key="GridCell.Tab.0.center/0.0.1440.900@0.0.1440.900" timestamp="1575542733352" />
-    <state width="2006" height="149" key="GridCell.Tab.0.center/0.0.2048.1280@0.0.2048.1280" timestamp="1580156512616" />
+    <state width="2006" height="148" key="GridCell.Tab.0.center/0.0.2048.1280@0.0.2048.1280" timestamp="1580824553228" />
     <state width="2006" height="217" key="GridCell.Tab.0.center/2048.0.1680.1050/-1680.0.1680.1050/0.0.2048.1280@0.0.2048.1280" timestamp="1579610149353" />
     <state width="1638" height="150" key="GridCell.Tab.0.center/2048.0.1680.1050/-1680.0.1680.1050/0.0.2048.1280@2048.0.1680.1050" timestamp="1579795904307" />
-    <state width="2006" height="149" key="GridCell.Tab.0.left" timestamp="1580156512615">
+    <state width="2006" height="148" key="GridCell.Tab.0.left" timestamp="1580824553228">
       <screen x="0" y="0" width="2048" height="1280" />
     </state>
     <state width="1398" height="140" key="GridCell.Tab.0.left/0.0.1440.900@0.0.1440.900" timestamp="1575542733351" />
-    <state width="2006" height="149" key="GridCell.Tab.0.left/0.0.2048.1280@0.0.2048.1280" timestamp="1580156512615" />
+    <state width="2006" height="148" key="GridCell.Tab.0.left/0.0.2048.1280@0.0.2048.1280" timestamp="1580824553228" />
     <state width="2006" height="217" key="GridCell.Tab.0.left/2048.0.1680.1050/-1680.0.1680.1050/0.0.2048.1280@0.0.2048.1280" timestamp="1579610149350" />
     <state width="1638" height="150" key="GridCell.Tab.0.left/2048.0.1680.1050/-1680.0.1680.1050/0.0.2048.1280@2048.0.1680.1050" timestamp="1579795904306" />
-    <state width="2006" height="149" key="GridCell.Tab.0.right" timestamp="1580156512616">
+    <state width="2006" height="148" key="GridCell.Tab.0.right" timestamp="1580824553229">
       <screen x="0" y="0" width="2048" height="1280" />
     </state>
     <state width="1398" height="140" key="GridCell.Tab.0.right/0.0.1440.900@0.0.1440.900" timestamp="1575542733353" />
-    <state width="2006" height="149" key="GridCell.Tab.0.right/0.0.2048.1280@0.0.2048.1280" timestamp="1580156512616" />
+    <state width="2006" height="148" key="GridCell.Tab.0.right/0.0.2048.1280@0.0.2048.1280" timestamp="1580824553229" />
     <state width="2006" height="217" key="GridCell.Tab.0.right/2048.0.1680.1050/-1680.0.1680.1050/0.0.2048.1280@0.0.2048.1280" timestamp="1579610149355" />
     <state width="1638" height="150" key="GridCell.Tab.0.right/2048.0.1680.1050/-1680.0.1680.1050/0.0.2048.1280@2048.0.1680.1050" timestamp="1579795904308" />
     <state x="221" y="89" key="SettingsEditor" timestamp="1575540451103">
       <screen x="0" y="0" width="1440" height="900" />
     </state>
     <state x="221" y="89" key="SettingsEditor/0.0.1440.900@0.0.1440.900" timestamp="1575540451103" />
-    <state x="2573" y="233" width="630" height="612" key="StructurePopup" timestamp="1580218741949">
+    <state x="2573" y="233" width="630" height="612" key="StructurePopup" timestamp="1581517761474">
       <screen x="2048" y="0" width="1680" height="1050" />
     </state>
+    <state x="2573" y="233" width="630" height="612" key="StructurePopup/-1680.0.1680.1050/2048.0.1680.1050/0.0.2048.1280@2048.0.1680.1050" timestamp="1581517761474" />
     <state x="450" y="200" width="540" height="524" key="StructurePopup/0.0.1440.900@0.0.1440.900" timestamp="1575540776481" />
     <state x="640" y="284" width="768" height="746" key="StructurePopup/0.0.2048.1280@0.0.2048.1280" timestamp="1579533939762" />
     <state x="2573" y="233" width="630" height="612" key="StructurePopup/2048.0.1680.1050/-1680.0.1680.1050/0.0.2048.1280@2048.0.1680.1050" timestamp="1580218741949" />
@@ -481,32 +492,42 @@
       <screen x="0" y="0" width="2048" height="1280" />
     </state>
     <state x="100" y="100" width="1848" height="1080" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.0.2048.1280@0.0.2048.1280" timestamp="1579863493138" />
-    <state x="2710" y="463" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1579787841289">
+    <state x="2710" y="463" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1581430608098">
       <screen x="2048" y="0" width="1680" height="1050" />
     </state>
     <state x="807" y="564" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/-1680.0.1680.1050/2048.0.1680.1050/0.0.2048.1280@0.0.2048.1280" timestamp="1579694593196" />
-    <state x="2710" y="463" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/2048.0.1680.1050/-1680.0.1680.1050/0.0.2048.1280@2048.0.1680.1050" timestamp="1579787841289" />
+    <state x="2710" y="463" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/2048.0.1680.1050/-1680.0.1680.1050/0.0.2048.1280@2048.0.1680.1050" timestamp="1581430608098" />
+    <state x="0" y="0" width="2048" height="1280" key="dock-window-1" timestamp="1581783167290">
+      <screen x="0" y="23" width="2048" height="1257" />
+    </state>
+    <state x="-1680" y="23" width="1680" height="1027" key="dock-window-1/-1680.0.1680.1050/2048.0.1680.1050/0.0.2048.1280@2048.0.1680.1050" timestamp="1581518562733" />
+    <state x="-1680" y="23" width="1680" height="1027" maximized="true" key="dock-window-1/-1680.23.1680.1027/2048.0.1680.1050/0.23.2048.1257@2048.0.1680.1050" timestamp="1581517510121" />
+    <state x="-1680" y="23" width="1680" height="1027" maximized="true" key="dock-window-1/-1680.23.1680.1027/2048.23.1680.1027/0.23.2048.1257@2048.23.1680.1027" timestamp="1581518287362" />
+    <state x="0" y="28" width="2048" height="1252" key="dock-window-1/0.0.2048.1280@0.0.2048.1280" timestamp="1581783119358" />
+    <state x="0" y="0" width="2048" height="1280" key="dock-window-1/0.23.2048.1257@0.23.2048.1257" timestamp="1581783167290" />
     <state x="378" y="212" width="683" height="476" key="find.popup" timestamp="1575541776758">
       <screen x="0" y="0" width="1440" height="900" />
     </state>
     <state x="378" y="212" width="683" height="476" key="find.popup/0.0.1440.900@0.0.1440.900" timestamp="1575541776758" />
-    <state x="899" y="515" width="250" height="278" key="jetbrains.javascript.buildTools.run-task-popup" timestamp="1579693075451">
-      <screen x="0" y="0" width="2048" height="1280" />
+    <state x="2785" y="422" width="206" height="229" key="jetbrains.javascript.buildTools.run-task-popup" timestamp="1581425827106">
+      <screen x="2048" y="0" width="1680" height="1050" />
     </state>
     <state x="899" y="515" width="250" height="278" key="jetbrains.javascript.buildTools.run-task-popup/-1680.0.1680.1050/2048.0.1680.1050/0.0.2048.1280@0.0.2048.1280" timestamp="1579693075451" />
+    <state x="2785" y="422" width="206" height="229" key="jetbrains.javascript.buildTools.run-task-popup/2048.0.1680.1050/-1680.0.1680.1050/0.0.2048.1280@2048.0.1680.1050" timestamp="1581425827106" />
     <state x="689" y="305" width="670" height="675" key="run.anything.popup" timestamp="1576575424698">
       <screen x="0" y="0" width="2048" height="1280" />
     </state>
     <state x="689" y="305" width="670" height="675" key="run.anything.popup/2048.0.1680.1050/-1680.0.1680.1050/0.0.2048.1280@0.0.2048.1280" timestamp="1576575424698" />
-    <state x="2497" y="229" width="783" height="790" key="search.everywhere.popup" timestamp="1580219129754">
-      <screen x="2048" y="0" width="1680" height="1050" />
+    <state x="547" y="279" width="954" height="963" key="search.everywhere.popup" timestamp="1581788660509">
+      <screen x="0" y="0" width="2048" height="1280" />
     </state>
     <state x="547" y="279" width="954" height="963" key="search.everywhere.popup/-1680.0.1680.1050/2048.0.1680.1050/0.0.2048.1280@0.0.2048.1280" timestamp="1579695880112" />
+    <state x="2497" y="229" width="783" height="790" key="search.everywhere.popup/-1680.0.1680.1050/2048.0.1680.1050/0.0.2048.1280@2048.0.1680.1050" timestamp="1581515171369" />
     <state x="385" y="196" width="670" height="676" key="search.everywhere.popup/0.0.1440.900@0.0.1440.900" timestamp="1575543057398" />
     <state x="479" y="244" width="834" height="842" key="search.everywhere.popup/0.0.1792.1120@0.0.1792.1120" timestamp="1576668937897" />
-    <state x="547" y="279" width="954" height="963" key="search.everywhere.popup/0.0.2048.1280@0.0.2048.1280" timestamp="1579876686389" />
-    <state x="547" y="279" width="954" height="963" key="search.everywhere.popup/2048.0.1680.1050/-1680.0.1680.1050/0.0.2048.1280@0.0.2048.1280" timestamp="1576575478507" />
-    <state x="2497" y="229" width="783" height="790" key="search.everywhere.popup/2048.0.1680.1050/-1680.0.1680.1050/0.0.2048.1280@2048.0.1680.1050" timestamp="1580219129754" />
+    <state x="547" y="279" width="954" height="963" key="search.everywhere.popup/0.0.2048.1280@0.0.2048.1280" timestamp="1581788660509" />
+    <state x="547" y="279" width="954" height="963" key="search.everywhere.popup/2048.0.1680.1050/-1680.0.1680.1050/0.0.2048.1280@0.0.2048.1280" timestamp="1581088467985" />
+    <state x="2497" y="229" width="783" height="790" key="search.everywhere.popup/2048.0.1680.1050/-1680.0.1680.1050/0.0.2048.1280@2048.0.1680.1050" timestamp="1581430613014" />
     <state x="2497" y="229" width="783" height="790" key="search.everywhere.popup/2048.0.1680.1050/-1680.23.1680.1027/0.23.2048.1257@2048.0.1680.1050" timestamp="1579712130190" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">

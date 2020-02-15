@@ -4,17 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Cases;
 use App\Exports\CasesExport;
-use App\Mail\VerificationEmail;
 use App\Media;
 use App\Project;
-use App\Role;
 use App\User;
-
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Routing\Redirector;
-use Illuminate\Support\Facades\Mail;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 
 class ProjectCasesController extends Controller
@@ -32,7 +30,7 @@ class ProjectCasesController extends Controller
         }
 
         list($mediaValues, $availableMedia) = Cases::getMediaValues($case);
-        list($availableInputs, $inputValues, $data) = Cases::getInputValues($case,$data);
+        list($availableInputs, $inputValues, $data) = Cases::getInputValues($case, $data);
 
         $data['entries']['media'] = $mediaValues;
         $data['entries']['availablemedia'] = $availableMedia;
@@ -42,7 +40,7 @@ class ProjectCasesController extends Controller
 
         $data['case'] = $case;
 
-          $data['breadcrumb'] = [
+        $data['breadcrumb'] = [
             url('/') => 'Metag',
             url('/') => 'Projects',
             $project->path() => $project->name,
@@ -60,15 +58,16 @@ class ProjectCasesController extends Controller
      */
     public function create(Project $project)
     {
+        if (auth()->user()->notOwnerNorInvited($project)) {
+            abort(403);
+        }
+
         $data['breadcrumb'] = [
             url('/') => 'Projects',
             url($project->path()) => $project->name,
             '#' => 'Create Case'
         ];
 
-        if (auth()->user()->notOwnerNorInvited($project)) {
-            abort(403);
-        }
 
         $data['users'] = User::all();
         $data['project'] = $project;
@@ -87,8 +86,8 @@ class ProjectCasesController extends Controller
     {
         $this->authorize('update', $project);
 
-        if(request('name') == "" || request('email') == "" || request('duration') == ""){
-            return redirect($project->path().'/cases/new')->with(['message' => 'Please fill all the required inputs.']);
+        if (request('name') == "" || request('email') == "" || request('duration') == "") {
+            return redirect($project->path() . '/cases/new')->with(['message' => 'Please fill all the required inputs.']);
         }
 
         request()->validate(
@@ -138,7 +137,7 @@ class ProjectCasesController extends Controller
             return response()->json(['message' => 'Case has entries, you cannot delete it'], 401);
         }
 
-        $data['breadcrumb'] = [url('/') => 'Projects', '#' => substr($project->name,0,20).'...'];
+        $data['breadcrumb'] = [url('/') => 'Projects', '#' => substr($project->name, 0, 20) . '...'];
 
         $project->media = $project->media()->pluck('media.name')->toArray();
 
@@ -151,17 +150,37 @@ class ProjectCasesController extends Controller
         return view('projects.show', $data);
 
 
-
     }
 
+    /**
+     * @param Cases $case
+     * @return Response|BinaryFileResponse
+     */
     public function export(Cases $case)
     {
         if (auth()->user()->notOwnerNorInvited($case->project)) {
-        abort(403);
-    }
-        return (new CasesExport($case->id))->download('case '.$case->name.'.xlsx');
+            abort(403, 'you can\'t see the data of this project.');
+        }
+
+        $headings = $this->getProjectInputHeadings($case->project);
+
+        return (new CasesExport($case->id, $headings))->download('case ' . $case->name . '.xlsx');
     }
 
+    /**
+     * @param Project $project
+     * @return array
+     */
+    private function getProjectInputHeadings(Project $project): array
+    {
+        $headings = [];
+        foreach (json_decode($project->inputs) as $input) {
+            $isMultipleOrOneChoice = property_exists($input, "numberofanswer") && $input->numberofanswer > 0;
+            if ($isMultipleOrOneChoice) for ($i = 0; $i < $input->numberofanswer; $i++) array_push($headings, $input->name);
+            else array_push($headings, $input->name);
+        }
+        return $headings;
+    }
 
 
 }

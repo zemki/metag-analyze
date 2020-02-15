@@ -36,30 +36,35 @@
                                     {{$case->name}}
 
                                 </div>
-                                <p class="text-gray-700 text-base">
+                                <div class="py-2">
                                     <a href="{{$case->isConsultable() && $case->entries()->count() > 0 ? $project->id.$case->path() : '#' }}">
-                                    <button
-                                            class="button text-gray-700 {{$case->isConsultable() ? '' : 'opacity-50 cursor-not-allowed'}}">
+                                        <button
+                                                class="block button text-gray-700 {{$case->isConsultable() ? '' : 'opacity-50 cursor-not-allowed'}}">
                                             {{$case->isConsultable() && $case->entries()->count() > 0 ? 'View
                                             Entries' : 'User is sending the data . . .'}}
-                                       </button>
+                                        </button>
                                     </a>
+                                </div>
 
 
                                 @if($case->isConsultable() && $case->entries()->count() > 0)
-                                <a href="{{url('export/'.$case->id)}}" target="_blank">
-                                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-2 rounded">
-                                    Download
-                                </button>
-                                </a>
+                                    <div class="py-2">
+                                        <a href="{{url('export/'.$case->id)}}" target="_blank">
+                                            <button class="block  bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-2 rounded">
+                                                Download
+                                            </button>
+                                        </a>
+                                    </div>
                                 @endif
 
-                                <button type="submit" class="button is-danger text-white"
-                                        @click="confirmdeletecase('{{url('/cases/'.$case->id)}}')">
-                                    Delete Case
-                                </button>
+                                <div class="py-2">
+                                    <button type="submit" class="block button is-danger text-white"
+                                            @click="confirmdeletecase('{{url('/cases/'.$case->id)}}')">
+                                        Delete Case
+                                    </button>
+                                </div>
 
-                                </p>
+
                             </div>
                             <div class="px-6 py-4 ">
                                 <div class="block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700">
