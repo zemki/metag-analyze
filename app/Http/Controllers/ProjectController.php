@@ -111,11 +111,12 @@ class ProjectController extends Controller
 
     public function destroy(Project $project)
     {
-        if ($project->isEditable()) {
+
+        if ($project->isEditable() && $project->created_by == auth()->user()->id) {
             $project->invited()->detach();
             $project->delete();
         } else {
-            return response()->json(['message' => 'Project has entries, you cannot delete it'], 401);
+            return response()->json(['message' => 'You can\'t delete this project'], 401);
         }
         return response()->json(['message' => 'Project Deleted.'], 200);
 
@@ -175,6 +176,9 @@ class ProjectController extends Controller
 
     public function removeFromProject(Request $request)
     {
+
+        $this->authorize('update', Project::where('id', $request->input('project'))->first());
+
         $user = User::where('email', '=', $request->email)->first();
 
         if ($user) {
