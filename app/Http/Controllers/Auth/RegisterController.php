@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Helpers\Helper;
+use App\Role;
 use App\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
@@ -28,7 +30,7 @@ class RegisterController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/home';
+    protected $redirectTo = '/';
 
     /**
      * Create a new controller instance.
@@ -49,24 +51,37 @@ class RegisterController extends Controller
     protected function validator(array $data)
     {
         return Validator::make($data, [
-            'username' => ['required', 'string', 'max:80'],
             'email' => ['string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'password' => ['required', 'string', 'min:6', 'confirmed'],
         ]);
     }
 
     /**
      * Create a new user instance after a valid registration.
      *
-     * @param  array  $data
+     * @param array $data
      * @return \App\User
+     * @throws \Exception
      */
     protected function create(array $data)
     {
-        return User::create([
-            'username' => $data['username'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-        ]);
+        $userexist = User::where('email', '=', $data['email'])->first();
+
+        if ($userexist) {
+            return $this->showRegistrationForm();
+        } else {
+            $role = Role::where('name', 'researcher')->first();
+
+            $user = new User();
+
+            $user->email = $data['email'];
+            $user->password = bcrypt($data['password']);
+            $user->password_token = bcrypt(Helper::random_str(60));
+
+            $user->save();
+            $user->roles()->sync($role);
+
+            return $user;
+        }
     }
 }

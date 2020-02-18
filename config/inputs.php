@@ -2,16 +2,16 @@
 
 return [
 
-	'available' =>
-	[
-		'text',
-		'multiple choice',
-		'one choice',
-		'scale'
-	],
-	'limit' => 10,
-	'random' => 0,
-	'example' => '[
+    'available' =>
+        [
+            'text',
+            'multiple choice',
+            'one choice',
+            'scale'
+        ],
+    'limit' => 10,
+    'random' => 0,
+    'example' => '[
 	{
 		"id": 0,
 		"type": "text",
