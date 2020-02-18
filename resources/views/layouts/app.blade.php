@@ -37,7 +37,7 @@
             @if(session()->has('message'))
                 <b-notification
                         :active.sync="mainNotification"
-                        aria-close-label="Close notification"
+                        aria-close-label="Close"
                         type="is-danger"
                         role="alert"
                 >
