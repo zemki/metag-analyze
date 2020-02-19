@@ -56,8 +56,12 @@ class ProjectController extends Controller
      *
      * @return View return view with the form to insert a new project
      */
-    public function create()
+    public function create(Request $request)
     {
+        if (auth()->user()->hasReachMaxNumberOfProjecs()) {
+            //auth()->user()->addAction('trying to create a study', $request->url(), 'Max numbers of studies reached for user ' . auth()->user()->email);
+            abort(403, 'You reached the max number of projects');
+        }
         $data['breadcrumb'] = [url('/') => 'Projects', '#' => 'Create'];
 
         return view('projects.create', $data);

@@ -12,9 +12,19 @@
     @endcomponent
 
     <nav class="px-2 sm:flex sm:p-0 align-baseline">
+
+        @if(Auth::user()->hasReachMaxNumberOfProjecs())
+            <p class="text-yellow-300 block bg-red-600 px-3 mt-1 lg:inline-block lg:mt-0 mr-4 ">
+                You have reached the max number of Projects! Contact us for solutions!
+            </p>
+        @endif
+
 		<p class="flex text-white font-bold px-2 py-1 is-unselectable">{{auth()->user()->email}}</p>
+
+
         <a href="{{url('projects/new')}}" class="flex px-2 py-1 text-white font-semibold rounded hover:bg-red-600"><i
                     class="px-1">+</i> {{ __('New Project') }}</a>
+
         <a class="flex px-2 py-1 text-white font-semibold rounded hover:bg-red-600"
            href="{{ route('logout') }}"
            onclick="event.preventDefault();

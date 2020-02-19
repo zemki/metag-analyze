@@ -161,13 +161,10 @@ class User extends Authenticatable implements MustVerifyEmail
         return $user;
     }
 
-
-
-    public function hasReachMaxNumberOfProjects()
+    public function hasReachMaxNumberOfProjecs()
     {
 
-        return ($this->studies()->count() >= config('utilities.maxNumberOfProjects'));
+        return ($this->projects()->count() >= config('utilities.maxNumberOfProjects'));
     }
-
 
 }
