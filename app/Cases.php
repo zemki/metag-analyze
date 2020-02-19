@@ -184,7 +184,7 @@ class Cases extends Model
                 $data['entries']['inputs'][$availableInput]['title'] = $availableOptions["one choice"]->name;
 
             } else if ($availableInput == "scale") {
-                $data['entries']['inputs'][$availableInput]['available'] = [1, 2, 3, 4, 5];
+                $data['entries']['inputs'][$availableInput]['available'] = [0,1, 2, 3, 4, 5];
                 $data['entries']['inputs'][$availableInput]['title'] = $availableOptions["scale"]->name;
 
             } else if ($availableInput == "text") {
@@ -197,9 +197,11 @@ class Cases extends Model
                 }
             }
             foreach ($inputValues as $inputValue) {
-                if ($inputValue['type'] == $availableInput) array_push($data['entries']['inputs'][$availableInput], $inputValue);
+                if ($inputValue['type'] == $availableInput && $inputValue != null) array_push($data['entries']['inputs'][$availableInput], $inputValue);
             }
         }
+
+
         return array($availableInputs, $inputValues, $data);
     }
 

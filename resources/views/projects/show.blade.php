@@ -11,10 +11,16 @@
                 {{$project->description}}
             </p>
         </div>
-        <div class="field mt-2">
-            <div class="control">
+        <div class="inline px-2">
+            <div class="inline">
                 <a href="{{url($project->path().'/cases/new')}}">
                     <button class="button is-link is-primary">Create Case</button>
+                </a>
+
+            </div>
+            <div class="inline">
+                <a href="{{url($project->path().'/export')}}">
+                    <button class="button is-link is-primary">Download all the data from this project</button>
                 </a>
             </div>
         </div>

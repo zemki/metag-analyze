@@ -38,6 +38,13 @@
                             </a></button>
                     </div>
                     <div class="py-2">
+
+                        <a href="{{url($project->path().'/export')}}">
+                            <button class="button is-link is-primary">Download all the data</button>
+                        </a>
+                    </div>
+                    <div class="py-2">
+
                         <button class="button is-danger mt-1">
                             <a class="text-gray-100 hover:text-black"
                                @click="confirmDeleteProject({{$project->id}},'{{url('/projects/'.$project->id)}}')">Delete
@@ -105,4 +112,5 @@
             </div>
         @endforelse
     </div>
+
 @endsection

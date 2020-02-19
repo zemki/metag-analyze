@@ -50,7 +50,7 @@ class CreateUserCommand extends Command
         */
         $password = $this->secret('Enter password');
 
-        if ($this->store(1, $email, $password, $user)) {
+        if ($this->store(2, $email, $password, $user)) {
             Mail::to($email)->send(new VerificationEmail($user, config('utilities.emailDefaultText')));
             $this->info('User ' . $email . ' created');
 

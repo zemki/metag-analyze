@@ -10,7 +10,7 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
-
+Auth::routes(['verify' => true]);
 Auth::routes();
 
 Route::get('/setpassword', 'UserController@showresetpassword');
@@ -27,7 +27,7 @@ Route::group(['middleware' => ['auth','authorised']], function(){
     Route::post('/groups/store','GroupController@store')->name('store_groups');
 });
 
-Route::group(['middleware' => ['auth','authorised']], function(){
+Route::group(['middleware' => ['auth','authorised','verified']], function(){
 	Route::get('/','ProjectController@index');
 
 	/**
@@ -41,6 +41,7 @@ Route::group(['middleware' => ['auth','authorised']], function(){
 	Route::get('/projects/{project}','ProjectController@show');
 	Route::patch('/projects/{project}','ProjectController@update');
 	Route::delete('/projects/{project}','ProjectController@destroy');
+    Route::get('/projects/{project}/export','ProjectController@export');
 
     Route::post('/projects/invite','ProjectController@inviteUser');
     Route::post('/projects/invite/{user}','ProjectController@removeFromProject');
@@ -53,7 +54,7 @@ Route::group(['middleware' => ['auth','authorised']], function(){
 	Route::get('/projects/{project}/cases/new','ProjectCasesController@create');
 	Route::post('/projects/{project}/cases','ProjectCasesController@store');
 	Route::get('/projects/{project}/cases/{case}','ProjectCasesController@show');
-	Route::get('/export/{case}','ProjectCasesController@export');
+	Route::get('/export/cases/{case}','ProjectCasesController@export');
 	Route::patch('/projects/{project}/cases/{case}','ProjectCasesController@update');
 	Route::delete('/cases/{case}','ProjectCasesController@destroy');
 
