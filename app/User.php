@@ -20,8 +20,6 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     use Notifiable, SoftDeletes;
 
-
-    // this is a recommended way to declare event handlers
     public static function boot()
     {
         parent::boot();
