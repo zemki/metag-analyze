@@ -26,7 +26,7 @@
             }
         },
         methods: {
-            setChartTheme: function(){
+            setChartTheme: function () {
                 Highcharts.theme = {
                     colors: ['#058DC7', '#50B432', '#ED561B', '#DDDF00', '#24CBE5', '#64E572',
                         '#FF9655', '#FFF263', '#6AF9C4'],
@@ -44,7 +44,7 @@
                         }
                     },
                     legend: {
-                        itemHoverStyle:{
+                        itemHoverStyle: {
                             color: 'gray'
                         }
                     }
@@ -54,37 +54,34 @@
                 Highcharts.setOptions(Highcharts.theme);
 
 
-
             },
             preparedata: function () {
                 let self = this;
-                if(this.title == "" || !this.title)this.title = "Media";
+                if (this.title == "" || !this.title) this.title = "Media";
                 _.forEach(this.availabledata, function (o) {
-                    self.realdata.push({name: o, data: []});
+                    self.realdata.push({name:   o , data: []});
                 });
 
-                _.forEach(this.info, function (data,key) {
+                _.forEach(this.info, function (data, key) {
 
-                if(key == 'available' || key=="title")return;
+                    if (key == 'available' || key == "title") return;
 
                     _.forEach(self.realdata, function (rl) {
-                    if(data['value'] == rl.name || (_.isArray(data['value']) && data['value'].includes(rl.name))){
-                        var split = data['start'].split(/[^0-9]/)
-                        console.log(split)
+                        if (data['value'] == rl.name || (_.isArray(data['value']) && data['value'].includes(rl.name))) {
 
-                        let start = Date.UTC(...split);
-                        var split = data['end'].split(/[^0-9]/)
-                        console.log(split)
-                        let end = Date.UTC(...split);
+                            var split = data['start'].split(/[^0-9]/)
 
+                            let start = Date.UTC(...split);
+                            var split = data['end'].split(/[^0-9]/)
 
+                            let end = Date.UTC(...split);
+                            rl.data.push({start: start, end: end, name: (data['value'] != "") ? data['value'] : ""});
 
-                            rl.data.push({start: start, end: end, name: (data['value'] != "") ? data['value'] : "" })
                         }
                     });
                 });
 
-                _.forEach(self.realdata, function (d,i) {
+                _.forEach(self.realdata, function (d, i) {
                     _.forEach(d.data, function (data) {
                         data.y = i;
                     })
@@ -94,7 +91,7 @@
             drawChart: function () {
                 let self = this;
                 console.log(this.info);
-                Highcharts.ganttChart('chart'+self.graphid, {
+                Highcharts.ganttChart('chart' + self.graphid, {
                     plotOptions: {
                         column: {
                             grouping: false,
@@ -147,7 +144,7 @@
 </script>
 
 <style scoped>
-    [id^="chart"]{
+    [id^="chart"] {
         width: 100%;
         height: 100%;
         overflow: visible !important;

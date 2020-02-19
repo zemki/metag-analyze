@@ -28,6 +28,7 @@ require('highcharts/modules/gantt')(Highcharts);
 // const files = require.context('./', true, /\.vue$/i);
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default));
 
+
 if (process.env.MIX_ENV_MODE === 'production') {
     Vue.config.devtools = false;
     Vue.config.debug = false;
@@ -37,6 +38,7 @@ if (process.env.MIX_ENV_MODE === 'production') {
     Vue.config.debug = true;
     Vue.config.silent = false;
 }
+
 
 Vue.component('edit-project', require('./components/editproject.vue').default);
 Vue.component('consult-entries', require('./components/consultentries.vue').default);
@@ -301,6 +303,15 @@ const app = new Vue({
             response: "",
             media: [""]
         },
+        registration: {
+            password: null,
+            password_length: 0,
+            contains_six_characters: false,
+            contains_number: false,
+            contains_letters: false,
+            contains_special_character: false,
+            valid_password: false
+        },
         newuser: {
             role: 2,
             email: "",
@@ -325,7 +336,28 @@ const app = new Vue({
         }
     },
     methods: {
+        checkPassword() {
+            this.registration.password_length = this.registration.password.length;
+            const special_chars = /[ !@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
 
+            if (this.registration.password_length > 5) {
+                this.registration.contains_six_characters = true;
+            } else {
+                this.registration.contains_six_characters = false;
+            }
+
+            this.registration.contains_number = /\d/.test(this.registration.password);
+            this.registration.contains_letters = /[a-z]/.test(this.registration.password);
+            this.registration.contains_special_character = special_chars.test(this.registration.password);
+
+            if (this.registration.contains_six_characters === true &&
+                this.registration.contains_letters === true &&
+                this.registration.contains_number === true) {
+                this.registration.valid_password = true;
+            } else {
+                this.registration.valid_password = false;
+            }
+        },
         formatdatestartingat: function () {
 
             if (!this.newcase.duration.starts_with_login) {

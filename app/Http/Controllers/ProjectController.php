@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Communication_partner;
 use App\Mail\VerificationEmail;
 use App\Media;
-use App\Place;
 use App\Project;
 use App\Role;
 use App\User;
@@ -16,6 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
+use App\AllCasesExport;
 
 class ProjectController extends Controller
 {
@@ -40,7 +39,7 @@ class ProjectController extends Controller
     {
 
         $this->authorize('update', $project);
-        $data['breadcrumb'] = [url('/') => 'Projects', '#' => substr($project->name,0,20).'...'];
+        $data['breadcrumb'] = [url('/') => 'Projects', '#' => substr($project->name, 0, 20) . '...'];
 
         $project->media = $project->media()->pluck('media.name')->toArray();
 
@@ -190,4 +189,32 @@ class ProjectController extends Controller
         }
 
     }
+
+
+    public function export(Project $project)
+    {
+        if (auth()->user()->notOwnerNorInvited($project)) {
+            abort(403, 'you can\'t see the data of this project.');
+        }
+
+        $headings = $this->getProjectInputHeadings($project);
+
+        return (new AllCasesExport($project->id, $headings))->download('cases from '. $project->name .' project.xlsx');
+    }
+
+    /**
+     * @param Project $project
+     * @return array
+     */
+    private function getProjectInputHeadings(Project $project): array
+    {
+        $headings = [];
+        foreach (json_decode($project->inputs) as $input) {
+            $isMultipleOrOneChoice = property_exists($input, "numberofanswer") && $input->numberofanswer > 0;
+            if ($isMultipleOrOneChoice) for ($i = 0; $i < $input->numberofanswer; $i++) array_push($headings, $input->name);
+            else array_push($headings, $input->name);
+        }
+        return $headings;
+    }
+
 }

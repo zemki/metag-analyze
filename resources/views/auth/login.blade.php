@@ -11,21 +11,26 @@
                         @csrf
 
 
-                        <div class='column' >
+                        <div class='column'>
 
                             <figure class="image is-64x64" style="margin: 0 auto; max-width: 100%;">
                                 <img src="{{config('utilities.base64logo')}}">
-
                             </figure>
-                            <div class="column has-text-centered "  >
-                                <h1  class="title" style="margin: 0 auto; max-width: 100%;">Metag Analyze</h1>
+                            <div class="column has-text-centered ">
+                                <h1 class="title" style="margin: 0 auto; max-width: 100%;">Metag Analyze</h1>
+                            </div>
+                            <div class="py-4 w-100 text-center ">
+                                <a class="text-blue-500 hover:text-red-600" href="{{url('register')}}">Register to use
+                                    Metag Analyze</a>
                             </div>
                         </div>
 
                         <div class="field">
                             <label for="email" class="label">{{ __('E-Mail Address') }}</label>
                             <div class="control">
-                                <input id="email" type="text" class="input {{ $errors->has('email') ? ' is-invalid' : '' }}" name="email" value="{{ old('email') }}" required autofocus>
+                                <input id="email" type="text"
+                                       class="input {{ $errors->has('email') ? ' is-invalid' : '' }}" name="email"
+                                       value="{{ old('email') }}" required autofocus>
                             </div>
                         </div>
                         @if ($errors->has('email'))
@@ -38,7 +43,9 @@
                         <div class="field">
                             <label for="password" class="label">{{ __('Password') }}</label>
                             <p class="control has-icon-left">
-                                <input id="password" type="password" class="input {{ $errors->has('password') ? ' is-invalid' : '' }}" name="password" required>
+                                <input id="password" type="password"
+                                       class="input {{ $errors->has('password') ? ' is-invalid' : '' }}" name="password"
+                                       required>
                                 <span class="icon is-small is-left">
             <i class="fas fa-lock"></i>
           </span>

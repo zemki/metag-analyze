@@ -377,10 +377,8 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         _.forEach(self.realdata, function (rl) {
           if (data['value'] == rl.name || _.isArray(data['value']) && data['value'].includes(rl.name)) {
             var split = data['start'].split(/[^0-9]/);
-            console.log(split);
             var start = Date.UTC.apply(Date, _toConsumableArray(split));
             var split = data['end'].split(/[^0-9]/);
-            console.log(split);
             var end = Date.UTC.apply(Date, _toConsumableArray(split));
             rl.data.push({
               start: start,
@@ -16508,7 +16506,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "[id^=\"chart\"][data-v-14efc313]{\n  width: 100%;\n  height: 100%;\n  overflow: visible !important;\n  margin: 30px auto;\n}\n.highcharts-root[data-v-14efc313] {\n  font-family: 'Courier New', monospace;\n}\n", ""]);
+exports.push([module.i, "[id^=\"chart\"][data-v-14efc313] {\n  width: 100%;\n  height: 100%;\n  overflow: visible !important;\n  margin: 30px auto;\n}\n.highcharts-root[data-v-14efc313] {\n  font-family: 'Courier New', monospace;\n}\n", ""]);
 
 // exports
 
@@ -20660,7 +20658,7 @@ module.exports = function(module) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var vue_material_design_icons_styles_css__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue-material-design-icons/styles.css */ "./node_modules/vue-material-design-icons/styles.css");
+/* WEBPACK VAR INJECTION */(function(process) {/* harmony import */ var vue_material_design_icons_styles_css__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue-material-design-icons/styles.css */ "./node_modules/vue-material-design-icons/styles.css");
 /* harmony import */ var vue_material_design_icons_styles_css__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(vue_material_design_icons_styles_css__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var buefy__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! buefy */ "./node_modules/buefy/dist/esm/index.js");
 /* harmony import */ var google_charts__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! google-charts */ "./node_modules/google-charts/dist/googleCharts.esm.js");
@@ -20694,6 +20692,16 @@ __webpack_require__(/*! highcharts/modules/gantt */ "./node_modules/highcharts/m
 // const files = require.context('./', true, /\.vue$/i);
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default));
 
+
+if (process.env.MIX_ENV_MODE === 'production') {
+  Vue.config.devtools = false;
+  Vue.config.debug = false;
+  Vue.config.silent = true;
+} else {
+  Vue.config.devtools = true;
+  Vue.config.debug = true;
+  Vue.config.silent = false;
+}
 
 Vue.component('edit-project', __webpack_require__(/*! ./components/editproject.vue */ "./resources/js/components/editproject.vue")["default"]);
 Vue.component('consult-entries', __webpack_require__(/*! ./components/consultentries.vue */ "./resources/js/components/consultentries.vue")["default"]);
@@ -20945,6 +20953,15 @@ var app = new Vue({
       response: "",
       media: [""]
     },
+    registration: {
+      password: null,
+      password_length: 0,
+      contains_six_characters: false,
+      contains_number: false,
+      contains_letters: false,
+      contains_special_character: false,
+      valid_password: false
+    },
     newuser: {
       role: 2,
       email: "",
@@ -20968,6 +20985,26 @@ var app = new Vue({
     }
   },
   methods: {
+    checkPassword: function checkPassword() {
+      this.registration.password_length = this.registration.password.length;
+      var special_chars = /[ !@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
+
+      if (this.registration.password_length > 5) {
+        this.registration.contains_six_characters = true;
+      } else {
+        this.registration.contains_six_characters = false;
+      }
+
+      this.registration.contains_number = /\d/.test(this.registration.password);
+      this.registration.contains_letters = /[a-z]/.test(this.registration.password);
+      this.registration.contains_special_character = special_chars.test(this.registration.password);
+
+      if (this.registration.contains_six_characters === true && this.registration.contains_letters === true && this.registration.contains_number === true) {
+        this.registration.valid_password = true;
+      } else {
+        this.registration.valid_password = false;
+      }
+    },
     formatdatestartingat: function formatdatestartingat() {
       if (!this.newcase.duration.starts_with_login) {
         if (this.newcase.duration.selectedUnit === 'week') var numberOfDaysToAdd = parseInt(this.newcase.duration.input) * 7;else var numberOfDaysToAdd = parseInt(this.newcase.duration.input); // calculate and format end date
@@ -21012,8 +21049,10 @@ var app = new Vue({
           window.location.reload();
         }, 500);
       })["catch"](function (error) {
+        var message = "A problem occurred";
+        if (error.response.data.message) message = error.response.data.message;
         self.loading = false;
-        self.$buefy.snackbar.open(error.response.data.message);
+        self.$buefy.snackbar.open(message);
       });
     },
     replaceUndefinedOrNull: function replaceUndefinedOrNull() {},
@@ -21122,7 +21161,7 @@ var app = new Vue({
         self.$buefy.snackbar.open("There it was an error during the request - refresh page and try again");
       });
     },
-    confirmDeleteProject: function confirmDeleteProject(project) {
+    confirmDeleteProject: function confirmDeleteProject(project, url) {
       var _this6 = this;
 
       var confirmDelete = this.$buefy.dialog.confirm({
@@ -21133,13 +21172,13 @@ var app = new Vue({
         hasIcon: true,
         type: 'is-danger',
         onConfirm: function onConfirm() {
-          return _this6.deleteProject(project);
+          return _this6.deleteProject(project, url);
         }
       });
     },
-    deleteProject: function deleteProject(project) {
+    deleteProject: function deleteProject(project, url) {
       var self = this;
-      window.axios["delete"]('/projects/' + project, {
+      window.axios["delete"](url, {
         project: project
       }).then(function (response) {
         self.$buefy.snackbar.open(response.data.message);
@@ -21152,6 +21191,7 @@ var app = new Vue({
     }
   }
 });
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/process/browser.js */ "./node_modules/process/browser.js")))
 
 /***/ }),
 
