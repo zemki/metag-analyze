@@ -11,6 +11,37 @@ class Project extends Model
     ];
 
 
+    // this is a recommended way to declare event handlers
+    public static function boot()
+    {
+        parent::boot();
+        static::deleting(function ($project) {
+
+
+            $project->invited()->detach();
+
+            // if the user created the project
+            if ($project->created_by == auth()->user()->id) {
+
+                if ($project->cases->count() > 0) {
+
+                    foreach ($project->cases as $case) {
+                        foreach ($case->entries as $entry) {
+                            $entry->delete();
+                        }
+                        $case->delete();
+                    }
+                }
+
+            }
+
+
+        });
+
+
+    }
+
+
     public function entries($class)
     {
         return $this->hasMany($class, 'case_id');
@@ -116,6 +147,21 @@ class Project extends Model
     {
         return $this->belongsToMany(User::class, 'user_projects');
 
+    }
+
+    /**
+     * @param Project $project
+     * @return array
+     */
+    public static function getProjectInputHeadings(Project $project): array
+    {
+        $headings = [];
+        foreach (json_decode($project->inputs) as $input) {
+            $isMultipleOrOneChoice = property_exists($input, "numberofanswer") && $input->numberofanswer > 0;
+            if ($isMultipleOrOneChoice) for ($i = 0; $i < $input->numberofanswer; $i++) array_push($headings, $input->name);
+            else array_push($headings, $input->name);
+        }
+        return $headings;
     }
 
 

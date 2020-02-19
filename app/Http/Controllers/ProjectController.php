@@ -116,7 +116,6 @@ class ProjectController extends Controller
     {
 
         if ($project->isEditable() && $project->created_by == auth()->user()->id) {
-            $project->invited()->detach();
             $project->delete();
         } else {
             return response()->json(['message' => 'You can\'t delete this project'], 401);
@@ -201,24 +200,11 @@ class ProjectController extends Controller
             abort(403, 'you can\'t see the data of this project.');
         }
 
-        $headings = $this->getProjectInputHeadings($project);
+        $headings = Project::getProjectInputHeadings($project);
 
         return (new AllCasesExport($project->id, $headings))->download('cases from '. $project->name .' project.xlsx');
     }
 
-    /**
-     * @param Project $project
-     * @return array
-     */
-    private function getProjectInputHeadings(Project $project): array
-    {
-        $headings = [];
-        foreach (json_decode($project->inputs) as $input) {
-            $isMultipleOrOneChoice = property_exists($input, "numberofanswer") && $input->numberofanswer > 0;
-            if ($isMultipleOrOneChoice) for ($i = 0; $i < $input->numberofanswer; $i++) array_push($headings, $input->name);
-            else array_push($headings, $input->name);
-        }
-        return $headings;
-    }
+
 
 }
