@@ -47,6 +47,7 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
         $allEntries = [];
         foreach ($project->cases as $case) {
 
+            if(!$case->isConsultable()) continue;
 
             //$case = Cases::where('id', $entry->case_id)->first();
             foreach ($case->entries as $entry) {
