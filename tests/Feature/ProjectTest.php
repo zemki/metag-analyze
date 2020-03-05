@@ -14,7 +14,8 @@ class ProjectTest extends TestCase
     /** @test    */
     public function a_user_can_create_a_project()
     {
-        //$this->withoutExceptionHandling();
+
+        $this->withoutExceptionHandling();
         $this->signIn();
 
     //    $this->signIn();
@@ -23,7 +24,8 @@ class ProjectTest extends TestCase
             'name' => $this->faker->name,
             'description' => $this->faker->name,
             'created_by' => auth()->user()->id,
-            'is_locked' => 0
+            'is_locked' => 0,
+            'inputs' => "[]"
         ];
 
        //$attributes = factory('App\Project')->raw();
