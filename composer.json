@@ -1,10 +1,10 @@
 {
-    "name": "laravel/laravel",
+    "name": "unibremen/metag-analyze",
     "type": "project",
-    "description": "The Laravel Framework.",
+    "description": "",
     "keywords": [
-        "framework",
-        "laravel"
+        "web app",
+        "metag-analyze"
     ],
     "license": "MIT",
     "require": {
@@ -15,9 +15,10 @@
         "facade/ignition": "^1.4",
         "fideloper/proxy": "^4.0",
         "laravel/framework": "^6.1",
-        "laravel/telescope": "^2.0",
+        "laravel/telescope": "^3.1",
         "laravel/tinker": "^1.0",
-        "maatwebsite/excel": "^3.1"
+        "maatwebsite/excel": "^3.1",
+      "ext-json": "*"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.2",
@@ -25,7 +26,7 @@
         "fzaninotto/faker": "^1.4",
         "mockery/mockery": "^1.0",
         "nunomaduro/collision": "^3.0",
-        "nunomaduro/phpinsights": "^1.7",
+        "nunomaduro/phpinsights": "^1.13",
         "phpunit/phpunit": "^7.5"
     },
     "config": {

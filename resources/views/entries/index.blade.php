@@ -3,7 +3,7 @@
 @section('content')
     <graph :info="{{json_encode($entries['media'])}}"
            :availabledata="{{json_encode($entries['availablemedia'])}}"
-			></graph>
+    ></graph>
 
     @foreach($entries['inputs'] as $input)
         <graph :info="{{json_encode($input)}}"

@@ -6,9 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Entry extends Model
 {
-
-	protected $table = 'entries';
-	protected $guarded = [];
+    protected $table = 'entries';
+    protected $guarded = [];
 
     /**
      * Cases is intended to be CASE
@@ -17,7 +16,7 @@ class Entry extends Model
      */
     public function cases()
     {
-    	return $this->belongsTo(Cases::class);
+        return $this->belongsTo(Cases::class);
     }
 
     public function project()
@@ -27,20 +26,16 @@ class Entry extends Model
 
     public function place()
     {
-    	return $this->belongsTo(Place::class);
+        return $this->belongsTo(Place::class);
     }
 
     public function communication_partner()
     {
-    	return $this->belongsTo(Communication_Partner::class);
+        return $this->belongsTo(Communication_Partner::class);
     }
 
     public function media()
     {
-    	return $this->belongsTo(Media::class);
+        return $this->belongsTo(Media::class);
     }
-
-
-
-
 }

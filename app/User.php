@@ -4,11 +4,10 @@ namespace App;
 
 use App\Mail\VerificationEmail;
 use Helper;
-
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Http\Request;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Mail;
 use Validator;
@@ -19,12 +18,32 @@ use Validator;
 class User extends Authenticatable implements MustVerifyEmail
 {
     use Notifiable, SoftDeletes;
+    /**
+     * The attributes that should be cast to native types.
+     * @var array
+     */
+    protected $casts = [
+        'deviceID' => 'array',
+    ];
+    /**
+     * The attributes that are mass assignable.
+     * @var array
+     */
+    protected $fillable = [
+        'email', 'password', 'last_login_date', 'deviceID'
+    ];
+    /**
+     * The attributes that should be hidden for arrays.
+     * @var array
+     */
+    protected $hidden = [
+        'password', 'remember_token',
+    ];
 
     public static function boot()
     {
         parent::boot();
         static::deleting(function ($user) {
-
 
             foreach ($user->projects as $project) {
                 // if the user created the project
@@ -44,105 +63,15 @@ class User extends Authenticatable implements MustVerifyEmail
                         $project->delete();
                     }
                 }
-
-
             }
-
             foreach ($user->case as $case) {
                 foreach ($case->entries as $entry) {
                     $entry->delete();
                 }
                 $case->delete();
             }
-
             $user->roles()->sync([]);
-            
         });
-
-
-    }
-
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
-    protected $casts = [
-        'deviceID' => 'array',
-    ];
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
-    protected $fillable = [
-        'email', 'password', 'last_login_date', 'deviceID'
-    ];
-
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
-    protected $hidden = [
-        'password', 'remember_token',
-    ];
-
-    public function roles()
-    {
-        return $this->belongsToMany('App\Role', 'user_roles')->withTimestamps();
-    }
-
-    public function groups()
-    {
-        return $this->belongsToMany('App\Group', 'user_groups')->withTimestamps();
-    }
-
-    public function isAdmin()
-    {
-        return in_array('admin', $this->roles()->pluck('roles.name')->toArray());
-    }
-
-    public function isResearcher()
-    {
-        return in_array('researcher', $this->roles()->pluck('roles.name')->toArray());
-    }
-
-    public function notOwnerNorInvited($project)
-    {
-        return auth()->user()->isNot($project->created_by()) && !in_array($project->id, auth()->user()->invites()->pluck('project_id')->toArray());
-    }
-
-    public function profile()
-    {
-        return $this->hasOne(Profile::class);
-    }
-
-    public function case()
-    {
-        return $this->hasMany(Cases::class, 'user_id');
-    }
-
-    public function latestCase()
-    {
-        return $this->hasOne(Cases::class)->latest();
-    }
-
-    public function getOrderedCases()
-    {
-        return $this->case->entries()->groupBy('begin')->get();
-    }
-
-    public function projects()
-    {
-        return $this->hasMany(Project::class, 'created_by');
-    }
-
-    public function invites()
-    {
-        return $this->belongsToMany(Project::class, 'user_projects');
-
     }
 
     public static function createIfDoesNotExists($user)
@@ -159,10 +88,86 @@ class User extends Authenticatable implements MustVerifyEmail
         return $user;
     }
 
-    public function hasReachMaxNumberOfProjecs()
+    /**
+     * @param Request $request
+     * save the device ID of the user by adding it into the device array.
+     */
+    public static function saveDeviceId(Request $request)
     {
-
-        return ($this->projects()->count() >= config('utilities.maxNumberOfProjects'));
+        $currentDeviceId = auth()->user()->deviceID == null ? [] : auth()->user()->deviceID;
+        if ($request->has('deviceID') && $request->deviceID != '' && !in_array($request->deviceID, $currentDeviceId)) {
+            array_push($currentDeviceId, $request->deviceID);
+        }
+        auth()->user()->forceFill(['deviceID' => $currentDeviceId ?? ''])->save();
     }
 
+    public function groups()
+    {
+        return $this->belongsToMany('App\Group', 'user_groups')->withTimestamps();
+    }
+
+    public function isAdmin()
+    {
+        return in_array('admin', $this->roles()->pluck('roles.name')->toArray());
+    }
+
+    public function roles()
+    {
+        return $this->belongsToMany('App\Role', 'user_roles')->withTimestamps();
+    }
+
+    public function notOwnerNorInvited($project)
+    {
+        return auth()->user()->isNot($project->created_by()) && !in_array($project->id, auth()->user()->invites()->pluck('project_id')->toArray());
+    }
+
+    public function invites()
+    {
+        return $this->belongsToMany(Project::class, 'user_projects');
+    }
+
+    public function profile()
+    {
+        return $this->hasOne(Profile::class);
+    }
+
+    public function case()
+    {
+        return $this->hasMany(Cases::class, 'user_id');
+    }
+
+    /**
+     * @return bool
+     */
+    public function isResearcher(): bool
+    {
+        return in_array('researcher', $this->roles()->pluck('roles.name')->toArray());
+    }
+
+    public function latestCase()
+    {
+        return $this->hasOne(Cases::class)->latest();
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getOrderedCases()
+    {
+        return $this->case->entries()->groupBy('begin')->get();
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasReachMaxNumberOfProjecs(): bool
+    {
+
+        return $this->projects()->count() >= config('utilities.maxNumberOfProjects');
+    }
+
+    public function projects()
+    {
+        return $this->hasMany(Project::class, 'created_by');
+    }
 }

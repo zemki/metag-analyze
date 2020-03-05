@@ -2,124 +2,110 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Http\Request;
-use App\Http\Resources\Entry as EntryResource;
-use App\Entry;
 use App\Cases;
-use App\Project;
+use App\Entry;
+use App\Http\Resources\Entry as EntryResource;
 use App\Media;
-use Illuminate\Http\Response;
+use Exception;
 use Helper;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Contracts\Routing\ResponseFactory;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
+use Illuminate\View\View;
 
 class EntryController extends Controller
 {
+    protected const BEGIN = 'begin';
+    protected const REQUIRED = 'required';
+    protected const MEDIA_ID = 'media_id';
+    protected const INPUTS = 'inputs';
+    protected const ENTRIES = 'entries';
+
     /**
      * @param Cases $case
-     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     * @return AnonymousResourceCollection
      */
     public function entriesByCase(Cases $case)
     {
-    	return EntryResource::collection($case->entries->sortByDesc('begin'));
+        return EntryResource::collection($case->entries->sortByDesc(self::BEGIN));
     }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param Request $request
+     * @param Cases $case
      * @return Response
      * @throws AuthorizationException
      */
-    public function store(Request $request,Cases $case)
+    public function store(Cases $case)
     {
 
-		$this->authorize('update',[Entry::class,$case]);
-
-     	$attributes = request()->validate([
-            'begin' => 'required',
-            'end' => 'required',
-            'case_id' => 'required',
-            'media_id' => 'required',
-            'inputs' => 'nullable',
+        $this->authorize('update', [Entry::class, $case]);
+        $attributes = request()->validate([
+            self::BEGIN => self::REQUIRED,
+            'end' => self::REQUIRED,
+            'case_id' => self::REQUIRED,
+            self::MEDIA_ID => self::REQUIRED,
+            self::INPUTS => 'nullable',
         ]);
+        if (is_numeric($attributes[self::MEDIA_ID])) {
 
-     	if(is_numeric($attributes['media_id'])){
-
-            $attributes['inputs'] = json_encode($attributes['inputs']);
+            $attributes[self::INPUTS] = json_encode($attributes[self::INPUTS]);
             $entry = Entry::create($attributes);
-        }else{
-            $attributes['media_id'] = Media::firstOrCreate(['name' => $attributes['media_id']])->id;
-            $attributes['inputs'] = json_encode($attributes['inputs']);
+        } else {
+            $attributes[self::MEDIA_ID] = Media::firstOrCreate(['name' => $attributes[self::MEDIA_ID]])->id;
+            $attributes[self::INPUTS] = json_encode($attributes[self::INPUTS]);
             $entry = Entry::create($attributes);
         }
-
-
-
-    	return response(['id' => $entry->id ], 200);
-
+        return response(['id' => $entry->id], 200);
     }
 
-    public function update(Request $request,Cases $case,Entry $entry)
+    public function update(Cases $case, Entry $entry)
     {
 
-        $this->authorize('update',[Entry::class,$case]);
-
+        $this->authorize('update', [Entry::class, $case]);
         $attributes = request()->validate([
-            'begin' => 'required',
-            'end' => 'required',
-            'case_id' => 'required',
-            'media_id' => 'required',
-            'inputs' => 'nullable',
+            self::BEGIN => self::REQUIRED,
+            'end' => self::REQUIRED,
+            'case_id' => self::REQUIRED,
+            self::MEDIA_ID => self::REQUIRED,
+            self::INPUTS => 'nullable',
         ]);
-
-        if(is_string($attributes['media_id'])){
-            $attributes['media_id'] = Media::firstOrCreate(['name' => $attributes['media_id']])->id;
+        if (is_string($attributes[self::MEDIA_ID])) {
+            $attributes[self::MEDIA_ID] = Media::firstOrCreate(['name' => $attributes[self::MEDIA_ID]])->id;
         }
-
-        $attributes['inputs'] = json_encode($attributes['inputs']);
-
+        $attributes[self::INPUTS] = json_encode($attributes[self::INPUTS]);
         $entry->update($attributes);
         $entry->save();
-
-        return response(['id' => $entry->id ], 200);
+        return response(['id' => $entry->id], 200);
     }
 
     /**
      * @param Cases $case
-     * Test function to consult data with d3js
+     * @return Factory|View
      */
     public function consult(Cases $case)
     {
-        //$data['entries'] = $case->entries->map->only(['media_id','begin','end'])->flatten()->chunk(3);
-        $data['entries'] = $case->entries()
-            ->join('media','entries.media_id','=','media.id')->get()->map->only(['name','begin','end'])
+        $data[self::ENTRIES] = $case->entries()
+            ->join('media', 'entries.media_id', '=', 'media.id')->get()->map->only(['name', self::BEGIN, 'end'])
             ->flatten()->chunk(3)->toArray();
-        $data['entries'] = array_map('array_values', $data['entries']);
-
-
-
-        return view('entries.index',$data);
-
+        $data[self::ENTRIES] = array_map('array_values', $data[self::ENTRIES]);
+        return view('entries.index', $data);
     }
 
     /**
      * @param Cases $case
      * @param Entry $entry
-     * @return \Illuminate\Contracts\Routing\ResponseFactory|Response
-     * @throws \Exception
+     * @return ResponseFactory|Response
      */
     public function destroy(Cases $case, Entry $entry)
     {
-      //  $entry = Entry::where('id','=',$entryid)->first();
-
         try {
             $entry->delete();
         } catch (Exception $error) {
-            echo 'Caught exception: ',  $error->getMessage(), "\n";
+            echo 'Caught exception: ', $error->getMessage(), "\n";
         }
-
-
         return response("entry deleted", 200);
-
     }
 }

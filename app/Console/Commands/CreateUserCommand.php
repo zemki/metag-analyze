@@ -14,21 +14,17 @@ class CreateUserCommand extends Command
 {
     /**
      * The name and signature of the console command.
-     *
      * @var string
      */
     protected $signature = 'user:create';
-
     /**
      * The console command description.
-     *
      * @var string
      */
     protected $description = 'Create a user';
 
     /**
      * Create a new command instance.
-     *
      * @return void
      */
     public function __construct()
@@ -38,7 +34,6 @@ class CreateUserCommand extends Command
 
     /**
      * Execute the console command.
-     *
      * @return mixed
      */
     public function handle()
@@ -49,33 +44,25 @@ class CreateUserCommand extends Command
                 $role = $this->choice('User role?', [0, 1]);
         */
         $password = $this->secret('Enter password');
-
         if ($this->store(2, $email, $password, $user)) {
             Mail::to($email)->send(new VerificationEmail($user, config('utilities.emailDefaultText')));
             $this->info('User ' . $email . ' created');
-
             return true;
-        } else {
-            $this->info('There it was an error during user creation, please try again.');
-
-            return false;
         }
+        $this->info('There it was an error during user creation, please try again.');
+        return false;
     }
 
     public function store($roleId, $email, $password, &$user)
     {
         $role = Role::where('id', $roleId)->first();
-
         $user = new User();
-
         $user->email = $email;
         $user->password = bcrypt($password);
         $user->password_token = bcrypt(Helper::random_str(60));
-
         $user->save();
         $user->roles()->sync($role);
         // Mail::to($user->email)->send(new VerificationEmail($user, config('utilities.emailDefaultText')));
         return true;
-
     }
 }

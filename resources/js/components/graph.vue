@@ -16,7 +16,7 @@
                 self.setChartTheme();
                 self.drawChart();
                 self.$forceUpdate();
-            }, 30);
+            }, 300);
 
         },
         data() {
@@ -57,9 +57,10 @@
             },
             preparedata: function () {
                 let self = this;
+                console.log(this.realdata);
                 if (this.title == "" || !this.title) this.title = "Media";
                 _.forEach(this.availabledata, function (o) {
-                    self.realdata.push({name:   o , data: []});
+                    self.realdata.push({name: o, data: []});
                 });
 
                 _.forEach(this.info, function (data, key) {

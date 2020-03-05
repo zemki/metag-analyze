@@ -30,7 +30,7 @@ class ProjectCasesController extends Controller
         }
 
         list($mediaValues, $availableMedia) = Cases::getMediaValues($case);
-        list($availableInputs, $inputValues, $data) = Cases::getInputValues($case, $data);
+        list($availableInputs, $data) = Cases::getInputValues($case, $data);
 
         $data['entries']['media'] = $mediaValues;
         $data['entries']['availablemedia'] = $availableMedia;

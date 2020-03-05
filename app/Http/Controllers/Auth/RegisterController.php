@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Helpers\Helper;
+use App\Http\Controllers\Controller;
 use App\Role;
 use App\User;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
+use Exception;
 use Illuminate\Foundation\Auth\RegistersUsers;
+use Illuminate\Support\Facades\Validator;
 
 class RegisterController extends Controller
 {
@@ -22,19 +22,15 @@ class RegisterController extends Controller
     | provide this functionality without requiring any additional code.
     |
     */
-
     use RegistersUsers;
-
     /**
      * Where to redirect users after registration.
-     *
      * @var string
      */
     protected $redirectTo = '/';
 
     /**
      * Create a new controller instance.
-     *
      * @return void
      */
     public function __construct()
@@ -44,8 +40,7 @@ class RegisterController extends Controller
 
     /**
      * Get a validator for an incoming registration request.
-     *
-     * @param  array  $data
+     * @param array $data
      * @return \Illuminate\Contracts\Validation\Validator
      */
     protected function validator(array $data)
@@ -58,29 +53,23 @@ class RegisterController extends Controller
 
     /**
      * Create a new user instance after a valid registration.
-     *
      * @param array $data
-     * @return \App\User
-     * @throws \Exception
+     * @return User
+     * @throws Exception
      */
     protected function create(array $data)
     {
         $userexist = User::where('email', '=', $data['email'])->first();
-
         if ($userexist) {
             return $this->showRegistrationForm();
         } else {
             $role = Role::where('name', 'researcher')->first();
-
             $user = new User();
-
             $user->email = $data['email'];
             $user->password = bcrypt($data['password']);
             $user->password_token = bcrypt(Helper::random_str(60));
-
             $user->save();
             $user->roles()->sync($role);
-
             return $user;
         }
     }

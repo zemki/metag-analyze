@@ -326,7 +326,7 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       self.setChartTheme();
       self.drawChart();
       self.$forceUpdate();
-    }, 30);
+    }, 300);
   },
   data: function data() {
     return {
@@ -362,6 +362,7 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     },
     preparedata: function preparedata() {
       var self = this;
+      console.log(this.realdata);
       if (this.title == "" || !this.title) this.title = "Media";
 
       _.forEach(this.availabledata, function (o) {
@@ -20658,7 +20659,7 @@ module.exports = function(module) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* WEBPACK VAR INJECTION */(function(process) {/* harmony import */ var vue_material_design_icons_styles_css__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue-material-design-icons/styles.css */ "./node_modules/vue-material-design-icons/styles.css");
+/* harmony import */ var vue_material_design_icons_styles_css__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue-material-design-icons/styles.css */ "./node_modules/vue-material-design-icons/styles.css");
 /* harmony import */ var vue_material_design_icons_styles_css__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(vue_material_design_icons_styles_css__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var buefy__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! buefy */ "./node_modules/buefy/dist/esm/index.js");
 /* harmony import */ var google_charts__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! google-charts */ "./node_modules/google-charts/dist/googleCharts.esm.js");
@@ -20693,11 +20694,7 @@ __webpack_require__(/*! highcharts/modules/gantt */ "./node_modules/highcharts/m
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default));
 
 
-if (process.env.MIX_ENV_MODE === 'production') {
-  Vue.config.devtools = false;
-  Vue.config.debug = false;
-  Vue.config.silent = true;
-} else {
+if (false) {} else {
   Vue.config.devtools = true;
   Vue.config.debug = true;
   Vue.config.silent = false;
@@ -21191,7 +21188,6 @@ var app = new Vue({
     }
   }
 });
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/process/browser.js */ "./node_modules/process/browser.js")))
 
 /***/ }),
 
