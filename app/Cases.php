@@ -150,12 +150,16 @@ class Cases extends Model
     /**
      * assign a user to this case
      * this will be the user that fills the entries
-     * @param User $user user to assign to the case
+     * @param $user user to assign to the case
      * @return User
      */
     public function addUser($user)
     {
-        is_array($user) ?? $user = User::firstOrCreate($user);
+
+        if(is_array($user)){
+            $user = User::firstOrCreate($user);
+        }
+
         $this->user()->associate($user);
         $this->save();
         return $user;

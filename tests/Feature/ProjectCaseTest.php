@@ -49,26 +49,6 @@ public function a_project_can_have_cases()
 }
 
 /** @test */
-public function a_project_has_inputs()
-{
-  $this->withoutExceptionHandling();
-
-  $multiplec = "yes,no,magari";
-  $inputs = new Caseinput();
-  $inputs->multiplechoice("va?",$multiplec)->text("va?")->format();
-
-  $project = ProjectFactory::createdBy($this->signIn())
-  ->withInputs($inputs->content)
-  ->create();
-
-
-
-   //     $this->seeJson($inputs->content);
-  $this->assertDatabaseHas('projects',['inputs' => $inputs->content]);
-
-}
-
-/** @test */
 public function only_the_owner_of_a_project_can_add_cases()
 {
   $this->signIn();
@@ -82,6 +62,8 @@ public function only_the_owner_of_a_project_can_add_cases()
 /** @test */
 public function a_case_require_a_name()
 {
+    $this->withoutExceptionHandling();
+    $user =  $this->signIn();
   $project = ProjectFactory::createdBy($this->signIn())
   ->withCases(1)
   ->create();
