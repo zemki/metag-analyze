@@ -2,16 +2,16 @@
 
 namespace App\Policies;
 
+use App\Cases;
 use App\User;
-use App\Entry;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class EntryPolicy
 {
-	use HandlesAuthorization;
+    use HandlesAuthorization;
 
-	public function update(User $user,\App\Cases $cases)
-	{
-		return $user->is($cases->user);
-	}
+    public function update(User $user, Cases $cases)
+    {
+        return $user->is($cases->user);
+    }
 }

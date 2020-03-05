@@ -2,42 +2,38 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\VerificationEmail;
+use App\Project;
 use App\Role;
-use Illuminate\Contracts\Routing\ResponseFactory;
+use App\User;
+use Helper;
 use Illuminate\Contracts\View\Factory;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-
-use App\Http\Requests\StoreUser;
-use App\User;
-use App\Project;
-use App\Profile;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\VerificationEmail;
-use Helper;
 use Illuminate\View\View;
 
 class UserController extends Controller
 {
-
+    protected const EMAIL = 'email';
+    protected const TOKEN = 'token';
+    protected const ERRORS_RESETPASSWORD = 'errors.resetpassword';
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function index()
     {
         //
     }
 
-
     /**
      * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function create()
     {
@@ -48,53 +44,44 @@ class UserController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @return Response
      */
     public function store(Request $request)
     {
 
 
         request()->validate(
-            ['email' => 'required']
+            [self::EMAIL => 'required']
         );
-
-        $email = request('email');
-        $user = User::firstOrNew(['email' => $email]);
-
-
+        $email = request(self::EMAIL);
+        $user = User::firstOrNew([self::EMAIL => $email]);
         if (!$user->exists) {
-            $user->email = request('email');
+            $user->email = request(self::EMAIL);
             $role = Role::where('id', '=', request('role'))->first();
             $user->password = bcrypt(Helper::random_str(60));
             $user->password_token = bcrypt(Helper::random_str(60));
             $user->api_token = Helper::random_str(60);
             $user->save();
             $user->roles()->sync($role);
-
             Mail::to($user->email)->send(new VerificationEmail($user, $request->emailtext ? $request->emailtext : config('utilities.emailDefaultText')));
-
         }
-
         if (request('assignToCase')) {
             $project = Project::where('id', '=', request('project'))->firstOrFail();
             $case = $project->addCase(request('caseName'), request('duration'));
             $case->addUser($user);
-
         }
-
-
-        if (!$user->exists) return redirect()->back()->with('message', $user->email . ' will receive an email to set the password.');
-        else return redirect()->back()->with('message', $user->email . ' was invited to the case.');
-
+        if (!$user->exists) {
+            return redirect()->back()->with('message', $user->email . ' will receive an email to set the password.');
+        } else {
+            return redirect()->back()->with('message', $user->email . ' was invited to the case.');
+        }
     }
 
     /**
      * Display the specified resource.
-     *
      * @param int $id
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function show()
     {
@@ -103,9 +90,8 @@ class UserController extends Controller
 
     /**
      * Show the form for editing the specified resource.
-     *
      * @param int $id
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function edit()
     {
@@ -114,29 +100,25 @@ class UserController extends Controller
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param int $id
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @param int     $id
+     * @return Response
      */
     public function update(Request $request, $id)
     {
 
         $updateUser = User::where('id', $id)->first();
-        $updateUser->email = $request->get('email');
+        $updateUser->email = $request->get(self::EMAIL);
         $updateUser->roles()->sync($request->get('roles'));
         $updateUser->profile->update($request->get('profile'));
         $updateUser->save();
-
-
         return $updateUser;
     }
 
     /**
      * Remove the specified resource from storage.
-     *
      * @param int $id
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function destroy($id)
     {
@@ -147,29 +129,25 @@ class UserController extends Controller
 
     /**
      * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      * @todo consider adding filter by role, same email AND role user.
      */
     public function userExists(Request $request)
     {
-        return response()->json(User::where('email', '=', $request['email'])->first() ? true : false, 200);
+        return response()->json(!empty(User::where(self::EMAIL, '=', $request[self::EMAIL])->first()), 200);
     }
 
     public function showresetpassword(Request $request)
     {
 
-        if ($request->input('token') == "") {
-            return view('errors.resetpassword');
+        if ($request->input(self::TOKEN) == "") {
+            return view(self::ERRORS_RESETPASSWORD);
         }
-
-        $user = User::where('password_token', '=', $request->input('token'))->first();
-
+        $user = User::where('password_token', '=', $request->input(self::TOKEN))->first();
         if (!$user) {
-            return view('errors.resetpassword');
+            return view(self::ERRORS_RESETPASSWORD);
         }
-
         $data['user'] = $user;
-
         return view('auth.passwords.reset', $data);
     }
 
@@ -179,23 +157,19 @@ class UserController extends Controller
      */
     public function newpassword(Request $request)
     {
-        if ($request->input('token') === "") {
+        if ($request->input(self::TOKEN) === "") {
             $data['error'] = "wrong request, contact the administrator.";
             $data['user'] = "";
-            return view('errors.resetpassword');
+            return view(self::ERRORS_RESETPASSWORD);
         }
-        $user = User::where('password_token', '=', $request->input('token'))->first();
+        $user = User::where('password_token', '=', $request->input(self::TOKEN))->first();
         if (!$user) {
             $data['error'] = "Something went wrong, please contact the administrator.";
-
-            return view('errors.resetpassword');
+            return view(self::ERRORS_RESETPASSWORD);
         }
-
         $user->password_token = null;
         $user->password = bcrypt($request->input('password'));
         $user->save();
-
         return redirect('/');
     }
-
 }

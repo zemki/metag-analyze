@@ -14,7 +14,7 @@
                         <div class='column'>
 
                             <figure class="image is-64x64" style="margin: 0 auto; max-width: 100%;">
-                                <img src="{{config('utilities.base64logo')}}">
+                                <img src="{{config('utilities.base64logo')}}" alt="Metag Logo">
 
                             </figure>
                             <div class="column has-text-centered ">

@@ -6,10 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Project extends Model
 {
+    /**
+     * @var array
+     */
     protected $fillable = [
         'name', 'description', 'duration', 'created_by', 'is_locked', 'inputs'
     ];
-
 
     // this is a recommended way to declare event handlers
     public static function boot()
@@ -17,40 +19,44 @@ class Project extends Model
         parent::boot();
         static::deleting(function ($project) {
 
-
             $project->invited()->detach();
-
             // if the user created the project
-            if ($project->created_by == auth()->user()->id) {
+            if ($project->created_by === auth()->user()->id && $project->cases->count() > 0) {
 
-                if ($project->cases->count() > 0) {
-
-                    foreach ($project->cases as $case) {
-                        foreach ($case->entries as $entry) {
-                            $entry->delete();
-                        }
-                        $case->delete();
+                foreach ($project->cases as $case) {
+                    foreach ($case->entries as $entry) {
+                        $entry->delete();
                     }
+                    $case->delete();
                 }
-
             }
-
-
         });
-
-
     }
 
+    /**
+     * @param Project $project
+     * @return array
+     */
+    public static function getProjectInputHeadings(Project $project): array
+    {
+        $headings = [];
+        foreach (json_decode($project->inputs) as $input) {
+            $isMultipleOrOneChoice = property_exists($input, "numberofanswer") && $input->numberofanswer > 0;
+            if ($isMultipleOrOneChoice) {
+                for ($i = 0; $i < $input->numberofanswer; $i++) {
+                    array_push($headings, $input->name);
+                }
+            } else {
+                array_push($headings, $input->name);
+            }
+        }
+        return $headings;
+    }
 
     public function entries($class)
     {
         return $this->hasMany($class, 'case_id');
     }
-
-    /*public function getInputsAttribute($value)
-    {
-      return is_array($value) ? $value : (array) json_decode($value);
-    }*/
 
     public function getInputs()
     {
@@ -59,10 +65,12 @@ class Project extends Model
 
     public function getSpecificInput($name)
     {
-        if ($this->inputs == "[]") return false;
+        if ($this->inputs === "[]") {
+            return false;
+        }
         $item = null;
         foreach (json_decode($this->inputs) as $input) {
-            if ($name == $input->name) {
+            if ($name === $input->name) {
                 $item = $input;
                 break;
             }
@@ -70,10 +78,14 @@ class Project extends Model
         return $item;
     }
 
+    /**
+     * @return array|bool
+     */
     public function getProjectInputNames()
     {
-        if ($this->inputs == "[]") return false;
-
+        if ($this->inputs === "[]") {
+            return false;
+        }
         $inputNames = [];
         foreach (json_decode($this->inputs) as $input) {
             array_push($inputNames, $input->name);
@@ -83,11 +95,12 @@ class Project extends Model
 
     public function getNumberOfAnswersByQuestion($question)
     {
-        if ($this->inputs == "[]") return false;
+        if ($this->inputs === "[]") {
+            return false;
+        }
         $item = null;
-
         foreach (json_decode($this->inputs) as $input) {
-            if ($question == $input->name) {
+            if ($question === $input->name) {
                 $item = $input->numberofanswer;
                 break;
             }
@@ -97,12 +110,13 @@ class Project extends Model
 
     public function getAnswersByQuestion($question)
     {
-        if ($this->inputs == "[]") return false;
+        if ($this->inputs === "[]") {
+            return false;
+        }
         $item = null;
         $inputs = json_decode($this->inputs);
-
         foreach ($inputs as $input) {
-            if ($question == $input->name) {
+            if ($question === $input->name) {
                 $item = $input->answers;
                 break;
             }
@@ -125,7 +139,6 @@ class Project extends Model
         return $this->belongsToMany(Media::class, 'media_projects');
     }
 
-
     public function path()
     {
         return "/projects/{$this->id}";
@@ -136,33 +149,13 @@ class Project extends Model
         return $this->belongsTo(User::class, 'created_by')->first();
     }
 
-
     public function addCase($name, $duration)
     {
         return $this->cases()->firstOrCreate(['name' => $name, 'duration' => $duration]);
     }
 
-
     public function invited()
     {
         return $this->belongsToMany(User::class, 'user_projects');
-
     }
-
-    /**
-     * @param Project $project
-     * @return array
-     */
-    public static function getProjectInputHeadings(Project $project): array
-    {
-        $headings = [];
-        foreach (json_decode($project->inputs) as $input) {
-            $isMultipleOrOneChoice = property_exists($input, "numberofanswer") && $input->numberofanswer > 0;
-            if ($isMultipleOrOneChoice) for ($i = 0; $i < $input->numberofanswer; $i++) array_push($headings, $input->name);
-            else array_push($headings, $input->name);
-        }
-        return $headings;
-    }
-
-
 }

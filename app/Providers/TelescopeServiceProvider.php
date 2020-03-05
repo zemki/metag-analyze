@@ -2,39 +2,34 @@
 
 namespace App\Providers;
 
-use Laravel\Telescope\Telescope;
 use Illuminate\Support\Facades\Gate;
 use Laravel\Telescope\IncomingEntry;
+use Laravel\Telescope\Telescope;
 use Laravel\Telescope\TelescopeApplicationServiceProvider;
 
 class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
 {
     /**
      * Register any application services.
-     *
      * @return void
      */
     public function register()
     {
         // Telescope::night();
-
         $this->hideSensitiveRequestDetails();
-
         Telescope::filter(function (IncomingEntry $entry) {
             if ($this->app->isLocal()) {
                 return true;
             }
-
             return $entry->isReportableException() ||
-                   $entry->isFailedJob() ||
-                   $entry->isScheduledTask() ||
-                   $entry->hasMonitoredTag();
+                $entry->isFailedJob() ||
+                $entry->isScheduledTask() ||
+                $entry->hasMonitoredTag();
         });
     }
 
     /**
      * Prevent sensitive request details from being logged by Telescope.
-     *
      * @return void
      */
     protected function hideSensitiveRequestDetails()
@@ -42,9 +37,7 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
         if ($this->app->isLocal()) {
             return;
         }
-
         Telescope::hideRequestParameters(['_token']);
-
         Telescope::hideRequestHeaders([
             'cookie',
             'x-csrf-token',
@@ -53,10 +46,20 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
     }
 
     /**
+     * Configure the Telescope authorization services.
+     * @return void
+     */
+    protected function authorization()
+    {
+        $this->gate();
+        Telescope::auth(function ($request) {
+            return Gate::check('viewTelescope', [$request->user()]);
+        });
+    }
+
+    /**
      * Register the Telescope gate.
-     *
      * This gate determines who can access Telescope in non-local environments.
-     *
      * @return void
      */
     protected function gate()
@@ -67,19 +70,6 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
                 'belli@uni-bremen.de',
                 'fhohmann@uni-bremen.de'
             ]);
-        });
-    }
-    /**
-     * Configure the Telescope authorization services.
-     *
-     * @return void
-     */
-    protected function authorization()
-    {
-        $this->gate();
-
-        Telescope::auth(function ($request) {
-            return Gate::check('viewTelescope', [$request->user()]);
         });
     }
 }

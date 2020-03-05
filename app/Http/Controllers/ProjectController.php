@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\AllCasesExport;
 use App\Mail\VerificationEmail;
 use App\Media;
 use App\Project;
@@ -14,21 +15,23 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
-use App\AllCasesExport;
 
 class ProjectController extends Controller
 {
-
+    protected const UPDATESTRING = 'update';
+    protected const PROJECT = 'project';
+    protected const REQUIRED = 'required';
+    protected const NULLABLE = 'nullable';
+    protected const INPUTS = 'inputs';
+    protected const MESSAGE = 'message';
 
     public function index()
     {
 
         $data['projects'] = auth()->user()->projects()->get();
         $data['invites'] = auth()->user()->invites()->get();
-
         return view('projects.index', $data);
     }
-
 
     /**
      * @param Project $project
@@ -38,91 +41,46 @@ class ProjectController extends Controller
     public function show(Project $project)
     {
 
-        $this->authorize('update', $project);
+        $this->authorize(self::UPDATESTRING, $project);
         $data['breadcrumb'] = [url('/') => 'Projects', '#' => substr($project->name, 0, 20) . '...'];
-
         $project->media = $project->media()->pluck('media.name')->toArray();
-
         $data['data']['media'] = Media::all();
-
-        $data['project'] = $project;
+        $data[self::PROJECT] = $project;
         $data['invites'] = $project->invited()->get();
-
         return view('projects.show', $data);
     }
 
     /**
      * Show Create form
-     *
      * @return View return view with the form to insert a new project
      */
     public function create(Request $request)
     {
         if (auth()->user()->hasReachMaxNumberOfProjecs()) {
-            //auth()->user()->addAction('trying to create a study', $request->url(), 'Max numbers of studies reached for user ' . auth()->user()->email);
             abort(403, 'You reached the max number of projects');
         }
         $data['breadcrumb'] = [url('/') => 'Projects', '#' => 'Create'];
-
         return view('projects.create', $data);
     }
-
 
     public function store()
     {
         $media = request()->media;
         $attributes = request()->validate([
-            'name' => 'required',
-            'description' => 'required',
-            'created_by' => 'required',
-            'is_locked' => 'nullable ',
-            'inputs' => 'nullable'
+            'name' => self::REQUIRED,
+            'description' => self::REQUIRED,
+            'created_by' => self::REQUIRED,
+            'is_locked' => self::NULLABLE,
+            self::INPUTS => self::NULLABLE
         ]);
-
-        $inputs = json_decode($attributes['inputs']);
+        $inputs = json_decode($attributes[self::INPUTS]);
         foreach ($inputs as $input) {
             $input->answers = array_filter($input->answers);
         }
-        $attributes['inputs'] = json_encode($inputs);
-
+        $attributes[self::INPUTS] = json_encode($inputs);
         $project = auth()->user()->projects()->create($attributes);
-
         $this->syncMedia($media, $project, $mToSync);
-
         return redirect('projects');
-
-    }
-
-
-    public function update(Project $project)
-    {
-        $this->authorize('update', $project);
-        $media = request()->media;
-        $attributes = request()->validate([
-            'name' => 'required',
-            'description' => 'required',
-            'duration' => 'nullable',
-            'is_locked' => 'nullable ',
-            'inputs' => 'nullable'
-        ]);
-        $project->update($attributes);
-        $project->save();
-        $this->syncMedia($media, $project, $mToSync);
-        return response("Updated project successfully");
-    }
-
-
-    public function destroy(Project $project)
-    {
-
-        if ($project->isEditable() && $project->created_by == auth()->user()->id) {
-            $project->delete();
-        } else {
-            return response()->json(['message' => 'You can\'t delete this project'], 401);
-        }
-        return response()->json(['message' => 'Project Deleted.'], 200);
-
-
     }
 
     /**
@@ -136,10 +94,37 @@ class ProjectController extends Controller
             $mToSync = array();
             foreach (array_filter($media) as $singleMedia) {
                 array_push($mToSync, Media::firstOrCreate(['name' => $singleMedia])->id);
-
             }
             $project->media()->sync(Media::whereIn('id', $mToSync)->get());
         }
+    }
+
+    public function update(Project $project)
+    {
+        $this->authorize(self::UPDATESTRING, $project);
+        $media = request()->media;
+        $attributes = request()->validate([
+            'name' => self::REQUIRED,
+            'description' => self::REQUIRED,
+            'duration' => self::NULLABLE,
+            'is_locked' => 'nullable ',
+            self::INPUTS => self::NULLABLE
+        ]);
+        $project->update($attributes);
+        $project->save();
+        $this->syncMedia($media, $project, $mToSync);
+        return response("Updated project successfully");
+    }
+
+    public function destroy(Project $project)
+    {
+
+        if ($project->isEditable() && $project->created_by == auth()->user()->id) {
+            $project->delete();
+        } else {
+            return response()->json([self::MESSAGE => 'You can\'t delete this project'], 401);
+        }
+        return response()->json([self::MESSAGE => 'Project Deleted.'], 200);
     }
 
     /**
@@ -149,62 +134,41 @@ class ProjectController extends Controller
     public function inviteUser(Request $request)
     {
 
-        $project = Project::where('id', $request->input('project'))->first();
-
+        $project = Project::where('id', $request->input(self::PROJECT))->first();
         $user = User::where('email', '=', $request->email)->first();
-
-
         if (!$user) {
             $user = new User();
-
             $user->email = $request->email;
             $user->password = Helper::random_str(60);
             $user->password_token = Helper::random_str(60);
-
             $user->save();
             Mail::to($user->email)->send(new VerificationEmail($user, $request->emailtext ? $request->emailtext : config('utilities.emailDefaultText')));
-
-
             $role = Role::where('name', '=', 'researcher')->first();
             $user->roles()->sync($role);
-
         }
-
         $project->invited()->syncWithoutDetaching($user->id);
-
-        return response()->json(['user' => $user, 'message' => 'user was invited!'], 200);
-
+        return response()->json(['user' => $user, self::MESSAGE => 'user was invited!'], 200);
     }
 
     public function removeFromProject(Request $request)
     {
 
-        $this->authorize('update', Project::where('id', $request->input('project'))->first());
-
+        $this->authorize(self::UPDATESTRING, Project::where('id', $request->input(self::PROJECT))->first());
         $user = User::where('email', '=', $request->email)->first();
-
         if ($user) {
-            $user->invites()->detach($request->input('project'));
-            return response()->json(['message' => 'user was removed from the project!'], 200);
+            $user->invites()->detach($request->input(self::PROJECT));
+            return response()->json([self::MESSAGE => 'user was removed from the project!'], 200);
         } else {
-            return response()->json(['message' => "The user doesn't exist!"], 403);
-
+            return response()->json([self::MESSAGE => "The user doesn't exist!"], 403);
         }
-
     }
-
 
     public function export(Project $project)
     {
         if (auth()->user()->notOwnerNorInvited($project)) {
             abort(403, 'you can\'t see the data of this project.');
         }
-
         $headings = Project::getProjectInputHeadings($project);
-
-        return (new AllCasesExport($project->id, $headings))->download('cases from '. $project->name .' project.xlsx');
+        return (new AllCasesExport($project->id, $headings))->download('cases from ' . $project->name . ' project.xlsx');
     }
-
-
-
 }

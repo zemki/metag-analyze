@@ -19,7 +19,7 @@
             </p>
         @endif
 
-		<p class="flex text-white font-bold px-2 py-1 is-unselectable">{{auth()->user()->email}}</p>
+        <p class="flex text-white font-bold px-2 py-1 is-unselectable">{{auth()->user()->email}}</p>
 
 
         <a href="{{url('projects/new')}}" class="flex px-2 py-1 text-white font-semibold rounded hover:bg-red-600"><i

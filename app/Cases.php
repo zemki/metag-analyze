@@ -7,108 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Cases extends Model
 {
-
+    protected const VALUE = "value";
+    protected const PR_INPUTS = "pr_inputs";
+    protected const ENTRIES = 'entries';
+    protected const TITLE = 'title';
+    protected const AVAILABLE = 'available';
+    protected const INPUTS = 'inputs';
+    protected const MULTIPLE_CHOICE = "multiple choice";
+    protected const ONE_CHOICE = "one choice";
+    protected const SCALE = "scale";
     protected $table = 'cases';
-
     protected $guarded = [];
-
-    public function entries()
-    {
-        return $this->hasMany(Entry::class, 'case_id');
-    }
-
-    public function project()
-    {
-        return $this->belongsTo(Project::class);
-    }
-
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
-
-    public function path()
-    {
-        return "/cases/{$this->id}";
-    }
-
-
-    /**
-     * assign a user to this case
-     * this will be the user that fills the entries
-     * @param User $user user to assign to the case
-     * @return User
-     */
-    public function addUser($user)
-    {
-        is_array($user) ? $user = \App\User::firstOrCreate($user) : $user = $user;
-
-        $this->user()->associate($user);
-        $this->save();
-        return $user;
-    }
-
-    /**
-     * edit the case only if has no entries
-     * @return bool
-     */
-    public function isEditable()
-    {
-        return $this->entries()->count() > 0 ? false : true;
-    }
-
-
-    public function isConsultable()
-    {
-        $timestampLastDay = strtotime($this->lastDay());
-        $now = strtotime(date("Y-m-d H:i:s"));
-
-        return ($timestampLastDay < $now);
-    }
-
-
-    public function notYetStarted()
-    {
-        $now = strtotime(date("Y-m-d H:i:s"));
-        $timestampFirstDay = strtotime($this->firstDay());
-
-        return $this->lastDay() == "" || ($now < $timestampFirstDay);
-
-    }
-
-    /**
-     * write the duration from the database value to a readable format
-     * @return string
-     */
-    public function lastDay()
-    {
-
-        $duration = $this->duration;
-        //$formattedString = "<p><strong class=\"title\">Duration</strong><br><strong>Hours</strong>: ";
-        // $formattedString = Helper::get_string_between($this->duration, 'value:', '|');
-        //$formattedString = "Days: " . Helper::get_string_between($duration, 'days:', '|');
-
-        $lastDay = Helper::get_string_between($duration, 'lastDay:', '|');
-
-        return $lastDay;
-    }
-
-    /**
-     * write the duration from the database value to a readable format
-     * @return string
-     */
-    public function firstDay()
-    {
-
-        $duration = $this->duration;
-        //$formattedString = "<p><strong class=\"title\">Duration</strong><br><strong>Hours</strong>: ";
-        // $formattedString = Helper::get_string_between($this->duration, 'value:', '|');
-        //$formattedString = "Days: " . Helper::get_string_between($duration, 'days:', '|');
-
-        $lastDay = Helper::get_string_between($duration, 'firstDay:', '|');
-
-        return $lastDay;
-    }
 
     /**
      * @param Cases $case
@@ -129,14 +38,19 @@ class Cases extends Model
             ->leftJoin('media', 'entries.media_id', '=', 'media.id')
             ->pluck('media.name')->unique()->toArray();
         foreach (array_map('array_values', $mediaEntries) as $media) {
-            array_push($mediaValues, ["value" => $media[0], "start" => $media[1], "end" => $media[2]]);
+            array_push($mediaValues, [self::VALUE => $media[0], "start" => $media[1], "end" => $media[2]]);
         }
         return array($mediaValues, $availableMedia);
     }
 
+    public function entries()
+    {
+        return $this->hasMany(Entry::class, 'case_id');
+    }
+
     /**
      * @param Cases $case
-     * @param $data
+     * @param       $data
      * @return array
      */
     public static function getInputValues(Cases $case, &$data): array
@@ -148,61 +62,154 @@ class Cases extends Model
             ->where('entries.inputs', '<>', '[]')
             ->get()
             ->toArray();
-
-
-        $getInputTypeFunction = function ($o) {
-            return $o->type;
+        $getInputTypeFunction = function ($value) {
+            return $value->type;
         };
-
-        $availableInputs = array_map($getInputTypeFunction, json_decode($entries[0]['pr_inputs']));
+        $availableInputs = array_map($getInputTypeFunction, json_decode($entries[0][self::PR_INPUTS]));
         $inputValues = [];
-
         foreach ($entries as $entry) {
-            $inputs = json_decode($entry["inputs"], true);
-            $pr_inputs = json_decode($entry["pr_inputs"], true);
+            $inputs = json_decode($entry[self::INPUTS], true);
+            $pr_inputs = json_decode($entry[self::PR_INPUTS], true);
             foreach ($inputs as $key => $index) {
-                foreach ($pr_inputs as $pr) {
-                    if ($pr['name'] == $key) array_push($inputValues, ["value" => $index, "type" => $pr['type'], "name" => $key, "start" => $entry["begin"], "end" => $entry["end"]]);
+                foreach ($pr_inputs as $pr_input) {
+                    if ($pr_input['name'] === $key) {
+                        array_push($inputValues, [self::VALUE => $index, "type" => $pr_input['type'], "name" => $key, "start" => $entry["begin"], "end" => $entry["end"]]);
+                    }
                 }
             }
         }
-
-        $availableOptions = json_decode($entries[0]['pr_inputs']);
+        $availableOptions = json_decode($entries[0][self::PR_INPUTS]);
         foreach ($availableOptions as $availableOption) {
             $availableOptions[$availableOption->type] = $availableOption;
         }
         foreach ($availableInputs as $availableInput) {
-            $data['entries']['inputs'][$availableInput] = array();
-            $data['entries']['inputs'][$availableInput]['title'] = $availableInput;
+            self::formatInputValues($data, $availableInput, $availableOptions, $inputValues);
 
-            if ($availableInput == "multiple choice") {
-                $data['entries']['inputs'][$availableInput]['title'] = $availableInput;
-                $data['entries']['inputs'][$availableInput]['available'] = $availableOptions["multiple choice"]->answers;
-                $data['entries']['inputs'][$availableInput]['title'] = $availableOptions["multiple choice"]->name;
-            } else if ($availableInput == "one choice") {
-                $data['entries']['inputs'][$availableInput]['available'] = $availableOptions["one choice"]->answers;
-                $data['entries']['inputs'][$availableInput]['title'] = $availableOptions["one choice"]->name;
-
-            } else if ($availableInput == "scale") {
-                $data['entries']['inputs'][$availableInput]['available'] = [0,1, 2, 3, 4, 5];
-                $data['entries']['inputs'][$availableInput]['title'] = $availableOptions["scale"]->name;
-
-            } else if ($availableInput == "text") {
-                $data['entries']['inputs'][$availableInput]['available'] = [];
-                $data['entries']['inputs'][$availableInput]['title'] = $availableOptions["text"]->name;
-
-                // loop through the values you already have and make it part of the 'available'
-                foreach ($inputValues as $inputValue) {
-                    if ($inputValue['type'] == "text") array_push($data['entries']['inputs'][$availableInput]['available'], $inputValue['value']);
-                }
-            }
             foreach ($inputValues as $inputValue) {
                 if ($inputValue['type'] == $availableInput && $inputValue != null) array_push($data['entries']['inputs'][$availableInput], $inputValue);
             }
         }
-
-
-        return array($availableInputs, $inputValues, $data);
+        return array($availableInputs, $data);
     }
 
+    /**
+     * @param       $data
+     * @param       $availableInput
+     * @param       $availableOptions
+     * @param array $inputValues
+     */
+    private static function formatInputValues(&$data, $availableInput, $availableOptions, array $inputValues): void
+    {
+        $data[self::ENTRIES][self::INPUTS][$availableInput] = array();
+        $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableInput;
+        if ($availableInput === self::MULTIPLE_CHOICE) {
+            $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableInput;
+            $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = $availableOptions[self::MULTIPLE_CHOICE]->answers;
+            $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions[self::MULTIPLE_CHOICE]->name;
+        } else if ($availableInput === self::ONE_CHOICE) {
+            $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = $availableOptions[self::ONE_CHOICE]->answers;
+            $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions[self::ONE_CHOICE]->name;
+        } else if ($availableInput === self::SCALE) {
+            $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = [0, 1, 2, 3, 4, 5];
+            $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions[self::SCALE]->name;
+        } else if ($availableInput === "text") {
+            $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = [];
+            $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions["text"]->name;
+            // loop through the values you already have and make it part of the 'available'
+            foreach ($inputValues as $inputValue) {
+                if ($inputValue['type'] === "text") {
+                    array_push($data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE], $inputValue[self::VALUE]);
+                }
+            }
+        }
+    }
+
+    /**
+     * @param int $datetime
+     * @param     $caseDuration
+     * @return false|string
+     */
+    public static function calculateDuration(int $datetime, $caseDuration)
+    {
+
+        $sub = substr($caseDuration, strpos($caseDuration, ":") + strlen(":"), strlen($caseDuration));
+        $realDuration = (int)substr($sub, 0, strpos($sub, "|"));
+        return date("d.m.Y", $datetime + $realDuration * 3600);
+    }
+
+    public function project()
+    {
+        return $this->belongsTo(Project::class);
+    }
+
+    public function path()
+    {
+        return "/cases/{$this->id}";
+    }
+
+    /**
+     * assign a user to this case
+     * this will be the user that fills the entries
+     * @param User $user user to assign to the case
+     * @return User
+     */
+    public function addUser($user)
+    {
+        is_array($user) ?? $user = User::firstOrCreate($user);
+        $this->user()->associate($user);
+        $this->save();
+        return $user;
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * edit the case only if has no entries
+     * @return bool
+     */
+    public function isEditable(): bool
+    {
+        return !$this->entries()->count() > 0;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isConsultable(): bool
+    {
+        $timestampLastDay = strtotime($this->lastDay());
+        $now = strtotime(date("Y-m-d H:i:s"));
+        return $timestampLastDay < $now;
+    }
+
+    /**
+     * write the duration from the database value to a readable format
+     * @return string
+     */
+    public function lastDay(): string
+    {
+        return Helper::get_string_between($this->duration, 'lastDay:', '|');
+    }
+
+    /**
+     * @return bool
+     */
+    public function notYetStarted()
+    {
+        $now = strtotime(date("Y-m-d H:i:s"));
+        $timestampFirstDay = strtotime($this->firstDay());
+        return $this->lastDay() == "" || ($now < $timestampFirstDay);
+    }
+
+    /**
+     * write the duration from the database value to a readable format
+     * @return string
+     */
+    public function firstDay(): string
+    {
+        return Helper::get_string_between($this->duration, 'firstDay:', '|');
+    }
 }

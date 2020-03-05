@@ -12,7 +12,6 @@ class DeployController extends Controller
 
         $githubHash = $request->header('X-Gitlab-Token');
         $localToken = config('app.deploy_secret');
-
         if ($githubHash === $localToken) {
             $root_path = base_path();
             $process = new Process('cd ' . $root_path . ';sudo ./deploy.sh');

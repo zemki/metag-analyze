@@ -42,9 +42,9 @@ return [
     */
 
     'exclude' => [
-        //  'path/to/directory-or-file'
+        'vendor'
     ],
-
+    'ide' => 'phpstorm',
     'add' => [
         Classes::class => [
             ForbiddenFinalClasses::class,

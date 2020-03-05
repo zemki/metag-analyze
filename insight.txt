@@ -1,0 +1,2987 @@
+
+
+[2020-03-05 12:11:18] `/Users/belli/code/metag_analyze`
+
+                                                                                                              
+                77.6%                   74.2%                   82.6%                   54.9%                 
+                                                                                                              
+                                                                                                              
+                 Code                 Complexity             Architecture               Style                 
+
+
+Score scale: ◼ 1-49 ◼ 50-79 ◼ 80-100
+
+[CODE] 77.6 pts within 1999 lines
+
+Comments ...................................................... 46.6 %
+Classes ....................................................... 36.3 %
+Functions ...................................................... 2.1 %
+Globally ...................................................... 15.1 %
+
+[COMPLEXITY] 74.2 pts with average of 1.77 cyclomatic complexity
+
+[ARCHITECTURE] 82.6 pts within 64 files
+
+Classes ....................................................... 93.8 %
+Interfaces ..................................................... 0.0 %
+Globally ....................................................... 6.3 %
+Traits ......................................................... 0.0 %
+
+[MISC] 54.9 pts on coding style and 0 security issues encountered
+
+Press enter to see code issues...
+
+• [Code] Class constant visibility: (SlevomatCodingStandard\Sniffs\Classes\ClassConstantVisibilitySniff)
+  app/AllCasesExport.php:15: Constant \App\AllCasesExport::ENTRY_ID visibility missing.
+  app/Cases.php:10: Constant \App\Cases::VALUE visibility missing.
+  app/Cases.php:11: Constant \App\Cases::PR_INPUTS visibility missing.
+  app/Cases.php:12: Constant \App\Cases::ENTRIES visibility missing.
+  app/Cases.php:13: Constant \App\Cases::TITLE visibility missing.
+  app/Cases.php:14: Constant \App\Cases::AVAILABLE visibility missing.
+  app/Cases.php:15: Constant \App\Cases::INPUTS visibility missing.
+  app/Cases.php:16: Constant \App\Cases::MULTIPLE_CHOICE visibility missing.
+  app/Cases.php:17: Constant \App\Cases::ONE_CHOICE visibility missing.
+  app/Cases.php:18: Constant \App\Cases::SCALE visibility missing.
+  app/Http/Controllers/EntryController.php:19: Constant \App\Http\Controllers\EntryController::BEGIN visibility missing.
+  app/Http/Controllers/EntryController.php:20: Constant \App\Http\Controllers\EntryController::REQUIRED visibility missing.
+  app/Http/Controllers/EntryController.php:21: Constant \App\Http\Controllers\EntryController::MEDIA_ID visibility missing.
+  app/Http/Controllers/EntryController.php:22: Constant \App\Http\Controllers\EntryController::INPUTS visibility missing.
+  app/Http/Controllers/EntryController.php:23: Constant \App\Http\Controllers\EntryController::ENTRIES visibility missing.
+  app/Http/Controllers/ProjectCasesController.php:22: Constant \App\Http\Controllers\ProjectCasesController::ENTRIES visibility missing.
+  app/Http/Controllers/ProjectCasesController.php:23: Constant \App\Http\Controllers\ProjectCasesController::BREADCRUMB visibility missing.
+  app/Http/Controllers/ProjectCasesController.php:24: Constant \App\Http\Controllers\ProjectCasesController::PROJECTS visibility missing.
+  app/Http/Controllers/ProjectCasesController.php:25: Constant \App\Http\Controllers\ProjectCasesController::EMAIL visibility missing.
+  app/Http/Controllers/ProjectCasesController.php:26: Constant \App\Http\Controllers\ProjectCasesController::MESSAGE visibility missing.
+  app/Http/Controllers/ProjectCasesController.php:27: Constant \App\Http\Controllers\ProjectCasesController::REQUIRED visibility missing.
+  app/Http/Controllers/ProjectCasesController.php:28: Constant \App\Http\Controllers\ProjectCasesController::DURATION visibility missing.
+  app/Http/Controllers/ProjectController.php:21: Constant \App\Http\Controllers\ProjectController::UPDATESTRING visibility missing.
+  app/Http/Controllers/ProjectController.php:22: Constant \App\Http\Controllers\ProjectController::PROJECT visibility missing.
+  app/Http/Controllers/ProjectController.php:23: Constant \App\Http\Controllers\ProjectController::REQUIRED visibility missing.
+  app/Http/Controllers/ProjectController.php:24: Constant \App\Http\Controllers\ProjectController::NULLABLE visibility missing.
+  app/Http/Controllers/ProjectController.php:25: Constant \App\Http\Controllers\ProjectController::INPUTS visibility missing.
+  app/Http/Controllers/ProjectController.php:26: Constant \App\Http\Controllers\ProjectController::MESSAGE visibility missing.
+  app/Http/Controllers/UserController.php:21: Constant \App\Http\Controllers\UserController::EMAIL visibility missing.
+  app/Http/Controllers/UserController.php:22: Constant \App\Http\Controllers\UserController::TOKEN visibility missing.
+  app/Http/Controllers/UserController.php:23: Constant \App\Http\Controllers\UserController::ERRORS_RESETPASSWORD visibility missing.
+
+• [Code] Max nesting level: (ObjectCalisthenics\Sniffs\Metrics\MaxNestingLevelSniff)
+  app/AllCasesExport.php:32: Only 2 indentation levels per function/method. Found 3 levels.
+  app/AllCasesExport.php:78: Only 2 indentation levels per function/method. Found 3 levels.
+  app/AllCasesExport.php:149: Only 2 indentation levels per function/method. Found 3 levels.
+  app/Cases.php:51: Only 2 indentation levels per function/method. Found 4 levels.
+  app/Cases.php:96: Only 2 indentation levels per function/method. Found 3 levels.
+  app/CasesExport.php:34: Only 2 indentation levels per function/method. Found 6 levels.
+  app/Helpers/Helper.php:85: Only 2 indentation levels per function/method. Found 3 levels.
+  app/Helpers/Helper.php:107: Only 2 indentation levels per function/method. Found 3 levels.
+  app/Http/Controllers/ApiController.php:58: Only 2 indentation levels per function/method. Found 3 levels.
+  app/Project.php:20: Only 2 indentation levels per function/method. Found 3 levels.
+  app/Project.php:43: Only 2 indentation levels per function/method. Found 3 levels.
+  app/User.php:45: Only 2 indentation levels per function/method. Found 5 levels.
+
+• [Code] Array indent: (PHP_CodeSniffer\Standards\Generic\Sniffs\Arrays\ArrayIndentSniff)
+  app/Providers/AuthServiceProvider.php:13: Array key not indented correctly; expected 8 spaces but found 6
+  app/Providers/AuthServiceProvider.php:14: Array key not indented correctly; expected 8 spaces but found 6
+  app/Providers/AuthServiceProvider.php:15: Array close brace not indented correctly; expected 4 spaces but found 2
+
+• [Code] Useless overriding method: (PHP_CodeSniffer\Standards\Generic\Sniffs\CodeAnalysis\UselessOverridingMethodSniff)
+  app/Console/Commands/CreateUserCommand.php:30: Possible useless method overriding detected
+  app/Console/Commands/DeleteProjectCommand.php:27: Possible useless method overriding detected
+  app/Console/Commands/DeleteUserCommand.php:26: Possible useless method overriding detected
+  app/Console/Commands/InstallMetagCommand.php:28: Possible useless method overriding detected
+  app/Exceptions/Handler.php:35: Possible useless method overriding detected
+  app/Exceptions/Handler.php:47: Possible useless method overriding detected
+  app/Providers/RouteServiceProvider.php:24: Possible useless method overriding detected
+
+• [Code] Inline control structure: (PHP_CodeSniffer\Standards\Generic\Sniffs\ControlStructures\InlineControlStructureSniff)
+  app/Helpers/Helper.php:50: Inline control structures are not allowed
+  app/Http/Controllers/ApiController.php:126: Inline control structures are not allowed
+
+• [Code] Disallow multiple statements: (PHP_CodeSniffer\Standards\Generic\Sniffs\Formatting\DisallowMultipleStatementsSniff)
+  app/Providers/AppServiceProvider.php:18: Each PHP statement must be on a line by itself
+
+• [Code] Disallow implicit array creation: (SlevomatCodingStandard\Sniffs\Arrays\DisallowImplicitArrayCreationSniff)
+  app/AllCasesExport.php:121: Implicit array creation is disallowed.
+  app/CasesExport.php:45: Implicit array creation is disallowed.
+  app/Http/Controllers/ApiController.php:218: Implicit array creation is disallowed.
+  app/Http/Controllers/EntryController.php:90: Implicit array creation is disallowed.
+  app/Http/Controllers/EntryController.php:93: Implicit array creation is disallowed.
+  app/Http/Controllers/ProjectCasesController.php:65: Implicit array creation is disallowed.
+  app/Http/Controllers/ProjectCasesController.php:70: Implicit array creation is disallowed.
+  app/Http/Controllers/ProjectCasesController.php:71: Implicit array creation is disallowed.
+  app/Http/Controllers/ProjectCasesController.php:128: Implicit array creation is disallowed.
+  app/Http/Controllers/ProjectCasesController.php:131: Implicit array creation is disallowed.
+  app/Http/Controllers/ProjectCasesController.php:132: Implicit array creation is disallowed.
+  app/Http/Controllers/ProjectCasesController.php:133: Implicit array creation is disallowed.
+  app/Http/Controllers/ProjectController.php:31: Implicit array creation is disallowed.
+  app/Http/Controllers/ProjectController.php:32: Implicit array creation is disallowed.
+  app/Http/Controllers/ProjectController.php:45: Implicit array creation is disallowed.
+  app/Http/Controllers/ProjectController.php:48: Implicit array creation is disallowed.
+  app/Http/Controllers/ProjectController.php:49: Implicit array creation is disallowed.
+  app/Http/Controllers/ProjectController.php:62: Implicit array creation is disallowed.
+  app/Http/Controllers/UserController.php:40: Implicit array creation is disallowed.
+  app/Http/Controllers/UserController.php:41: Implicit array creation is disallowed.
+  app/Http/Controllers/UserController.php:153: Implicit array creation is disallowed.
+  app/Http/Controllers/UserController.php:164: Implicit array creation is disallowed.
+  app/Http/Controllers/UserController.php:165: Implicit array creation is disallowed.
+  app/Http/Controllers/UserController.php:170: Implicit array creation is disallowed.
+
+• [Code] Disallow empty: (SlevomatCodingStandard\Sniffs\ControlStructures\DisallowEmptySniff)
+  app/Http/Controllers/UserController.php:140: Use of empty() is disallowed.
+
+• [Code] Language construct with parentheses: (SlevomatCodingStandard\Sniffs\ControlStructures\LanguageConstructWithParenthesesSniff)
+  app/Cases.php:174: Usage of language construct "return" with parentheses is disallowed.
+
+• [Code] Disallow equal operators: (SlevomatCodingStandard\Sniffs\Operators\DisallowEqualOperatorsSniff)
+  app/AllCasesExport.php:45: Operator != is disallowed, use !== instead.
+  app/AllCasesExport.php:151: Operator != is disallowed, use !== instead.
+  app/Cases.php:70: Operator == is disallowed, use === instead.
+  app/Cases.php:100: Operator == is disallowed, use === instead.
+  app/Cases.php:104: Operator == is disallowed, use === instead.
+  app/Cases.php:108: Operator == is disallowed, use === instead.
+  app/Cases.php:112: Operator == is disallowed, use === instead.
+  app/Cases.php:117: Operator == is disallowed, use === instead.
+  app/Cases.php:190: Operator == is disallowed, use === instead.
+  app/CasesExport.php:43: Operator != is disallowed, use !== instead.
+  app/CasesExport.php:66: Operator != is disallowed, use !== instead.
+  app/Helpers/Helper.php:50: Operator == is disallowed, use === instead.
+  app/Helpers/Helper.php:53: Operator == is disallowed, use === instead.
+  app/Helpers/Helper.php:70: Operator == is disallowed, use === instead.
+  app/Helpers/Helper.php:117: Operator == is disallowed, use === instead.
+  app/Http/Controllers/ApiController.php:125: Operator == is disallowed, use === instead.
+  app/Http/Controllers/ApiController.php:126: Operator != is disallowed, use !== instead.
+  app/Http/Controllers/ProjectCasesController.php:84: Operator == is disallowed, use === instead.
+  app/Http/Controllers/ProjectCasesController.php:84: Operator == is disallowed, use === instead.
+  app/Http/Controllers/ProjectCasesController.php:84: Operator == is disallowed, use === instead.
+  app/Http/Controllers/ProjectController.php:124: Operator == is disallowed, use === instead.
+  app/Http/Controllers/UserController.php:146: Operator == is disallowed, use === instead.
+  app/Project.php:24: Operator == is disallowed, use === instead.
+  app/Project.php:71: Operator == is disallowed, use === instead.
+  app/Project.php:76: Operator == is disallowed, use === instead.
+  app/Project.php:89: Operator == is disallowed, use === instead.
+  app/Project.php:101: Operator == is disallowed, use === instead.
+  app/Project.php:106: Operator == is disallowed, use === instead.
+  app/Project.php:116: Operator == is disallowed, use === instead.
+  app/Project.php:122: Operator == is disallowed, use === instead.
+  app/User.php:49: Operator == is disallowed, use === instead.
+
+• [Code] Require combined assignment operator: (SlevomatCodingStandard\Sniffs\Operators\RequireCombinedAssignmentOperatorSniff)
+  app/Http/Controllers/ApiController.php:100: Use ".=" operator instead of "=" and ".".
+
+• [Code] No unneeded control parentheses: (PhpCsFixer\Fixer\ControlStructure\NoUnneededControlParenthesesFixer)
+  app/Cases.php:174: You should change the following 
+-        return ($timestampLastDay < $now);
++        return $timestampLastDay < $now;
+
+
+
+• [Code] No useless else: (PhpCsFixer\Fixer\ControlStructure\NoUselessElseFixer)
+  app/Console/Commands/CreateUserCommand.php:51: You should change the following 
+-        } else {
++        }  
+
+
+  app/Console/Commands/CreateUserCommand.php:54: You should change the following 
+-        }
++        
+
+
+  app/Http/Controllers/ApiController.php:74: You should change the following 
+-            } else {
++            }  
+
+
+  app/Http/Controllers/ApiController.php:98: You should change the following 
+-                } else {
++                }  
+
+
+  app/Http/Controllers/ApiController.php:102: You should change the following 
+-                }
++                
+
+
+  app/Http/Controllers/ApiController.php:113: You should change the following 
+-            }
+-        } else {
++            
++        }  
+
+
+  app/Http/Controllers/ApiController.php:116: You should change the following 
+-        }
++        
+
+
+  app/Http/Controllers/Auth/RegisterController.php:72: You should change the following 
+-        } else {
++        }  
+
+
+  app/Http/Controllers/Auth/RegisterController.php:85: You should change the following 
+-        }
++        
+
+
+  app/Http/Controllers/ProjectController.php:167: You should change the following 
+-        } else {
++        }  
+
+
+  app/Http/Controllers/ProjectController.php:170: You should change the following 
+-        }
++        
+
+
+  app/Http/Controllers/UserController.php:78: You should change the following 
+-        } else {
++        }  
+
+
+  app/Http/Controllers/UserController.php:80: You should change the following 
+-        }
++        
+
+
+
+• [Code] Todo: (PHP_CodeSniffer\Standards\Generic\Sniffs\Commenting\TodoSniff)
+  app/Http/Controllers/UserController.php:136: Comment refers to a TODO task
+
+• [Code] Parameter type hint: (SlevomatCodingStandard\Sniffs\TypeHints\ParameterTypeHintSniff)
+  app/AllCasesExport.php:20: @param annotation of method \App\AllCasesExport::__construct() does not specify type hint for items of its traversable parameter $headings.
+  app/AllCasesExport.php:22: Method \App\AllCasesExport::__construct() does not have native type hint for its parameter $headings but it should be possible to add it based on @param annotation "array".
+  app/AllCasesExport.php:22: Method \App\AllCasesExport::__construct() does not have parameter type hint nor @param annotation for its parameter $id.
+  app/AllCasesExport.php:32: Method \App\AllCasesExport::map() does not have parameter type hint nor @param annotation for its parameter $project.
+  app/AllCasesExport.php:75: @param annotation of method \App\AllCasesExport::formatAssociativeNamesAccordingToHeadings() does not specify type hint for items of its traversable parameter $tempValuesArray.
+  app/AllCasesExport.php:78: Method \App\AllCasesExport::formatAssociativeNamesAccordingToHeadings() does not have parameter type hint nor @param annotation for its parameter $entry.
+  app/AllCasesExport.php:117: Method \App\AllCasesExport::printValuesInArray() does not have parameter type hint nor @param annotation for its parameter $jsonInputs.
+  app/AllCasesExport.php:117: Method \App\AllCasesExport::printValuesInArray() does not have parameter type hint nor @param annotation for its parameter $project.
+  app/AllCasesExport.php:117: Method \App\AllCasesExport::printValuesInArray() does not have parameter type hint nor @param annotation for its parameter $tempValuesArray.
+  app/AllCasesExport.php:144: @param annotation of method \App\AllCasesExport::formatMultipleAndOneChoiceValues() does not specify type hint for items of its traversable parameter $index.
+  app/AllCasesExport.php:149: Method \App\AllCasesExport::formatMultipleAndOneChoiceValues() does not have parameter type hint nor @param annotation for its parameter $input.
+  app/AllCasesExport.php:149: Method \App\AllCasesExport::formatMultipleAndOneChoiceValues() does not have parameter type hint nor @param annotation for its parameter $key.
+  app/AllCasesExport.php:149: Method \App\AllCasesExport::formatMultipleAndOneChoiceValues() does not have parameter type hint nor @param annotation for its parameter $numberOfAnswersByQuestion.
+  app/AllCasesExport.php:149: Method \App\AllCasesExport::formatMultipleAndOneChoiceValues() does not have parameter type hint nor @param annotation for its parameter $projectInputNames.
+  app/AllCasesExport.php:149: Method \App\AllCasesExport::formatMultipleAndOneChoiceValues() does not have parameter type hint nor @param annotation for its parameter $tempValuesArray.
+  app/CaseInput.php:17: Method \App\CaseInput::__get() does not have parameter type hint nor @param annotation for its parameter $property.
+  app/CaseInput.php:27: Method \App\CaseInput::text() does not have parameter type hint nor @param annotation for its parameter $name.
+  app/CaseInput.php:34: Method \App\CaseInput::assignToContent() does not have parameter type hint nor @param annotation for its parameter $content.
+  app/CaseInput.php:44: Method \App\CaseInput::dateI() does not have parameter type hint nor @param annotation for its parameter $name.
+  app/CaseInput.php:51: Method \App\CaseInput::multiplechoice() does not have parameter type hint nor @param annotation for its parameter $choices.
+  app/CaseInput.php:51: Method \App\CaseInput::multiplechoice() does not have parameter type hint nor @param annotation for its parameter $name.
+  app/CaseInput.php:59: Method \App\CaseInput::onechoice() does not have parameter type hint nor @param annotation for its parameter $choices.
+  app/CaseInput.php:59: Method \App\CaseInput::onechoice() does not have parameter type hint nor @param annotation for its parameter $name.
+  app/Cases.php:23: Method \App\Cases::getMediaValues() has useless @param annotation for parameter $case.
+  app/Cases.php:47: Method \App\Cases::getInputValues() has useless @param annotation for parameter $case.
+  app/Cases.php:51: Method \App\Cases::getInputValues() does not have parameter type hint nor @param annotation for its parameter $data.
+  app/Cases.php:94: @param annotation of method \App\Cases::formatInputValues() does not specify type hint for items of its traversable parameter $inputValues.
+  app/Cases.php:96: Method \App\Cases::formatInputValues() does not have parameter type hint nor @param annotation for its parameter $availableInput.
+  app/Cases.php:96: Method \App\Cases::formatInputValues() does not have parameter type hint nor @param annotation for its parameter $availableOptions.
+  app/Cases.php:96: Method \App\Cases::formatInputValues() does not have parameter type hint nor @param annotation for its parameter $data.
+  app/Cases.php:140: Method \App\Cases::addUser() does not have native type hint for its parameter $user but it should be possible to add it based on @param annotation "User".
+  app/CasesExport.php:22: @param annotation of method \App\Exports\CasesExport::__construct() does not specify type hint for items of its traversable parameter $headings.
+  app/CasesExport.php:24: Method \App\Exports\CasesExport::__construct() does not have native type hint for its parameter $headings but it should be possible to add it based on @param annotation "array".
+  app/CasesExport.php:24: Method \App\Exports\CasesExport::__construct() does not have parameter type hint nor @param annotation for its parameter $id.
+  app/CasesExport.php:34: Method \App\Exports\CasesExport::map() does not have parameter type hint nor @param annotation for its parameter $entry.
+  app/Console/Commands/CreateUserCommand.php:57: Method \App\Console\Commands\CreateUserCommand::store() does not have parameter type hint nor @param annotation for its parameter $email.
+  app/Console/Commands/CreateUserCommand.php:57: Method \App\Console\Commands\CreateUserCommand::store() does not have parameter type hint nor @param annotation for its parameter $password.
+  app/Console/Commands/CreateUserCommand.php:57: Method \App\Console\Commands\CreateUserCommand::store() does not have parameter type hint nor @param annotation for its parameter $roleId.
+  app/Console/Commands/CreateUserCommand.php:57: Method \App\Console\Commands\CreateUserCommand::store() does not have parameter type hint nor @param annotation for its parameter $user.
+  app/Console/Commands/InstallMetagCommand.php:61: Method \App\Console\Commands\InstallMetagCommand::storeUser() does not have parameter type hint nor @param annotation for its parameter $email.
+  app/Console/Commands/InstallMetagCommand.php:61: Method \App\Console\Commands\InstallMetagCommand::storeUser() does not have parameter type hint nor @param annotation for its parameter $password.
+  app/Console/Commands/InstallMetagCommand.php:61: Method \App\Console\Commands\InstallMetagCommand::storeUser() does not have parameter type hint nor @param annotation for its parameter $roleId.
+  app/Console/Commands/InstallMetagCommand.php:61: Method \App\Console\Commands\InstallMetagCommand::storeUser() does not have parameter type hint nor @param annotation for its parameter $user.
+  app/Console/Kernel.php:22: Method \App\Console\Kernel::schedule() has useless @param annotation for parameter $schedule.
+  app/Exceptions/Handler.php:32: Method \App\Exceptions\Handler::report() has useless @param annotation for parameter $exception.
+  app/Exceptions/Handler.php:44: Method \App\Exceptions\Handler::render() has useless @param annotation for parameter $exception.
+  app/Exceptions/Handler.php:47: Method \App\Exceptions\Handler::render() does not have native type hint for its parameter $request but it should be possible to add it based on @param annotation "\Illuminate\Http\Request".
+  app/Helpers/Helper.php:18: Method \App\Helpers\Helper::random_str() does not have native type hint for its parameter $keyspace but it should be possible to add it based on @param annotation "string".
+  app/Helpers/Helper.php:18: Method \App\Helpers\Helper::random_str() does not have parameter type hint nor @param annotation for its parameter $length.
+  app/Helpers/Helper.php:33: Method \App\Helpers\Helper::extension() does not have native type hint for its parameter $uri but it should be possible to add it based on @param annotation "String".
+  app/Helpers/Helper.php:47: Method \App\Helpers\Helper::get_string_between() does not have parameter type hint nor @param annotation for its parameter $end.
+  app/Helpers/Helper.php:47: Method \App\Helpers\Helper::get_string_between() does not have parameter type hint nor @param annotation for its parameter $start.
+  app/Helpers/Helper.php:47: Method \App\Helpers\Helper::get_string_between() does not have parameter type hint nor @param annotation for its parameter $string.
+  app/Helpers/Helper.php:67: Method \App\Helpers\Helper::in_array_recursive() does not have parameter type hint nor @param annotation for its parameter $haystack.
+  app/Helpers/Helper.php:67: Method \App\Helpers\Helper::in_array_recursive() does not have parameter type hint nor @param annotation for its parameter $needle.
+  app/Helpers/Helper.php:82: @param annotation of method \App\Helpers\Helper::array_keys_recursive() does not specify type hint for items of its traversable parameter $arrayKeys.
+  app/Helpers/Helper.php:85: Method \App\Helpers\Helper::array_keys_recursive() does not have native type hint for its parameter $arrayKeys but it should be possible to add it based on @param annotation "array".
+  app/Helpers/Helper.php:85: Method \App\Helpers\Helper::array_keys_recursive() does not have native type hint for its parameter $depth but it should be possible to add it based on @param annotation "int".
+  app/Helpers/Helper.php:85: Method \App\Helpers\Helper::array_keys_recursive() does not have parameter type hint nor @param annotation for its parameter $MAXDEPTH.
+  app/Helpers/Helper.php:85: Method \App\Helpers\Helper::array_keys_recursive() does not have parameter type hint nor @param annotation for its parameter $myArray.
+  app/Helpers/Helper.php:107: Method \App\Helpers\Helper::recursive_array_search() does not have parameter type hint nor @param annotation for its parameter $currentKey.
+  app/Helpers/Helper.php:107: Method \App\Helpers\Helper::recursive_array_search() does not have parameter type hint nor @param annotation for its parameter $haystack.
+  app/Helpers/Helper.php:107: Method \App\Helpers\Helper::recursive_array_search() does not have parameter type hint nor @param annotation for its parameter $needle.
+  app/Http/Controllers/ApiController.php:22: Method \App\Http\Controllers\ApiController::returnUser() does not have parameter type hint nor @param annotation for its parameter $id.
+  app/Http/Controllers/ApiController.php:55: Method \App\Http\Controllers\ApiController::login() has useless @param annotation for parameter $request.
+  app/Http/Controllers/ApiController.php:136: Method \App\Http\Controllers\ApiController::formatLoginResponse() does not have parameter type hint nor @param annotation for its parameter $response.
+  app/Http/Controllers/ApiController.php:146: Method \App\Http\Controllers\ApiController::calculateDuration() has useless @param annotation for parameter $datetime.
+  app/Http/Controllers/ApiController.php:150: Method \App\Http\Controllers\ApiController::calculateDuration() does not have parameter type hint nor @param annotation for its parameter $caseDuration.
+  app/Http/Controllers/ApiController.php:159: Method \App\Http\Controllers\ApiController::register() has useless @param annotation for parameter $request.
+  app/Http/Controllers/ApiController.php:189: Method \App\Http\Controllers\ApiController::getProject() has useless @param annotation for parameter $project.
+  app/Http/Controllers/ApiController.php:199: Method \App\Http\Controllers\ApiController::update() has useless @param annotation for parameter $request.
+  app/Http/Controllers/ApiController.php:212: Method \App\Http\Controllers\ApiController::getInputs() has useless @param annotation for parameter $project.
+  app/Http/Controllers/Auth/RegisterController.php:48: @param annotation of method \App\Http\Controllers\Auth\RegisterController::validator() does not specify type hint for items of its traversable parameter $data.
+  app/Http/Controllers/Auth/RegisterController.php:62: @param annotation of method \App\Http\Controllers\Auth\RegisterController::create() does not specify type hint for items of its traversable parameter $data.
+  app/Http/Controllers/CaseInputController.php:31: Method \App\Http\Controllers\CaseInputController::store() has useless @param annotation for parameter $request.
+  app/Http/Controllers/CaseInputController.php:41: Method \App\Http\Controllers\CaseInputController::show() has useless @param annotation for parameter $caseInput.
+  app/Http/Controllers/CaseInputController.php:51: Method \App\Http\Controllers\CaseInputController::edit() has useless @param annotation for parameter $caseInput.
+  app/Http/Controllers/CaseInputController.php:61: Method \App\Http\Controllers\CaseInputController::update() has useless @param annotation for parameter $request.
+  app/Http/Controllers/CaseInputController.php:62: Method \App\Http\Controllers\CaseInputController::update() has useless @param annotation for parameter $caseInput.
+  app/Http/Controllers/CaseInputController.php:72: Method \App\Http\Controllers\CaseInputController::destroy() has useless @param annotation for parameter $caseInput.
+  app/Http/Controllers/EntryController.php:26: Method \App\Http\Controllers\EntryController::entriesByCase() has useless @param annotation for parameter $case.
+  app/Http/Controllers/EntryController.php:36: Method \App\Http\Controllers\EntryController::store() has useless @param annotation for parameter $request.
+  app/Http/Controllers/EntryController.php:99: Method \App\Http\Controllers\EntryController::destroy() has useless @param annotation for parameter $case.
+  app/Http/Controllers/EntryController.php:100: Method \App\Http\Controllers\EntryController::destroy() has useless @param annotation for parameter $entry.
+  app/Http/Controllers/ProjectCasesController.php:31: Method \App\Http\Controllers\ProjectCasesController::show() has useless @param annotation for parameter $project.
+  app/Http/Controllers/ProjectCasesController.php:32: Method \App\Http\Controllers\ProjectCasesController::show() has useless @param annotation for parameter $case.
+  app/Http/Controllers/ProjectCasesController.php:57: Method \App\Http\Controllers\ProjectCasesController::create() has useless @param annotation for parameter $project.
+  app/Http/Controllers/ProjectCasesController.php:77: Method \App\Http\Controllers\ProjectCasesController::store() has useless @param annotation for parameter $project.
+  app/Http/Controllers/ProjectCasesController.php:100: Method \App\Http\Controllers\ProjectCasesController::update() has useless @param annotation for parameter $project.
+  app/Http/Controllers/ProjectCasesController.php:101: Method \App\Http\Controllers\ProjectCasesController::update() has useless @param annotation for parameter $case.
+  app/Http/Controllers/ProjectCasesController.php:116: Method \App\Http\Controllers\ProjectCasesController::destroy() has useless @param annotation for parameter $case.
+  app/Http/Controllers/ProjectCasesController.php:140: Method \App\Http\Controllers\ProjectCasesController::export() has useless @param annotation for parameter $case.
+  app/Http/Controllers/ProjectController.php:37: Method \App\Http\Controllers\ProjectController::show() has useless @param annotation for parameter $project.
+  app/Http/Controllers/ProjectController.php:92: Method \App\Http\Controllers\ProjectController::syncMedia() does not have parameter type hint nor @param annotation for its parameter $mToSync.
+  app/Http/Controllers/ProjectController.php:92: Method \App\Http\Controllers\ProjectController::syncMedia() does not have parameter type hint nor @param annotation for its parameter $media.
+  app/Http/Controllers/ProjectController.php:92: Method \App\Http\Controllers\ProjectController::syncMedia() does not have parameter type hint nor @param annotation for its parameter $project.
+  app/Http/Controllers/ProjectController.php:135: Method \App\Http\Controllers\ProjectController::inviteUser() has useless @param annotation for parameter $request.
+  app/Http/Controllers/UserController.php:47: Method \App\Http\Controllers\UserController::store() has useless @param annotation for parameter $request.
+  app/Http/Controllers/UserController.php:106: Method \App\Http\Controllers\UserController::update() has useless @param annotation for parameter $request.
+  app/Http/Controllers/UserController.php:110: Method \App\Http\Controllers\UserController::update() does not have native type hint for its parameter $id but it should be possible to add it based on @param annotation "int".
+  app/Http/Controllers/UserController.php:126: Method \App\Http\Controllers\UserController::destroy() does not have native type hint for its parameter $id but it should be possible to add it based on @param annotation "int".
+  app/Http/Controllers/UserController.php:134: Method \App\Http\Controllers\UserController::userExists() has useless @param annotation for parameter $request.
+  app/Http/Controllers/UserController.php:158: Method \App\Http\Controllers\UserController::newpassword() has useless @param annotation for parameter $request.
+  app/Http/Middleware/Admin.php:14: Method \App\Http\Middleware\Admin::handle() has useless @param annotation for parameter $next.
+  app/Http/Middleware/Admin.php:17: Method \App\Http\Middleware\Admin::handle() does not have native type hint for its parameter $request but it should be possible to add it based on @param annotation "Request".
+  app/Http/Middleware/Authenticate.php:15: Method \App\Http\Middleware\Authenticate::redirectTo() does not have native type hint for its parameter $request but it should be possible to add it based on @param annotation "Request".
+  app/Http/Middleware/Authorised.php:14: Method \App\Http\Middleware\Authorised::handle() has useless @param annotation for parameter $next.
+  app/Http/Middleware/Authorised.php:17: Method \App\Http\Middleware\Authorised::handle() does not have native type hint for its parameter $request but it should be possible to add it based on @param annotation "Request".
+  app/Http/Middleware/CheckGroup.php:14: Method \App\Http\Middleware\CheckGroup::handle() has useless @param annotation for parameter $next.
+  app/Http/Middleware/CheckGroup.php:17: Method \App\Http\Middleware\CheckGroup::handle() does not have native type hint for its parameter $request but it should be possible to add it based on @param annotation "Request".
+  app/Http/Middleware/RedirectIfAuthenticated.php:14: Method \App\Http\Middleware\RedirectIfAuthenticated::handle() has useless @param annotation for parameter $next.
+  app/Http/Middleware/RedirectIfAuthenticated.php:18: Method \App\Http\Middleware\RedirectIfAuthenticated::handle() does not have native type hint for its parameter $guard but it should be possible to add it based on @param annotation "string|null".
+  app/Http/Middleware/RedirectIfAuthenticated.php:18: Method \App\Http\Middleware\RedirectIfAuthenticated::handle() does not have native type hint for its parameter $request but it should be possible to add it based on @param annotation "Request".
+  app/Http/Middleware/RefreshApiToken.php:10: Method \App\Http\Middleware\RefreshApiToken::handle() does not have parameter type hint nor @param annotation for its parameter $request.
+  app/Http/Middleware/RegisterAction.php:16: Method \App\Http\Middleware\RegisterAction::handle() has useless @param annotation for parameter $next.
+  app/Http/Middleware/RegisterAction.php:19: Method \App\Http\Middleware\RegisterAction::handle() does not have native type hint for its parameter $request but it should be possible to add it based on @param annotation "Request".
+  app/Http/Middleware/Researcher.php:14: Method \App\Http\Middleware\Researcher::handle() has useless @param annotation for parameter $next.
+  app/Http/Middleware/Researcher.php:17: Method \App\Http\Middleware\Researcher::handle() does not have native type hint for its parameter $request but it should be possible to add it based on @param annotation "Request".
+  app/Http/Resources/Entry.php:17: Method \App\Http\Resources\Entry::toArray() does not have native type hint for its parameter $request but it should be possible to add it based on @param annotation "\Illuminate\Http\Request".
+  app/Mail/VerificationEmail.php:22: Method \App\Mail\VerificationEmail::__construct() does not have parameter type hint nor @param annotation for its parameter $emailtext.
+  app/Project.php:40: Method \App\Project::getProjectInputHeadings() has useless @param annotation for parameter $project.
+  app/Project.php:59: Method \App\Project::entries() does not have parameter type hint nor @param annotation for its parameter $class.
+  app/Project.php:69: Method \App\Project::getSpecificInput() does not have parameter type hint nor @param annotation for its parameter $name.
+  app/Project.php:99: Method \App\Project::getNumberOfAnswersByQuestion() does not have parameter type hint nor @param annotation for its parameter $question.
+  app/Project.php:114: Method \App\Project::getAnswersByQuestion() does not have parameter type hint nor @param annotation for its parameter $question.
+  app/Project.php:155: Method \App\Project::addCase() does not have parameter type hint nor @param annotation for its parameter $duration.
+  app/Project.php:155: Method \App\Project::addCase() does not have parameter type hint nor @param annotation for its parameter $name.
+  app/Providers/AuthServiceProvider.php:50: Method \App\Providers\AuthServiceProvider::findUser() does not have native type hint for its parameter $token but it should be possible to add it based on @param annotation "string".
+  app/Providers/AuthServiceProvider.php:50: Method \App\Providers\AuthServiceProvider::findUser() does not have native type hint for its parameter $user_id but it should be possible to add it based on @param annotation "int".
+  app/User.php:79: Method \App\User::createIfDoesNotExists() does not have parameter type hint nor @param annotation for its parameter $user.
+  app/User.php:108: Method \App\User::notOwnerNorInvited() does not have parameter type hint nor @param annotation for its parameter $project.
+
+• [Code] Property type hint: (SlevomatCodingStandard\Sniffs\TypeHints\PropertyTypeHintSniff)
+  app/Cases.php:19: Property \App\Cases::$table does not have @var annotation for its value.
+  app/Cases.php:20: Property \App\Cases::$guarded does not have @var annotation for its value.
+  app/Console/Kernel.php:13: @var annotation of property \App\Console\Kernel::$commands does not specify type hint for its items.
+  app/Entry.php:9: Property \App\Entry::$table does not have @var annotation for its value.
+  app/Entry.php:10: Property \App\Entry::$guarded does not have @var annotation for its value.
+  app/Exceptions/Handler.php:13: @var annotation of property \App\Exceptions\Handler::$dontReport does not specify type hint for its items.
+  app/Exceptions/Handler.php:22: @var annotation of property \App\Exceptions\Handler::$dontFlash does not specify type hint for its items.
+  app/Group.php:10: @var annotation of property \App\Group::$fillable does not specify type hint for its items.
+  app/Http/Kernel.php:37: @var annotation of property \App\Http\Kernel::$middleware does not specify type hint for its items.
+  app/Http/Kernel.php:48: @var annotation of property \App\Http\Kernel::$middlewareGroups does not specify type hint for its items.
+  app/Http/Kernel.php:68: @var annotation of property \App\Http\Kernel::$routeMiddleware does not specify type hint for its items.
+  app/Http/Kernel.php:89: @var annotation of property \App\Http\Kernel::$middlewarePriority does not specify type hint for its items.
+  app/Http/Middleware/CheckForMaintenanceMode.php:11: @var annotation of property \App\Http\Middleware\CheckForMaintenanceMode::$except does not specify type hint for its items.
+  app/Http/Middleware/EncryptCookies.php:11: @var annotation of property \App\Http\Middleware\EncryptCookies::$except does not specify type hint for its items.
+  app/Http/Middleware/TrimStrings.php:11: @var annotation of property \App\Http\Middleware\TrimStrings::$except does not specify type hint for its items.
+  app/Http/Middleware/TrustProxies.php:12: @var annotation of property \App\Http\Middleware\TrustProxies::$proxies does not specify type hint for its items.
+  app/Http/Middleware/VerifyCsrfToken.php:16: @var annotation of property \App\Http\Middleware\VerifyCsrfToken::$except does not specify type hint for its items.
+  app/Mail/VerificationEmail.php:15: Property \App\Mail\VerificationEmail::$user does not have @var annotation for its value.
+  app/Media.php:9: Property \App\Media::$table does not have @var annotation for its value.
+  app/Media.php:12: @var annotation of property \App\Media::$fillable does not specify type hint for its items.
+  app/Profile.php:9: Property \App\Profile::$table does not have @var annotation for its value.
+  app/Profile.php:13: @var annotation of property \App\Profile::$fillable does not specify type hint for its items.
+  app/Project.php:10: @var annotation of property \App\Project::$fillable does not specify type hint for its items.
+  app/Providers/AuthServiceProvider.php:12: Property \App\Providers\AuthServiceProvider::$rules does not have @var annotation for its value.
+  app/Providers/AuthServiceProvider.php:19: @var annotation of property \App\Providers\AuthServiceProvider::$policies does not specify type hint for its items.
+  app/Providers/EventServiceProvider.php:15: @var annotation of property \App\Providers\EventServiceProvider::$listen does not specify type hint for its items.
+  app/Role.php:11: @var annotation of property \App\Role::$fillable does not specify type hint for its items.
+  app/User.php:22: @var annotation of property \App\User::$casts does not specify type hint for its items.
+  app/User.php:29: @var annotation of property \App\User::$fillable does not specify type hint for its items.
+  app/User.php:36: @var annotation of property \App\User::$hidden does not specify type hint for its items.
+
+• [Code] Return type hint: (SlevomatCodingStandard\Sniffs\TypeHints\ReturnTypeHintSniff)
+  app/AllCasesExport.php:29: @return annotation of method \App\AllCasesExport::map() does not specify type hint for items of its traversable return value.
+  app/AllCasesExport.php:66: Method \App\AllCasesExport::invalidData() has useless @return annotation.
+  app/AllCasesExport.php:76: @return annotation of method \App\AllCasesExport::formatAssociativeNamesAccordingToHeadings() does not specify type hint for items of its traversable return value.
+  app/AllCasesExport.php:96: Method \App\AllCasesExport::headings() does not have @return annotation for its traversable return value.
+  app/AllCasesExport.php:136: Method \App\AllCasesExport::collection() does not have return type hint nor @return annotation for its return value.
+  app/CaseInput.php:17: Method \App\CaseInput::__get() does not have return type hint nor @return annotation for its return value.
+  app/CaseInput.php:27: Method \App\CaseInput::text() does not have return type hint nor @return annotation for its return value.
+  app/CaseInput.php:34: Method \App\CaseInput::assignToContent() does not have void return type hint.
+  app/CaseInput.php:51: Method \App\CaseInput::multiplechoice() does not have return type hint nor @return annotation for its return value.
+  app/CaseInput.php:59: Method \App\CaseInput::onechoice() does not have return type hint nor @return annotation for its return value.
+  app/CaseInput.php:67: Method \App\CaseInput::format() does not have void return type hint.
+  app/Cases.php:24: @return annotation of method \App\Cases::getMediaValues() does not specify type hint for items of its traversable return value.
+  app/Cases.php:49: @return annotation of method \App\Cases::getInputValues() does not specify type hint for items of its traversable return value.
+  app/Cases.php:124: Method \App\Cases::project() does not have return type hint nor @return annotation for its return value.
+  app/Cases.php:129: Method \App\Cases::path() does not have return type hint nor @return annotation for its return value.
+  app/Cases.php:140: Method \App\Cases::addUser() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "User".
+  app/Cases.php:148: Method \App\Cases::user() does not have return type hint nor @return annotation for its return value.
+  app/Cases.php:155: Method \App\Cases::isEditable() has useless @return annotation.
+  app/Cases.php:162: Method \App\Cases::entries() does not have return type hint nor @return annotation for its return value.
+  app/Cases.php:168: Method \App\Cases::isConsultable() has useless @return annotation.
+  app/Cases.php:179: Method \App\Cases::lastDay() has useless @return annotation.
+  app/Cases.php:186: Method \App\Cases::notYetStarted() does not have return type hint nor @return annotation for its return value.
+  app/Cases.php:196: Method \App\Cases::firstDay() has useless @return annotation.
+  app/CasesExport.php:31: @return annotation of method \App\Exports\CasesExport::map() does not specify type hint for items of its traversable return value.
+  app/CasesExport.php:99: Method \App\Exports\CasesExport::invalidData() has useless @return annotation.
+  app/CasesExport.php:106: Method \App\Exports\CasesExport::headings() does not have @return annotation for its traversable return value.
+  app/CasesExport.php:119: Method \App\Exports\CasesExport::collection() does not have return type hint nor @return annotation for its return value.
+  app/Console/Commands/CreateUserCommand.php:57: Method \App\Console\Commands\CreateUserCommand::store() does not have return type hint nor @return annotation for its return value.
+  app/Console/Commands/InstallMetagCommand.php:61: Method \App\Console\Commands\InstallMetagCommand::storeUser() does not have return type hint nor @return annotation for its return value.
+  app/Console/Kernel.php:25: Method \App\Console\Kernel::schedule() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "void".
+  app/Console/Kernel.php:36: Method \App\Console\Kernel::commands() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "void".
+  app/Entry.php:17: Method \App\Entry::cases() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "relationship".
+  app/Entry.php:22: Method \App\Entry::project() does not have return type hint nor @return annotation for its return value.
+  app/Entry.php:27: Method \App\Entry::place() does not have return type hint nor @return annotation for its return value.
+  app/Entry.php:32: Method \App\Entry::communication_partner() does not have return type hint nor @return annotation for its return value.
+  app/Entry.php:37: Method \App\Entry::media() does not have return type hint nor @return annotation for its return value.
+  app/Exceptions/Handler.php:35: Method \App\Exceptions\Handler::report() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "void".
+  app/Exceptions/Handler.php:47: Method \App\Exceptions\Handler::render() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "\Illuminate\Http\Response".
+  app/Group.php:17: Method \App\Group::projects() does not have return type hint nor @return annotation for its return value.
+  app/Group.php:25: Method \App\Group::users() does not have return type hint nor @return annotation for its return value.
+  app/Helpers/Helper.php:18: Method \App\Helpers\Helper::random_str() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "string".
+  app/Helpers/Helper.php:33: Method \App\Helpers\Helper::extension() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "String".
+  app/Helpers/Helper.php:67: Method \App\Helpers\Helper::in_array_recursive() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "bool".
+  app/Helpers/Helper.php:83: @return annotation of method \App\Helpers\Helper::array_keys_recursive() does not specify type hint for items of its traversable return value.
+  app/Helpers/Helper.php:85: Method \App\Helpers\Helper::array_keys_recursive() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "array".
+  app/Helpers/Helper.php:107: Method \App\Helpers\Helper::recursive_array_search() does not have return type hint nor @return annotation for its return value.
+  app/Http/Controllers/ApiController.php:58: Method \App\Http\Controllers\ApiController::login() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "JsonResponse".
+  app/Http/Controllers/ApiController.php:123: Method \App\Http\Controllers\ApiController::saveDeviceId() does not have void return type hint.
+  app/Http/Controllers/ApiController.php:180: Method \App\Http\Controllers\ApiController::logout() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "JsonResponse".
+  app/Http/Controllers/ApiController.php:182: Closure does not have void return type hint.
+  app/Http/Controllers/ApiController.php:192: Method \App\Http\Controllers\ApiController::getProject() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "JsonResponse".
+  app/Http/Controllers/ApiController.php:200: @return annotation of method \App\Http\Controllers\ApiController::update() does not specify type hint for items of its traversable return value.
+  app/Http/Controllers/ApiController.php:202: Method \App\Http\Controllers\ApiController::update() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "array".
+  app/Http/Controllers/ApiController.php:215: Method \App\Http\Controllers\ApiController::getInputs() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "JsonResponse".
+  app/Http/Controllers/Auth/RegisterController.php:51: Method \App\Http\Controllers\Auth\RegisterController::validator() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "\Illuminate\Contracts\Validation\Validator".
+  app/Http/Controllers/Auth/RegisterController.php:66: Method \App\Http\Controllers\Auth\RegisterController::create() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "\App\User".
+  app/Http/Controllers/CaseInputController.php:15: Method \App\Http\Controllers\CaseInputController::index() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "Response".
+  app/Http/Controllers/CaseInputController.php:24: Method \App\Http\Controllers\CaseInputController::create() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "Response".
+  app/Http/Controllers/CaseInputController.php:34: Method \App\Http\Controllers\CaseInputController::store() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "Response".
+  app/Http/Controllers/CaseInputController.php:44: Method \App\Http\Controllers\CaseInputController::show() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "Response".
+  app/Http/Controllers/CaseInputController.php:54: Method \App\Http\Controllers\CaseInputController::edit() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "Response".
+  app/Http/Controllers/CaseInputController.php:65: Method \App\Http\Controllers\CaseInputController::update() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "Response".
+  app/Http/Controllers/CaseInputController.php:75: Method \App\Http\Controllers\CaseInputController::destroy() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "Response".
+  app/Http/Controllers/DeployController.php:10: Method \App\Http\Controllers\DeployController::deploy() does not have void return type hint.
+  app/Http/Controllers/DeployController.php:18: Closure does not have void return type hint.
+  app/Http/Controllers/EntryController.php:29: Method \App\Http\Controllers\EntryController::entriesByCase() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "AnonymousResourceCollection".
+  app/Http/Controllers/EntryController.php:40: Method \App\Http\Controllers\EntryController::store() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "Response".
+  app/Http/Controllers/EntryController.php:64: Method \App\Http\Controllers\EntryController::update() does not have return type hint nor @return annotation for its return value.
+  app/Http/Controllers/EntryController.php:88: Method \App\Http\Controllers\EntryController::consult() does not have return type hint nor @return annotation for its return value.
+  app/Http/Controllers/HomeController.php:13: Method \App\Http\Controllers\HomeController::index() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "Renderable".
+  app/Http/Controllers/MediaController.php:10: Method \App\Http\Controllers\MediaController::store() does not have return type hint nor @return annotation for its return value.
+  app/Http/Controllers/ProjectController.php:28: Method \App\Http\Controllers\ProjectController::index() does not have return type hint nor @return annotation for its return value.
+  app/Http/Controllers/ProjectController.php:57: Method \App\Http\Controllers\ProjectController::create() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "View".
+  app/Http/Controllers/ProjectController.php:66: Method \App\Http\Controllers\ProjectController::store() does not have return type hint nor @return annotation for its return value.
+  app/Http/Controllers/ProjectController.php:104: Method \App\Http\Controllers\ProjectController::update() does not have return type hint nor @return annotation for its return value.
+  app/Http/Controllers/ProjectController.php:121: Method \App\Http\Controllers\ProjectController::destroy() does not have return type hint nor @return annotation for its return value.
+  app/Http/Controllers/ProjectController.php:138: Method \App\Http\Controllers\ProjectController::inviteUser() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "JsonResponse".
+  app/Http/Controllers/ProjectController.php:159: Method \App\Http\Controllers\ProjectController::removeFromProject() does not have return type hint nor @return annotation for its return value.
+  app/Http/Controllers/ProjectController.php:174: Method \App\Http\Controllers\ProjectController::export() does not have return type hint nor @return annotation for its return value.
+  app/Http/Controllers/UserController.php:29: Method \App\Http\Controllers\UserController::index() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "Response".
+  app/Http/Controllers/UserController.php:38: Method \App\Http\Controllers\UserController::create() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "Response".
+  app/Http/Controllers/UserController.php:50: Method \App\Http\Controllers\UserController::store() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "Response".
+  app/Http/Controllers/UserController.php:89: Method \App\Http\Controllers\UserController::show() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "Response".
+  app/Http/Controllers/UserController.php:99: Method \App\Http\Controllers\UserController::edit() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "Response".
+  app/Http/Controllers/UserController.php:110: Method \App\Http\Controllers\UserController::update() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "Response".
+  app/Http/Controllers/UserController.php:126: Method \App\Http\Controllers\UserController::destroy() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "Response".
+  app/Http/Controllers/UserController.php:138: Method \App\Http\Controllers\UserController::userExists() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "JsonResponse".
+  app/Http/Controllers/UserController.php:143: Method \App\Http\Controllers\UserController::showresetpassword() does not have return type hint nor @return annotation for its return value.
+  app/Http/Middleware/Authenticate.php:15: Method \App\Http\Middleware\Authenticate::redirectTo() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "string".
+  app/Http/Middleware/RefreshApiToken.php:10: Method \App\Http\Middleware\RefreshApiToken::handle() does not have return type hint nor @return annotation for its return value.
+  app/Http/Requests/StoreUser.php:14: Method \App\Http\Requests\StoreUser::authorize() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "bool".
+  app/Http/Requests/StoreUser.php:22: @return annotation of method \App\Http\Requests\StoreUser::rules() does not specify type hint for items of its traversable return value.
+  app/Http/Requests/StoreUser.php:24: Method \App\Http\Requests\StoreUser::rules() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "array".
+  app/Http/Resources/Entry.php:15: @return annotation of method \App\Http\Resources\Entry::toArray() does not specify type hint for items of its traversable return value.
+  app/Http/Resources/Entry.php:17: Method \App\Http\Resources\Entry::toArray() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "array".
+  app/Media.php:18: Method \App\Media::path() does not have return type hint nor @return annotation for its return value.
+  app/Media.php:23: Method \App\Media::media_group() does not have return type hint nor @return annotation for its return value.
+  app/Media.php:28: Method \App\Media::entries() does not have return type hint nor @return annotation for its return value.
+  app/Media.php:33: Method \App\Media::projects() does not have return type hint nor @return annotation for its return value.
+  app/Policies/EntryPolicy.php:13: Method \App\Policies\EntryPolicy::update() does not have return type hint nor @return annotation for its return value.
+  app/Policies/ProjectPolicy.php:13: Method \App\Policies\ProjectPolicy::update() does not have return type hint nor @return annotation for its return value.
+  app/Profile.php:19: Method \App\Profile::user() does not have return type hint nor @return annotation for its return value.
+  app/Project.php:17: Method \App\Project::boot() does not have void return type hint.
+  app/Project.php:20: Closure does not have void return type hint.
+  app/Project.php:41: @return annotation of method \App\Project::getProjectInputHeadings() does not specify type hint for items of its traversable return value.
+  app/Project.php:59: Method \App\Project::entries() does not have return type hint nor @return annotation for its return value.
+  app/Project.php:64: Method \App\Project::getInputs() does not have return type hint nor @return annotation for its return value.
+  app/Project.php:69: Method \App\Project::getSpecificInput() does not have return type hint nor @return annotation for its return value.
+  app/Project.php:85: @return annotation of method \App\Project::getProjectInputNames() does not specify type hint for items of its traversable return value.
+  app/Project.php:99: Method \App\Project::getNumberOfAnswersByQuestion() does not have return type hint nor @return annotation for its return value.
+  app/Project.php:114: Method \App\Project::getAnswersByQuestion() does not have return type hint nor @return annotation for its return value.
+  app/Project.php:130: Method \App\Project::isEditable() does not have return type hint nor @return annotation for its return value.
+  app/Project.php:135: Method \App\Project::cases() does not have return type hint nor @return annotation for its return value.
+  app/Project.php:140: Method \App\Project::media() does not have return type hint nor @return annotation for its return value.
+  app/Project.php:145: Method \App\Project::path() does not have return type hint nor @return annotation for its return value.
+  app/Project.php:150: Method \App\Project::created_by() does not have return type hint nor @return annotation for its return value.
+  app/Project.php:155: Method \App\Project::addCase() does not have return type hint nor @return annotation for its return value.
+  app/Project.php:160: Method \App\Project::invited() does not have return type hint nor @return annotation for its return value.
+  app/Providers/AppServiceProvider.php:15: Method \App\Providers\AppServiceProvider::boot() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "void".
+  app/Providers/AppServiceProvider.php:18: Closure does not have void return type hint.
+  app/Providers/AppServiceProvider.php:26: Method \App\Providers\AppServiceProvider::register() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "void".
+  app/Providers/AuthServiceProvider.php:32: Method \App\Providers\AuthServiceProvider::boot() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "void".
+  app/Providers/AuthServiceProvider.php:50: Method \App\Providers\AuthServiceProvider::findUser() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "token".
+  app/Providers/BroadcastServiceProvider.php:15: Method \App\Providers\BroadcastServiceProvider::boot() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "void".
+  app/Providers/EventServiceProvider.php:28: Method \App\Providers\EventServiceProvider::boot() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "void".
+  app/Providers/EventServiceProvider.php:32: Closure does not have void return type hint.
+  app/Providers/RouteServiceProvider.php:24: Method \App\Providers\RouteServiceProvider::boot() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "void".
+  app/Providers/RouteServiceProvider.php:36: Method \App\Providers\RouteServiceProvider::map() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "void".
+  app/Providers/RouteServiceProvider.php:52: Method \App\Providers\RouteServiceProvider::mapWebRoutes() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "void".
+  app/Providers/RouteServiceProvider.php:66: Method \App\Providers\RouteServiceProvider::mapApiRoutes() does not have native return type hint for its return value but it should be possible to add it based on @return annotation "void".
+  app/Role.php:24: Method \App\Role::users() does not have return type hint nor @return annotation for its return value.
+  app/User.php:42: Method \App\User::boot() does not have void return type hint.
+  app/User.php:45: Closure does not have void return type hint.
+  app/User.php:79: Method \App\User::createIfDoesNotExists() does not have return type hint nor @return annotation for its return value.
+  app/User.php:93: Method \App\User::groups() does not have return type hint nor @return annotation for its return value.
+  app/User.php:98: Method \App\User::isAdmin() does not have return type hint nor @return annotation for its return value.
+  app/User.php:103: Method \App\User::roles() does not have return type hint nor @return annotation for its return value.
+  app/User.php:108: Method \App\User::notOwnerNorInvited() does not have return type hint nor @return annotation for its return value.
+  app/User.php:113: Method \App\User::invites() does not have return type hint nor @return annotation for its return value.
+  app/User.php:119: Method \App\User::profile() does not have return type hint nor @return annotation for its return value.
+  app/User.php:124: Method \App\User::case() does not have return type hint nor @return annotation for its return value.
+  app/User.php:130: Method \App\User::isResearcher() has useless @return annotation.
+  app/User.php:137: Method \App\User::latestCase() does not have return type hint nor @return annotation for its return value.
+  app/User.php:142: Method \App\User::projects() does not have return type hint nor @return annotation for its return value.
+  app/User.php:156: Method \App\User::hasReachMaxNumberOfProjecs() has useless @return annotation.
+  routes/api.php:23: Closure does not have void return type hint.
+  routes/console.php:16: Closure does not have void return type hint.
+  routes/web.php:22: Closure does not have void return type hint.
+  routes/web.php:30: Closure does not have void return type hint.
+
+• [Code] Useless function doc comment: (SlevomatCodingStandard\Sniffs\Commenting\UselessFunctionDocCommentSniff)
+  app/AllCasesExport.php:68: Method \App\AllCasesExport::invalidData() does not need documentation comment.
+  app/Cases.php:170: Method \App\Cases::isConsultable() does not need documentation comment.
+  app/CasesExport.php:101: Method \App\Exports\CasesExport::invalidData() does not need documentation comment.
+  app/Http/Controllers/ProjectController.php:92: Method \App\Http\Controllers\ProjectController::syncMedia() does not need documentation comment.
+  app/User.php:132: Method \App\User::isResearcher() does not need documentation comment.
+  app/User.php:158: Method \App\User::hasReachMaxNumberOfProjecs() does not need documentation comment.
+
+• [Code] No empty comment: (PhpCsFixer\Fixer\Comment\NoEmptyCommentFixer)
+  app/Console/Kernel.php:16: You should change the following 
+-        //
++        
+
+
+  app/Exceptions/Handler.php:16: You should change the following 
+-        //
++        
+
+
+  app/Http/Controllers/CaseInputController.php:17: You should change the following 
+-        //
++        
+
+
+  app/Http/Controllers/CaseInputController.php:26: You should change the following 
+-        //
++        
+
+
+  app/Http/Controllers/CaseInputController.php:36: You should change the following 
+-        //
++        
+
+
+  app/Http/Controllers/CaseInputController.php:46: You should change the following 
+-        //
++        
+
+
+  app/Http/Controllers/CaseInputController.php:56: You should change the following 
+-        //
++        
+
+
+  app/Http/Controllers/CaseInputController.php:67: You should change the following 
+-        //
++        
+
+
+  app/Http/Controllers/CaseInputController.php:77: You should change the following 
+-        //
++        
+
+
+  app/Http/Controllers/UserController.php:31: You should change the following 
+-        //
++        
+
+
+  app/Http/Controllers/UserController.php:91: You should change the following 
+-        //
++        
+
+
+  app/Http/Controllers/UserController.php:101: You should change the following 
+-        //
++        
+
+
+  app/Http/Middleware/CheckForMaintenanceMode.php:14: You should change the following 
+-        //
++        
+
+
+  app/Http/Middleware/EncryptCookies.php:14: You should change the following 
+-        //
++        
+
+
+  app/Http/Middleware/VerifyCsrfToken.php:19: You should change the following 
+-        //
++        
+
+
+  app/Providers/RouteServiceProvider.php:26: You should change the following 
+-        //
++        
+
+
+  app/Providers/RouteServiceProvider.php:42: You should change the following 
+-        //
++        
+
+
+
+• [Code] Unused parameter: (SlevomatCodingStandard\Sniffs\Functions\UnusedParameterSniff)
+  app/Console/Kernel.php:25: Unused parameter $schedule.
+  app/Http/Controllers/ApiController.php:182: Unused parameter $key.
+  app/Http/Controllers/CaseInputController.php:34: Unused parameter $request.
+  app/Http/Controllers/CaseInputController.php:44: Unused parameter $caseInput.
+  app/Http/Controllers/CaseInputController.php:54: Unused parameter $caseInput.
+  app/Http/Controllers/CaseInputController.php:65: Unused parameter $caseInput.
+  app/Http/Controllers/CaseInputController.php:65: Unused parameter $request.
+  app/Http/Controllers/CaseInputController.php:75: Unused parameter $caseInput.
+  app/Http/Controllers/EntryController.php:40: Unused parameter $request.
+  app/Http/Controllers/EntryController.php:64: Unused parameter $request.
+  app/Http/Controllers/EntryController.php:104: Unused parameter $case.
+  app/Http/Controllers/ProjectCasesController.php:81: Unused parameter $request.
+  app/Http/Controllers/ProjectController.php:57: Unused parameter $request.
+  app/Http/Resources/Entry.php:17: Unused parameter $request.
+
+• [Code] Static closure: (SlevomatCodingStandard\Sniffs\Functions\StaticClosureSniff)
+  app/Cases.php:60: Closure not using "$this" should be declared static.
+  app/Http/Controllers/ApiController.php:182: Closure not using "$this" should be declared static.
+  app/Http/Controllers/DeployController.php:18: Closure not using "$this" should be declared static.
+  app/Project.php:20: Closure not using "$this" should be declared static.
+  app/Providers/AppServiceProvider.php:18: Closure not using "$this" should be declared static.
+  app/Providers/AuthServiceProvider.php:37: Closure not using "$this" should be declared static.
+  app/Providers/EventServiceProvider.php:32: Closure not using "$this" should be declared static.
+  app/User.php:45: Closure not using "$this" should be declared static.
+  routes/api.php:23: Closure not using "$this" should be declared static.
+  routes/channels.php:14: Closure not using "$this" should be declared static.
+  routes/web.php:22: Closure not using "$this" should be declared static.
+  routes/web.php:30: Closure not using "$this" should be declared static.
+
+• [Code] Forbidden functions: (PHP_CodeSniffer\Standards\Generic\Sniffs\PHP\ForbiddenFunctionsSniff)
+  app/Helpers/Helper.php:109: The use of function dd() is forbidden
+
+Press enter to see complexity issues...
+
+• [Complexity] Having `classes` with more than 5 cyclomatic complexity is prohibited - Consider refactoring: (NunoMaduro\PhpInsights\Domain\Insights\CyclomaticComplexityIsHigh)
+  app/AllCasesExport.php: 18 cyclomatic complexity
+  app/Cases.php: 15 cyclomatic complexity
+  app/CasesExport.php: 15 cyclomatic complexity
+  app/Helpers/Helper.php: 14 cyclomatic complexity
+  app/Http/Controllers/ApiController.php: 9 cyclomatic complexity
+  app/Http/Controllers/ProjectCasesController.php: 8 cyclomatic complexity
+  app/Http/Controllers/ProjectController.php: 11 cyclomatic complexity
+  app/Http/Controllers/UserController.php: 9 cyclomatic complexity
+  app/Project.php: 20 cyclomatic complexity
+  app/User.php: 10 cyclomatic complexity
+
+Press enter to see architecture issues...
+
+• [Architecture] Class trait and interface length: (ObjectCalisthenics\Sniffs\Files\ClassTraitAndInterfaceLengthSniff)
+  app/Http/Controllers/ApiController.php:16: Your class is too long. Currently using 205 lines. Can be up to 200 lines.
+
+• [Architecture] Method per class limit: (ObjectCalisthenics\Sniffs\Metrics\MethodPerClassLimitSniff)
+  app/Cases.php:8: Class has too many methods: 13. Can be up to 10 methods.
+  app/Http/Controllers/ApiController.php:16: Class has too many methods: 12. Can be up to 10 methods.
+  app/Project.php:7: Class has too many methods: 15. Can be up to 10 methods.
+  app/User.php:17: Class has too many methods: 14. Can be up to 10 methods.
+
+• [Architecture] Function length: (ObjectCalisthenics\Sniffs\Files\FunctionLengthSniff)
+  app/AllCasesExport.php:32: Your function is too long. Currently using 30 lines. Can be up to 20 lines.
+  app/AllCasesExport.php:149: Your function is too long. Currently using 25 lines. Can be up to 20 lines.
+  app/Cases.php:51: Your function is too long. Currently using 36 lines. Can be up to 20 lines.
+  app/Cases.php:96: Your function is too long. Currently using 25 lines. Can be up to 20 lines.
+  app/CasesExport.php:34: Your function is too long. Currently using 60 lines. Can be up to 20 lines.
+  app/Console/Commands/DeleteProjectCommand.php:36: Your function is too long. Currently using 25 lines. Can be up to 20 lines.
+  app/Console/Commands/DeleteUserCommand.php:35: Your function is too long. Currently using 36 lines. Can be up to 20 lines.
+  app/Console/Commands/InstallMetagCommand.php:37: Your function is too long. Currently using 21 lines. Can be up to 20 lines.
+  app/Http/Controllers/ApiController.php:58: Your function is too long. Currently using 58 lines. Can be up to 20 lines.
+  app/Http/Controllers/EntryController.php:40: Your function is too long. Currently using 21 lines. Can be up to 20 lines.
+  app/Http/Controllers/UserController.php:50: Your function is too long. Currently using 31 lines. Can be up to 20 lines.
+  app/User.php:42: Your function is too long. Currently using 34 lines. Can be up to 20 lines.
+
+• [Architecture] Method argument space: (PhpCsFixer\Fixer\FunctionNotation\MethodArgumentSpaceFixer)
+  app/Helpers/Helper.php:112: You should change the following 
+-                $nextKey = recursive_array_search($needle,$value, $currentKey . '[' . $key . ']');
++                $nextKey = recursive_array_search($needle, $value, $currentKey . '[' . $key . ']');
+
+
+  app/Http/Resources/Entry.php:29: You should change the following 
+-            "media_name" => Media::where('id',$this->media_id)->first()->name,
++            "media_name" => Media::where('id', $this->media_id)->first()->name,
+
+
+  app/Policies/EntryPolicy.php:13: You should change the following 
+-	public function update(User $user,\App\Cases $cases)
++	public function update(User $user, \App\Cases $cases)
+
+
+  app/Policies/ProjectPolicy.php:13: You should change the following 
+-    public function update(User $user,Project $project)
++    public function update(User $user, Project $project)
+
+
+  app/Policies/ProjectPolicy.php:15: You should change the following 
+-        return $user->is($project->created_by()) || in_array($project->id,$user->invites()->pluck('project_id')->toArray());
++        return $user->is($project->created_by()) || in_array($project->id, $user->invites()->pluck('project_id')->toArray());
+
+
+  app/Providers/AuthServiceProvider.php:50: You should change the following 
+-    public function findUser($user_id,$token)
++    public function findUser($user_id, $token)
+
+
+  app/Providers/AuthServiceProvider.php:52: You should change the following 
+-        $data = compact("user_id","token");
++        $data = compact("user_id", "token");
+
+
+  app/Providers/AuthServiceProvider.php:54: You should change the following 
+-        if(validator($data,$this->rules)->fails()){
++        if(validator($data, $this->rules)->fails()){
+
+
+  routes/api.php:24: You should change the following 
+-Route::get('/inputs/{project}','ApiController@getInputs');
+-Route::get('/project/{project}','ApiController@getProject');
++Route::get('/inputs/{project}', 'ApiController@getInputs');
++Route::get('/project/{project}', 'ApiController@getProject');
+
+
+  routes/api.php:27: You should change the following 
+-Route::get('/inputs/{project}','ApiController@getInputs');
+-Route::get('/entry/{case}','EntryController@entriesByCase');
++Route::get('/inputs/{project}', 'ApiController@getInputs');
++Route::get('/entry/{case}', 'EntryController@entriesByCase');
+
+
+  routes/api.php:30: You should change the following 
+-Route::post('/cases/{case}/entries','EntryController@store');
+-Route::patch('/cases/{case}/entries/{entry}','EntryController@update');
+-Route::delete('/cases/{case}/entries/{entry}','EntryController@destroy');
++Route::post('/cases/{case}/entries', 'EntryController@store');
++Route::patch('/cases/{case}/entries/{entry}', 'EntryController@update');
++Route::delete('/cases/{case}/entries/{entry}', 'EntryController@destroy');
+
+
+  routes/web.php:26: You should change the following 
+-    Route::get('/groups/new','GroupController@create')->name('new_group');
+-    Route::post('/groups/store','GroupController@store')->name('store_groups');
++    Route::get('/groups/new', 'GroupController@create')->name('new_group');
++    Route::post('/groups/store', 'GroupController@store')->name('store_groups');
+
+
+  routes/web.php:31: You should change the following 
+-	Route::get('/','ProjectController@index');
++	Route::get('/', 'ProjectController@index');
+
+
+  routes/web.php:37: You should change the following 
+-	Route::get('/home','ProjectController@index');
+-	Route::get('/projects','ProjectController@index');
+-	Route::post('/projects','ProjectController@store')->name('projects');
+-	Route::get('/projects/new','ProjectController@create');
+-	Route::get('/projects/{project}','ProjectController@show');
+-	Route::patch('/projects/{project}','ProjectController@update');
+-	Route::delete('/projects/{project}','ProjectController@destroy');
+-    Route::get('/projects/{project}/export','ProjectController@export');
++	Route::get('/home', 'ProjectController@index');
++	Route::get('/projects', 'ProjectController@index');
++	Route::post('/projects', 'ProjectController@store')->name('projects');
++	Route::get('/projects/new', 'ProjectController@create');
++	Route::get('/projects/{project}', 'ProjectController@show');
++	Route::patch('/projects/{project}', 'ProjectController@update');
++	Route::delete('/projects/{project}', 'ProjectController@destroy');
++    Route::get('/projects/{project}/export', 'ProjectController@export');
+
+
+  routes/web.php:46: You should change the following 
+-    Route::post('/projects/invite','ProjectController@inviteUser');
+-    Route::post('/projects/invite/{user}','ProjectController@removeFromProject');
++    Route::post('/projects/invite', 'ProjectController@inviteUser');
++    Route::post('/projects/invite/{user}', 'ProjectController@removeFromProject');
+
+
+  routes/web.php:54: You should change the following 
+-	Route::get('/projects/{project}/cases/new','ProjectCasesController@create');
+-	Route::post('/projects/{project}/cases','ProjectCasesController@store');
+-	Route::get('/projects/{project}/cases/{case}','ProjectCasesController@show');
+-	Route::get('/export/cases/{case}','ProjectCasesController@export');
+-	Route::patch('/projects/{project}/cases/{case}','ProjectCasesController@update');
+-	Route::delete('/cases/{case}','ProjectCasesController@destroy');
++	Route::get('/projects/{project}/cases/new', 'ProjectCasesController@create');
++	Route::post('/projects/{project}/cases', 'ProjectCasesController@store');
++	Route::get('/projects/{project}/cases/{case}', 'ProjectCasesController@show');
++	Route::get('/export/cases/{case}', 'ProjectCasesController@export');
++	Route::patch('/projects/{project}/cases/{case}', 'ProjectCasesController@update');
++	Route::delete('/cases/{case}', 'ProjectCasesController@destroy');
+
+
+  routes/web.php:66: You should change the following 
+-	Route::get('/media','MediaController@index');
+-	Route::post('/media','MediaController@store');
+-	Route::get('/media/new','MediaController@create');
+-	Route::get('/media/{project}','MediaController@show');
++	Route::get('/media', 'MediaController@index');
++	Route::post('/media', 'MediaController@store');
++	Route::get('/media/new', 'MediaController@create');
++	Route::get('/media/{project}', 'MediaController@show');
+
+
+  routes/web.php:75: You should change the following 
+-	Route::post('/users','UserController@store')->name('users');
+-    Route::post('/users/exist','UserController@userExists');
+-    Route::get('/admin/users/new','UserController@create')->name('newadminusers');
++	Route::post('/users', 'UserController@store')->name('users');
++    Route::post('/users/exist', 'UserController@userExists');
++    Route::get('/admin/users/new', 'UserController@create')->name('newadminusers');
+
+
+  routes/web.php:80: You should change the following 
+-    Route::post('/cases/exist','CaseController@caseExists');
++    Route::post('/cases/exist', 'CaseController@caseExists');
+
+
+
+Press enter to see style issues...
+
+• [Style] End file newline: (PHP_CodeSniffer\Standards\PSR2\Sniffs\Files\EndFileNewlineSniff)
+  routes/web.php:92: Expected 1 blank line at end of file; 2 found
+
+• [Style] Function closing brace: (PHP_CodeSniffer\Standards\PSR2\Sniffs\Methods\FunctionClosingBraceSniff)
+  app/AllCasesExport.php:109: Function closing brace must go on the next line following the body; found 1 blank lines before brace
+  app/CaseInput.php:15: Function closing brace must go on the next line following the body; found 2 blank lines before brace
+  app/CaseInput.php:25: Function closing brace must go on the next line following the body; found 1 blank lines before brace
+  app/Cases.php:192: Function closing brace must go on the next line following the body; found 1 blank lines before brace
+  app/CasesExport.php:117: Function closing brace must go on the next line following the body; found 1 blank lines before brace
+  app/Console/Commands/CreateUserCommand.php:69: Function closing brace must go on the next line following the body; found 1 blank lines before brace
+  app/Console/Commands/DeleteProjectCommand.php:62: Function closing brace must go on the next line following the body; found 1 blank lines before brace
+  app/Console/Commands/DeleteUserCommand.php:72: Function closing brace must go on the next line following the body; found 2 blank lines before brace
+  app/Console/Commands/InstallMetagCommand.php:59: Function closing brace must go on the next line following the body; found 2 blank lines before brace
+  app/Console/Commands/InstallMetagCommand.php:80: Function closing brace must go on the next line following the body; found 1 blank lines before brace
+  app/Http/Controllers/ApiController.php:129: Function closing brace must go on the next line following the body; found 1 blank lines before brace
+  app/Http/Controllers/ApiController.php:221: Function closing brace must go on the next line following the body; found 1 blank lines before brace
+  app/Http/Controllers/EntryController.php:62: Function closing brace must go on the next line following the body; found 1 blank lines before brace
+  app/Http/Controllers/EntryController.php:96: Function closing brace must go on the next line following the body; found 1 blank lines before brace
+  app/Http/Controllers/EntryController.php:113: Function closing brace must go on the next line following the body; found 1 blank lines before brace
+  app/Http/Controllers/MediaController.php:21: Function closing brace must go on the next line following the body; found 1 blank lines before brace
+  app/Http/Controllers/ProjectCasesController.php:74: Function closing brace must go on the next line following the body; found 1 blank lines before brace
+  app/Http/Controllers/ProjectCasesController.php:137: Function closing brace must go on the next line following the body; found 2 blank lines before brace
+  app/Http/Controllers/ProjectController.php:85: Function closing brace must go on the next line following the body; found 1 blank lines before brace
+  app/Http/Controllers/ProjectController.php:132: Function closing brace must go on the next line following the body; found 2 blank lines before brace
+  app/Http/Controllers/ProjectController.php:157: Function closing brace must go on the next line following the body; found 1 blank lines before brace
+  app/Http/Controllers/ProjectController.php:172: Function closing brace must go on the next line following the body; found 1 blank lines before brace
+  app/Http/Controllers/UserController.php:82: Function closing brace must go on the next line following the body; found 1 blank lines before brace
+  app/Http/Middleware/CheckGroup.php:24: Function closing brace must go on the next line following the body; found 1 blank lines before brace
+  app/Project.php:34: Function closing brace must go on the next line following the body; found 1 blank lines before brace
+  app/Project.php:37: Function closing brace must go on the next line following the body; found 2 blank lines before brace
+  app/Project.php:164: Function closing brace must go on the next line following the body; found 1 blank lines before brace
+  app/Providers/AuthServiceProvider.php:62: Function closing brace must go on the next line following the body; found 1 blank lines before brace
+  app/User.php:74: Function closing brace must go on the next line following the body; found 1 blank lines before brace
+  app/User.php:77: Function closing brace must go on the next line following the body; found 2 blank lines before brace
+  app/User.php:117: Function closing brace must go on the next line following the body; found 1 blank lines before brace
+  routes/api.php:34: Function closing brace must go on the next line following the body; found 1 blank lines before brace
+  routes/web.php:92: Function closing brace must go on the next line following the body; found 3 blank lines before brace
+
+• [Style] Object operator indent: (PHP_CodeSniffer\Standards\PEAR\Sniffs\WhiteSpace\ObjectOperatorIndentSniff)
+  app/Providers/RouteServiceProvider.php:55: Object operator not indented correctly; expected 12 spaces but found 13
+  app/Providers/RouteServiceProvider.php:56: Object operator not indented correctly; expected 12 spaces but found 13
+  app/Providers/RouteServiceProvider.php:69: Object operator not indented correctly; expected 12 spaces but found 13
+  app/Providers/RouteServiceProvider.php:70: Object operator not indented correctly; expected 12 spaces but found 13
+  app/Providers/RouteServiceProvider.php:71: Object operator not indented correctly; expected 12 spaces but found 13
+
+• [Style] Scope closing brace: (PHP_CodeSniffer\Standards\PEAR\Sniffs\WhiteSpace\ScopeClosingBraceSniff)
+  app/Providers/AppServiceProvider.php:18: Closing brace must be on a line by itself
+
+• [Style] Disallow long array syntax: (PHP_CodeSniffer\Standards\Generic\Sniffs\Arrays\DisallowLongArraySyntaxSniff)
+  app/AllCasesExport.php:93: Short array syntax must be used to define arrays
+  app/Cases.php:43: Short array syntax must be used to define arrays
+  app/Cases.php:87: Short array syntax must be used to define arrays
+  app/Cases.php:98: Short array syntax must be used to define arrays
+  app/Helpers/Helper.php:85: Short array syntax must be used to define arrays
+  app/Http/Controllers/ApiController.php:139: Short array syntax must be used to define arrays
+  app/Http/Controllers/ProjectController.php:95: Short array syntax must be used to define arrays
+
+• [Style] Line length: (PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineLengthSniff)
+  app/AllCasesExport.php:47: Line exceeds maximum limit of 100 characters; contains 133 characters
+  app/AllCasesExport.php:49: Line exceeds maximum limit of 100 characters; contains 106 characters
+  app/AllCasesExport.php:52: Line exceeds 80 characters; contains 96 characters
+  app/AllCasesExport.php:78: Line exceeds maximum limit of 100 characters; contains 101 characters
+  app/AllCasesExport.php:86: Line exceeds 80 characters; contains 84 characters
+  app/AllCasesExport.php:125: Line exceeds 80 characters; contains 86 characters
+  app/AllCasesExport.php:128: Line exceeds maximum limit of 100 characters; contains 144 characters
+  app/AllCasesExport.php:149: Line exceeds maximum limit of 100 characters; contains 154 characters
+  app/AllCasesExport.php:156: Line exceeds 80 characters; contains 87 characters
+  app/CaseInput.php:54: Line exceeds maximum limit of 100 characters; contains 116 characters
+  app/CaseInput.php:62: Line exceeds maximum limit of 100 characters; contains 111 characters
+  app/Cases.php:41: Line exceeds maximum limit of 100 characters; contains 107 characters
+  app/Cases.php:56: Line exceeds maximum limit of 100 characters; contains 102 characters
+  app/Cases.php:63: Line exceeds maximum limit of 100 characters; contains 103 characters
+  app/Cases.php:71: Line exceeds maximum limit of 100 characters; contains 171 characters
+  app/Cases.php:81: Line exceeds 80 characters; contains 93 characters
+  app/Cases.php:84: Line exceeds maximum limit of 100 characters; contains 152 characters
+  app/Cases.php:96: Line exceeds maximum limit of 100 characters; contains 115 characters
+  app/Cases.php:99: Line exceeds 80 characters; contains 91 characters
+  app/Cases.php:101: Line exceeds 80 characters; contains 95 characters
+  app/Cases.php:102: Line exceeds maximum limit of 100 characters; contains 133 characters
+  app/Cases.php:103: Line exceeds maximum limit of 100 characters; contains 126 characters
+  app/Cases.php:105: Line exceeds maximum limit of 100 characters; contains 128 characters
+  app/Cases.php:106: Line exceeds maximum limit of 100 characters; contains 121 characters
+  app/Cases.php:109: Line exceeds maximum limit of 100 characters; contains 102 characters
+  app/Cases.php:110: Line exceeds maximum limit of 100 characters; contains 116 characters
+  app/Cases.php:113: Line exceeds 80 characters; contains 86 characters
+  app/Cases.php:114: Line exceeds maximum limit of 100 characters; contains 111 characters
+  app/Cases.php:115: Line exceeds 80 characters; contains 91 characters
+  app/Cases.php:118: Line exceeds maximum limit of 100 characters; contains 127 characters
+  app/CasesExport.php:45: Line exceeds 80 characters; contains 82 characters
+  app/CasesExport.php:49: Line exceeds 80 characters; contains 82 characters
+  app/CasesExport.php:53: Line exceeds 80 characters; contains 88 characters
+  app/CasesExport.php:63: Line exceeds 80 characters; contains 90 characters
+  app/CasesExport.php:68: Line exceeds 80 characters; contains 92 characters
+  app/CasesExport.php:73: Line exceeds 80 characters; contains 83 characters
+  app/CasesExport.php:91: Line exceeds 80 characters; contains 88 characters
+  app/Console/Commands/CreateUserCommand.php:48: Line exceeds maximum limit of 100 characters; contains 103 characters
+  app/Console/Commands/CreateUserCommand.php:52: Line exceeds 80 characters; contains 89 characters
+  app/Console/Commands/CreateUserCommand.php:66: Line exceeds maximum limit of 100 characters; contains 108 characters
+  app/Console/Commands/DeleteProjectCommand.php:56: Line exceeds maximum limit of 100 characters; contains 119 characters
+  app/Console/Commands/DeleteUserCommand.php:20: Line exceeds maximum limit of 100 characters; contains 103 characters
+  app/Console/Commands/DeleteUserCommand.php:55: Line exceeds 80 characters; contains 92 characters
+  app/Console/Commands/DeleteUserCommand.php:58: Line exceeds 80 characters; contains 96 characters
+  app/Console/Commands/DeleteUserCommand.php:59: Line exceeds maximum limit of 100 characters; contains 143 characters
+  app/Console/Commands/InstallMetagCommand.php:45: Line exceeds 80 characters; contains 86 characters
+  app/Helpers/Helper.php:18: Line exceeds maximum limit of 100 characters; contains 134 characters
+  app/Helpers/Helper.php:68: Line exceeds 80 characters; contains 89 characters
+  app/Helpers/Helper.php:85: Line exceeds maximum limit of 100 characters; contains 109 characters
+  app/Helpers/Helper.php:91: Line exceeds maximum limit of 100 characters; contains 103 characters
+  app/Helpers/Helper.php:107: Line exceeds 80 characters; contains 89 characters
+  app/Helpers/Helper.php:112: Line exceeds 80 characters; contains 98 characters
+  app/Helpers/Helper.php:118: Line exceeds 80 characters; contains 86 characters
+  app/Http/Controllers/ApiController.php:32: Line exceeds 80 characters; contains 84 characters
+  app/Http/Controllers/ApiController.php:80: Line exceeds maximum limit of 100 characters; contains 134 characters
+  app/Http/Controllers/ApiController.php:81: Line exceeds maximum limit of 100 characters; contains 102 characters
+  app/Http/Controllers/ApiController.php:85: Line exceeds maximum limit of 100 characters; contains 104 characters
+  app/Http/Controllers/ApiController.php:87: Line exceeds 80 characters; contains 84 characters
+  app/Http/Controllers/ApiController.php:99: Line exceeds maximum limit of 100 characters; contains 102 characters
+  app/Http/Controllers/ApiController.php:100: Line exceeds 80 characters; contains 96 characters
+  app/Http/Controllers/ApiController.php:125: Line exceeds 80 characters; contains 92 characters
+  app/Http/Controllers/ApiController.php:126: Line exceeds maximum limit of 100 characters; contains 167 characters
+  app/Http/Controllers/ApiController.php:127: Line exceeds 80 characters; contains 82 characters
+  app/Http/Controllers/ApiController.php:153: Line exceeds maximum limit of 100 characters; contains 102 characters
+  app/Http/Controllers/EntryController.php:31: Line exceeds 80 characters; contains 82 characters
+  app/Http/Controllers/EntryController.php:56: Line exceeds maximum limit of 100 characters; contains 108 characters
+  app/Http/Controllers/EntryController.php:76: Line exceeds maximum limit of 100 characters; contains 108 characters
+  app/Http/Controllers/EntryController.php:91: Line exceeds maximum limit of 100 characters; contains 112 characters
+  app/Http/Controllers/ProjectCasesController.php:84: Line exceeds 80 characters; contains 99 characters
+  app/Http/Controllers/ProjectCasesController.php:85: Line exceeds maximum limit of 100 characters; contains 126 characters
+  app/Http/Controllers/ProjectCasesController.php:94: Line exceeds 80 characters; contains 87 characters
+  app/Http/Controllers/ProjectCasesController.php:96: Line exceeds maximum limit of 100 characters; contains 104 characters
+  app/Http/Controllers/ProjectCasesController.php:126: Line exceeds maximum limit of 100 characters; contains 102 characters
+  app/Http/Controllers/ProjectCasesController.php:128: Line exceeds maximum limit of 100 characters; contains 109 characters
+  app/Http/Controllers/ProjectCasesController.php:149: Line exceeds 80 characters; contains 98 characters
+  app/Http/Controllers/ProjectController.php:45: Line exceeds maximum limit of 100 characters; contains 101 characters
+  app/Http/Controllers/ProjectController.php:97: Line exceeds 80 characters; contains 89 characters
+  app/Http/Controllers/ProjectController.php:124: Line exceeds 80 characters; contains 83 characters
+  app/Http/Controllers/ProjectController.php:127: Line exceeds 80 characters; contains 94 characters
+  app/Http/Controllers/ProjectController.php:141: Line exceeds 80 characters; contains 81 characters
+  app/Http/Controllers/ProjectController.php:149: Line exceeds maximum limit of 100 characters; contains 153 characters
+  app/Http/Controllers/ProjectController.php:155: Line exceeds 80 characters; contains 94 characters
+  app/Http/Controllers/ProjectController.php:162: Line exceeds maximum limit of 100 characters; contains 108 characters
+  app/Http/Controllers/ProjectController.php:166: Line exceeds 80 characters; contains 98 characters
+  app/Http/Controllers/ProjectController.php:168: Line exceeds 80 characters; contains 87 characters
+  app/Http/Controllers/ProjectController.php:180: Line exceeds maximum limit of 100 characters; contains 121 characters
+  app/Http/Controllers/UserController.php:67: Line exceeds maximum limit of 100 characters; contains 153 characters
+  app/Http/Controllers/UserController.php:71: Line exceeds 80 characters; contains 84 characters
+  app/Http/Controllers/UserController.php:77: Line exceeds maximum limit of 100 characters; contains 117 characters
+  app/Http/Controllers/UserController.php:79: Line exceeds 80 characters; contains 99 characters
+  app/Http/Controllers/UserController.php:140: Line exceeds maximum limit of 100 characters; contains 108 characters
+  app/Http/Controllers/UserController.php:149: Line exceeds 80 characters; contains 90 characters
+  app/Http/Controllers/UserController.php:168: Line exceeds 80 characters; contains 90 characters
+  app/Http/Controllers/UserController.php:170: Line exceeds 80 characters; contains 87 characters
+  app/Http/Middleware/Authenticate.php:11: Line exceeds 80 characters; contains 85 characters
+  app/Http/Middleware/CheckGroup.php:22: Line exceeds maximum limit of 100 characters; contains 171 characters
+  app/Mail/VerificationEmail.php:35: Line exceeds maximum limit of 100 characters; contains 159 characters
+  app/Policies/ProjectPolicy.php:15: Line exceeds maximum limit of 100 characters; contains 124 characters
+  app/Project.php:24: Line exceeds 80 characters; contains 93 characters
+  app/Project.php:47: Line exceeds maximum limit of 100 characters; contains 109 characters
+  app/Project.php:157: Line exceeds 80 characters; contains 89 characters
+  app/Providers/AppServiceProvider.php:18: Line exceeds maximum limit of 100 characters; contains 262 characters
+  app/Providers/AppServiceProvider.php:28: Line exceeds 80 characters; contains 81 characters
+  app/Providers/AuthServiceProvider.php:7: Line exceeds 80 characters; contains 83 characters
+  app/Providers/AuthServiceProvider.php:38: Line exceeds 80 characters; contains 81 characters
+  app/Providers/EventServiceProvider.php:8: Line exceeds 80 characters; contains 84 characters
+  app/Providers/RouteServiceProvider.php:6: Line exceeds 80 characters; contains 84 characters
+  app/User.php:88: Line exceeds maximum limit of 100 characters; contains 109 characters
+  app/User.php:95: Line exceeds 80 characters; contains 82 characters
+  app/User.php:100: Line exceeds 80 characters; contains 81 characters
+  app/User.php:110: Line exceeds maximum limit of 100 characters; contains 147 characters
+  app/User.php:134: Line exceeds 80 characters; contains 86 characters
+  app/User.php:161: Line exceeds 80 characters; contains 85 characters
+  routes/web.php:47: Line exceeds 80 characters; contains 81 characters
+  routes/web.php:56: Line exceeds 80 characters; contains 81 characters
+  routes/web.php:58: Line exceeds 80 characters; contains 85 characters
+  routes/web.php:77: Line exceeds 80 characters; contains 82 characters
+
+• [Style] Space after cast: (PHP_CodeSniffer\Standards\Generic\Sniffs\Formatting\SpaceAfterCastSniff)
+  app/Http/Controllers/ApiController.php:139: Expected 1 space(s) after cast statement; 0 found
+  app/Http/Controllers/ApiController.php:154: Expected 1 space(s) after cast statement; 0 found
+
+• [Style] Space after not: (PHP_CodeSniffer\Standards\Generic\Sniffs\Formatting\SpaceAfterNotSniff)
+  app/AllCasesExport.php:40: Expected 1 space(s) after NOT operator; 0 found
+  app/Cases.php:159: Expected 1 space(s) after NOT operator; 0 found
+  app/Console/Commands/InstallMetagCommand.php:47: Expected 1 space(s) after NOT operator; 0 found
+  app/Console/Commands/InstallMetagCommand.php:64: Expected 1 space(s) after NOT operator; 0 found
+  app/Http/Controllers/ApiController.php:71: Expected 1 space(s) after NOT operator; 0 found
+  app/Http/Controllers/ApiController.php:126: Expected 1 space(s) after NOT operator; 0 found
+  app/Http/Controllers/ProjectController.php:143: Expected 1 space(s) after NOT operator; 0 found
+  app/Http/Controllers/UserController.php:59: Expected 1 space(s) after NOT operator; 0 found
+  app/Http/Controllers/UserController.php:76: Expected 1 space(s) after NOT operator; 0 found
+  app/Http/Controllers/UserController.php:140: Expected 1 space(s) after NOT operator; 0 found
+  app/Http/Controllers/UserController.php:150: Expected 1 space(s) after NOT operator; 0 found
+  app/Http/Controllers/UserController.php:169: Expected 1 space(s) after NOT operator; 0 found
+  app/Http/Middleware/Authenticate.php:17: Expected 1 space(s) after NOT operator; 0 found
+  app/User.php:81: Expected 1 space(s) after NOT operator; 0 found
+  app/User.php:110: Expected 1 space(s) after NOT operator; 0 found
+
+• [Style] Function call argument spacing: (PHP_CodeSniffer\Standards\Generic\Sniffs\Functions\FunctionCallArgumentSpacingSniff)
+  app/Helpers/Helper.php:112: No space found after comma in argument list
+  app/Http/Resources/Entry.php:29: No space found after comma in argument list
+  app/Policies/ProjectPolicy.php:15: No space found after comma in argument list
+  app/Providers/AuthServiceProvider.php:52: No space found after comma in argument list
+  app/Providers/AuthServiceProvider.php:54: No space found after comma in argument list
+  routes/api.php:24: No space found after comma in argument list
+  routes/api.php:25: No space found after comma in argument list
+  routes/api.php:27: No space found after comma in argument list
+  routes/api.php:28: No space found after comma in argument list
+  routes/api.php:30: No space found after comma in argument list
+  routes/api.php:31: No space found after comma in argument list
+  routes/api.php:32: No space found after comma in argument list
+  routes/web.php:26: No space found after comma in argument list
+  routes/web.php:27: No space found after comma in argument list
+  routes/web.php:31: No space found after comma in argument list
+  routes/web.php:37: No space found after comma in argument list
+  routes/web.php:38: No space found after comma in argument list
+  routes/web.php:39: No space found after comma in argument list
+  routes/web.php:40: No space found after comma in argument list
+  routes/web.php:41: No space found after comma in argument list
+  routes/web.php:42: No space found after comma in argument list
+  routes/web.php:43: No space found after comma in argument list
+  routes/web.php:44: No space found after comma in argument list
+  routes/web.php:46: No space found after comma in argument list
+  routes/web.php:47: No space found after comma in argument list
+  routes/web.php:54: No space found after comma in argument list
+  routes/web.php:55: No space found after comma in argument list
+  routes/web.php:56: No space found after comma in argument list
+  routes/web.php:57: No space found after comma in argument list
+  routes/web.php:58: No space found after comma in argument list
+  routes/web.php:59: No space found after comma in argument list
+  routes/web.php:66: No space found after comma in argument list
+  routes/web.php:67: No space found after comma in argument list
+  routes/web.php:68: No space found after comma in argument list
+  routes/web.php:69: No space found after comma in argument list
+  routes/web.php:75: No space found after comma in argument list
+  routes/web.php:76: No space found after comma in argument list
+  routes/web.php:77: No space found after comma in argument list
+  routes/web.php:80: No space found after comma in argument list
+
+• [Style] Lower case keyword: (PHP_CodeSniffer\Standards\Generic\Sniffs\PHP\LowerCaseKeywordSniff)
+  app/CaseInput.php:72: PHP keywords must be lowercase; expected "as" but found "AS"
+  app/Helpers/Helper.php:69: PHP keywords must be lowercase; expected "as" but found "AS"
+
+• [Style] Trailing array comma: (SlevomatCodingStandard\Sniffs\Arrays\TrailingArrayCommaSniff)
+  app/Group.php:13: Multi-line arrays must have a trailing comma after the last element.
+  app/Http/Controllers/ApiController.php:62: Multi-line arrays must have a trailing comma after the last element.
+  app/Http/Controllers/ApiController.php:94: Multi-line arrays must have a trailing comma after the last element.
+  app/Http/Controllers/ApiController.php:110: Multi-line arrays must have a trailing comma after the last element.
+  app/Http/Controllers/ProjectCasesController.php:50: Multi-line arrays must have a trailing comma after the last element.
+  app/Http/Controllers/ProjectCasesController.php:68: Multi-line arrays must have a trailing comma after the last element.
+  app/Http/Controllers/ProjectCasesController.php:110: Multi-line arrays must have a trailing comma after the last element.
+  app/Http/Controllers/ProjectController.php:74: Multi-line arrays must have a trailing comma after the last element.
+  app/Http/Controllers/ProjectController.php:113: Multi-line arrays must have a trailing comma after the last element.
+  app/Http/Kernel.php:84: Multi-line arrays must have a trailing comma after the last element.
+  app/Http/Requests/StoreUser.php:29: Multi-line arrays must have a trailing comma after the last element.
+  app/Media.php:15: Multi-line arrays must have a trailing comma after the last element.
+  app/Profile.php:16: Multi-line arrays must have a trailing comma after the last element.
+  app/Project.php:13: Multi-line arrays must have a trailing comma after the last element.
+  app/Providers/AuthServiceProvider.php:14: Multi-line arrays must have a trailing comma after the last element.
+  app/Providers/AuthServiceProvider.php:24: Multi-line arrays must have a trailing comma after the last element.
+  app/Role.php:14: Multi-line arrays must have a trailing comma after the last element.
+  app/User.php:32: Multi-line arrays must have a trailing comma after the last element.
+
+• [Style] Disallow tab indent: (PHP_CodeSniffer\Standards\Generic\Sniffs\WhiteSpace\DisallowTabIndentSniff)
+  app/Policies/EntryPolicy.php:11: Spaces must be used to indent lines; tabs are not allowed
+  app/Policies/EntryPolicy.php:13: Spaces must be used to indent lines; tabs are not allowed
+  app/Policies/EntryPolicy.php:14: Spaces must be used to indent lines; tabs are not allowed
+  app/Policies/EntryPolicy.php:15: Spaces must be used to indent lines; tabs are not allowed
+  app/Policies/EntryPolicy.php:16: Spaces must be used to indent lines; tabs are not allowed
+  routes/web.php:31: Spaces must be used to indent lines; tabs are not allowed
+  routes/web.php:33: Spaces must be used to indent lines; tabs are not allowed
+  routes/web.php:34: Spaces must be used to indent lines; tabs are not allowed
+  routes/web.php:35: Spaces must be used to indent lines; tabs are not allowed
+  routes/web.php:37: Spaces must be used to indent lines; tabs are not allowed
+  routes/web.php:38: Spaces must be used to indent lines; tabs are not allowed
+  routes/web.php:39: Spaces must be used to indent lines; tabs are not allowed
+  routes/web.php:40: Spaces must be used to indent lines; tabs are not allowed
+  routes/web.php:41: Spaces must be used to indent lines; tabs are not allowed
+  routes/web.php:42: Spaces must be used to indent lines; tabs are not allowed
+  routes/web.php:43: Spaces must be used to indent lines; tabs are not allowed
+  routes/web.php:49: Spaces must be used to indent lines; tabs are not allowed
+  routes/web.php:50: Spaces must be used to indent lines; tabs are not allowed
+  routes/web.php:51: Spaces must be used to indent lines; tabs are not allowed
+  routes/web.php:52: Spaces must be used to indent lines; tabs are not allowed
+  routes/web.php:54: Spaces must be used to indent lines; tabs are not allowed
+  routes/web.php:55: Spaces must be used to indent lines; tabs are not allowed
+  routes/web.php:56: Spaces must be used to indent lines; tabs are not allowed
+  routes/web.php:57: Spaces must be used to indent lines; tabs are not allowed
+  routes/web.php:58: Spaces must be used to indent lines; tabs are not allowed
+  routes/web.php:59: Spaces must be used to indent lines; tabs are not allowed
+  routes/web.php:63: Spaces must be used to indent lines; tabs are not allowed
+  routes/web.php:64: Spaces must be used to indent lines; tabs are not allowed
+  routes/web.php:65: Spaces must be used to indent lines; tabs are not allowed
+  routes/web.php:66: Spaces must be used to indent lines; tabs are not allowed
+  routes/web.php:67: Spaces must be used to indent lines; tabs are not allowed
+  routes/web.php:68: Spaces must be used to indent lines; tabs are not allowed
+  routes/web.php:69: Spaces must be used to indent lines; tabs are not allowed
+  routes/web.php:75: Spaces must be used to indent lines; tabs are not allowed
+
+• [Style] Camel caps method name: (PHP_CodeSniffer\Standards\PSR1\Sniffs\Methods\CamelCapsMethodNameSniff)
+  app/Entry.php:32: Method name "Entry::communication_partner" is not in camel caps format
+  app/Helpers/Helper.php:18: Method name "Helper::random_str" is not in camel caps format
+  app/Helpers/Helper.php:47: Method name "Helper::get_string_between" is not in camel caps format
+  app/Helpers/Helper.php:67: Method name "Helper::in_array_recursive" is not in camel caps format
+  app/Helpers/Helper.php:85: Method name "Helper::array_keys_recursive" is not in camel caps format
+  app/Helpers/Helper.php:107: Method name "Helper::recursive_array_search" is not in camel caps format
+  app/Media.php:23: Method name "Media::media_group" is not in camel caps format
+  app/Project.php:150: Method name "Project::created_by" is not in camel caps format
+
+• [Style] Else if declaration: (PHP_CodeSniffer\Standards\PSR2\Sniffs\ControlStructures\ElseIfDeclarationSniff)
+  app/Cases.php:104: Usage of ELSE IF is discouraged; use ELSEIF instead
+  app/Cases.php:108: Usage of ELSE IF is discouraged; use ELSEIF instead
+  app/Cases.php:112: Usage of ELSE IF is discouraged; use ELSEIF instead
+  app/Helpers/Helper.php:117: Usage of ELSE IF is discouraged; use ELSEIF instead
+
+• [Style] Namespace spacing: (SlevomatCodingStandard\Sniffs\Namespaces\NamespaceSpacingSniff)
+  app/CaseInput.php:3: Expected 1 lines after namespace statement, found 0.
+
+• [Style] Unused uses: (SlevomatCodingStandard\Sniffs\Namespaces\UnusedUsesSniff)
+  app/AllCasesExport.php:10: Type Storage is not used in this file.
+  app/CasesExport.php:13: Type Storage is not used in this file.
+  app/Console/Commands/CreateUserCommand.php:6: Type App\Permission is not used in this file.
+  app/Http/Controllers/ApiController.php:8: Type Auth is not used in this file.
+  app/Http/Controllers/ApiController.php:9: Type DB is not used in this file.
+  app/Http/Controllers/Auth/NoGuestForgotPasswordController.php:5: Type App\Http\Controllers\Controller is not used in this file.
+  app/Http/Controllers/Auth/NoGuestForgotPasswordController.php:6: Type Illuminate\Foundation\Auth\SendsPasswordResetEmails is not used in this file.
+  app/Http/Controllers/Auth/NoGuestForgotPasswordController.php:7: Type Illuminate\Http\JsonResponse is not used in this file.
+  app/Http/Controllers/Auth/NoGuestForgotPasswordController.php:8: Type Illuminate\Http\Request is not used in this file.
+  app/Http/Controllers/Auth/NoGuestForgotPasswordController.php:9: Type Illuminate\Support\Facades\Password is not used in this file.
+  app/Http/Controllers/Auth/RegisterController.php:9: Type Illuminate\Support\Facades\Hash is not used in this file.
+  app/Http/Controllers/EntryController.php:10: Type Helper is not used in this file.
+  app/Http/Controllers/MediaController.php:6: Type App\Media_group is not used in this file.
+  app/Http/Middleware/RegisterAction.php:5: Type App\Action is not used in this file.
+  app/Mail/VerificationEmail.php:8: Type Illuminate\Contracts\Queue\ShouldQueue is not used in this file.
+  app/Policies/EntryPolicy.php:6: Type App\Entry is not used in this file.
+  app/Providers/AuthServiceProvider.php:5: Type Laravel\Passport\Passport is not used in this file.
+  app/Providers/AuthServiceProvider.php:6: Type Illuminate\Support\Facades\Gate is not used in this file.
+  app/User.php:12: Type Validator is not used in this file.
+  routes/api.php:3: Type Illuminate\Http\Request is not used in this file.
+
+• [Style] Short list: (SlevomatCodingStandard\Sniffs\PHP\ShortListSniff)
+  app/AllCasesExport.php:47: list(...) is forbidden, use [...] instead.
+  app/Http/Controllers/ProjectCasesController.php:40: list(...) is forbidden, use [...] instead.
+  app/Http/Controllers/ProjectCasesController.php:41: list(...) is forbidden, use [...] instead.
+
+• [Style] Superfluous whitespace: (PHP_CodeSniffer\Standards\Squiz\Sniffs\WhiteSpace\SuperfluousWhitespaceSniff)
+  app/CaseInput.php:13: Functions must not contain multiple empty lines in a row; found 2 empty lines
+  app/CasesExport.php:84: Functions must not contain multiple empty lines in a row; found 2 empty lines
+  app/Console/Commands/DeleteUserCommand.php:70: Functions must not contain multiple empty lines in a row; found 2 empty lines
+  app/Console/Commands/InstallMetagCommand.php:57: Functions must not contain multiple empty lines in a row; found 2 empty lines
+  app/Http/Controllers/ApiController.php:24: Functions must not contain multiple empty lines in a row; found 2 empty lines
+  app/Http/Controllers/ApiController.php:96: Functions must not contain multiple empty lines in a row; found 2 empty lines
+  app/Http/Controllers/ProjectCasesController.php:135: Functions must not contain multiple empty lines in a row; found 2 empty lines
+  app/Http/Controllers/ProjectController.php:130: Functions must not contain multiple empty lines in a row; found 2 empty lines
+  app/Http/Controllers/UserController.php:52: Functions must not contain multiple empty lines in a row; found 2 empty lines
+  app/Http/Middleware/Researcher.php:19: Functions must not contain multiple empty lines in a row; found 2 empty lines
+  app/Project.php:35: Functions must not contain multiple empty lines in a row; found 2 empty lines
+  app/Providers/AuthServiceProvider.php:35: Functions must not contain multiple empty lines in a row; found 2 empty lines
+  app/User.php:75: Functions must not contain multiple empty lines in a row; found 2 empty lines
+  routes/web.php:60: Functions must not contain multiple empty lines in a row; found 3 empty lines
+  routes/web.php:70: Functions must not contain multiple empty lines in a row; found 2 empty lines
+  routes/web.php:78: Functions must not contain multiple empty lines in a row; found 2 empty lines
+  routes/web.php:81: Functions must not contain multiple empty lines in a row; found 3 empty lines
+  routes/web.php:89: Functions must not contain multiple empty lines in a row; found 3 empty lines
+
+• [Style] Doc comment spacing: (SlevomatCodingStandard\Sniffs\Commenting\DocCommentSpacingSniff)
+  app/AllCasesExport.php:19: Expected 1 lines between description and annotations, found 0.
+  app/AllCasesExport.php:30: Expected 1 lines between different annotations types, found 0.
+  app/AllCasesExport.php:76: Expected 1 lines between different annotations types, found 0.
+  app/AllCasesExport.php:115: Expected 1 lines between different annotations types, found 0.
+  app/CaseInput.php:42: Expected 1 lines between different annotations types, found 0.
+  app/Cases.php:24: Expected 1 lines between different annotations types, found 0.
+  app/Cases.php:49: Expected 1 lines between different annotations types, found 0.
+  app/Cases.php:137: Expected 1 lines between description and annotations, found 0.
+  app/Cases.php:138: Expected 1 lines between different annotations types, found 0.
+  app/Cases.php:155: Expected 1 lines between description and annotations, found 0.
+  app/Cases.php:179: Expected 1 lines between description and annotations, found 0.
+  app/Cases.php:196: Expected 1 lines between description and annotations, found 0.
+  app/CasesExport.php:21: Expected 1 lines between description and annotations, found 0.
+  app/CasesExport.php:32: Expected 1 lines between different annotations types, found 0.
+  app/CasesExport.php:99: Expected 0 lines before first content, found 1.
+  app/Console/Commands/CreateUserCommand.php:17: Expected 1 lines between description and annotations, found 0.
+  app/Console/Commands/CreateUserCommand.php:22: Expected 1 lines between description and annotations, found 0.
+  app/Console/Commands/CreateUserCommand.php:28: Expected 1 lines between description and annotations, found 0.
+  app/Console/Commands/CreateUserCommand.php:37: Expected 1 lines between description and annotations, found 0.
+  app/Console/Commands/DeleteProjectCommand.php:14: Expected 1 lines between description and annotations, found 0.
+  app/Console/Commands/DeleteProjectCommand.php:19: Expected 1 lines between description and annotations, found 0.
+  app/Console/Commands/DeleteProjectCommand.php:25: Expected 1 lines between description and annotations, found 0.
+  app/Console/Commands/DeleteProjectCommand.php:34: Expected 1 lines between description and annotations, found 0.
+  app/Console/Commands/DeleteUserCommand.php:13: Expected 1 lines between description and annotations, found 0.
+  app/Console/Commands/DeleteUserCommand.php:18: Expected 1 lines between description and annotations, found 0.
+  app/Console/Commands/DeleteUserCommand.php:24: Expected 1 lines between description and annotations, found 0.
+  app/Console/Commands/DeleteUserCommand.php:33: Expected 1 lines between description and annotations, found 0.
+  app/Console/Commands/InstallMetagCommand.php:15: Expected 1 lines between description and annotations, found 0.
+  app/Console/Commands/InstallMetagCommand.php:20: Expected 1 lines between description and annotations, found 0.
+  app/Console/Commands/InstallMetagCommand.php:26: Expected 1 lines between description and annotations, found 0.
+  app/Console/Commands/InstallMetagCommand.php:35: Expected 1 lines between description and annotations, found 0.
+  app/Console/Kernel.php:23: Expected 1 lines between different annotations types, found 0.
+  app/Entry.php:15: Expected 1 lines between description and annotations, found 0.
+  app/Exceptions/Handler.php:33: Expected 1 lines between different annotations types, found 0.
+  app/Exceptions/Handler.php:45: Expected 1 lines between different annotations types, found 0.
+  app/Helpers/Helper.php:13: Expected 1 lines between description and annotations, found 0.
+  app/Helpers/Helper.php:15: Expected 1 lines between different annotations types, found 0.
+  app/Helpers/Helper.php:30: Expected 1 lines between description and annotations, found 0.
+  app/Helpers/Helper.php:31: Expected 1 lines between different annotations types, found 0.
+  app/Helpers/Helper.php:45: Expected 1 lines between different annotations types, found 0.
+  app/Helpers/Helper.php:65: Expected 1 lines between different annotations types, found 0.
+  app/Helpers/Helper.php:83: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/ApiController.php:20: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/ApiController.php:55: Expected 1 lines between description and annotations, found 0.
+  app/Http/Controllers/ApiController.php:56: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/ApiController.php:134: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/ApiController.php:148: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/ApiController.php:160: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/ApiController.php:190: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/ApiController.php:199: Expected 1 lines between description and annotations, found 0.
+  app/Http/Controllers/ApiController.php:200: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/ApiController.php:213: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/Auth/NoGuestForgotPasswordController.php:19: Expected 0 lines after last content, found 1.
+  app/Http/Controllers/Auth/RegisterController.php:49: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/Auth/RegisterController.php:63: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/CaseInputController.php:13: Expected 1 lines between description and annotations, found 0.
+  app/Http/Controllers/CaseInputController.php:22: Expected 1 lines between description and annotations, found 0.
+  app/Http/Controllers/CaseInputController.php:31: Expected 1 lines between description and annotations, found 0.
+  app/Http/Controllers/CaseInputController.php:32: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/CaseInputController.php:41: Expected 1 lines between description and annotations, found 0.
+  app/Http/Controllers/CaseInputController.php:42: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/CaseInputController.php:51: Expected 1 lines between description and annotations, found 0.
+  app/Http/Controllers/CaseInputController.php:52: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/CaseInputController.php:61: Expected 1 lines between description and annotations, found 0.
+  app/Http/Controllers/CaseInputController.php:63: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/CaseInputController.php:72: Expected 1 lines between description and annotations, found 0.
+  app/Http/Controllers/CaseInputController.php:73: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/EntryController.php:27: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/EntryController.php:36: Expected 1 lines between description and annotations, found 0.
+  app/Http/Controllers/EntryController.php:37: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/EntryController.php:101: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/HomeController.php:11: Expected 1 lines between description and annotations, found 0.
+  app/Http/Controllers/ProjectCasesController.php:33: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/ProjectCasesController.php:57: Expected 1 lines between description and annotations, found 0.
+  app/Http/Controllers/ProjectCasesController.php:58: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/ProjectCasesController.php:78: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/ProjectCasesController.php:102: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/ProjectCasesController.php:117: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/ProjectCasesController.php:141: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/ProjectController.php:38: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/ProjectController.php:55: Expected 1 lines between description and annotations, found 0.
+  app/Http/Controllers/ProjectController.php:136: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/UserController.php:27: Expected 1 lines between description and annotations, found 0.
+  app/Http/Controllers/UserController.php:36: Expected 1 lines between description and annotations, found 0.
+  app/Http/Controllers/UserController.php:47: Expected 1 lines between description and annotations, found 0.
+  app/Http/Controllers/UserController.php:48: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/UserController.php:86: Expected 1 lines between description and annotations, found 0.
+  app/Http/Controllers/UserController.php:87: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/UserController.php:96: Expected 1 lines between description and annotations, found 0.
+  app/Http/Controllers/UserController.php:97: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/UserController.php:106: Expected 1 lines between description and annotations, found 0.
+  app/Http/Controllers/UserController.php:108: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/UserController.php:123: Expected 1 lines between description and annotations, found 0.
+  app/Http/Controllers/UserController.php:124: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/UserController.php:135: Expected 1 lines between different annotations types, found 0.
+  app/Http/Controllers/UserController.php:159: Expected 1 lines between different annotations types, found 0.
+  app/Http/Kernel.php:37: Expected 1 lines between description and annotations, found 0.
+  app/Http/Kernel.php:48: Expected 1 lines between description and annotations, found 0.
+  app/Http/Kernel.php:68: Expected 1 lines between description and annotations, found 0.
+  app/Http/Kernel.php:89: Expected 1 lines between description and annotations, found 0.
+  app/Http/Middleware/Admin.php:13: Expected 1 lines between description and annotations, found 0.
+  app/Http/Middleware/Admin.php:15: Expected 1 lines between different annotations types, found 0.
+  app/Http/Middleware/Authenticate.php:12: Expected 1 lines between description and annotations, found 0.
+  app/Http/Middleware/Authenticate.php:13: Expected 1 lines between different annotations types, found 0.
+  app/Http/Middleware/Authorised.php:13: Expected 1 lines between description and annotations, found 0.
+  app/Http/Middleware/Authorised.php:15: Expected 1 lines between different annotations types, found 0.
+  app/Http/Middleware/CheckForMaintenanceMode.php:11: Expected 1 lines between description and annotations, found 0.
+  app/Http/Middleware/CheckGroup.php:13: Expected 1 lines between description and annotations, found 0.
+  app/Http/Middleware/CheckGroup.php:15: Expected 1 lines between different annotations types, found 0.
+  app/Http/Middleware/EncryptCookies.php:11: Expected 1 lines between description and annotations, found 0.
+  app/Http/Middleware/RedirectIfAuthenticated.php:13: Expected 1 lines between description and annotations, found 0.
+  app/Http/Middleware/RedirectIfAuthenticated.php:16: Expected 1 lines between different annotations types, found 0.
+  app/Http/Middleware/RegisterAction.php:15: Expected 1 lines between description and annotations, found 0.
+  app/Http/Middleware/RegisterAction.php:17: Expected 1 lines between different annotations types, found 0.
+  app/Http/Middleware/Researcher.php:13: Expected 1 lines between description and annotations, found 0.
+  app/Http/Middleware/Researcher.php:15: Expected 1 lines between different annotations types, found 0.
+  app/Http/Middleware/TrimStrings.php:11: Expected 1 lines between description and annotations, found 0.
+  app/Http/Middleware/TrustProxies.php:12: Expected 1 lines between description and annotations, found 0.
+  app/Http/Middleware/TrustProxies.php:17: Expected 1 lines between description and annotations, found 0.
+  app/Http/Middleware/VerifyCsrfToken.php:11: Expected 1 lines between description and annotations, found 0.
+  app/Http/Middleware/VerifyCsrfToken.php:16: Expected 1 lines between description and annotations, found 0.
+  app/Http/Resources/Entry.php:15: Expected 1 lines between different annotations types, found 0.
+  app/Http/Resources/UserCollection.php:13: Expected 1 lines between different annotations types, found 0.
+  app/Profile.php:13: Expected 1 lines between description and annotations, found 0.
+  app/Project.php:41: Expected 1 lines between different annotations types, found 0.
+  app/Providers/AuthServiceProvider.php:48: Expected 1 lines between different annotations types, found 0.
+  app/Role.php:11: Expected 1 lines between description and annotations, found 0.
+  app/Role.php:19: Expected 1 lines between description and annotations, found 0.
+  app/User.php:22: Expected 1 lines between description and annotations, found 0.
+  app/User.php:29: Expected 1 lines between description and annotations, found 0.
+  app/User.php:36: Expected 1 lines between description and annotations, found 0.
+
+• [Style] Braces: (PhpCsFixer\Fixer\Basic\BracesFixer)
+  app/AllCasesExport.php:39: You should change the following 
+-
+
+
+  app/AllCasesExport.php:59: You should change the following 
+-
+
+
+  app/AllCasesExport.php:108: You should change the following 
+-
+
+
+  app/AllCasesExport.php:152: You should change the following 
+-
+
+
+  app/AllCasesExport.php:159: You should change the following 
+-                if (array_key_exists($i, $index)){
++                if (array_key_exists($i, $index)) {
+
+
+  app/AllCasesExport.php:161: You should change the following 
+-                }
+-                else {
++                } else {
+
+
+  app/AllCasesExport.php:166: You should change the following 
+-
+
+
+  app/CaseInput.php:13: You should change the following 
+-
+-
+
+
+  app/CaseInput.php:19: You should change the following 
+-
+
+
+  app/CaseInput.php:24: You should change the following 
+-
+
+
+  app/CaseInput.php:69: You should change the following 
+-
+
+
+  app/Cases.php:104: You should change the following 
+-        } else if ($availableInput == self::ONE_CHOICE) {
+-            $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = $availableOptions[self::ONE_CHOICE]->answers;
+-            $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions[self::ONE_CHOICE]->name;
+-
+-        } else if ($availableInput == self::SCALE) {
+-            $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = [0, 1, 2, 3, 4, 5];
+-            $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions[self::SCALE]->name;
+-
+-        } else if ($availableInput == "text") {
+-            $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = [];
+-            $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions["text"]->name;
+-            // loop through the values you already have and make it part of the 'available'
+-            foreach ($inputValues as $inputValue) {
+-                if ($inputValue['type'] == "text") {
+-                    array_push($data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE], $inputValue[self::VALUE]);
++        } else {
++            if ($availableInput == self::ONE_CHOICE) {
++                $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = $availableOptions[self::ONE_CHOICE]->answers;
++                $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions[self::ONE_CHOICE]->name;
++            } else {
++                if ($availableInput == self::SCALE) {
++                    $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = [0, 1, 2, 3, 4, 5];
++                    $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions[self::SCALE]->name;
++                } else {
++                    if ($availableInput == "text") {
++                        $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = [];
++                        $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions["text"]->name;
++                        // loop through the values you already have and make it part of the 'available'
++                        foreach ($inputValues as $inputValue) {
++                            if ($inputValue['type'] == "text") {
++                                array_push($data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE], $inputValue[self::VALUE]);
++                            }
++                        }
++                    }
+
+
+  app/Cases.php:191: You should change the following 
+-
+
+
+  app/CasesExport.php:65: You should change the following 
+-
+
+
+  app/CasesExport.php:84: You should change the following 
+-
+-
+
+
+  app/CasesExport.php:116: You should change the following 
+-
+
+
+  app/Console/Commands/CreateUserCommand.php:68: You should change the following 
+-
+
+
+  app/Console/Commands/DeleteProjectCommand.php:61: You should change the following 
+-
+
+
+  app/Console/Commands/DeleteUserCommand.php:70: You should change the following 
+-
+-
+
+
+  app/Console/Commands/InstallMetagCommand.php:48: You should change the following 
+-
+
+
+  app/Console/Commands/InstallMetagCommand.php:52: You should change the following 
+-
+
+
+  app/Console/Commands/InstallMetagCommand.php:57: You should change the following 
+-
+-
+
+
+  app/Console/Commands/InstallMetagCommand.php:79: You should change the following 
+-
+
+
+  app/Helpers/Helper.php:20: You should change the following 
+-          $pieces = [];
+-          $max = mb_strlen($keyspace, '8bit') - 1;
++        $pieces = [];
++        $max = mb_strlen($keyspace, '8bit') - 1;
+
+
+  app/Helpers/Helper.php:25: You should change the following 
+-          return implode('', $pieces);
++        return implode('', $pieces);
+
+
+  app/Helpers/Helper.php:47: You should change the following 
+-    public static function get_string_between($string, $start, $end){
++    public static function get_string_between($string, $start, $end)
++    {
+
+
+  app/Helpers/Helper.php:50: You should change the following 
+-        if ($ini == 0) return '';
++        if ($ini == 0) {
++            return '';
++        }
+
+
+  app/Helpers/Helper.php:53: You should change the following 
+-        if(strpos($string, $end, $ini) == false ){
++        if (strpos($string, $end, $ini) == false ) {
+
+
+  app/Helpers/Helper.php:67: You should change the following 
+-    public static function in_array_recursive($needle, $haystack) {
++    public static function in_array_recursive($needle, $haystack)
++    {
+
+
+  app/Helpers/Helper.php:69: You should change the following 
+-        foreach($iterator AS $element) {
+-            if($element == $needle) {
++        foreach ($iterator AS $element) {
++            if ($element == $needle) {
+
+
+  app/Helpers/Helper.php:85: You should change the following 
+-    public static function array_keys_recursive($myArray, $arrayKeys = array(), $MAXDEPTH = INF, $depth = 0){
+-        if($depth < $MAXDEPTH){
++    public static function array_keys_recursive($myArray, $arrayKeys = array(), $MAXDEPTH = INF, $depth = 0)
++    {
++        if ($depth < $MAXDEPTH) {
+
+
+  app/Helpers/Helper.php:89: You should change the following 
+-            foreach($keys as $key){
+-                if(is_array($myArray[$key])){
++            foreach ($keys as $key) {
++                if (is_array($myArray[$key])) {
+
+
+  app/Helpers/Helper.php:107: You should change the following 
+-    public static function recursive_array_search($needle, $haystack, $currentKey = '') {
+-        foreach($haystack as $key=>$value) {
++    public static function recursive_array_search($needle, $haystack, $currentKey = '')
++    {
++        foreach ($haystack as $key=>$value) {
+
+
+  app/Helpers/Helper.php:111: You should change the following 
+-
+
+
+  app/Helpers/Helper.php:116: You should change the following 
+-            }
+-            else if($value==$needle) {
+-                return is_numeric($key) ? $currentKey . '[' .$key . ']' : $currentKey;
++            } else {
++                if ($value==$needle) {
++                    return is_numeric($key) ? $currentKey . '[' .$key . ']' : $currentKey;
++                }
+
+
+  app/Http/Controllers/ApiController.php:24: You should change the following 
+-
+-
+
+
+  app/Http/Controllers/ApiController.php:29: You should change the following 
+-
+
+
+  app/Http/Controllers/ApiController.php:65: You should change the following 
+-
+
+
+  app/Http/Controllers/ApiController.php:75: You should change the following 
+-
+
+
+  app/Http/Controllers/ApiController.php:79: You should change the following 
+-
+
+
+  app/Http/Controllers/ApiController.php:96: You should change the following 
+-
+-
+
+
+  app/Http/Controllers/ApiController.php:112: You should change the following 
+-
+
+
+  app/Http/Controllers/ApiController.php:126: You should change the following 
+-        if ($request->has('deviceID') && $request->deviceID != '' && !in_array($request->deviceID, $currentDeviceId)) array_push($currentDeviceId, $request->deviceID);
++        if ($request->has('deviceID') && $request->deviceID != '' && !in_array($request->deviceID, $currentDeviceId)) {
++            array_push($currentDeviceId, $request->deviceID);
++        }
+
+
+  app/Http/Controllers/ApiController.php:128: You should change the following 
+-
+
+
+  app/Http/Controllers/ApiController.php:152: You should change the following 
+-
+
+
+  app/Http/Controllers/ApiController.php:217: You should change the following 
+-
+
+
+  app/Http/Controllers/ApiController.php:220: You should change the following 
+-
+
+
+  app/Http/Controllers/DeployController.php:12: You should change the following 
+-
+
+
+  app/Http/Controllers/EntryController.php:42: You should change the following 
+-
+
+
+  app/Http/Controllers/EntryController.php:52: You should change the following 
+-
+
+
+  app/Http/Controllers/EntryController.php:61: You should change the following 
+-
+
+
+  app/Http/Controllers/EntryController.php:66: You should change the following 
+-
+
+
+  app/Http/Controllers/EntryController.php:95: You should change the following 
+-
+
+
+  app/Http/Controllers/EntryController.php:112: You should change the following 
+-
+
+
+  app/Http/Controllers/MediaController.php:12: You should change the following 
+-
+
+
+  app/Http/Controllers/MediaController.php:20: You should change the following 
+-
+
+
+  app/Http/Controllers/ProjectCasesController.php:73: You should change the following 
+-
+
+
+  app/Http/Controllers/ProjectCasesController.php:135: You should change the following 
+-
+-
+
+
+  app/Http/Controllers/ProjectController.php:30: You should change the following 
+-
+
+
+  app/Http/Controllers/ProjectController.php:43: You should change the following 
+-
+
+
+  app/Http/Controllers/ProjectController.php:84: You should change the following 
+-
+
+
+  app/Http/Controllers/ProjectController.php:98: You should change the following 
+-
+
+
+  app/Http/Controllers/ProjectController.php:123: You should change the following 
+-
+
+
+  app/Http/Controllers/ProjectController.php:130: You should change the following 
+-
+-
+
+
+  app/Http/Controllers/ProjectController.php:140: You should change the following 
+-
+
+
+  app/Http/Controllers/ProjectController.php:152: You should change the following 
+-
+
+
+  app/Http/Controllers/ProjectController.php:156: You should change the following 
+-
+
+
+  app/Http/Controllers/ProjectController.php:161: You should change the following 
+-
+
+
+  app/Http/Controllers/ProjectController.php:169: You should change the following 
+-
+
+
+  app/Http/Controllers/ProjectController.php:171: You should change the following 
+-
+
+
+  app/Http/Controllers/UserController.php:52: You should change the following 
+-
+-
+
+
+  app/Http/Controllers/UserController.php:68: You should change the following 
+-
+
+
+  app/Http/Controllers/UserController.php:74: You should change the following 
+-
+
+
+  app/Http/Controllers/UserController.php:81: You should change the following 
+-
+
+
+  app/Http/Controllers/UserController.php:112: You should change the following 
+-
+
+
+  app/Http/Controllers/UserController.php:145: You should change the following 
+-
+
+
+  app/Http/Middleware/CheckGroup.php:23: You should change the following 
+-
+
+
+  app/Http/Middleware/RegisterAction.php:24: You should change the following 
+-// Get the currently authenticated user...
++        // Get the currently authenticated user...
+
+
+  app/Http/Middleware/Researcher.php:19: You should change the following 
+-
+-
+
+
+  app/Http/Resources/Entry.php:19: You should change the following 
+-
+
+
+  app/Http/Resources/Entry.php:36: You should change the following 
+-
+
+
+  app/Mail/VerificationEmail.php:17: You should change the following 
+-     /**
+-     * Create a new message instance.
+-     *
+-     * @return void
+-     */
++    /**
++    * Create a new message instance.
++    *
++    * @return void
++    */
+
+
+  app/Policies/EntryPolicy.php:11: You should change the following 
+-	use HandlesAuthorization;
++    use HandlesAuthorization;
+
+
+  app/Policies/EntryPolicy.php:13: You should change the following 
+-	public function update(User $user,\App\Cases $cases)
+-	{
+-		return $user->is($cases->user);
+-	}
++    public function update(User $user,\App\Cases $cases)
++    {
++        return $user->is($cases->user);
++    }
+
+
+  app/Project.php:21: You should change the following 
+-
+
+
+  app/Project.php:25: You should change the following 
+-
+
+
+  app/Project.php:33: You should change the following 
+-
+
+
+  app/Project.php:35: You should change the following 
+-
+-
+
+
+  app/Project.php:163: You should change the following 
+-
+
+
+  app/Providers/AppServiceProvider.php:18: You should change the following 
+-        \Illuminate\Support\Facades\View::composer(['telescope::layout'], function ($view) { $view->with('telescopeScriptVariables', [ 'path' => 'metag/telescope', 'timezone' => config('app.timezone'), 'recording' => ! cache('telescope:pause-recording'), ]); });
++        \Illuminate\Support\Facades\View::composer(['telescope::layout'], function ($view) {
++            $view->with('telescopeScriptVariables', [ 'path' => 'metag/telescope', 'timezone' => config('app.timezone'), 'recording' => ! cache('telescope:pause-recording'), ]);
++        });
+
+
+  app/Providers/AuthServiceProvider.php:37: You should change the following 
+-        Auth::viaRequest("api-token", function($request){
++        Auth::viaRequest("api-token", function($request) {
+
+
+  app/Providers/AuthServiceProvider.php:54: You should change the following 
+-        if(validator($data,$this->rules)->fails()){
++        if (validator($data,$this->rules)->fails()) {
+
+
+  app/Providers/AuthServiceProvider.php:61: You should change the following 
+-
+
+
+  app/Providers/RouteServiceProvider.php:73: You should change the following 
+-
+
+
+  app/User.php:46: You should change the following 
+-
+
+
+  app/User.php:73: You should change the following 
+-
+
+
+  app/User.php:75: You should change the following 
+-
+-
+
+
+  app/User.php:116: You should change the following 
+-
+
+
+  app/User.php:160: You should change the following 
+-
+
+
+  routes/api.php:24: You should change the following 
+-Route::get('/inputs/{project}','ApiController@getInputs');
+-Route::get('/project/{project}','ApiController@getProject');
++    Route::get('/inputs/{project}','ApiController@getInputs');
++    Route::get('/project/{project}','ApiController@getProject');
+
+
+  routes/api.php:27: You should change the following 
+-Route::get('/inputs/{project}','ApiController@getInputs');
+-Route::get('/entry/{case}','EntryController@entriesByCase');
++    Route::get('/inputs/{project}','ApiController@getInputs');
++    Route::get('/entry/{case}','EntryController@entriesByCase');
+
+
+  routes/api.php:30: You should change the following 
+-Route::post('/cases/{case}/entries','EntryController@store');
+-Route::patch('/cases/{case}/entries/{entry}','EntryController@update');
+-Route::delete('/cases/{case}/entries/{entry}','EntryController@destroy');
+-
++    Route::post('/cases/{case}/entries','EntryController@store');
++    Route::patch('/cases/{case}/entries/{entry}','EntryController@update');
++    Route::delete('/cases/{case}/entries/{entry}','EntryController@destroy');
+
+
+  routes/web.php:22: You should change the following 
+-Route::group(['middleware' => ['auth','authorised']], function(){
++Route::group(['middleware' => ['auth','authorised']], function() {
+
+
+  routes/web.php:30: You should change the following 
+-Route::group(['middleware' => ['auth','authorised','verified']], function(){
+-	Route::get('/','ProjectController@index');
++Route::group(['middleware' => ['auth','authorised','verified']], function() {
++    Route::get('/','ProjectController@index');
+
+
+  routes/web.php:33: You should change the following 
+-	/**
+-	 * Project Routes
+-	 */
++    /**
++     * Project Routes
++     */
+
+
+  routes/web.php:37: You should change the following 
+-	Route::get('/home','ProjectController@index');
+-	Route::get('/projects','ProjectController@index');
+-	Route::post('/projects','ProjectController@store')->name('projects');
+-	Route::get('/projects/new','ProjectController@create');
+-	Route::get('/projects/{project}','ProjectController@show');
+-	Route::patch('/projects/{project}','ProjectController@update');
+-	Route::delete('/projects/{project}','ProjectController@destroy');
++    Route::get('/home','ProjectController@index');
++    Route::get('/projects','ProjectController@index');
++    Route::post('/projects','ProjectController@store')->name('projects');
++    Route::get('/projects/new','ProjectController@create');
++    Route::get('/projects/{project}','ProjectController@show');
++    Route::patch('/projects/{project}','ProjectController@update');
++    Route::delete('/projects/{project}','ProjectController@destroy');
+
+
+  routes/web.php:49: You should change the following 
+-	/**
+-	 * Case Routes
+-	 * Case is dependant of project, so we concatenate with it
+-	 */
++    /**
++     * Case Routes
++     * Case is dependant of project, so we concatenate with it
++     */
+
+
+  routes/web.php:54: You should change the following 
+-	Route::get('/projects/{project}/cases/new','ProjectCasesController@create');
+-	Route::post('/projects/{project}/cases','ProjectCasesController@store');
+-	Route::get('/projects/{project}/cases/{case}','ProjectCasesController@show');
+-	Route::get('/export/cases/{case}','ProjectCasesController@export');
+-	Route::patch('/projects/{project}/cases/{case}','ProjectCasesController@update');
+-	Route::delete('/cases/{case}','ProjectCasesController@destroy');
++    Route::get('/projects/{project}/cases/new','ProjectCasesController@create');
++    Route::post('/projects/{project}/cases','ProjectCasesController@store');
++    Route::get('/projects/{project}/cases/{case}','ProjectCasesController@show');
++    Route::get('/export/cases/{case}','ProjectCasesController@export');
++    Route::patch('/projects/{project}/cases/{case}','ProjectCasesController@update');
++    Route::delete('/cases/{case}','ProjectCasesController@destroy');
+
+
+  routes/web.php:63: You should change the following 
+-	/**
+-	 * Media Routes
+-	 */
+-	Route::get('/media','MediaController@index');
+-	Route::post('/media','MediaController@store');
+-	Route::get('/media/new','MediaController@create');
+-	Route::get('/media/{project}','MediaController@show');
++    /**
++     * Media Routes
++     */
++    Route::get('/media','MediaController@index');
++    Route::post('/media','MediaController@store');
++    Route::get('/media/new','MediaController@create');
++    Route::get('/media/{project}','MediaController@show');
+
+
+  routes/web.php:75: You should change the following 
+-	Route::post('/users','UserController@store')->name('users');
++    Route::post('/users','UserController@store')->name('users');
+
+
+  routes/web.php:89: You should change the following 
+-
+-
+-
+
+
+
+• [Style] Function declaration: (PhpCsFixer\Fixer\FunctionNotation\FunctionDeclarationFixer)
+  app/Helpers/Helper.php:47: You should change the following 
+-    public static function get_string_between($string, $start, $end){
++    public static function get_string_between($string, $start, $end) {
+
+
+  app/Helpers/Helper.php:85: You should change the following 
+-    public static function array_keys_recursive($myArray, $arrayKeys = array(), $MAXDEPTH = INF, $depth = 0){
++    public static function array_keys_recursive($myArray, $arrayKeys = array(), $MAXDEPTH = INF, $depth = 0) {
+
+
+  app/Providers/AuthServiceProvider.php:37: You should change the following 
+-        Auth::viaRequest("api-token", function($request){
++        Auth::viaRequest("api-token", function ($request) {
+
+
+  routes/web.php:22: You should change the following 
+-Route::group(['middleware' => ['auth','authorised']], function(){
++Route::group(['middleware' => ['auth','authorised']], function () {
+
+
+  routes/web.php:30: You should change the following 
+-Route::group(['middleware' => ['auth','authorised','verified']], function(){
++Route::group(['middleware' => ['auth','authorised','verified']], function () {
+
+
+
+• [Style] No spaces inside parenthesis: (PhpCsFixer\Fixer\Whitespace\NoSpacesInsideParenthesisFixer)
+  app/Helpers/Helper.php:53: You should change the following 
+-        if(strpos($string, $end, $ini) == false ){
++        if(strpos($string, $end, $ini) == false){
+
+
+
+• [Style] Single blank line at eof: (PhpCsFixer\Fixer\Whitespace\SingleBlankLineAtEofFixer)
+  routes/web.php:93: You should change the following 
+-
+
+
+
+• [Style] Align multiline comment: (PhpCsFixer\Fixer\Phpdoc\AlignMultilineCommentFixer)
+  app/Http/Resources/Entry.php:12: You should change the following 
+-     * Transform the resource into an array.
+-     *
+-     * @param  \Illuminate\Http\Request  $request
+-     * @return array
+-     */
++             * Transform the resource into an array.
++             *
++             * @param  \Illuminate\Http\Request  $request
++             * @return array
++             */
+
+
+  app/Mail/VerificationEmail.php:18: You should change the following 
+-     * Create a new message instance.
+-     *
+-     * @return void
+-     */
++      * Create a new message instance.
++      *
++      * @return void
++      */
+
+
+
+• [Style] Binary operator spaces: (PhpCsFixer\Fixer\Operator\BinaryOperatorSpacesFixer)
+  app/Helpers/Helper.php:23: You should change the following 
+-            $pieces []= $keyspace[random_int(0, $max)];
++            $pieces [] = $keyspace[random_int(0, $max)];
+
+
+  app/Helpers/Helper.php:36: You should change the following 
+-        $ini =substr($img[0], 11);
++        $ini = substr($img[0], 11);
+
+
+  app/Helpers/Helper.php:54: You should change the following 
+-            $len=strlen($string) -1;
++            $len = strlen($string) - 1;
+
+
+  app/Helpers/Helper.php:108: You should change the following 
+-        foreach($haystack as $key=>$value) {
++        foreach($haystack as $key => $value) {
+
+
+  app/Helpers/Helper.php:117: You should change the following 
+-            else if($value==$needle) {
++            else if($value == $needle) {
+
+
+  routes/api.php:23: You should change the following 
+-Route::group(['prefix' => 'v1', 'middleware' =>  ['auth:api']], function () {
++Route::group(['prefix' => 'v1', 'middleware' => ['auth:api']], function () {
+
+
+
+• [Style] Cast spaces: (PhpCsFixer\Fixer\CastNotation\CastSpacesFixer)
+  app/Http/Controllers/ApiController.php:139: You should change the following 
+-        $nullItem = (object)array('id' => 0, 'name' => '');
++        $nullItem = (object) array('id' => 0, 'name' => '');
+
+
+  app/Http/Controllers/ApiController.php:154: You should change the following 
+-        $realDuration = (int)substr($sub, 0, strpos($sub, "|"));
++        $realDuration = (int) substr($sub, 0, strpos($sub, "|"));
+
+
+
+• [Style] Method chaining indentation: (PhpCsFixer\Fixer\Whitespace\MethodChainingIndentationFixer)
+  app/Providers/RouteServiceProvider.php:55: You should change the following 
+-             ->namespace($this->namespace)
+-             ->group(base_path('routes/web.php'));
++            ->namespace($this->namespace)
++            ->group(base_path('routes/web.php'));
+
+
+  app/Providers/RouteServiceProvider.php:69: You should change the following 
+-             ->middleware('api')
+-             ->namespace($this->namespace)
+-             ->group(base_path('routes/api.php'));
++            ->middleware('api')
++            ->namespace($this->namespace)
++            ->group(base_path('routes/api.php'));
+
+
+
+• [Style] No blank lines after class opening: (PhpCsFixer\Fixer\ClassNotation\NoBlankLinesAfterClassOpeningFixer)
+  app/Helpers/Helper.php:10: You should change the following 
+-
+
+
+  app/Http/Resources/Entry.php:10: You should change the following 
+-
+
+
+
+• [Style] No extra blank lines: (PhpCsFixer\Fixer\Whitespace\NoExtraBlankLinesFixer)
+  app/CaseInput.php:14: You should change the following 
+-
+
+
+  app/CasesExport.php:85: You should change the following 
+-
+
+
+  app/Console/Commands/DeleteUserCommand.php:71: You should change the following 
+-
+
+
+  app/Console/Commands/InstallMetagCommand.php:58: You should change the following 
+-
+
+
+  app/Group.php:16: You should change the following 
+-
+
+
+  app/Helpers/Helper.php:59: You should change the following 
+-
+
+
+  app/Helpers/Helper.php:76: You should change the following 
+-
+
+
+  app/Http/Controllers/ApiController.php:25: You should change the following 
+-
+
+
+  app/Http/Controllers/ApiController.php:96: You should change the following 
+-
+
+
+  app/Http/Controllers/ProjectCasesController.php:136: You should change the following 
+-
+
+
+  app/Http/Controllers/ProjectController.php:131: You should change the following 
+-
+
+
+  app/Http/Controllers/UserController.php:53: You should change the following 
+-
+
+
+  app/Http/Middleware/Researcher.php:20: You should change the following 
+-
+
+
+  app/Project.php:36: You should change the following 
+-
+
+
+  app/Providers/AuthServiceProvider.php:36: You should change the following 
+-
+
+
+  app/Providers/AuthServiceProvider.php:41: You should change the following 
+-
+
+
+  app/User.php:76: You should change the following 
+-
+
+
+  routes/api.php:16: You should change the following 
+-
+-
+-
+-
+
+
+  routes/web.php:19: You should change the following 
+-
+
+
+  routes/web.php:61: You should change the following 
+-
+-
+
+
+  routes/web.php:71: You should change the following 
+-
+
+
+  routes/web.php:79: You should change the following 
+-
+
+
+  routes/web.php:82: You should change the following 
+-
+-
+
+
+  routes/web.php:89: You should change the following 
+-
+-
+
+
+
+• [Style] No spaces around offset: (PhpCsFixer\Fixer\Whitespace\NoSpacesAroundOffsetFixer)
+  app/Helpers/Helper.php:23: You should change the following 
+-            $pieces []= $keyspace[random_int(0, $max)];
++            $pieces[]= $keyspace[random_int(0, $max)];
+
+
+
+• [Style] No trailing comma in singleline array: (PhpCsFixer\Fixer\ArrayNotation\NoTrailingCommaInSinglelineArrayFixer)
+  app/Providers/AppServiceProvider.php:18: You should change the following 
+-        \Illuminate\Support\Facades\View::composer(['telescope::layout'], function ($view) { $view->with('telescopeScriptVariables', [ 'path' => 'metag/telescope', 'timezone' => config('app.timezone'), 'recording' => ! cache('telescope:pause-recording'), ]); });
++        \Illuminate\Support\Facades\View::composer(['telescope::layout'], function ($view) { $view->with('telescopeScriptVariables', [ 'path' => 'metag/telescope', 'timezone' => config('app.timezone'), 'recording' => ! cache('telescope:pause-recording')]); });
+
+
+
+• [Style] Single quote: (PhpCsFixer\Fixer\StringNotation\SingleQuoteFixer)
+  app/AllCasesExport.php:15: You should change the following 
+-    const ENTRY_ID = "entry_id";
++    const ENTRY_ID = 'entry_id';
+
+
+  app/AllCasesExport.php:45: You should change the following 
+-                $ifCaseHasAdditionalInputs = $project->inputs != "[]";
++                $ifCaseHasAdditionalInputs = $project->inputs != '[]';
+
+
+  app/AllCasesExport.php:52: You should change the following 
+-                $tempValuesArray["media"] = Media::where('id', $entry->media_id)->first()->name;
+-                $tempValuesArray["start"] = $entry->begin;
+-                $tempValuesArray["end"] = $entry->end;
+-                $tempValuesArray["user_id"] = $case->user_id;
+-                $tempValuesArray["case_id"] = $case->id;
++                $tempValuesArray['media'] = Media::where('id', $entry->media_id)->first()->name;
++                $tempValuesArray['start'] = $entry->begin;
++                $tempValuesArray['end'] = $entry->end;
++                $tempValuesArray['user_id'] = $case->user_id;
++                $tempValuesArray['case_id'] = $case->id;
+
+
+  app/AllCasesExport.php:90: You should change the following 
+-                $tempValuesArray[$heading] = "";
++                $tempValuesArray[$heading] = '';
+
+
+  app/AllCasesExport.php:102: You should change the following 
+-        array_push($columnNames, "media");
+-        array_push($columnNames, "start");
+-        array_push($columnNames, "end");
+-        array_push($columnNames, "user_id");
+-        array_push($columnNames, "case_id");
++        array_push($columnNames, 'media');
++        array_push($columnNames, 'start');
++        array_push($columnNames, 'end');
++        array_push($columnNames, 'user_id');
++        array_push($columnNames, 'case_id');
+
+
+  app/AllCasesExport.php:163: You should change the following 
+-                    array_push($tempValuesArray[$key][$i], "");
++                    array_push($tempValuesArray[$key][$i], '');
+
+
+  app/AllCasesExport.php:172: You should change the following 
+-                array_push($tempValuesArray[$key][$i], "");
++                array_push($tempValuesArray[$key][$i], '');
+
+
+  app/CaseInput.php:23: You should change the following 
+-        throw new PHPUnit\Exception("Unkown property access.");
++        throw new PHPUnit\Exception('Unkown property access.');
+
+
+  app/CaseInput.php:36: You should change the following 
+-        $this->content .= $content . ",";
++        $this->content .= $content . ',';
+
+
+  app/CaseInput.php:53: You should change the following 
+-        $choices = explode(",", $choices);
++        $choices = explode(',', $choices);
+
+
+  app/CaseInput.php:61: You should change the following 
+-        $choices = explode(",", $choices);
++        $choices = explode(',', $choices);
+
+
+  app/CaseInput.php:70: You should change the following 
+-        $content = json_decode("[" . substr($this->content, 0, -1) . "]");
++        $content = json_decode('[' . substr($this->content, 0, -1) . ']');
+
+
+  app/Cases.php:10: You should change the following 
+-    const VALUE = "value";
+-    const PR_INPUTS = "pr_inputs";
++    const VALUE = 'value';
++    const PR_INPUTS = 'pr_inputs';
+
+
+  app/Cases.php:16: You should change the following 
+-    const MULTIPLE_CHOICE = "multiple choice";
+-    const ONE_CHOICE = "one choice";
+-    const SCALE = "scale";
++    const MULTIPLE_CHOICE = 'multiple choice';
++    const ONE_CHOICE = 'one choice';
++    const SCALE = 'scale';
+
+
+  app/Cases.php:41: You should change the following 
+-            array_push($mediaValues, [self::VALUE => $media[0], "start" => $media[1], "end" => $media[2]]);
++            array_push($mediaValues, [self::VALUE => $media[0], 'start' => $media[1], 'end' => $media[2]]);
+
+
+  app/Cases.php:71: You should change the following 
+-                        array_push($inputValues, [self::VALUE => $index, "type" => $pr_input['type'], "name" => $key, "start" => $entry["begin"], "end" => $entry["end"]]);
++                        array_push($inputValues, [self::VALUE => $index, 'type' => $pr_input['type'], 'name' => $key, 'start' => $entry['begin'], 'end' => $entry['end']]);
+
+
+  app/Cases.php:112: You should change the following 
+-        } else if ($availableInput == "text") {
++        } else if ($availableInput == 'text') {
+
+
+  app/Cases.php:114: You should change the following 
+-            $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions["text"]->name;
++            $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions['text']->name;
+
+
+  app/Cases.php:117: You should change the following 
+-                if ($inputValue['type'] == "text") {
++                if ($inputValue['type'] == 'text') {
+
+
+  app/Cases.php:173: You should change the following 
+-        $now = strtotime(date("Y-m-d H:i:s"));
++        $now = strtotime(date('Y-m-d H:i:s'));
+
+
+  app/Cases.php:188: You should change the following 
+-        $now = strtotime(date("Y-m-d H:i:s"));
++        $now = strtotime(date('Y-m-d H:i:s'));
+
+
+  app/Cases.php:190: You should change the following 
+-        return $this->lastDay() == "" || ($now < $timestampFirstDay);
++        return $this->lastDay() == '' || ($now < $timestampFirstDay);
+
+
+  app/CasesExport.php:42: You should change the following 
+-        $tempValuesArray["#"] = $entry->id;
+-        if ($project->inputs != "[]") {
++        $tempValuesArray['#'] = $entry->id;
++        if ($project->inputs != '[]') {
+
+
+  app/CasesExport.php:57: You should change the following 
+-                    $tempValuesArray[$heading] = "";
++                    $tempValuesArray[$heading] = '';
+
+
+  app/CasesExport.php:60: You should change the following 
+-            $tempValuesArray["#"] = $entry->id;
++            $tempValuesArray['#'] = $entry->id;
+
+
+  app/CasesExport.php:75: You should change the following 
+-                                array_push($tempValuesArray[$key][$i], "");
++                                array_push($tempValuesArray[$key][$i], '');
+
+
+  app/CasesExport.php:81: You should change the following 
+-                            array_push($tempValuesArray[$key][$i], "");
++                            array_push($tempValuesArray[$key][$i], '');
+
+
+  app/CasesExport.php:91: You should change the following 
+-        $tempValuesArray["media"] = Media::where('id', $entry->media_id)->first()->name;
+-        $tempValuesArray["start"] = $entry->begin;
+-        $tempValuesArray["end"] = $entry->end;
++        $tempValuesArray['media'] = Media::where('id', $entry->media_id)->first()->name;
++        $tempValuesArray['start'] = $entry->begin;
++        $tempValuesArray['end'] = $entry->end;
+
+
+  app/CasesExport.php:108: You should change the following 
+-        $columnNames = ["#"];
++        $columnNames = ['#'];
+
+
+  app/CasesExport.php:112: You should change the following 
+-        array_push($columnNames, "media");
+-        array_push($columnNames, "start");
+-        array_push($columnNames, "end");
++        array_push($columnNames, 'media');
++        array_push($columnNames, 'start');
++        array_push($columnNames, 'end');
+
+
+  app/Console/Commands/DeleteProjectCommand.php:60: You should change the following 
+-        $this->warn("PROJECT DELETED!");
++        $this->warn('PROJECT DELETED!');
+
+
+  app/Http/Controllers/ApiController.php:77: You should change the following 
+-                $lastDayPos = strpos($userHasACase->duration, "lastDay:");
++                $lastDayPos = strpos($userHasACase->duration, 'lastDay:');
+
+
+  app/Http/Controllers/ApiController.php:81: You should change the following 
+-                    $startDay = Helper::get_string_between($userHasACase->duration, "startDay:", "|");
++                    $startDay = Helper::get_string_between($userHasACase->duration, 'startDay:', '|');
+
+
+  app/Http/Controllers/ApiController.php:87: You should change the following 
+-                    $notstarted = (strtotime(date("d.m.Y")) < strtotime($startDay));
++                    $notstarted = (strtotime(date('d.m.Y')) < strtotime($startDay));
+
+
+  app/Http/Controllers/ApiController.php:100: You should change the following 
+-                    $userHasACase->duration = $userHasACase->duration . "|lastDay:" . $duration;
++                    $userHasACase->duration = $userHasACase->duration . '|lastDay:' . $duration;
+
+
+  app/Http/Controllers/ApiController.php:153: You should change the following 
+-        $sub = substr($caseDuration, strpos($caseDuration, ":") + strlen(":"), strlen($caseDuration));
+-        $realDuration = (int)substr($sub, 0, strpos($sub, "|"));
+-        return date("d.m.Y", $datetime + $realDuration * 3600);
++        $sub = substr($caseDuration, strpos($caseDuration, ':') + strlen(':'), strlen($caseDuration));
++        $realDuration = (int)substr($sub, 0, strpos($sub, '|'));
++        return date('d.m.Y', $datetime + $realDuration * 3600);
+
+
+  app/Http/Controllers/ApiController.php:164: You should change the following 
+-        abort(403, "NOT POSSIBLE");
++        abort(403, 'NOT POSSIBLE');
+
+
+  app/Http/Controllers/EntryController.php:111: You should change the following 
+-        return response("entry deleted", 200);
++        return response('entry deleted', 200);
+
+
+  app/Http/Controllers/ProjectCasesController.php:84: You should change the following 
+-        if (request('name') == "" || request(self::EMAIL) == "" || request(self::DURATION) == "") {
++        if (request('name') == '' || request(self::EMAIL) == '' || request(self::DURATION) == '') {
+
+
+  app/Http/Controllers/ProjectCasesController.php:133: You should change the following 
+-        $data[self::MESSAGE] = "Case deleted";
++        $data[self::MESSAGE] = 'Case deleted';
+
+
+  app/Http/Controllers/ProjectController.php:118: You should change the following 
+-        return response("Updated project successfully");
++        return response('Updated project successfully');
+
+
+  app/Http/Controllers/UserController.php:130: You should change the following 
+-        return response("user deleted", 200);
++        return response('user deleted', 200);
+
+
+  app/Http/Controllers/UserController.php:146: You should change the following 
+-        if ($request->input(self::TOKEN) == "") {
++        if ($request->input(self::TOKEN) == '') {
+
+
+  app/Http/Controllers/UserController.php:163: You should change the following 
+-        if ($request->input(self::TOKEN) === "") {
+-            $data['error'] = "wrong request, contact the administrator.";
+-            $data['user'] = "";
++        if ($request->input(self::TOKEN) === '') {
++            $data['error'] = 'wrong request, contact the administrator.';
++            $data['user'] = '';
+
+
+  app/Http/Controllers/UserController.php:170: You should change the following 
+-            $data['error'] = "Something went wrong, please contact the administrator.";
++            $data['error'] = 'Something went wrong, please contact the administrator.';
+
+
+  app/Http/Middleware/CheckGroup.php:22: You should change the following 
+-        return redirect(route('new_group'))->with('message', "You must belong to a group to use Metag analyze.  If you think this is an error, contact the system admin.");
++        return redirect(route('new_group'))->with('message', 'You must belong to a group to use Metag analyze.  If you think this is an error, contact the system admin.');
+
+
+  app/Http/Resources/Entry.php:24: You should change the following 
+-            "inputs" => $this->inputs,
+-            "content" => $this->content,
+-            "comment" => $this->comment,
+-            "case_id" => $this->case_id,
+-            "media_id" => $this->media_id,
+-            "media_name" => Media::where('id',$this->media_id)->first()->name,
+-            "place_id" => $this->place_id,
+-            "communication_partner_id" => $this->communication_partner_id,
++            'inputs' => $this->inputs,
++            'content' => $this->content,
++            'comment' => $this->comment,
++            'case_id' => $this->case_id,
++            'media_id' => $this->media_id,
++            'media_name' => Media::where('id',$this->media_id)->first()->name,
++            'place_id' => $this->place_id,
++            'communication_partner_id' => $this->communication_partner_id,
+
+
+  app/Project.php:47: You should change the following 
+-            $isMultipleOrOneChoice = property_exists($input, "numberofanswer") && $input->numberofanswer > 0;
++            $isMultipleOrOneChoice = property_exists($input, 'numberofanswer') && $input->numberofanswer > 0;
+
+
+  app/Project.php:71: You should change the following 
+-        if ($this->inputs == "[]") {
++        if ($this->inputs == '[]') {
+
+
+  app/Project.php:89: You should change the following 
+-        if ($this->inputs == "[]") {
++        if ($this->inputs == '[]') {
+
+
+  app/Project.php:101: You should change the following 
+-        if ($this->inputs == "[]") {
++        if ($this->inputs == '[]') {
+
+
+  app/Project.php:116: You should change the following 
+-        if ($this->inputs == "[]") {
++        if ($this->inputs == '[]') {
+
+
+  app/Providers/AuthServiceProvider.php:13: You should change the following 
+-      "user_id" => "bail|required|exists:users,id",
+-      "token" => "bail|required|string|min:30|max:30"
++      'user_id' => 'bail|required|exists:users,id',
++      'token' => 'bail|required|string|min:30|max:30'
+
+
+  app/Providers/AuthServiceProvider.php:37: You should change the following 
+-        Auth::viaRequest("api-token", function($request){
++        Auth::viaRequest('api-token', function($request){
+
+
+  app/Providers/AuthServiceProvider.php:52: You should change the following 
+-        $data = compact("user_id","token");
++        $data = compact('user_id','token');
+
+
+
+• [Style] Phpdoc indent: (PhpCsFixer\Fixer\Phpdoc\PhpdocIndentFixer)
+  app/Http/Resources/Entry.php:11: You should change the following 
+-            /**
++    /**
+
+
+  app/Mail/VerificationEmail.php:17: You should change the following 
+-     /**
++    /**
+
+
+  routes/web.php:72: You should change the following 
+-    /**
+-     * User Routes
+-     */
++	/**
++	 * User Routes
++	 */
+
+
+
+• [Style] Phpdoc trim: (PhpCsFixer\Fixer\Phpdoc\PhpdocTrimFixer)
+  app/CasesExport.php:98: You should change the following 
+-     *
+
+
+  app/Http/Controllers/Auth/NoGuestForgotPasswordController.php:20: You should change the following 
+-     *
+
+
+
+• [Style] Phpdoc var annotation correct order: (PhpCsFixer\Fixer\Phpdoc\PhpdocVarAnnotationCorrectOrderFixer)
+  app/AllCasesExport.php:30: You should change the following 
+-     * @var  $project
+-     */
++     * @var   
++    $project*/
+
+
+
+• [Style] Ordered class elements: (PhpCsFixer\Fixer\ClassNotation\OrderedClassElementsFixer)
+  app/AllCasesExport.php:65: You should change the following 
++    public function headings(): array
++    {
++        $columnNames = [self::ENTRY_ID];
++        foreach ($this->head as $column) {
++            array_push($columnNames, $column);
++        }
++        array_push($columnNames, "media");
++        array_push($columnNames, "start");
++        array_push($columnNames, "end");
++        array_push($columnNames, "user_id");
++        array_push($columnNames, "case_id");
++        return $columnNames;
++
++    }
++
++    public function collection()
++    {
++        return Project::where('id', $this->id)->get();
++    }
++
+
+
+  app/AllCasesExport.php:96: You should change the following 
+-    public function headings(): array
+-    {
+-        $columnNames = [self::ENTRY_ID];
+-        foreach ($this->head as $column) {
+-            array_push($columnNames, $column);
+-        }
+-        array_push($columnNames, "media");
+-        array_push($columnNames, "start");
+-        array_push($columnNames, "end");
+-        array_push($columnNames, "user_id");
+-        array_push($columnNames, "case_id");
+-        return $columnNames;
+-
+-    }
+-
+
+
+  app/AllCasesExport.php:134: You should change the following 
+-    }
+-
+-    public function collection()
+-    {
+-        return Project::where('id', $this->id)->get();
+
+
+  app/Cases.php:90: You should change the following 
+-    /**
+-     * @param       $data
+-     * @param       $availableInput
+-     * @param       $availableOptions
+-     * @param array $inputValues
+-     */
+-    private static function formatInputValues(&$data, $availableInput, $availableOptions, array $inputValues): void
+-    {
+-        $data[self::ENTRIES][self::INPUTS][$availableInput] = array();
+-        $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableInput;
+-        if ($availableInput == self::MULTIPLE_CHOICE) {
+-            $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableInput;
+-            $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = $availableOptions[self::MULTIPLE_CHOICE]->answers;
+-            $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions[self::MULTIPLE_CHOICE]->name;
+-        } else if ($availableInput == self::ONE_CHOICE) {
+-            $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = $availableOptions[self::ONE_CHOICE]->answers;
+-            $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions[self::ONE_CHOICE]->name;
+-
+-        } else if ($availableInput == self::SCALE) {
+-            $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = [0, 1, 2, 3, 4, 5];
+-            $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions[self::SCALE]->name;
+-
+-        } else if ($availableInput == "text") {
+-            $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = [];
+-            $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions["text"]->name;
+-            // loop through the values you already have and make it part of the 'available'
+-            foreach ($inputValues as $inputValue) {
+-                if ($inputValue['type'] == "text") {
+-                    array_push($data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE], $inputValue[self::VALUE]);
+-                }
+-            }
+-        }
+-    }
+-
+
+
+  app/Cases.php:201: You should change the following 
++    }
++
++    /**
++     * @param       $data
++     * @param       $availableInput
++     * @param       $availableOptions
++     * @param array $inputValues
++     */
++    private static function formatInputValues(&$data, $availableInput, $availableOptions, array $inputValues): void
++    {
++        $data[self::ENTRIES][self::INPUTS][$availableInput] = array();
++        $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableInput;
++        if ($availableInput == self::MULTIPLE_CHOICE) {
++            $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableInput;
++            $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = $availableOptions[self::MULTIPLE_CHOICE]->answers;
++            $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions[self::MULTIPLE_CHOICE]->name;
++        } else if ($availableInput == self::ONE_CHOICE) {
++            $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = $availableOptions[self::ONE_CHOICE]->answers;
++            $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions[self::ONE_CHOICE]->name;
++
++        } else if ($availableInput == self::SCALE) {
++            $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = [0, 1, 2, 3, 4, 5];
++            $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions[self::SCALE]->name;
++
++        } else if ($availableInput == "text") {
++            $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = [];
++            $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions["text"]->name;
++            // loop through the values you already have and make it part of the 'available'
++            foreach ($inputValues as $inputValue) {
++                if ($inputValue['type'] == "text") {
++                    array_push($data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE], $inputValue[self::VALUE]);
++                }
++            }
++        }
+
+
+  app/CasesExport.php:97: You should change the following 
+-    /**
+-     *
+-     * @return bool
+-     */
+-    private function invalidData(): bool
+-    {
+-        return false;
+-    }
+-
+
+
+  app/CasesExport.php:122: You should change the following 
++    }
++
++    /**
++     *
++     * @return bool
++     */
++    private function invalidData(): bool
++    {
++        return false;
+
+
+  app/Http/Controllers/ApiController.php:121: You should change the following 
+-     * save the device ID of the user by adding it into the device array.
+-     */
+-    private function saveDeviceId(Request $request)
+-    {
+-        $currentDeviceId = auth()->user()->deviceID == null ? [] : auth()->user()->deviceID;
+-        if ($request->has('deviceID') && $request->deviceID != '' && !in_array($request->deviceID, $currentDeviceId)) array_push($currentDeviceId, $request->deviceID);
+-        auth()->user()->forceFill(['deviceID' => $currentDeviceId ?? ''])->save();
+-
+-    }
+-
+-    /**
+-     * @param $response
+-     * @param $inputs
+
+
+  app/Http/Controllers/ApiController.php:136: You should change the following 
+-    protected function formatLoginResponse($response)
+-    {
+-        $data['inputs']['media'] = $response->project->media;
+-        $nullItem = (object)array('id' => 0, 'name' => '');
+-        $data['inputs']['media']->prepend($nullItem);
+-        $data['inputs']['custominputs'] = $response->project->inputs;
+-        return $data;
+-    }
+-
+-    /**
+-     * @param int $datetime
+-     * @param     $caseDuration
+-     * @return false|string
+-     */
+-    protected function calculateDuration(int $datetime, $caseDuration)
+-    {
+-
+-        $sub = substr($caseDuration, strpos($caseDuration, ":") + strlen(":"), strlen($caseDuration));
+-        $realDuration = (int)substr($sub, 0, strpos($sub, "|"));
+-        return date("d.m.Y", $datetime + $realDuration * 3600);
+-    }
+-
+-    /**
+-     * @param Request $request
+-     * @return mixed
+-     */
+
+
+  app/Http/Controllers/ApiController.php:220: You should change the following 
++
++    }
++
++    /**
++     * @param $response
++     * @param $inputs
++     * @return mixed
++     */
++    protected function formatLoginResponse($response)
++    {
++        $data['inputs']['media'] = $response->project->media;
++        $nullItem = (object)array('id' => 0, 'name' => '');
++        $data['inputs']['media']->prepend($nullItem);
++        $data['inputs']['custominputs'] = $response->project->inputs;
++        return $data;
++    }
++
++    /**
++     * @param int $datetime
++     * @param     $caseDuration
++     * @return false|string
++     */
++    protected function calculateDuration(int $datetime, $caseDuration)
++    {
++
++        $sub = substr($caseDuration, strpos($caseDuration, ":") + strlen(":"), strlen($caseDuration));
++        $realDuration = (int)substr($sub, 0, strpos($sub, "|"));
++        return date("d.m.Y", $datetime + $realDuration * 3600);
++    }
++
++    /**
++     * @param Request $request
++     * save the device ID of the user by adding it into the device array.
++     */
++    private function saveDeviceId(Request $request)
++    {
++        $currentDeviceId = auth()->user()->deviceID == null ? [] : auth()->user()->deviceID;
++        if ($request->has('deviceID') && $request->deviceID != '' && !in_array($request->deviceID, $currentDeviceId)) array_push($currentDeviceId, $request->deviceID);
++        auth()->user()->forceFill(['deviceID' => $currentDeviceId ?? ''])->save();
+
+
+  app/Http/Controllers/ProjectController.php:87: You should change the following 
+-    /**
+-     * @param $media
+-     * @param $project
+-     * @param $mToSync
+-     */
+-    protected function syncMedia($media, $project, &$mToSync): void
+-    {
+-        if ($media) {
+-            $mToSync = array();
+-            foreach (array_filter($media) as $singleMedia) {
+-                array_push($mToSync, Media::firstOrCreate(['name' => $singleMedia])->id);
+-
+-            }
+-            $project->media()->sync(Media::whereIn('id', $mToSync)->get());
+-        }
+-    }
+-
+
+
+  app/Http/Controllers/ProjectController.php:181: You should change the following 
++    }
++
++    /**
++     * @param $media
++     * @param $project
++     * @param $mToSync
++     */
++    protected function syncMedia($media, $project, &$mToSync): void
++    {
++        if ($media) {
++            $mToSync = array();
++            foreach (array_filter($media) as $singleMedia) {
++                array_push($mToSync, Media::firstOrCreate(['name' => $singleMedia])->id);
++
++            }
++            $project->media()->sync(Media::whereIn('id', $mToSync)->get());
++        }
+
+
+
+• [Style] Ordered imports: (PhpCsFixer\Fixer\Import\OrderedImportsFixer)
+  app/Http/Controllers/Auth/RegisterController.php:6: You should change the following 
++use App\Http\Controllers\Controller;
+
+
+  app/Http/Controllers/Auth/RegisterController.php:8: You should change the following 
+-use App\Http\Controllers\Controller;
++use Illuminate\Foundation\Auth\RegistersUsers;
+
+
+  app/Http/Controllers/Auth/RegisterController.php:11: You should change the following 
+-use Illuminate\Foundation\Auth\RegistersUsers;
+
+
+  app/Http/Resources/Entry.php:5: You should change the following 
++use App\Media;
+
+
+  app/Http/Resources/Entry.php:6: You should change the following 
+-use App\Media;
+
+
+  app/Mail/VerificationEmail.php:5: You should change the following 
++use App\User;
+
+
+  app/Mail/VerificationEmail.php:6: You should change the following 
++use Illuminate\Contracts\Queue\ShouldQueue;
+
+
+  app/Mail/VerificationEmail.php:8: You should change the following 
+-use Illuminate\Contracts\Queue\ShouldQueue;
+-use App\User;
+
+
+  app/Policies/EntryPolicy.php:5: You should change the following 
++use App\Entry;
+
+
+  app/Policies/EntryPolicy.php:6: You should change the following 
+-use App\Entry;
+
+
+  app/Policies/ProjectPolicy.php:5: You should change the following 
++use App\Project;
+
+
+  app/Policies/ProjectPolicy.php:6: You should change the following 
+-use App\Project;
+
+
+  app/Providers/AuthServiceProvider.php:5: You should change the following 
++use Auth;
++use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
++use Illuminate\Support\Facades\Gate;
+
+
+  app/Providers/AuthServiceProvider.php:6: You should change the following 
+-use Illuminate\Support\Facades\Gate;
+-use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+-use Auth;
+
+
+  app/Providers/BroadcastServiceProvider.php:5: You should change the following 
++use Illuminate\Support\Facades\Broadcast;
+
+
+  app/Providers/BroadcastServiceProvider.php:6: You should change the following 
+-use Illuminate\Support\Facades\Broadcast;
+
+
+  app/Providers/EventServiceProvider.php:5: You should change the following 
+-use Illuminate\Support\Facades\Event;
+
+
+  app/Providers/EventServiceProvider.php:9: You should change the following 
++use Illuminate\Support\Facades\Event;
+
+
+  app/Providers/RouteServiceProvider.php:5: You should change the following 
++use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
+
+
+  app/Providers/RouteServiceProvider.php:6: You should change the following 
+-use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
+
+
+
+✨ See something that needs to be improved? Create an issue or send us a pull request: https://github.com/nunomaduro/phpinsights

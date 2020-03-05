@@ -10,12 +10,12 @@
     <title>{{ config('app.name', 'Metag') }}</title>
 
     <!-- Scripts -->
-    <script src="{{ asset('js/manifest.js') }}" ></script>
-    <script src="{{ asset('js/vendor.js') }}" ></script>
+    <script src="{{ asset('js/manifest.js') }}"></script>
+    <script src="{{ asset('js/vendor.js') }}"></script>
     <script src="{{ asset('js/app.js') }}" defer></script>
 
     <script type="text/javascript">
-    window.inputs = <?php echo json_encode(config('inputs')); ?>;
+        window.inputs = <?php echo json_encode(config('inputs')); ?>;
     </script>
 
 
@@ -30,26 +30,26 @@
     </style>
 </head>
 <body>
-    <div id="app">
-        @include('layouts.nav')
+<div id="app">
+    @include('layouts.nav')
 
-        <main class="py-4 container mx-auto px-40">
-            @if(session()->has('message'))
-                <b-notification
-                        :active.sync="mainNotification"
-                        aria-close-label="Close"
-                        type="is-danger"
-                        role="alert"
-                >
-                    {{session()->get('message')}}
-                </b-notification>
+    <main class="py-4 container mx-auto px-40">
+        @if(session()->has('message'))
+            <b-notification
+                    :active.sync="mainNotification"
+                    aria-close-label="Close"
+                    type="is-danger"
+                    role="alert"
+            >
+                {{session()->get('message')}}
+            </b-notification>
 
-            @endif
+        @endif
 
-            @yield('content')
-        </main>
-    </div>
+        @yield('content')
+    </main>
+</div>
 
-    @yield('pagespecificscripts')
+@yield('pagespecificscripts')
 </body>
 </html>
