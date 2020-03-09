@@ -16,7 +16,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Schema::defaultStringLength(191);
         View::composer(['telescope::layout'], function ($view) {
-            $view->with('telescopeScriptVariables', ['path' => 'metag/telescope', 'timezone' => config('app.timezone'), 'recording' => !cache('telescope:pause-recording'),]);
+            $view->with('telescopeScriptVariables', ['path' => strtolower(env('APP_NAME', 'mesort')) . '/telescope', 'timezone' => config('app.timezone'), 'recording' => !cache('telescope:pause-recording')]);
         });
     }
 
