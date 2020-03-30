@@ -20,8 +20,7 @@
                                 <h1 class="title" style="margin: 0 auto; max-width: 100%;">Metag Analyze</h1>
                             </div>
                             <div class="py-4 w-100 text-center ">
-                                <a class="text-blue-500 hover:text-red-600" href="{{url('register')}}">Register to use
-                                    Metag Analyze</a>
+                                <a class="text-blue-500 hover:text-red-600" href="{{url('register')}}">{{__("Register to use Metag Analyze")}}</a>
                             </div>
                         </div>
 
@@ -59,7 +58,7 @@
                         <div class="field">
                             <p class="control">
                                 <button class="button is-dark">
-                                    Login
+                                    {{__("Login")}}
                                 </button>
                             </p>
                         </div>

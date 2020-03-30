@@ -15,7 +15,7 @@
 
         @if(Auth::user()->hasReachMaxNumberOfProjecs())
             <p class="text-yellow-300 block bg-red-600 px-3 mt-1 lg:inline-block lg:mt-0 mr-4 ">
-                You have reached the max number of Projects! Contact us for solutions!
+                {{__('You have reached the max number of Projects! Contact us for solutions!')}}
             </p>
         @endif
 
