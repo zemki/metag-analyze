@@ -9,11 +9,11 @@
                 <div class="column">
                     <div class="container">
                         <h1 class="title">Create a Project</h1>
-                        <p class="subtitle text-sm">The predefined inputs are <strong>Begin Date/Time</strong>,
+                        <p class="subtitle text-sm">{{__('The predefined inputs are <strong>Begin Date/Time</strong>,
                             <strong>End Date/time</strong> and
                             <strong>Media </strong> used.
                             You can enter up to 3 additional inputs giving them name and details,
-                            this will be reflected in the mobile app.
+                            this will be reflected in the mobile app.')}}
                         </p>
                     </div>
                     <form method="POST" action="{{route('projects')}}" class="container" style="padding-top: 40px"
@@ -22,7 +22,7 @@
                         <input type="hidden" value="{{auth()->user()->id}}" name="created_by">
                         <div class="field">
                             <label for="name" class="label">
-                                Title
+                                {{__('Title')}}
                             </label>
                             <div class="control">
                                 <input type="text" class="input" name="name" v-model="newproject.name">
@@ -31,7 +31,7 @@
 
                         <div class="field">
                             <label for="description" class="label">
-                                Description
+                                {{__('Description')}}
                             </label>
 
                             <div class="control">
@@ -57,12 +57,10 @@
                                     Media
                                 </label>
                                 <p class="subtitle text-sm">
-                                    The user will be able to enter their own media,
-                                    here you can write e predefined list from which it's possible to chose a media.
+                                    {{__('The user will be able to enter their own media, here you can write e predefined list from which it\'s possible to chose a media.')}}
                                 </p>
                                 <div class="control" v-for="(m,index) in newproject.media">
                                     <input type="text" name="media[]" class="input inputcreatecase" :tabindex="index+1"
-
                                            v-model="newproject.media[index]" @keyup.capture="handleMediaInputs(index,m)"
                                            autocomplete="off" @keydown.enter.prevent @keydown.shift.prevent>
                                 </div>
@@ -71,7 +69,7 @@
                                 <div class="column">
                                     <div class="field">
                                         <label for="name" class="label">
-                                            Input Name
+                                            {{__('Input Name')}}
                                         </label>
                                         <div class="control">
                                             <input type="text" class="input" v-model="newproject.inputs[index].name">
@@ -81,7 +79,7 @@
                                         <label class="checkbox">
                                             <input type="checkbox" v-model="newproject.inputs[index].mandatory"
                                                    checked="checked">
-                                            Mandatory
+                                            {{__('Mandatory')}}
                                         </label>
                                     </div>
                                 </div>
@@ -100,7 +98,7 @@
                                     </div>
                                     <span v-if="(newproject.inputs[index].type == 'multiple choice' || newproject.inputs[index].type == 'one choice')">
                                         <div class="field">
-                                            <label class="label">Answers</label>
+                                            <label class="label">{{__('Answers')}}</label>
                                                 <div class="control"
                                                      v-for="(m,answerindex) in newproject.inputs[index].answers">
                                                     <input type="text" class="input inputcreatecase"
@@ -133,7 +131,7 @@
                         <div class="level">
                             <div class="field">
                                 <div class="control">
-                                    <button class="button is-link">Create Project</button>
+                                    <button class="button is-link">{{__('Create Project')}}</button>
                                 </div>
                             </div>
 

@@ -22,7 +22,13 @@
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet" type="text/css">
-
+    <script>
+        window.trans = [];
+        window.trans = <?php
+        $json_file = File::get(resource_path() . "/lang/" . App::getLocale() . '.json');
+        echo json_decode(json_encode($json_file, true));;
+        ?>;
+    </script>
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     <style>
