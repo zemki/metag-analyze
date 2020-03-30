@@ -38,7 +38,9 @@ if (process.env.MIX_ENV_MODE === 'production') {
     Vue.config.debug = true;
     Vue.config.silent = false;
 }
-
+Vue.config.devtools = true;
+Vue.config.debug = true;
+Vue.config.silent = false;
 
 Vue.prototype.trans = (key) => {
     return _.isUndefined(window.trans[key])? key : window.trans[key];
@@ -305,6 +307,7 @@ const app = new Vue({
             inputs: [],
             config: window.inputs,
             response: "",
+            description: "",
             media: [""]
         },
         registration: {
@@ -485,7 +488,7 @@ const app = new Vue({
             var self = this;
             self.newproject.response = "";
             if (this.newproject.name === "") this.newproject.response = "Enter a project name <br>";
-            if (this.newproject.description === "") this.newproject.response = "Enter a project description <br>";
+            if (this.newproject.description === "") this.newproject.response += "Enter a project description <br>";
             // if(this.newproject.media.length === 0 || this.newproject.media[0] === "")this.newproject.response +="Enter the list of media<br>";
 
             _.forEach(this.newproject.inputs, function (value) {
