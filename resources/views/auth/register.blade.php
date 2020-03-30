@@ -39,13 +39,13 @@
 
                         <ul class="w-1/2">
                             <li class="list-item-registration w-auto"
-                                :class="{ is_valid: registration.contains_six_characters }">6 Characters
+                                :class="{ is_valid: registration.contains_six_characters }">{{__('6 Characters')}}
                             </li>
                             <li class="list-item-registration" :class="{ is_valid: registration.contains_number }">
-                                Contains Number
+                                {{__('Contains Number')}}
                             </li>
                             <li class="list-item-registration" :class="{ is_valid: registration.contains_letters }">
-                                Contains Letters
+                                {{__('Contains Letters')}}
                             </li>
                         </ul>
 
@@ -83,7 +83,7 @@
                                         :class="{'opacity-50 cursor-not-allowed disabled' : !this.registration.valid_password}"
                                         :disabled="!this.registration.valid_password"
                                 >
-                                    Register
+                                    {{__('Register')}}
                                 </button>
                             </p>
                         </div>

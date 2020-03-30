@@ -14,13 +14,13 @@
         <div class="inline px-2">
             <div class="inline">
                 <a href="{{url($project->path().'/cases/new')}}">
-                    <button class="button is-link is-primary">Create Case</button>
+                    <button class="button is-link is-primary">{{__('Create Case')}}</button>
                 </a>
 
             </div>
             <div class="inline">
                 <a href="{{url($project->path().'/export')}}">
-                    <button class="button is-link is-primary">Download all the data from this project</button>
+                    <button class="button is-link is-primary">{{__('Download all the data from this project')}}</button>
                 </a>
             </div>
         </div>
@@ -46,8 +46,7 @@
                                     <a href="{{$case->isConsultable() && $case->entries()->count() > 0 ? $project->id.$case->path() : '#' }}">
                                         <button
                                                 class="block button text-gray-700 {{$case->isConsultable() ? '' : 'opacity-50 cursor-not-allowed'}}">
-                                            {{$case->isConsultable() && $case->entries()->count() > 0 ? 'View
-                                            Entries' : 'User is sending the data . . .'}}
+                                            {{$case->isConsultable() && $case->entries()->count() > 0 ? trans('View Entries') : trans('User is sending the data . . .')}}
                                         </button>
                                     </a>
                                 </div>
@@ -57,7 +56,7 @@
                                     <div class="py-2">
                                         <a href="{{url('export/'.$case->id)}}" target="_blank">
                                             <button class="block  bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-2 rounded">
-                                                Download
+                                                {{__('Download')}}
                                             </button>
                                         </a>
                                     </div>
@@ -66,7 +65,7 @@
                                 <div class="py-2">
                                     <button type="submit" class="block button is-danger text-white"
                                             @click="confirmdeletecase('{{url('/cases/'.$case->id)}}')">
-                                        Delete Case
+                                        {{__('Delete Case')}}
                                     </button>
                                 </div>
 
@@ -74,16 +73,16 @@
                             </div>
                             <div class="px-6 py-4 ">
                                 <div class="block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700">
-                                    User: {{$case->user? $case->user->email : 'no user assigned'}}</div>
+                                    {{__('User')}}: {{$case->user? $case->user->email : 'no user assigned'}}</div>
                                 <div class="block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700">
-                                    Entries: {{$case->entries->count()}}</div>
+                                    {{__('Entries')}}: {{$case->entries->count()}}</div>
                                 <div class="block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700">
-                                    Last day: {{ $case->lastDay() }}</div>
+                                    {{__('Last day')}}: {{ $case->lastDay() }}</div>
                             </div>
                         </div>
 
                     @empty
-                        <p class="mt-2">There are no cases for this project</p>
+                        <p class="mt-2">{{__('There are no cases for this project')}}</p>
                     @endforelse
                 </div>
             </b-tab-item>
@@ -97,7 +96,7 @@
                             type="is-danger"
                             role="alert"
                     >
-                        You created a case, project is not editable
+                        {{__('You created a case, project is not editable')}}
                     </b-notification>
 
                 @endif

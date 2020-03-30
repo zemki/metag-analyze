@@ -8,7 +8,7 @@
 
             <div class="column is-half">
                 <div class="notification is-danger">
-                    This link is not valid, please contact the administrator.
+                    {{__('This link is not valid, please contact the administrator.')}}
                 </div>
             </div>
         </div>
