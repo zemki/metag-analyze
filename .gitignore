@@ -22,8 +22,8 @@ config/pushnotification.php
 composer.lock
 
 .DS_Store
-public/css
-public/js
+public/*.css
+public/*.js
 public/mix-manifest.json
 package.json
 

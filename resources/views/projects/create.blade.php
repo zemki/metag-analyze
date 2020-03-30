@@ -9,9 +9,9 @@
                 <div class="column">
                     <div class="container">
                         <h1 class="title">Create a Project</h1>
-                        <p class="subtitle text-sm">{{__('The predefined inputs are <strong>Begin Date/Time</strong>,
-                            <strong>End Date/time</strong> and
-                            <strong>Media </strong> used.
+                        <p class="subtitle text-sm">{{__('The predefined inputs are Begin Date/Time,
+                            End Date/time and
+                            Media  used.
                             You can enter up to 3 additional inputs giving them name and details,
                             this will be reflected in the mobile app.')}}
                         </p>
