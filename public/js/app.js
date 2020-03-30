@@ -20700,6 +20700,10 @@ if (false) {} else {
   Vue.config.silent = false;
 }
 
+Vue.prototype.trans = function (key) {
+  return _.isUndefined(window.trans[key]) ? key : window.trans[key];
+};
+
 Vue.component('edit-project', __webpack_require__(/*! ./components/editproject.vue */ "./resources/js/components/editproject.vue")["default"]);
 Vue.component('consult-entries', __webpack_require__(/*! ./components/consultentries.vue */ "./resources/js/components/consultentries.vue")["default"]);
 Vue.component('project-invites', __webpack_require__(/*! ./components/projectsInvites.vue */ "./resources/js/components/projectsInvites.vue")["default"]);
@@ -21163,8 +21167,8 @@ var app = new Vue({
 
       var confirmDelete = this.$buefy.dialog.confirm({
         title: 'Confirm Delete',
-        message: 'Are you sure you want to delete this project?',
-        cancelText: 'Cancel',
+        message: '<strong>Are you sure you want to delete this project?</strong>',
+        cancelText: 'NO',
         confirmText: 'YES',
         hasIcon: true,
         type: 'is-danger',

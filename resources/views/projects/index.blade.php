@@ -33,30 +33,27 @@
                         <button type="submit"
                                 class="button text-white">
                             <a href="{{url($project->path())}}">
-                                Consult
-                                Project
+                                {{__('Consult Project')}}
                             </a></button>
                     </div>
                     <div class="py-2">
 
                         <a href="{{url($project->path().'/export')}}">
-                            <button class="button is-link is-primary">Download all the data</button>
+                            <button class="button is-link is-primary">{{__('Download all the data')}}</button>
                         </a>
                     </div>
                     <div class="py-2">
 
                         <button class="button is-danger mt-1">
                             <a class="text-gray-100 hover:text-black"
-                               @click="confirmDeleteProject({{$project->id}},'{{url('/projects/'.$project->id)}}')">Delete
-                                Project</a>
+                               @click="confirmDeleteProject({{$project->id}},'{{url('/projects/'.$project->id)}}')">{{__('Delete Project')}}</a>
                         </button>
                     </div>
                 </div>
                 <div class="px-6 py-4 ">
-                    <div class="block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700"> Created
-                        by {{\App\User::where('id',$project->created_by)->first()->email}}</div>
+                    <div class="block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700"> {{__('Created by')}} {{\App\User::where('id',$project->created_by)->first()->email}}</div>
                     <div class="block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700">
-                        Cases: {{$project->cases->count()}}</div>
+                        {{__('Cases')}}: {{$project->cases->count()}}</div>
                     <div class="break-words block bg-gray-200 px-3 py-1 text-sm font-semibold text-gray-700">{{$project->description}} </div>
 
                 </div>
@@ -67,7 +64,7 @@
 
         @empty
             <div class="column text-center">
-                You don't have any personal project.
+                {{__('You don\'t have any personal project.')}}
             </div>
         @endforelse
     </div>
@@ -108,7 +105,7 @@
             </div>
         @empty
             <div class="column text-center">
-                You have not received any invite.
+                {{__('You have not received any invite.')}}
             </div>
         @endforelse
     </div>

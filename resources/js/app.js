@@ -40,6 +40,10 @@ if (process.env.MIX_ENV_MODE === 'production') {
 }
 
 
+Vue.prototype.trans = (key) => {
+    return _.isUndefined(window.trans[key])? key : window.trans[key];
+};
+
 Vue.component('edit-project', require('./components/editproject.vue').default);
 Vue.component('consult-entries', require('./components/consultentries.vue').default);
 Vue.component('project-invites', require('./components/projectsInvites.vue').default);
@@ -530,8 +534,8 @@ const app = new Vue({
             let confirmDelete = this.$buefy.dialog.confirm(
                 {
                     title: 'Confirm Delete',
-                    message: 'Are you sure you want to delete this project?',
-                    cancelText: 'Cancel',
+                    message: '<strong>Are you sure you want to delete this project?</strong>',
+                    cancelText: 'NO',
                     confirmText: 'YES',
                     hasIcon: true,
                     type: 'is-danger',
