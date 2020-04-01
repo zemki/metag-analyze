@@ -5,7 +5,7 @@
 
     <div class="columns">
         <div class="column">
-            <h1 class="text-4xl font-weight-bold uppercase mb-2">Create your group</h1>
+            <h1 class="text-4xl font-bold uppercase mb-2">Create your group</h1>
             <h3 class="text-lg">
                 Groups are made to share the same project between different users and it's mandatory to belong to one.
                 <br>

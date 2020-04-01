@@ -8,7 +8,7 @@
     <img src="images/undraw_warning_cyit.svg" ì style="max-width: 150px;" alt="Warning!">
     </div>
     {{__('You are not authorized to see this content.')}}
-    <a class="alert-link"
+    <a class="font-bold no-underline"
        style="background: whitesmoke round;border-radius: 10px;padding: 3px;color: lightskyblue;text-decoration: none;display: block;"
        href="{{ route('logout') }}"
        onclick="event.preventDefault();

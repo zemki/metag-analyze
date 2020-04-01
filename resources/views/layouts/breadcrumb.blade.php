@@ -1,6 +1,6 @@
 @if($breadcrumb)
     <div class="sm:hidden md:hidden lg:flex xl:flex">
-        <nav class="breadcrumb has-succeeds-separator is-small" aria-label="breadcrumbs">
+        <nav class="flex flex-wrap list-reset pt-3 pb-3 py-4 px-4 mb-4 bg-grey-light rounded has-succeeds-separator is-small" aria-label="breadcrumbs">
             <ul>
                 <li><a href="#">Metag</a></li>
 
