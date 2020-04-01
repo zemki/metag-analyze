@@ -39,7 +39,7 @@
 <div id="app">
     @include('layouts.nav')
 
-    <main class="py-4 container mx-auto px-40">
+    <main class="py-4 container mx-auto mx-auto px-40">
         @if(session()->has('message'))
             <b-notification
                     :active.sync="mainNotification"

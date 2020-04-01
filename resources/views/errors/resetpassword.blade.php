@@ -3,7 +3,7 @@
 
 @section('content')
     <div class="bg-img"></div>
-    <div class="container ">
+    <div class="container mx-auto ">
         <div class="columns is-centered">
 
             <div class="column is-half">

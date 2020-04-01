@@ -2,7 +2,7 @@
 
 
 @section('content')
-<div class="container">
+<div class="container mx-auto">
     <p class="block text-gray-500 font-bold md:text-left mb-2 pr-4">Warning, translations are not visible until they
         are exported back to the app/lang file, using <code>php
             artisan translation:export</code> command or publish button.</p>
@@ -10,7 +10,7 @@
          style="display:none;">
         <div class="flex">
             <div class="py-1">
-                <svg class="fill-current h-6 w-6 text-teal-500 mr-4" xmlns="http://www.w3.org/2000/svg"
+                <svg class="fill-current mb-2 font-medium leading-tight text-base w-6 text-teal-500 mr-4" xmlns="http://www.w3.org/2000/svg"
                      viewBox="0 0 20 20">
                     <path
                         d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/>
@@ -62,16 +62,16 @@
           action="<?php echo action('\Barryvdh\TranslationManager\Controller@postImport') ?>" data-remote="true"
           role="form">
         <input type="hidden" name="_token" value="<?php echo csrf_token(); ?>">
-        <div class="form-group">
-            <div class="row">
-                <div class="col-sm-3">
+        <div class="mb-4">
+            <div class="flex flex-wrap">
+                <div class="sm:w-1/4 pr-4 pl-4">
                     <select name="replace"
                             class="block appearance-none w-1/3 bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500 my-2">
                         <option value="0">Append new translations</option>
                         <option value="1">Replace existing translations</option>
                     </select>
                 </div>
-                <div class="col-sm-2">
+                <div class="sm:w-1/5 pr-4 pl-4">
                     <button type="submit"
                             class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline my-2"
                             data-disable-with="Loading..">Import
@@ -85,7 +85,7 @@
           action="<?php echo action('\Barryvdh\TranslationManager\Controller@postFind') ?>" data-remote="true"
           role="form"
           data-confirm="Are you sure you want to scan you app folder? All found translation keys will be added to the database.">
-        <div class="form-group">
+        <div class="mb-4">
             <input type="hidden" name="_token" value="<?php echo csrf_token(); ?>">
             <button type="submit"
                     class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline my-2"
@@ -95,7 +95,7 @@
     </form>
 <?php endif; ?>
     <?php if(isset($group)) : ?>
-        <form class="form-inline form-publish" method="POST"
+        <form class="flex items-center form-publish" method="POST"
               action="<?php echo action('\Barryvdh\TranslationManager\Controller@postPublish', $group) ?>"
               data-remote="true" role="form"
               data-confirm="Are you sure you want to publish the translations group '<?php echo $group ?>? This will overwrite existing language files.">
@@ -112,7 +112,7 @@
     <form role="form" method="POST"
           action="<?php echo action('\Barryvdh\TranslationManager\Controller@postAddGroup') ?>">
         <input type="hidden" name="_token" value="<?php echo csrf_token(); ?>">
-        <div class="form-group">
+        <div class="mb-4">
             <p class="block text-gray-500 font-bold md:text-left mt-5 pr-4">Choose a group to display the group
                 translations. If no groups are visisble, make sure you have run
                 the migrations and imported the translations.</p>
@@ -124,14 +124,14 @@
                 <?php endforeach; ?>
             </select>
         </div>
-        <div class="form-group">
+        <div class="mb-4">
             <label class="block text-gray-500 font-bold md:text-left mt-5 md:mb-0 pr-4">Enter a new group name and
                 start edit translations in that group</label>
             <input type="text"
                    class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-1/3 py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
                    name="new-group"/>
         </div>
-        <div class="form-group">
+        <div class="mb-4">
             <input type="submit"
                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-2"
                    name="add-group" value="Add and edit keys"/>
@@ -149,14 +149,14 @@
                 rows="3" name="keys"
                 placeholder="Add 1 key per line, without the group prefix"></textarea>
 
-            <div class="form-group">
+            <div class="mb-4">
                 <input type="submit" value="Add keys"
                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-2">
             </div>
         </form>
         <hr>
         <p class="mt-3">Total: <?= $numTranslations ?>, changed: <?= $numChanged ?></p>
-        <table class="table">
+        <table class="w-full max-w-full mb-4 bg-transparent">
             <thead>
             <tr>
                 <th width="15%">Key</th>
@@ -192,7 +192,7 @@
                             <a href="<?php echo action('\Barryvdh\TranslationManager\Controller@postDelete', [$group, $key]) ?>"
                                class="delete-key"
                             >
-                                <svg class="svg-icon fill-current w-5 h-5 mr-2" viewBox="0 0 20 20">
+                                <svg class="svg-icon fill-current w-5 mb-2 font-medium leading-tight text-lg mr-2" viewBox="0 0 20 20">
                                     <path
                                         d="M17.114,3.923h-4.589V2.427c0-0.252-0.207-0.459-0.46-0.459H7.935c-0.252,0-0.459,0.207-0.459,0.459v1.496h-4.59c-0.252,0-0.459,0.205-0.459,0.459c0,0.252,0.207,0.459,0.459,0.459h1.51v12.732c0,0.252,0.207,0.459,0.459,0.459h10.29c0.254,0,0.459-0.207,0.459-0.459V4.841h1.511c0.252,0,0.459-0.207,0.459-0.459C17.573,4.127,17.366,3.923,17.114,3.923M8.394,2.886h3.214v0.918H8.394V2.886z M14.686,17.114H5.314V4.841h9.372V17.114z M12.525,7.306v7.344c0,0.252-0.207,0.459-0.46,0.459s-0.458-0.207-0.458-0.459V7.306c0-0.254,0.205-0.459,0.458-0.459S12.525,7.051,12.525,7.306M8.394,7.306v7.344c0,0.252-0.207,0.459-0.459,0.459s-0.459-0.207-0.459-0.459V7.306c0-0.254,0.207-0.459,0.459-0.459S8.394,7.051,8.394,7.306"></path>
                                 </svg>
@@ -216,9 +216,9 @@
                 <ul class="list-locales">
                     <?php foreach($locales as $locale): ?>
                         <li>
-                            <div class="form-group">
+                            <div class="mb-4">
                                 <button type="submit" name="remove-locale[<?php echo $locale ?>]"
-                                        class="btn btn-danger btn-xs" data-disable-with="...">
+                                        class="inline-block align-middle text-center select-none border font-normal whitespace-no-wrap py-2 px-4 rounded text-base leading-normal no-underline text-red-lightest bg-red hover:bg-red-light btn-xs" data-disable-with="...">
                                     &times;
                                 </button>
                                 <?php echo $locale ?>
@@ -231,16 +231,16 @@
             <form class="form-add-locale" method="POST" role="form"
                   action="<?php echo action('\Barryvdh\TranslationManager\Controller@postAddLocale') ?>">
                 <input type="hidden" name="_token" value="<?php echo csrf_token(); ?>">
-                <div class="form-group">
+                <div class="mb-4">
                     <p>
                         Enter new locale key:
                     </p>
-                    <div class="row">
-                        <div class="col-sm-3">
+                    <div class="flex flex-wrap">
+                        <div class="sm:w-1/4 pr-4 pl-4">
                             <input type="text" name="new-locale"
                                    class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-1/3 py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"/>
                         </div>
-                        <div class="col-sm-2">
+                        <div class="sm:w-1/5 pr-4 pl-4">
                             <button type="submit"
                                     class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-2"
                                     data-disable-with="Adding..">Add new
@@ -253,7 +253,7 @@
         </fieldset>
         <fieldset>
             <legend>Export all translations</legend>
-            <form class="form-inline form-publish-all" method="POST"
+            <form class="flex items-center form-publish-all" method="POST"
                   action="<?php echo action('\Barryvdh\TranslationManager\Controller@postPublish', '*') ?>"
                   data-remote="true" role="form"
                   data-confirm="Are you sure you want to publish all translations group? This will overwrite existing language files.">

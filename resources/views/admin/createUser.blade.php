@@ -109,7 +109,7 @@
 					</span>
                 <div class="field">
                     <div class="control">
-                        <button class="button is-link" :disabled="newuser.email.length < 4 || newuser.case.caseexist">
+                        <button class="button is-link" :opacity-75="newuser.email.length < 4 || newuser.case.caseexist">
                             Create User
                         </button>
                     </div>

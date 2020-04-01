@@ -4,7 +4,7 @@
 
 
 
-    <table class="table">
+    <table class="w-full max-w-full mb-4 bg-transparent">
         <thead>
         <tr>
             <th><abbr title="number">#</abbr></th>

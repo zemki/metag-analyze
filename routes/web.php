@@ -27,6 +27,11 @@ Route::group(['middleware' => ['auth','authorised']], function(){
     Route::post('/groups/store','GroupController@store')->name('store_groups');
 });
 
+Route::group(['prefix' => 'admin', 'middleware' => ['role:superadministrator']], static function () {
+    Route::get('/users/new','UserController@create')->name('newadminusers');
+
+});
+
 Route::group(['middleware' => ['auth','authorised','verified']], function(){
 	Route::get('/','ProjectController@index');
 
@@ -74,18 +79,10 @@ Route::group(['middleware' => ['auth','authorised','verified']], function(){
      */
 	Route::post('/users','UserController@store')->name('users');
     Route::post('/users/exist','UserController@userExists');
-    Route::get('/admin/users/new','UserController@create')->name('newadminusers');
 
 
     Route::post('/cases/exist','CaseController@caseExists');
 
-
-
-    /**
-     * Group Routes
-     */
-
-    //Route::get('/groups','GroupController@index')->name('list_groups');
 
 
 

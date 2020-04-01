@@ -2,7 +2,7 @@
 
 @section('content')
 
-    <div class="container ">
+    <div class="container mx-auto ">
         <div class="columns is-centered">
 
             <div class="column is-6" style="margin-top: 10%">
@@ -19,7 +19,7 @@
                             <div class="column has-text-centered ">
                                 <h1 class="title" style="margin: 0 auto; max-width: 100%;">Metag Analyze</h1>
                             </div>
-                            <div class="py-4 w-100 text-center ">
+                            <div class="py-4 w-full text-center ">
                                 <a class="text-blue-500 hover:text-red-600" href="{{url('register')}}">{{__("Register to use Metag Analyze")}}</a>
                             </div>
                         </div>
@@ -28,7 +28,7 @@
                             <label for="email" class="label">{{ __('E-Mail Address') }}</label>
                             <div class="control">
                                 <input id="email" type="text"
-                                       class="input {{ $errors->has('email') ? ' is-invalid' : '' }}" name="email"
+                                       class="input {{ $errors->has('email') ? ' bg-red-dark' : '' }}" name="email"
                                        value="{{ old('email') }}" required autofocus>
                             </div>
                         </div>
@@ -43,7 +43,7 @@
                             <label for="password" class="label">{{ __('Password') }}</label>
                             <p class="control has-icon-left">
                                 <input id="password" type="password"
-                                       class="input {{ $errors->has('password') ? ' is-invalid' : '' }}" name="password"
+                                       class="input {{ $errors->has('password') ? ' bg-red-dark' : '' }}" name="password"
                                        required>
                                 <span class="icon is-small is-left">
             <i class="fas fa-lock"></i>

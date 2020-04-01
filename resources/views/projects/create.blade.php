@@ -7,7 +7,7 @@
         <div class="level">
             <div class="columns">
                 <div class="column">
-                    <div class="container">
+                    <div class="container mx-auto">
                         <h1 class="title">Create a Project</h1>
                         <p class="subtitle text-sm">{{__('The predefined inputs are Begin Date/Time,
                             End Date/time and
@@ -16,7 +16,7 @@
                             this will be reflected in the mobile app.')}}
                         </p>
                     </div>
-                    <form method="POST" action="{{route('projects')}}" class="container" style="padding-top: 40px"
+                    <form method="POST" action="{{route('projects')}}" class="container mx-auto" style="padding-top: 40px"
                           @submit="validateProject">
                         @csrf
                         <input type="hidden" value="{{auth()->user()->id}}" name="created_by">

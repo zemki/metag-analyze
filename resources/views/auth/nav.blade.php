@@ -1,5 +1,5 @@
-<nav class="navbar" role="navigation" aria-label="main navigation">
-    <div class="navbar-brand">
+<nav class="relative flex flex-wrap items-center content-between py-2 px-4" role="navigation" aria-label="main navigation">
+    <div class="inline-block pt-1 pb-1 mr-4 text-lg whitespace-no-wrap">
         <a class="navbar-item">
 
         </a>

@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="bg-img"></div>
-    <div class="container ">
+    <div class="container mx-auto ">
         <div class="columns is-centered">
 
             <div class="column is-half">
@@ -14,7 +14,7 @@
                             <label for="email" class="label">{{ __('E-Mail Address') }}</label>
                             <div class="control">
                                 <input id="email" disabled type="email" value="{{$user->email}}"
-                                       class="input {{ $errors->has('email') ? ' is-invalid' : '' }}" name="email"
+                                       class="input {{ $errors->has('email') ? ' bg-red-dark' : '' }}" name="email"
                                        value="{{ old('email') }}" required autofocus>
                             </div>
                         </div>
@@ -23,7 +23,7 @@
                             <label for="password" class="label">New Password</label>
                             <p class="control has-icon-left">
                                 <input id="password" type="password"
-                                       class="input {{ $errors->has('password') ? ' is-invalid' : '' }}" name="password"
+                                       class="input {{ $errors->has('password') ? ' bg-red-dark' : '' }}" name="password"
                                        minlength="6"
                                        required>
                                 <span class="icon is-small is-left">
