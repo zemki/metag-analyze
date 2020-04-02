@@ -3,23 +3,13 @@
   <component name="ChangeListManager">
     <list default="true" id="01efc22b-0816-4e0a-8210-fcb64f4272cb" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/admin/createUser.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/admin/createUser.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/auth/app.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/auth/app.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/auth/login.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/auth/login.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/auth/nav.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/auth/nav.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/auth/passwords/email.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/auth/passwords/email.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/auth/passwords/reset.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/auth/passwords/reset.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/auth/register.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/auth/register.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/auth/verify.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/auth/verify.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/errors/401.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/errors/401.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/errors/resetpassword.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/errors/resetpassword.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/groups/create.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/groups/create.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/groups/index.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/groups/index.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/layouts/app.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/layouts/app.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/layouts/breadcrumb.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/layouts/breadcrumb.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/projects/create.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/projects/create.blade.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/AllCasesExport.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/AllCasesExport.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Cases.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Cases.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/CasesExport.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/CasesExport.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Helpers/Helper.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Helpers/Helper.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/js/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/app.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/mix-manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/public/mix-manifest.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/resources/views/projects/show.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/projects/show.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/vendor/translation-manager/index.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/vendor/translation-manager/index.blade.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/routes/web.php" beforeDir="false" afterPath="$PROJECT_DIR$/routes/web.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -195,10 +185,6 @@
       <TestRunner class="Tests\Feature\ProjectTest" configuration_file="$PROJECT_DIR$/phpunit.xml" file="$PROJECT_DIR$/tests/Feature/ProjectTest.php" method="a_user_auth_cannot_update_other_projects" scope="Method" />
       <method v="2" />
     </configuration>
-    <configuration name="ProjectTest.a_user_auth_cannot_view_other_projects" type="PHPUnitRunConfigurationType" factoryName="PHPUnit" temporary="true">
-      <TestRunner class="Tests\Feature\ProjectTest" configuration_file="$PROJECT_DIR$/phpunit.xml" file="$PROJECT_DIR$/tests/Feature/ProjectTest.php" method="a_user_auth_cannot_view_other_projects" scope="Method" />
-      <method v="2" />
-    </configuration>
     <configuration name="ProjectTest.guests_cannot_manage_projects" type="PHPUnitRunConfigurationType" factoryName="PHPUnit" temporary="true">
       <TestRunner class="Tests\Feature\ProjectTest" configuration_file="$PROJECT_DIR$/phpunit.xml" file="$PROJECT_DIR$/tests/Feature/ProjectTest.php" method="guests_cannot_manage_projects" scope="Method" />
       <method v="2" />
@@ -211,13 +197,23 @@
       <TestRunner class="Tests\Feature\UserTest" configuration_file="$PROJECT_DIR$/phpunit.xml" file="$PROJECT_DIR$/tests/Feature/UserTest.php" method="testExample" scope="Method" />
       <method v="2" />
     </configuration>
+    <configuration name="dev" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="dev" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="npm.dev" />
         <item itemvalue="PHPUnit.UserTest.testExample" />
         <item itemvalue="PHPUnit.ProjectTest.project_inputs_can_be_edited_only_when_zero_entries" />
         <item itemvalue="PHPUnit.ProjectTest.guests_cannot_manage_projects" />
         <item itemvalue="PHPUnit.ProjectTest.a_user_auth_cannot_update_other_projects" />
-        <item itemvalue="PHPUnit.ProjectTest.a_user_auth_cannot_view_other_projects" />
       </list>
     </recent_temporary>
   </component>
@@ -237,7 +233,7 @@
       <workItem from="1583394574134" duration="3903000" />
       <workItem from="1583400719295" duration="10061000" />
       <workItem from="1583785370897" duration="579000" />
-      <workItem from="1585722293418" duration="1456000" />
+      <workItem from="1585722293418" duration="4171000" />
     </task>
     <servers />
   </component>
@@ -299,28 +295,28 @@
       <screen x="0" y="0" width="2048" height="1280" />
     </state>
     <state x="544" y="413" key="FileChooserDialogImpl/65.-1080.1920.1080/0.0.2048.1280@0.0.2048.1280" timestamp="1583406380446" />
-    <state width="2006" height="475" key="GridCell.Tab.0.bottom" timestamp="1585647656537">
+    <state width="2006" height="179" key="GridCell.Tab.0.bottom" timestamp="1585822204353">
       <screen x="0" y="0" width="2048" height="1280" />
     </state>
-    <state width="2006" height="475" key="GridCell.Tab.0.bottom/0.0.2048.1280@0.0.2048.1280" timestamp="1585647656537" />
+    <state width="2006" height="179" key="GridCell.Tab.0.bottom/0.0.2048.1280@0.0.2048.1280" timestamp="1585822204353" />
     <state width="1878" height="375" key="GridCell.Tab.0.bottom/65.-1080.1920.1080/0.0.2048.1280@65.-1080.1920.1080" timestamp="1583432419523" />
     <state width="1878" height="392" key="GridCell.Tab.0.bottom/65.-1080.1920.1080/0.23.2048.1257@65.-1080.1920.1080" timestamp="1583427982252" />
-    <state width="2006" height="475" key="GridCell.Tab.0.center" timestamp="1585647656536">
+    <state width="2006" height="179" key="GridCell.Tab.0.center" timestamp="1585822204353">
       <screen x="0" y="0" width="2048" height="1280" />
     </state>
-    <state width="2006" height="475" key="GridCell.Tab.0.center/0.0.2048.1280@0.0.2048.1280" timestamp="1585647656536" />
+    <state width="2006" height="179" key="GridCell.Tab.0.center/0.0.2048.1280@0.0.2048.1280" timestamp="1585822204353" />
     <state width="1878" height="375" key="GridCell.Tab.0.center/65.-1080.1920.1080/0.0.2048.1280@65.-1080.1920.1080" timestamp="1583432419521" />
     <state width="1878" height="392" key="GridCell.Tab.0.center/65.-1080.1920.1080/0.23.2048.1257@65.-1080.1920.1080" timestamp="1583427982250" />
-    <state width="2006" height="475" key="GridCell.Tab.0.left" timestamp="1585647656535">
+    <state width="2006" height="179" key="GridCell.Tab.0.left" timestamp="1585822204352">
       <screen x="0" y="0" width="2048" height="1280" />
     </state>
-    <state width="2006" height="475" key="GridCell.Tab.0.left/0.0.2048.1280@0.0.2048.1280" timestamp="1585647656535" />
+    <state width="2006" height="179" key="GridCell.Tab.0.left/0.0.2048.1280@0.0.2048.1280" timestamp="1585822204352" />
     <state width="1878" height="375" key="GridCell.Tab.0.left/65.-1080.1920.1080/0.0.2048.1280@65.-1080.1920.1080" timestamp="1583432419521" />
     <state width="1878" height="392" key="GridCell.Tab.0.left/65.-1080.1920.1080/0.23.2048.1257@65.-1080.1920.1080" timestamp="1583427982249" />
-    <state width="2006" height="475" key="GridCell.Tab.0.right" timestamp="1585647656536">
+    <state width="2006" height="179" key="GridCell.Tab.0.right" timestamp="1585822204353">
       <screen x="0" y="0" width="2048" height="1280" />
     </state>
-    <state width="2006" height="475" key="GridCell.Tab.0.right/0.0.2048.1280@0.0.2048.1280" timestamp="1585647656536" />
+    <state width="2006" height="179" key="GridCell.Tab.0.right/0.0.2048.1280@0.0.2048.1280" timestamp="1585822204353" />
     <state width="1878" height="375" key="GridCell.Tab.0.right/65.-1080.1920.1080/0.0.2048.1280@65.-1080.1920.1080" timestamp="1583432419522" />
     <state width="1878" height="392" key="GridCell.Tab.0.right/65.-1080.1920.1080/0.23.2048.1257@65.-1080.1920.1080" timestamp="1583427982251" />
     <state width="1878" height="375" key="GridCell.Tab.1.bottom" timestamp="1583432419525">
@@ -345,11 +341,12 @@
     <state x="525" y="279" key="SettingsEditor/65.-1080.1920.1080/0.0.2048.1280@0.0.2048.1280" timestamp="1583408467360" />
     <state x="557" y="-845" key="SettingsEditor/65.-1080.1920.1080/0.0.2048.1280@65.-1080.1920.1080" timestamp="1583427462674" />
     <state x="557" y="-845" key="SettingsEditor/65.-1080.1920.1080/0.23.2048.1257@65.-1080.1920.1080" timestamp="1583427232584" />
-    <state x="772" y="-765" width="537" height="451" key="StructurePopup" timestamp="1583428246804">
-      <screen x="65" y="-1080" width="1920" height="1080" />
+    <state x="754" y="373" width="573" height="535" key="StructurePopup" timestamp="1585819846958">
+      <screen x="0" y="0" width="2048" height="1280" />
     </state>
     <state x="754" y="390" width="540" height="524" key="StructurePopup/-1680.0.1680.1050/0.0.2048.1280@0.0.2048.1280" timestamp="1582123541861" />
     <state x="754" y="390" width="540" height="524" key="StructurePopup/-1680.0.1680.1050/0.23.2048.1257@0.23.2048.1257" timestamp="1582123676703" />
+    <state x="754" y="373" width="573" height="535" key="StructurePopup/0.0.2048.1280@0.0.2048.1280" timestamp="1585819846958" />
     <state x="772" y="-765" width="537" height="451" key="StructurePopup/65.-1080.1920.1080/0.0.2048.1280@65.-1080.1920.1080" timestamp="1583428246804" />
     <state x="100" y="100" width="1848" height="1080" key="com.intellij.history.integration.ui.views.DirectoryHistoryDialog" timestamp="1583405913226">
       <screen x="0" y="23" width="2048" height="1257" />
@@ -370,11 +367,11 @@
       <screen x="65" y="-1080" width="1920" height="1080" />
     </state>
     <state x="690" y="-284" key="run.anything.popup/65.-1080.1920.1080/0.0.2048.1280@65.-1080.1920.1080" timestamp="1583427892206" />
-    <state x="689" y="292" width="715" height="677" key="search.everywhere.popup" timestamp="1585728606815">
+    <state x="689" y="292" width="715" height="677" key="search.everywhere.popup" timestamp="1585819883020">
       <screen x="0" y="0" width="2048" height="1280" />
     </state>
     <state x="689" y="291" width="670" height="676" key="search.everywhere.popup/-1680.0.1680.1050/0.0.2048.1280@0.0.2048.1280" timestamp="1582123538656" />
-    <state x="689" y="292" width="715" height="677" key="search.everywhere.popup/0.0.2048.1280@0.0.2048.1280" timestamp="1585728606815" />
+    <state x="689" y="292" width="715" height="677" key="search.everywhere.popup/0.0.2048.1280@0.0.2048.1280" timestamp="1585819883020" />
     <state x="689" y="291" width="670" height="676" key="search.everywhere.popup/65.-1080.1920.1080/0.0.2048.1280@0.0.2048.1280" timestamp="1583424579237" />
     <state x="711" y="-834" width="670" height="571" key="search.everywhere.popup/65.-1080.1920.1080/0.0.2048.1280@65.-1080.1920.1080" timestamp="1583431847877" />
   </component>

@@ -41,11 +41,13 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
                 continue;
             }
             foreach ($case->entries as $entry) {
+
                 $tempValuesArray = [];
                 $ifCaseHasAdditionalInputs = $project->inputs !== "[]";
                 if ($ifCaseHasAdditionalInputs) {
                     list($jsonInputs, $tempValuesArray) = $this->formatAssociativeNamesAccordingToHeadings($entry, $tempValuesArray);
-                    $tempValuesArray[self::ENTRY_ID] = $entry->id;
+
+                    //$tempValuesArray[self::ENTRY_ID] = $entry->id;
                     $tempValuesArray = $this->printValuesInArray($project, $jsonInputs, $tempValuesArray);
                 }
                 $tempValuesArray[self::ENTRY_ID] = $entry->id;
@@ -54,9 +56,13 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
                 $tempValuesArray["end"] = $entry->end;
                 $tempValuesArray["user_id"] = $case->user_id;
                 $tempValuesArray["case_id"] = $case->id;
+
                 $tempValuesArray = Arr::flatten($tempValuesArray);
+
                 array_push($allEntries, $tempValuesArray);
             }
+
+
         }
         return $allEntries;
     }
@@ -80,15 +86,20 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
         foreach ($this->headings() as $heading) {
             // print the question as many times as you have answer to question
             if (count(array_keys($this->headings(), $heading)) > 1) {
+
                 $tempValuesArray[$heading] = [];
                 foreach (array_keys($this->headings(), $heading) as $key) {
                     array_push($tempValuesArray[$heading], $this->headings()[$key]);
+
                 }
-                $tempValuesArray = array_unique($tempValuesArray[$heading]);
+
+                //$tempValuesArray = array_unique($tempValuesArray[$heading]);
+
             } else {
                 $tempValuesArray[$heading] = "";
             }
         }
+
         return array($jsonInputs, $tempValuesArray);
     }
 
@@ -128,6 +139,8 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
                 $tempValuesArray[$key] = $input;
             }
         }
+
+
         return $tempValuesArray;
     }
 

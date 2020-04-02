@@ -59,7 +59,7 @@ Route::group(['middleware' => ['auth','authorised','verified']], function(){
 	Route::get('/projects/{project}/cases/new','ProjectCasesController@create');
 	Route::post('/projects/{project}/cases','ProjectCasesController@store');
 	Route::get('/projects/{project}/cases/{case}','ProjectCasesController@show');
-	Route::get('/export/cases/{case}','ProjectCasesController@export');
+	Route::get('/cases/{case}/export','ProjectCasesController@export');
 	Route::patch('/projects/{project}/cases/{case}','ProjectCasesController@update');
 	Route::delete('/cases/{case}','ProjectCasesController@destroy');
 
