@@ -70,12 +70,14 @@
                     _.forEach(self.realdata, function (rl) {
                         if (data['value'] == rl.name || (_.isArray(data['value']) && data['value'].includes(rl.name))) {
 
-                            var split = data['start'].split(/[^0-9]/)
-
+                            var split = data['start'].substring(0, data['start'].indexOf('.')).split(/[^0-9]/)
+                            split[1] -= 1;
                             let start = Date.UTC(...split);
-                            var split = data['end'].split(/[^0-9]/)
 
+                            var split = data['end'].substring(0, data['start'].indexOf('.')).split(/[^0-9]/)
+                            split[1] -= 1;
                             let end = Date.UTC(...split);
+
                             rl.data.push({start: start, end: end, name: (data['value'] != "") ? data['value'] : ""});
 
                         }
