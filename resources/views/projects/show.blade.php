@@ -54,7 +54,7 @@
 
                                 @if($case->isConsultable() && $case->entries()->count() > 0)
                                     <div class="py-2">
-                                        <a href="{{url('export/'.$case->id)}}" target="_blank">
+                                        <a href="{{url('cases/'.$case->id.'/export')}}" target="_blank">
                                             <button class="block  bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-2 rounded">
                                                 {{__('Download')}}
                                             </button>

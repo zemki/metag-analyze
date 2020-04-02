@@ -195,6 +195,7 @@ class Cases extends Model
      */
     public function lastDay(): string
     {
+
         return Helper::get_string_between($this->duration, 'lastDay:', '|');
     }
 

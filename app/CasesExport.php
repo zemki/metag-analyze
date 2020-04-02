@@ -52,7 +52,7 @@ class CasesExport implements FromCollection, WithMapping, WithHeadings
                     foreach (array_keys($this->headings(), $heading) as $key) {
                         array_push($tempValuesArray[$heading], $this->headings()[$key]);
                     }
-                    $tempValuesArray = array_unique($tempValuesArray[$heading]);
+                    //$tempValuesArray = array_unique($tempValuesArray[$heading]);
                 } else {
                     $tempValuesArray[$heading] = "";
                 }
