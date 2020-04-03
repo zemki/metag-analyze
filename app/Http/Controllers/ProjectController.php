@@ -116,11 +116,12 @@ class ProjectController extends Controller
         return response("Updated project successfully");
     }
 
-    public function destroy(Project $project)
+    public function destroy(Project $project, Request $request)
     {
 
-        if ($project->isEditable() && $project->created_by == auth()->user()->id) {
+        if ($project->created_by == auth()->user()->id) {
             $project->delete();
+            auth()->user()->addAction('delete project', $request->url(), 'user deleted project ' . $project->name);
         } else {
             return response()->json([self::MESSAGE => 'You can\'t delete this project'], 401);
         }

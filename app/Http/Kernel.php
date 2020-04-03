@@ -7,6 +7,7 @@ use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\Authorised;
 use App\Http\Middleware\CheckForMaintenanceMode;
 use App\Http\Middleware\CheckGroup;
+use App\Http\Middleware\CheckAdminArea;
 use App\Http\Middleware\EncryptCookies;
 use App\Http\Middleware\RedirectIfAuthenticated;
 use App\Http\Middleware\RefreshApiToken;
@@ -81,6 +82,7 @@ class Kernel extends HttpKernel
         'signed' => ValidateSignature::class,
         'throttle' => ThrottleRequests::class,
         'verified' => EnsureEmailIsVerified::class,
+        'haspowers' => CheckAdminArea::class,
         'RefreshApiToken' => RefreshApiToken::class
     ];
     /**

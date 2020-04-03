@@ -8,7 +8,7 @@
             <div class="columns">
                 <div class="column">
                     <div class="container mx-auto">
-                        <h1 class="title">Create a Project</h1>
+                        <h1 class="title">{{__('Create a Project')}}</h1>
                         <p class="subtitle text-sm">{{__('The predefined inputs are Begin Date/Time,
                             End Date/time and
                             Media  used.
@@ -44,7 +44,7 @@
                         <input type="hidden" :value="JSON.stringify(newproject.inputs)" name="inputs">
                         <div class="field">
                             <div class="control">
-                                <b-field label="Number of additional inputs">
+                                <b-field :label="trans('Number of additional inputs')">
                                     <b-numberinput name="ninputs" id="ninputs" controls-position="compact"
                                                    type="is-light" min="0" max="3" :editable="false" steps="1"
                                                    v-model.number="newproject.ninputs"></b-numberinput>
@@ -54,7 +54,7 @@
                         <div class="columns is-multiline">
                             <div class="column is-3">
                                 <label for="media" class="label inline-flex">
-                                    Media
+                                    {{__('Media')}}
                                 </label>
                                 <p class="subtitle text-sm">
                                     {{__('The user will be able to enter their own media, here you can write e predefined list from which it\'s possible to chose a media.')}}

@@ -54,10 +54,10 @@
                     <input type="checkbox" name="loginStart" checked v-model="newcase.duration.starts_with_login">
                     {{__('The duration start when the user Log in')}}
                 </label>
-                <b-field label="Or it start this day:" v-if="!newcase.duration.starts_with_login">
+                <b-field :label="trans('Or it start this day:')" v-if="!newcase.duration.starts_with_login">
                     <b-datepicker
                             :min-date="newcase.minDate"
-                            placeholder="Click to select..."
+                            :placeholder="trans('Click to select...')"
                             icon="calendar-today"
                             name="startdate"
                             v-model="newcase.duration.startdate"

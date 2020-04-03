@@ -1,0 +1,155 @@
+<template>
+    <section>
+        <b-table
+            :data="isEmpty ? [] : users"
+            bordered
+            narrowed
+            :default-sort-direction="defaultSortDirection"
+            :sort-icon="sortIcon"
+            :sort-icon-size="sortIconSize"
+            :row-class="(row, index) => 'bg-white text-black-300 hover:text-blue-200'"
+        >
+
+            <template slot-scope="props">
+
+                <b-table-column field="id" label="ID" width="40" numeric>
+                    {{ props.row.id }}
+                </b-table-column>
+
+                <b-table-column field="email" label="Email" sortable>
+                    {{ props.row.email }}
+                </b-table-column>
+
+                <b-table-column field="device_id" label="Devices ID" sortable>
+                    {{ props.row.deviceID }}
+                </b-table-column>
+
+                <b-table-column field="case" label="# of Cases" sortable>
+                    {{ props.row.case.length }}
+                </b-table-column>
+
+                <b-table-column field="projects" label="# of Projects" sortable>
+                    {{ props.row.projects.length }}
+                </b-table-column>
+
+                <b-table-column field="date" label="Last logged in" centered sortable>
+                    <span class="tag is-success">
+                         {{ props.row.last_login_date ? new Date(props.row.last_login_date).toLocaleString() : '' }}
+                    </span>
+                </b-table-column>
+
+                <b-table-column field="actions" label="Actions" centered sortable>
+                    <span><a href="#" @click="confirmcleandeviceid(props.row.id)"
+                             class="bg-red-300 hover:bg-red-400 text-black-800 font-bold py-2 px-4 rounded inline-flex items-center text-xs">
+                        <b-icon
+                            class="fill-current w-4 h-4 mr-2"
+                            icon="delete"
+                        >
+                    </b-icon>Delete all device(s) id</a>
+                        </span>
+                </b-table-column>
+
+            </template>
+
+            <template slot="empty">
+                <section class="section">
+                    <div class="content has-text-grey has-text-centered">
+                        <p>No Users.</p>
+                    </div>
+                </section>
+            </template>
+        </b-table>
+    </section>
+</template>
+
+<script>
+    export default {
+        name: "usertable",
+        props: ['users'],
+        computed: {
+            isEmpty: function () {
+                return _.isEmpty(this.users);
+            }
+        },
+        data() {
+            return {
+                sortIcon: 'arrow-up',
+                sortIconSize: 'is-small',
+                defaultSortDirection: 'asc',
+            }
+        },
+        methods: {
+            confirmcleandeviceid: function(id){
+
+                let confirmDelete =  this.$buefy.dialog.confirm(
+                    {
+                        title: 'Confirm Delete Device ID',
+                        message: '<div class="bg-green-600 p-2 text-white text-center">Do you want to delete all the device id for this user?</div>',
+                        cancelText: 'No',
+                        confirmText: 'Yes',
+                        hasIcon: true,
+                        type: 'is-info',
+                        onConfirm: () => this.deletedeviceid(id)
+                    }
+                );
+            },
+            deletedeviceid: function(id){
+
+                this.loading = true;
+                this.message = "";
+                let self = this;
+                axios.get('deletedeviceid/' + id)
+                    .then(response => {
+                        setTimeout(function () {
+                            self.loading = false;
+                            self.$buefy.snackbar.open("Device(s) id deleted");
+                        }, 500);
+
+                    }).catch(function (error) {
+
+                    self.loading = false;
+                    self.$buefy.snackbar.open("There it was an error during the request - refresh page and try again");
+                });
+
+            },
+            confirmdeleteallstudies: function (id) {
+
+                let confirmDelete =  this.$buefy.dialog.confirm(
+                    {
+                        title: 'Confirm Delete',
+                        message: '<div class="bg-red-600 p-2 text-white text-center">You re about to delete all the studies for this user.<br><span class="has-text-weight-bold">Continue?</span></div>',
+                        cancelText: 'Cancel',
+                        confirmText: 'YES delete all studies and related data',
+                        hasIcon: true,
+                        type: 'is-danger',
+                        onConfirm: () => this.deleteallstudies(id)
+                    }
+                );
+            },
+            deleteallstudies: function (id) {
+                this.loading = true;
+                this.message = "";
+                let self = this;
+                axios.post('deletestudiesbyuser/' + id)
+                    .then(response => {
+                        setTimeout(function () {
+                            self.loading = false;
+                            self.$buefy.snackbar.open("Data deleted");
+
+                            window.location.reload();
+
+                        }, 500);
+
+                    }).catch(function (error) {
+                    console.log(error);
+                    self.loading = false;
+                    self.$buefy.snackbar.open("There it was an error during the request - refresh page and try again");
+                });
+            },
+        }
+    }
+</script>
+
+<style scoped>
+
+</style>

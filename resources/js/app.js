@@ -49,6 +49,7 @@ Vue.prototype.trans = (key) => {
 Vue.component('edit-project', require('./components/editproject.vue').default);
 Vue.component('consult-entries', require('./components/consultentries.vue').default);
 Vue.component('project-invites', require('./components/projectsInvites.vue').default);
+Vue.component('user-table', require('./components/usertable.vue').default);
 Vue.component('graph', require('./components/graph.vue').default);
 
 Vue.use(Buefy);
@@ -61,11 +62,15 @@ Vue.use(GoogleCharts)
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
+
 const app = new Vue({
     el: '#app',
     computed: {
         'newproject.formattedinputstring': function () {
             return JSON.stringify(this.newproject.inputs);
+        },
+        url: function () {
+            return document.URL.split('/').pop();
         }
     },
     mounted() {
@@ -394,7 +399,7 @@ const app = new Vue({
             this.$buefy.dialog.confirm(
                 {
                     title: 'Confirm Case deletion',
-                    message: 'Do you want to delete this case?',
+                    message: '<strong class="bg-red-600 text-yellow-400 p-2">Do you want to delete this case and all the entries?</strong>',
                     cancelText: 'No',
                     confirmText: 'Yes DELETE',
                     hasIcon: true,
@@ -537,7 +542,7 @@ const app = new Vue({
             let confirmDelete = this.$buefy.dialog.confirm(
                 {
                     title: 'Confirm Delete',
-                    message: '<strong>Are you sure you want to delete this project?</strong>',
+                    message: '<strong class="bg-red-600 text-yellow-400 p-2">Are you sure you want to delete this project and all the data included with it?</strong>',
                     cancelText: 'NO',
                     confirmText: 'YES',
                     hasIcon: true,
