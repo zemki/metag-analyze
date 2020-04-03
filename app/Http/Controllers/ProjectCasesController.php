@@ -14,13 +14,11 @@ use Illuminate\Http\Response;
 use Illuminate\Routing\Redirector;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
-
 class ProjectCasesController extends Controller
 {
-
     /**
      * @param Project $project
-     * @param Cases $case
+     * @param Cases   $case
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
     public function show(Project $project, Cases $case)
@@ -28,28 +26,21 @@ class ProjectCasesController extends Controller
         if (auth()->user()->notOwnerNorInvited($project)) {
             abort(403);
         }
-
         list($mediaValues, $availableMedia) = Cases::getMediaValues($case);
         list($availableInputs, $data) = Cases::getInputValues($case, $data);
-
         $data['entries']['media'] = $mediaValues;
         $data['entries']['availablemedia'] = $availableMedia;
-
         //$data['entries']['inputs'] = $inputValues;
         $data['entries']['availableinputs'] = $availableInputs;
-
         $data['case'] = $case;
-
         $data['breadcrumb'] = [
             url('/') => 'Metag',
             url('/') => 'Projects',
             $project->path() => $project->name,
             $case->path() => substr($case->name, 0, 15) . '...'
         ];
-
         return view('entries.index', $data);
     }
-
 
     /**
      * Create a case belonging to a project
@@ -61,21 +52,15 @@ class ProjectCasesController extends Controller
         if (auth()->user()->notOwnerNorInvited($project)) {
             abort(403);
         }
-
         $data['breadcrumb'] = [
             url('/') => 'Projects',
             url($project->path()) => $project->name,
             '#' => 'Create Case'
         ];
-
-
         $data['users'] = User::all();
         $data['project'] = $project;
-
         return view('cases.create', $data);
-
     }
-
 
     /**
      * @param Project $project
@@ -85,30 +70,24 @@ class ProjectCasesController extends Controller
     public function store(Project $project, Request $request)
     {
         $this->authorize('update', $project);
-
         if (request('name') == "" || request('email') == "" || request('duration') == "") {
             return redirect($project->path() . '/cases/new')->with(['message' => 'Please fill all the required inputs.']);
         }
-
         request()->validate(
             ['name' => 'required'],
             ['email' => 'required'],
             ['duration' => 'required']
         );
-
         $email = request('email');
         $case = $project->addCase(request('name'), request('duration'));
-
         $user = User::createIfDoesNotExists(User::firstOrNew(['email' => $email]));
-
         $case->addUser($user);
-
         return redirect($project->path())->with(['message' => $user->email . ' has been invited.']);
     }
 
     /**
      * @param Project $project
-     * @param Cases $case
+     * @param Cases   $case
      * @return RedirectResponse|Redirector
      * @throws AuthorizationException
      */
@@ -130,26 +109,19 @@ class ProjectCasesController extends Controller
     public function destroy(Cases $case)
     {
         $project = $case->project;
+        if ($project->created_by == auth()->user()->id) {
 
-        if ($case->isEditable()) {
             $case->delete();
         } else {
-            return response()->json(['message' => 'Case has entries, you cannot delete it'], 401);
+            return response()->json(['message' => 'You can\'t delete this case'], 403);
         }
-
         $data['breadcrumb'] = [url('/') => 'Projects', '#' => substr($project->name, 0, 20) . '...'];
-
         $project->media = $project->media()->pluck('media.name')->toArray();
-
         $data['data']['media'] = Media::all();
-
         $data['project'] = $project;
         $data['invites'] = $project->invited()->get();
         $data['message'] = "Case deleted";
-
         return view('projects.show', $data);
-
-
     }
 
     /**
@@ -161,9 +133,7 @@ class ProjectCasesController extends Controller
         if (auth()->user()->notOwnerNorInvited($case->project)) {
             abort(403, 'you can\'t see the data of this project.');
         }
-
         $headings = $this->getProjectInputHeadings($case->project);
-
         return (new CasesExport($case->id, $headings))->download('case ' . $case->name . '.xlsx');
     }
 
@@ -181,6 +151,4 @@ class ProjectCasesController extends Controller
         }
         return $headings;
     }
-
-
 }

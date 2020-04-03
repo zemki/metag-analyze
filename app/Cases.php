@@ -19,6 +19,19 @@ class Cases extends Model
     protected $table = 'cases';
     protected $guarded = [];
 
+    public static function boot()
+    {
+        parent::boot();
+        static::deleting(function ($case) {
+
+            if ($case->project->created_by === auth()->user()->id) {
+                foreach ($case->entries as $entry) {
+                    $entry->delete();
+                }
+            }
+        });
+    }
+
     /**
      * @param Cases $case
      * @return array
@@ -84,7 +97,6 @@ class Cases extends Model
         }
         foreach ($availableInputs as $availableInput) {
             self::formatInputValues($data, $availableInput, $availableOptions, $inputValues);
-
             foreach ($inputValues as $inputValue) {
                 if ($inputValue['type'] == $availableInput && $inputValue != null) array_push($data['entries']['inputs'][$availableInput], $inputValue);
             }
@@ -156,10 +168,9 @@ class Cases extends Model
     public function addUser($user)
     {
 
-        if(is_array($user)){
+        if (is_array($user)) {
             $user = User::firstOrCreate($user);
         }
-
         $this->user()->associate($user);
         $this->save();
         return $user;

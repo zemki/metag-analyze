@@ -1,9 +1,10 @@
 <header class="bg-blue-500 sm:flex sm:justify-between sm:items-center sm:px-4 sm:py-3 min-w-screen">
     <div class="flex items-center inline justify-between px-4 sm:p-0">
         <div class="">
-            <a href="{{url('/')}}" class="text-3xl text-gray-100 font-bold hover:text-red-600"><img class="h-8 inline"
-                                                                                                    src="{{config('utilities.base64logo')}}"
-                                                                                                    alt="Metag Analyze">
+            <a href="{{url('/')}}" class="text-3xl text-gray-100 font-bold hover:text-red-600">
+                <img class="h-8 inline"
+                     src="{{config('utilities.base64logo')}}"
+                     alt="Metag Analyze">
                 Metag Analyze</a>
         </div>
     </div>
