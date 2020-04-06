@@ -2,6 +2,7 @@
 
 @section('content')
     <div class="mx-auto w-full text-center uppercase font-bold p-2"><h4
+
                 class="text-4xl">{{ __("Project you created") }} </h4></div>
 
     <div class="pb-4">
@@ -30,11 +31,13 @@
                     </div>
 
                     <div class="py-2">
-                        <button type="submit"
-                                class="button text-white">
-                            <a href="{{url($project->path())}}">
+                        <a href="{{url($project->path())}}">
+                            <button type="submit"
+                                    class="button">
+
                                 {{__('Consult Project')}}
-                            </a></button>
+                            </button>
+                        </a>
                     </div>
                     <div class="py-2">
 
@@ -96,6 +99,7 @@
                     <div class="mb-3">
                         <p class="text-base">{{$project->description}} </p>
                     </div>
+
 
                     <div class="" style="float:right;">
                         <a class="button is-danger text-white"

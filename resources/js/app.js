@@ -480,7 +480,7 @@ const app = new Vue({
                 if (answer != "") this.newproject.inputs[questionindex].answers.push("");
 
             }
-
+            //this.newproject.inputs[questionindex].id = this.createUUID(16);
             let tabKey = 9;
             let middleElementRemoved = answerindex != 0 && answer == "";
             if (middleElementRemoved && lastPressedKey != tabKey) {
@@ -488,6 +488,17 @@ const app = new Vue({
             }
 
             this.newproject.inputs[questionindex].numberofanswer = this.newproject.inputs[questionindex].answers.length - 1;
+        },
+        createUUID(length){
+
+                var dt = new Date().getTime();
+                var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                    var r = (dt + Math.random()*16)%16 | 0;
+                    dt = Math.floor(dt/16);
+                    return (c=='x' ? r :(r&0x3|0x8)).toString(length);
+                });
+                return uuid;
+
         },
         validateProject(e) {
             var self = this;
@@ -560,8 +571,8 @@ const app = new Vue({
                     self.$buefy.snackbar.open(response.data.message);
 
                     setTimeout(function () {
-                        window.location.reload();
-                    }, 1000)
+                        window.location = window.location.href;
+                    }, 700)
 
 
                 }).catch(function (error, message) {

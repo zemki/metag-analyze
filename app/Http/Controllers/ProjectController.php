@@ -80,7 +80,12 @@ class ProjectController extends Controller
         $attributes[self::INPUTS] = json_encode($inputs);
         $project = auth()->user()->projects()->create($attributes);
         $this->syncMedia($media, $project, $mToSync);
-        return redirect('projects');
+
+        $data['projects'] = auth()->user()->projects()->get();
+        $data['invites'] = auth()->user()->invites()->get();
+        $data[self::MESSAGE] = "project created!";
+
+        return view('projects.index', $data);
     }
 
     /**
