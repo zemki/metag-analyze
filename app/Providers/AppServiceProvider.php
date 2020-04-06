@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -15,9 +16,18 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         Schema::defaultStringLength(191);
-        View::composer(['telescope::layout'], function ($view) {
-            $view->with('telescopeScriptVariables', ['path' => 'metag/telescope', 'timezone' => config('app.timezone'), 'recording' => !cache('telescope:pause-recording')]);
-        });
+        if (App::environment('local')) {
+            // The environment is local
+            View::composer(['telescope::layout'], function ($view) {
+                $view->with('telescopeScriptVariables', ['path' => 'telescope', 'timezone' => config('app.timezone'), 'recording' => !cache('telescope:pause-recording')]);
+            });
+        }else{
+            View::composer(['telescope::layout'], function ($view) {
+                $view->with('telescopeScriptVariables', ['path' => 'metag/telescope', 'timezone' => config('app.timezone'), 'recording' => !cache('telescope:pause-recording')]);
+            });
+        }
+
+
     }
 
     /**
