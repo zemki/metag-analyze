@@ -55,7 +55,14 @@ class AdminController extends Controller
     public function deletedeviceid(User $user)
     {
         $user->update(["deviceID" => ""]);
-        return response()->json(['message' => 'Device ID Deleted!'], 200);
+        return response()->json(['message' => 'Device ID deleted!'], 200);
+
+    }
+
+    public function resetapitoken(User $user)
+    {
+        $user->update(["apitoken" => ""]);
+        return response()->json(['message' => 'Api Token deleted!'], 200);
 
     }
 

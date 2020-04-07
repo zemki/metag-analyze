@@ -1,22 +1,22 @@
 <template>
     <section>
         <b-table
-            :data="isEmpty ? [] : users"
-            bordered
-            narrowed
-            :default-sort-direction="defaultSortDirection"
-            :sort-icon="sortIcon"
-            :sort-icon-size="sortIconSize"
-            :row-class="(row, index) => 'bg-white text-black-300 hover:text-blue-200'"
+                :data="isEmpty ? [] : users"
+                bordered
+                narrowed
+                :default-sort-direction="defaultSortDirection"
+                :sort-icon="sortIcon"
+                :sort-icon-size="sortIconSize"
+                :row-class="(row, index) => 'bg-white text-black-300 hover:text-blue-200'"
         >
 
             <template slot-scope="props">
 
-                <b-table-column field="id" label="ID" width="40" numeric>
+                <b-table-column field="id" label="ID" width="40" numeric sortable>
                     {{ props.row.id }}
                 </b-table-column>
 
-                <b-table-column field="email" label="Email" sortable>
+                <b-table-column field="email" label="Email" sortable email>
                     {{ props.row.email }}
                 </b-table-column>
 
@@ -38,14 +38,22 @@
                     </span>
                 </b-table-column>
 
-                <b-table-column field="actions" label="Actions" centered sortable>
-                    <span><a href="#" @click="confirmcleandeviceid(props.row.id)"
+                <b-table-column field="actions" label="Actions" centered sortable class="text-xs w-auto">
+                    <span class="block m-0 mb-2"><a href="#" @click="confirmcleandeviceid(props.row.id)"
                              class="bg-red-300 hover:bg-red-400 text-black-800 font-bold py-2 px-4 rounded inline-flex items-center text-xs">
                         <b-icon
-                            class="fill-current w-4 h-4 mr-2"
-                            icon="delete"
+                                class="fill-current w-4 h-4 mr-2"
+                                icon="delete"
                         >
                     </b-icon>Delete all device(s) id</a>
+                        </span>
+                    <span class="block m-0"><a href="#" @click="confirmresettoken(props.row.id)" title="(request to login again on mobile device)"
+                             class="bg-red-300 hover:bg-red-400 text-black-800 font-bold py-2 px-4 rounded inline-flex items-center text-xs">
+                        <b-icon
+                                class="fill-current w-4 h-4 mr-2"
+                                icon="delete"
+                        >
+                    </b-icon>Reset API token</a>
                         </span>
                 </b-table-column>
 
@@ -79,12 +87,45 @@
             }
         },
         methods: {
-            confirmcleandeviceid: function(id){
+            confirmresettoken: function (id) {
 
-                let confirmDelete =  this.$buefy.dialog.confirm(
+                let confirmDelete = this.$buefy.dialog.confirm(
                     {
                         title: 'Confirm Delete Device ID',
-                        message: '<div class="bg-green-600 p-2 text-white text-center">Do you want to delete all the device id for this user?</div>',
+                        message: '<div class="bg-green-600 p-2 text-white text-center">When you delete the API token the user has to login again on the mobile app. Do you want to delete it?</div>',
+                        cancelText: 'No',
+                        confirmText: 'Yes',
+                        hasIcon: true,
+                        type: 'is-danger',
+                        onConfirm: () => this.deleteapitoken(id)
+                    }
+                );
+            },
+            deleteapitoken: function(id) {
+
+                this.loading = true;
+                this.message = "";
+                let self = this;
+                axios.get('resetapitoken/' + id)
+                    .then(response => {
+                        setTimeout(function () {
+                            self.loading = false;
+                            self.$buefy.snackbar.open("Api token deleted");
+                        }, 500);
+
+                    }).catch(function (error) {
+
+                    self.loading = false;
+                    self.$buefy.snackbar.open("There it was an error during the request - refresh page and try again");
+                });
+
+            },
+            confirmcleandeviceid: function (id) {
+
+                let confirmDelete = this.$buefy.dialog.confirm(
+                    {
+                        title: 'Confirm Delete Device ID',
+                        message: '<div class="bg-red-600 p-2 text-white text-center">Do you want to delete all the device id for this user?</div>',
                         cancelText: 'No',
                         confirmText: 'Yes',
                         hasIcon: true,
@@ -93,7 +134,7 @@
                     }
                 );
             },
-            deletedeviceid: function(id){
+            deletedeviceid: function (id) {
 
                 this.loading = true;
                 this.message = "";
@@ -111,41 +152,8 @@
                     self.$buefy.snackbar.open("There it was an error during the request - refresh page and try again");
                 });
 
-            },
-            confirmdeleteallstudies: function (id) {
 
-                let confirmDelete =  this.$buefy.dialog.confirm(
-                    {
-                        title: 'Confirm Delete',
-                        message: '<div class="bg-red-600 p-2 text-white text-center">You re about to delete all the studies for this user.<br><span class="has-text-weight-bold">Continue?</span></div>',
-                        cancelText: 'Cancel',
-                        confirmText: 'YES delete all studies and related data',
-                        hasIcon: true,
-                        type: 'is-danger',
-                        onConfirm: () => this.deleteallstudies(id)
-                    }
-                );
-            },
-            deleteallstudies: function (id) {
-                this.loading = true;
-                this.message = "";
-                let self = this;
-                axios.post('deletestudiesbyuser/' + id)
-                    .then(response => {
-                        setTimeout(function () {
-                            self.loading = false;
-                            self.$buefy.snackbar.open("Data deleted");
-
-                            window.location.reload();
-
-                        }, 500);
-
-                    }).catch(function (error) {
-                    console.log(error);
-                    self.loading = false;
-                    self.$buefy.snackbar.open("There it was an error during the request - refresh page and try again");
-                });
-            },
+            }
         }
     }
 </script>
