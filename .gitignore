@@ -24,6 +24,7 @@ composer.lock
 .DS_Store
 public/css/*.css
 public/*.js
+public/
 public/js/*.js
 public/mix-manifest.json
 package.json

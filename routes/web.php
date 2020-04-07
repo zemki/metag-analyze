@@ -23,6 +23,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'authorised', 'verif
     Route::get('/users', 'AdminController@indexUsers');
     Route::get('/users/new', 'UserController@create')->name('newadminusers');
     Route::get('/deletedeviceid/{user}', 'AdminController@deletedeviceid')->name('deletedeviceid');
+    Route::get('/resetapitoken/{user}', 'AdminController@resetapitoken')->name('resetapitoken');
 });
 
 Route::group(['middleware' => ['auth', 'authorised']], function () {
