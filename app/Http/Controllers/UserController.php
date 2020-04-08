@@ -160,16 +160,22 @@ class UserController extends Controller
         if ($request->input(self::TOKEN) === "") {
             $data['error'] = "wrong request, contact the administrator.";
             $data['user'] = "";
-            return view(self::ERRORS_RESETPASSWORD);
+            return view(self::ERRORS_RESETPASSWORD,$data);
         }
         $user = User::where('password_token', '=', $request->input(self::TOKEN))->first();
         if (!$user) {
             $data['error'] = "Something went wrong, please contact the administrator.";
-            return view(self::ERRORS_RESETPASSWORD);
+            return view(self::ERRORS_RESETPASSWORD,$data);
         }
         $user->password_token = null;
         $user->password = bcrypt($request->input('password'));
         $user->save();
         return redirect('/');
+    }
+
+
+    public function sendEmailVerificationNotification()
+    {
+        $this->notify(new \App\Notifications\CustomVerifyEmail);
     }
 }

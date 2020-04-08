@@ -16,12 +16,19 @@
                     {{ props.row.id }}
                 </b-table-column>
 
-                <b-table-column field="email" label="Email" sortable email>
-                    {{ props.row.email }}
+                <b-table-column field="email" label="Email" sortable email class="">
+                    <div class="inline-block w-auto">{{ props.row.email }}</div>
+                    <div v-if="Date.parse(props.row.latest_activity) > Date.parse(currentDateTime)" class="rounded-full h-3 w-3 bg-green-300 text-green-200 inline-block mr-2 blink_me ">
+
+                    </div>
                 </b-table-column>
 
                 <b-table-column field="device_id" label="Devices ID" sortable>
                     {{ props.row.deviceID }}
+                </b-table-column>
+
+                <b-table-column field="api_token" label="Api Token" sortable class="whitespace-no-wrap text-xs w-1/12">
+                    {{ props.row.api_token ? "YES" : "NO" }}
                 </b-table-column>
 
                 <b-table-column field="case" label="# of Cases" sortable>
@@ -77,13 +84,21 @@
         computed: {
             isEmpty: function () {
                 return _.isEmpty(this.users);
+            },
+            currentDateTime: function()
+            {
+                var d = new Date()
+                var milliseconds = Date.parse(d)
+                milliseconds = milliseconds - (5 * 60 * 1000)
+                return new Date(milliseconds)
+
             }
         },
         data() {
             return {
                 sortIcon: 'arrow-up',
                 sortIconSize: 'is-small',
-                defaultSortDirection: 'asc',
+                defaultSortDirection: 'asc'
             }
         },
         methods: {
@@ -97,11 +112,11 @@
                         confirmText: 'Yes',
                         hasIcon: true,
                         type: 'is-danger',
-                        onConfirm: () => this.deleteapitoken(id)
+                        onConfirm: () => this.resetapitoken(id)
                     }
                 );
             },
-            deleteapitoken: function(id) {
+            resetapitoken: function(id) {
 
                 this.loading = true;
                 this.message = "";
@@ -153,11 +168,52 @@
                 });
 
 
+            },
+            confirmresendconfirmation: function (id) {
+
+                let confirmDelete = this.$buefy.dialog.confirm(
+                    {
+                        title: 'Confirm Delete Device ID',
+                        message: '<div class="bg-red-600 p-2 text-white text-center">Do you want to make the user confirm the email again?</div>',
+                        cancelText: 'No',
+                        confirmText: 'Yes',
+                        hasIcon: true,
+                        type: 'is-info',
+                        onConfirm: () => this.resendconfirmation(id)
+                    }
+                );
+            },
+            resendconfirmation: function (id) {
+
+                this.loading = true;
+                this.message = "";
+                let self = this;
+                axios.get(' email/resend/' + id)
+                    .then(response => {
+                        setTimeout(function () {
+                            self.loading = false;
+                            self.$buefy.snackbar.open("He/She need now to confirm.");
+                        }, 500);
+
+                    }).catch(function (error) {
+
+                    self.loading = false;
+                    self.$buefy.snackbar.open("There it was an error during the request - refresh page and try again");
+                });
+
+
             }
         }
     }
 </script>
 
 <style scoped>
-
+    @keyframes blinker {
+        50% {
+            opacity: 0;
+        }
+    }
+    .blink_me {
+        animation: blinker 2s linear infinite;
+    }
 </style>

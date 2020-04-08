@@ -9,6 +9,7 @@ use App\Http\Middleware\CheckForMaintenanceMode;
 use App\Http\Middleware\CheckGroup;
 use App\Http\Middleware\CheckAdminArea;
 use App\Http\Middleware\EncryptCookies;
+use App\Http\Middleware\LoggedUser;
 use App\Http\Middleware\RedirectIfAuthenticated;
 use App\Http\Middleware\RefreshApiToken;
 use App\Http\Middleware\Researcher;
@@ -83,7 +84,8 @@ class Kernel extends HttpKernel
         'throttle' => ThrottleRequests::class,
         'verified' => EnsureEmailIsVerified::class,
         'haspowers' => CheckAdminArea::class,
-        'RefreshApiToken' => RefreshApiToken::class
+        'RefreshApiToken' => RefreshApiToken::class,
+        'LoggedUser' => LoggedUser::class
     ];
     /**
      * The priority-sorted list of middleware.
