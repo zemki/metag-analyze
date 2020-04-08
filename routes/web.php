@@ -15,7 +15,7 @@ Auth::routes();
 Route::get('/setpassword', 'UserController@showresetpassword');
 Route::post('/newpassword', 'UserController@newpassword');
 
-Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'authorised', 'verified', 'haspowers']], static function () {
+Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'authorised', 'verified', 'haspowers','LoggedUser']], static function () {
     /**
      * Admin Routes
      */
@@ -26,13 +26,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'authorised', 'verif
     Route::get('/resetapitoken/{user}', 'AdminController@resetapitoken')->name('resetapitoken');
 });
 
-Route::group(['middleware' => ['auth', 'authorised']], function () {
-    /**
-     * Group Routes
-     */
-    Route::get('/groups/new', 'GroupController@create')->name('new_group');
-    Route::post('/groups/store', 'GroupController@store')->name('store_groups');
-});
+
 Route::group(['middleware' => ['auth', 'authorised', 'verified']], function () {
     Route::get('/', 'ProjectController@index');
     /**

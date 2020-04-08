@@ -12,6 +12,7 @@ use App\Project;
 use App\Role;
 use App\Study;
 use App\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Storage;
 
@@ -46,41 +47,40 @@ class AdminController extends Controller
         // gather data for the initial panel
         $data['user'] = auth()->user();
         $data['usercount'] = User::all()->count();
+        $data['useronlinecount'] = User::all()->where('latest_activity','>', Carbon::now()->subMinute(10)->toDateTimeString())->count();
         $data['users'] = User::with('projects', 'case')->get();
 
         return view('admin.usersdashboard', $data);
     }
 
-
+    /**
+     * @param User $user
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function deletedeviceid(User $user)
     {
-        $user->update(["deviceID" => ""]);
+        $user->update(["deviceID" => []]);
         return response()->json(['message' => 'Device ID deleted!'], 200);
 
     }
 
+    /**
+     * @param User $user
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function resetapitoken(User $user)
     {
-        $user->update(["apitoken" => ""]);
-        return response()->json(['message' => 'Api Token deleted!'], 200);
+        $user->api_token = "";
+        $user->save();
+        if($user->api_token == NULL)return response()->json(['message' => 'Api Token deleted!'], 200);
+        else return response()->json(['message' => 'That didn\'t work, check log!'], 500);
+
 
     }
 
-
-
-    public function addSupervisor(Request $request)
+    public function sendEmailVerificationNotification()
     {
-        $role = Role::where('id', $request->role)->first();
-        $user = new User();
-        $user->email = $request->email;
-        $user->password = bcrypt($request->password);
-        $user->save();
-        $user->attachRole($role);
-        $createStudyPermission = Permission::where('name', 'create-studies')
-            ->first()->toArray();
-        $user->supervised_by = $user->id;
-        $user->save();
-        $user->attachPermissions($createStudyPermission);
-        return view('admin.supervisor', ['message' => 'Supervisor added']);
+        $this->notify(new \App\Notifications\CustomVerifyEmail);
     }
+
 }
