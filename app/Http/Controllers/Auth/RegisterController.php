@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Auth;
 
 use App\Helpers\Helper;
 use App\Http\Controllers\Controller;
+use App\Notifications\NotificationFromStaff;
+use App\Notifications\UserRegistered;
 use App\Role;
 use App\User;
 use Exception;
 use Illuminate\Foundation\Auth\RegistersUsers;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Validator;
 
 class RegisterController extends Controller
@@ -70,7 +73,11 @@ class RegisterController extends Controller
             $user->password_token = bcrypt(Helper::random_str(60));
             $user->save();
             $user->roles()->sync($role);
+            $notification = new UserRegistered(['email' => $data['email']]);
+            $notification->toRocketChat();
+
             return $user;
         }
     }
+
 }
