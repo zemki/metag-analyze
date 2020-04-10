@@ -27,12 +27,13 @@ require('highcharts/modules/gantt')(Highcharts);
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default));
 
 
+
 Vue.config.devtools = true;
 Vue.config.debug = true;
 Vue.config.silent = false;
 
 Vue.prototype.trans = (key) => {
-    return _.isUndefined(window.trans[key]) ? key : window.trans[key];
+    return _.isUndefined(window.trans[key])? key : window.trans[key];
 };
 
 Vue.component('edit-project', require('./components/editproject.vue').default);
@@ -43,8 +44,6 @@ Vue.component('graph', require('./components/graph.vue').default);
 
 Vue.use(Buefy);
 
-Vue.use(VueChartkick)
-Vue.use(GoogleCharts)
 /**
  * Next, we will create a fresh Vue application instance and attach it to
  * the page. Then, you may begin adding components to this application
@@ -360,7 +359,7 @@ const app = new Vue({
                 this.registration.valid_password = false;
             }
 
-            if (this.registration.password === this.registration.email) this.registration.valid_password = false;
+            if(this.registration.password === this.registration.email) this.registration.valid_password = false;
 
 
         },
@@ -483,15 +482,15 @@ const app = new Vue({
 
             this.newproject.inputs[questionindex].numberofanswer = this.newproject.inputs[questionindex].answers.length - 1;
         },
-        createUUID(length) {
+        createUUID(length){
 
-            var dt = new Date().getTime();
-            var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-                var r = (dt + Math.random() * 16) % 16 | 0;
-                dt = Math.floor(dt / 16);
-                return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(length);
-            });
-            return uuid;
+                var dt = new Date().getTime();
+                var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                    var r = (dt + Math.random()*16)%16 | 0;
+                    dt = Math.floor(dt/16);
+                    return (c=='x' ? r :(r&0x3|0x8)).toString(length);
+                });
+                return uuid;
 
         },
         validateProject(e) {
@@ -542,7 +541,7 @@ const app = new Vue({
                 self.$buefy.snackbar.open("There it was an error during the request - refresh page and try again");
             });
         },
-        confirmDeleteProject: function (project, url) {
+        confirmDeleteProject: function (project,url) {
 
             let confirmDelete = this.$buefy.dialog.confirm(
                 {
@@ -552,11 +551,11 @@ const app = new Vue({
                     confirmText: 'YES',
                     hasIcon: true,
                     type: 'is-danger',
-                    onConfirm: () => this.deleteProject(project, url)
+                    onConfirm: () => this.deleteProject(project,url)
                 }
             );
         },
-        deleteProject: function (project, url) {
+        deleteProject: function (project,url) {
 
             let self = this;
             window.axios.delete(url, {project: project})
