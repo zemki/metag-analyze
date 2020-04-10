@@ -1,4 +1,4 @@
-<header class="bg-blue-500 sm:flex sm:justify-between sm:items-center sm:px-4 sm:py-3 min-w-screen">
+<header class="bg-blue-500 sm:flex sm:justify-between sm:items-center sm:px-4 sm:py-3 min-w-screen border-t border-b border-blue-500 text-blue-700 ">
     <div class="flex items-center inline justify-between px-4 sm:p-0">
         <div class="">
             <a href="{{url('/')}}" class="text-3xl text-gray-100 font-bold hover:text-red-600">
@@ -15,12 +15,12 @@
     <nav class="px-2 sm:flex sm:p-0 align-baseline">
 
         @if(Auth::user()->hasReachMaxNumberOfProjecs())
-            <p class="text-yellow-300 block bg-red-600 px-3 mt-1 lg:inline-block lg:mt-0 mr-4 ">
+            <p class="text-yellow-300 bg-red-600 px-2 py-1 lg:inline-block lg:mt-0 mr-4 ">
                 {{__('You have reached the max number of Projects! Contact us for solutions!')}}
             </p>
         @endif
 
-        <p class="flex text-white font-bold px-2 py-1 is-unselectable">{{auth()->user()->email}}</p>
+        <p class="flex text-white font-bold px-2 py-1">{{auth()->user()->email}}</p>
 
 
         <a href="{{url('projects/new')}}" class="flex px-2 py-1 text-white font-semibold rounded hover:bg-red-600"><i
@@ -32,7 +32,7 @@
                         document.getElementById('logout-form').submit();">
             {{ __('Logout') }}
         </a>
-        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
             @csrf
         </form>
     </nav>

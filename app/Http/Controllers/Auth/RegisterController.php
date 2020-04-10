@@ -12,6 +12,7 @@ use Exception;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Validator;
+use Spatie\WebhookServer\WebhookCall;
 
 class RegisterController extends Controller
 {
@@ -62,6 +63,7 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
+
         $userexist = User::where('email', '=', $data['email'])->first();
         if ($userexist) {
             return $this->showRegistrationForm();
@@ -73,8 +75,11 @@ class RegisterController extends Controller
             $user->password_token = bcrypt(Helper::random_str(60));
             $user->save();
             $user->roles()->sync($role);
-            $notification = new UserRegistered(['email' => $data['email']]);
-            $notification->toRocketChat();
+            WebhookCall::create()
+                ->url('https://chat.zemki.uni-bremen.de/hooks/pggPQhGehrPiRSb2S/3xJ2bPWfYk2pqBBhtGGkgb3Q2JMGvH4DKaPdTANSTdZCtfxk')
+                ->payload(['text' => 'User '.$data['email'].' has registered. We have a total of '.User::all()->count().' users!'])
+                ->useSecret('pggPQhGehrPiRSb2S/3xJ2bPWfYk2pqBBhtGGkgb3Q2JMGvH4DKaPdTANSTdZCtfxk')
+                ->dispatch();
 
             return $user;
         }

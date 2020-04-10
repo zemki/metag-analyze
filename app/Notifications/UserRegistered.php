@@ -5,8 +5,6 @@ namespace App\Notifications;
 use Illuminate\Bus\Queueable;
 
 use Illuminate\Notifications\Notification;
-use NotificationChannels\RocketChat\RocketChatMessage;
-use NotificationChannels\RocketChat\RocketChatWebhookChannel;
 use App\User;
 
 class UserRegistered extends Notification
@@ -25,22 +23,15 @@ class UserRegistered extends Notification
         $this->users =  User::all()->count();
     }
 
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @param  mixed  $notifiable
-     * @return array
-     */
-    public function via($notifiable)
-    {
-        return [
-            RocketChatWebhookChannel::class,
-        ];
-    }
+
 
     public function toRocketChat(): RocketChatMessage
     {
-        return RocketChatMessage::create('A user registered!');
+        WebhookCall::create()
+            ->url('https://chat.zemki.uni-bremen.de/hooks/pggPQhGehrPiRSb2S/3xJ2bPWfYk2pqBBhtGGkgb3Q2JMGvH4DKaPdTANSTdZCtfxk')
+            ->payload(['text' => 'User '.$this->email.' has registered. We have a total of '.$this->users])
+            ->useSecret('pggPQhGehrPiRSb2S/3xJ2bPWfYk2pqBBhtGGkgb3Q2JMGvH4DKaPdTANSTdZCtfxk')
+            ->dispatch();
     }
 
     /**
