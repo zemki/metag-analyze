@@ -7,8 +7,6 @@
 require('./bootstrap');
 import "vue-material-design-icons/styles.css"
 import Buefy from 'buefy'
-import {GoogleCharts} from 'google-charts';
-import VueChartkick from 'vue-chartkick'
 
 window.Vue = require('vue');
 
@@ -29,13 +27,12 @@ require('highcharts/modules/gantt')(Highcharts);
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default));
 
 
-
 Vue.config.devtools = true;
 Vue.config.debug = true;
 Vue.config.silent = false;
 
 Vue.prototype.trans = (key) => {
-    return _.isUndefined(window.trans[key])? key : window.trans[key];
+    return _.isUndefined(window.trans[key]) ? key : window.trans[key];
 };
 
 Vue.component('edit-project', require('./components/editproject.vue').default);
@@ -314,7 +311,8 @@ const app = new Vue({
             contains_number: false,
             contains_letters: false,
             contains_special_character: false,
-            valid_password: false
+            valid_password: false,
+            email: ""
         },
         newuser: {
             role: 2,
@@ -361,14 +359,18 @@ const app = new Vue({
             } else {
                 this.registration.valid_password = false;
             }
+
+            if (this.registration.password === this.registration.email) this.registration.valid_password = false;
+
+
         },
         formatdatestartingat: function () {
 
             if (!this.newcase.duration.starts_with_login) {
 
-
-                if (this.newcase.duration.selectedUnit === 'week') var numberOfDaysToAdd = parseInt(this.newcase.duration.input) * 7;
-                else var numberOfDaysToAdd = parseInt(this.newcase.duration.input);
+                var numberOfDaysToAdd;
+                if (this.newcase.duration.selectedUnit === 'week') numberOfDaysToAdd = parseInt(this.newcase.duration.input) * 7;
+                else numberOfDaysToAdd = parseInt(this.newcase.duration.input);
 
                 // calculate and format end date
                 let {cdd, cmm, cy} = this.formatDurationMessage(numberOfDaysToAdd, new Date(this.newcase.duration.startdate));
@@ -481,15 +483,15 @@ const app = new Vue({
 
             this.newproject.inputs[questionindex].numberofanswer = this.newproject.inputs[questionindex].answers.length - 1;
         },
-        createUUID(length){
+        createUUID(length) {
 
-                var dt = new Date().getTime();
-                var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                    var r = (dt + Math.random()*16)%16 | 0;
-                    dt = Math.floor(dt/16);
-                    return (c=='x' ? r :(r&0x3|0x8)).toString(length);
-                });
-                return uuid;
+            var dt = new Date().getTime();
+            var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                var r = (dt + Math.random() * 16) % 16 | 0;
+                dt = Math.floor(dt / 16);
+                return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(length);
+            });
+            return uuid;
 
         },
         validateProject(e) {
@@ -540,7 +542,7 @@ const app = new Vue({
                 self.$buefy.snackbar.open("There it was an error during the request - refresh page and try again");
             });
         },
-        confirmDeleteProject: function (project,url) {
+        confirmDeleteProject: function (project, url) {
 
             let confirmDelete = this.$buefy.dialog.confirm(
                 {
@@ -550,11 +552,11 @@ const app = new Vue({
                     confirmText: 'YES',
                     hasIcon: true,
                     type: 'is-danger',
-                    onConfirm: () => this.deleteProject(project,url)
+                    onConfirm: () => this.deleteProject(project, url)
                 }
             );
         },
-        deleteProject: function (project,url) {
+        deleteProject: function (project, url) {
 
             let self = this;
             window.axios.delete(url, {project: project})

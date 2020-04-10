@@ -2,25 +2,22 @@
 
 @section('content')
 
+        <h1 class="break-words text-4xl font-bold font-serif">{{$project->name}}</h1>
 
-
-    <div class="content">
-        <div class="block"><h1 class="break-words">{{$project->name}}</h1></div>
-        <div class="break-words">
-            <p>
+            <p class="break-words my-4">
                 {{$project->description}}
             </p>
-        </div>
-        <div class="inline px-2">
+
+        <div class="block">
             <div class="inline">
                 <a href="{{url($project->path().'/cases/new')}}">
-                    <button class="button is-link is-primary">{{__('Create Case')}}</button>
+                    <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">{{__('Create Case')}}</button>
                 </a>
 
             </div>
             <div class="inline">
-                <a href="{{url($project->path().'/export')}}">
-                    <button class="button is-link is-primary">{{__('Download all the data from this project')}}</button>
+                <a href="{{url($project->path().'/export')}}" title="{{__('from cases that are already closed.')}}">
+                    <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">{{__('Download all the data from this project')}}</button>
                 </a>
             </div>
         </div>
@@ -111,9 +108,6 @@
                 </b-tab-item>
             @endif
         </b-tabs>
-
-
-    </div>
 
 
 @endsection

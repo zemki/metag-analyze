@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="mx-auto w-full text-center uppercase font-bold p-2"><h4
-
-                class="text-4xl">{{ __("Project you created") }} </h4></div>
+    <div class="mx-auto w-full text-center uppercase font-bold p-2">
+        <h4 class="text-4xl font-serif">{{ __("Project you created") }} </h4>
+    </div>
 
     <div class="pb-4">
         <a href="{{url('projects/new')}}">
@@ -11,13 +11,6 @@
                 <i class="px-1">+</i> {{ __('New Project') }}
             </button>
         </a>
-        @if(Auth::user()->isAdmin())
-            <a href="{{url('admin/users/new')}}">
-                <button class="button bg-blue-500 hover:bg-blue-700 text-white mr-2 focus:border-gray-100">
-                    <i class="px-1">+</i> {{ __('New User') }}
-                </button>
-            </a>
-        @endif
     </div>
 
     <div class="columns is-multiline subpixel-antialiased">
@@ -25,7 +18,7 @@
 
             <div class="max-w-xs rounded overflow-auto shadow-lg ml-2 mt-2">
                 <div class="px-4 py-2">
-                    <div class="font-bold text-xl mb-2 block items-center break-words">
+                    <div class="font-bold text-xl mb-2 block text-center break-words">
                         {{$project->name}}
 
                     </div>
@@ -41,7 +34,7 @@
                     </div>
                     <div class="py-2">
 
-                        <a href="{{url($project->path().'/export')}}">
+                        <a href="{{url($project->path().'/export')}}" title="{{__('from cases that are already closed.')}}">
                             <button class="button is-link is-primary">{{__('Download all the data')}}</button>
                         </a>
                     </div>
@@ -74,7 +67,7 @@
 
 
     <div class="columns is-multiline subpixel-antialiased">
-        <h4 class="text-4xl mx-auto w-full text-center uppercase font-bold p-2">{{ __("Project you're invited to") }} </h4>
+        <h4 class="text-4xl mx-auto w-full text-center uppercase font-bold p-2 font-serif">{{ __("Project you're invited to") }} </h4>
 
         @forelse($invites as $project)
 
@@ -83,7 +76,7 @@
                         class="cards-projects items-stretch flex-grow-0 h-56 px-2 border-solid border-4 border-blue-100">
                     <div class="mb-2">
                         <p class="text-2xl font-bold ">
-                            <a class="align-middle" href="{{url($project->path())}}">
+                            <a class="align-middle text-center" href="{{url($project->path())}}">
                                 {{$project->name}}
                                 <i class="">&rsaquo;</i>
                             </a>
