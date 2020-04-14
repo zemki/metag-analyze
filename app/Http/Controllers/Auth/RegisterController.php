@@ -77,7 +77,7 @@ class RegisterController extends Controller
             $user->roles()->sync($role);
             WebhookCall::create()
                 ->url('https://chat.zemki.uni-bremen.de/hooks/pggPQhGehrPiRSb2S/3xJ2bPWfYk2pqBBhtGGkgb3Q2JMGvH4DKaPdTANSTdZCtfxk')
-                ->payload(['text' => 'User '.$data['email'].' has registered. We have a total of '.User::all()->count().' users!'])
+                ->payload(['text' => 'User '.$data['email'].' has registered on Metag Analyze. We have a total of '.User::all()->count().' users!'])
                 ->useSecret('pggPQhGehrPiRSb2S/3xJ2bPWfYk2pqBBhtGGkgb3Q2JMGvH4DKaPdTANSTdZCtfxk')
                 ->dispatch();
 
