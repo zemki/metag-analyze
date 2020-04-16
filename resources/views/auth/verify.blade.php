@@ -1,4 +1,4 @@
-@extends('auth.app')
+@extends('auth.layouts.app')
 
 @section('content')
     <div class="bg-img"></div>

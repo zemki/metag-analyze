@@ -30,7 +30,8 @@ class ApiController extends Controller
      */
     public function returnUser($id)
     {
-        if ($id === 0) {
+        if ($id === 0)
+        {
             $user = new User();
             return response($user, 200);
         }
@@ -67,22 +68,25 @@ class ApiController extends Controller
             self::EMAIL => $request->email,
             self::PASSWORD => $request->password
         ];
-        if (auth()->attempt($credentials)) {
+        if (auth()->attempt($credentials))
+        {
             $token = Helper::random_str(60);
             auth()->user()->forceFill([
                 'api_token' => hash('sha256', $token),
             ])->save();
             $userHasACase = auth()->user()->latestCase;
-            if (!$userHasACase) {
+            if (!$userHasACase)
+            {
                 $response = 'No cases';
                 return response()->json(['case' => $response], 200);
-            } else {
+            } else
+            {
 
                 //User::saveDeviceId($request);
                 $lastDayPos = strpos($userHasACase->duration, "lastDay:");
                 $startDay = Helper::get_string_between($userHasACase->duration, "startDay:", "|");
                 $duration = $lastDayPos ? substr($userHasACase->duration, $lastDayPos + strlen('lastDay:'), strlen($userHasACase->duration) - 1) : Cases::calculateDuration($request->datetime, $userHasACase->duration);
-                $userHasACase->duration .= $lastDayPos ? "" :  "|lastDay:" . $duration;
+                $userHasACase->duration .= $lastDayPos ? "" : "|lastDay:" . $duration;
                 $userHasACase->save();
                 $inputs = $this->formatLoginResponse($userHasACase);
                 $notStarted = (strtotime(date("d.m.Y")) < strtotime($startDay));
@@ -95,7 +99,8 @@ class ApiController extends Controller
                     self::NOTSTARTED => $notStarted
                 ], 200);
             }
-        } else {
+        } else
+        {
             return response()->json(['error' => 'invalid credentials'], 401);
         }
     }
@@ -138,7 +143,8 @@ class ApiController extends Controller
      */
     public function logout()
     {
-        auth()->user()->tokens->each(function ($token) {
+        auth()->user()->tokens->each(function ($token)
+        {
             $token->delete();
         });
         return response()->json('Logged out successfully', 200);

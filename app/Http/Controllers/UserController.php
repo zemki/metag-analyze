@@ -137,42 +137,6 @@ class UserController extends Controller
         return response()->json(!empty(User::where(self::EMAIL, '=', $request[self::EMAIL])->first()), 200);
     }
 
-    public function showresetpassword(Request $request)
-    {
-
-        if ($request->input(self::TOKEN) == "") {
-            return view(self::ERRORS_RESETPASSWORD);
-        }
-        $user = User::where('password_token', '=', $request->input(self::TOKEN))->first();
-        if (!$user) {
-            return view(self::ERRORS_RESETPASSWORD);
-        }
-        $data['user'] = $user;
-        return view('auth.passwords.reset', $data);
-    }
-
-    /**
-     * @param Request $request
-     * @return Factory|RedirectResponse|Redirector|View
-     */
-    public function newpassword(Request $request)
-    {
-        if ($request->input(self::TOKEN) === "") {
-            $data['error'] = "wrong request, contact the administrator.";
-            $data['user'] = "";
-            return view(self::ERRORS_RESETPASSWORD,$data);
-        }
-        $user = User::where('password_token', '=', $request->input(self::TOKEN))->first();
-        if (!$user) {
-            $data['error'] = "Something went wrong, please contact the administrator.";
-            return view(self::ERRORS_RESETPASSWORD,$data);
-        }
-        $user->password_token = null;
-        $user->password = bcrypt($request->input('password'));
-        $user->save();
-        return redirect('/');
-    }
-
 
     public function sendEmailVerificationNotification()
     {

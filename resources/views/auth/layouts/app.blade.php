@@ -25,8 +25,8 @@
         @yield('pagespecificcss')
     </style>
 </head>
-<body class="bg-gray-600 h-screen">
-<div id="app">
+<body >
+<div id="app" class="bg-blue-900">
 
     @yield('content')
 
