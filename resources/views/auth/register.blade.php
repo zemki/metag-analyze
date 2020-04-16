@@ -1,4 +1,4 @@
-@extends('auth.app')
+@extends('auth.layouts.app')
 
 @section('content')
     <div class="flex items-center justify-center h-screen">
@@ -9,7 +9,7 @@
                 @csrf
 
                 <figure class="image is-64x64" style="margin: 0 auto; max-width: 100%;">
-                    <img src="{{config('utilities.base64logo')}}" alt="Metag Logo">
+                    <img src="{{config('utilities.base64logo')}}" alt="Mesort Logo">
 
                 </figure>
                 <div class="text-center">
@@ -57,8 +57,7 @@
                            name="password_confirmation" required>
                 </div>
                 @if ($errors->has('email'))
-                    <div class="bg-red-700 my-2 pl-2 py-2"
-                         role="relative px-3 py-3 mb-4 border rounded">
+                    <div class="bg-red-700 my-2 pl-2 py-2">
                         <strong>{{ $errors->first('email') }}</strong>
                     </div>
                 @endif
