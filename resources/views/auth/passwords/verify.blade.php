@@ -20,7 +20,8 @@
 
             <div class="text-center">
                 <h1 class="text-4xl pb-2 m-auto max-w-full font-extrabold">
-                    Mesort</h1>
+                    Metag Analyze
+                </h1>
                 <h4> {{ __('Reset Password') }} </h4>
                 <div class="py-4 w-full text-center">
                     <a class="text-blue-500 hover:text-red-600 block"
