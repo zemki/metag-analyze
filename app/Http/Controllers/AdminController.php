@@ -64,6 +64,17 @@ class AdminController extends Controller
 
     }
 
+
+    public function indexCases()
+    {
+        $data['projects'] = Project::with("cases","invited")->get();
+        $data['cases'] = Cases::all();
+
+
+        return view('admin.cases', $data);
+
+    }
+
     /**
      * @param User $user
      * @return \Illuminate\Http\JsonResponse
