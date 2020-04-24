@@ -78,15 +78,12 @@ class Cases extends Model
             ->select('entries.inputs', 'entries.begin', 'entries.end', 'projects.inputs as pr_inputs')
             ->get()
             ->toArray();
-
         $inputType = function ($value)
         {
             return $value->type;
         };
         $availableInputs = array_map($inputType, json_decode($entries[0][self::PR_INPUTS]));
         $inputValues = [];
-
-
         foreach ($entries as $entry)
         {
             $inputs = json_decode($entry[self::INPUTS], true);
