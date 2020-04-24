@@ -47,10 +47,10 @@
             calculateStatus(user) {
                 if(!_.isEmpty(user.password_token)) return this.trans('user needs to check email and set the password');
 
-                if (_.isEmpty(user.email_verified_at)) return this.trans("user needs to verify the email address.");
-                else if (_.isEmpty(user.api_token)) return this.trans("user is able to send the data.");
+                if (_.isEmpty(user.api_token)) return this.trans("user is able to send the data.");
                 else if (!_.isEmpty(user.api_token)) return this.trans("user logged in the mobile app.");
 
+                if(_.isEmpty(user.email_verified)) return this.trans('user needs to verify the email.');
 
 
             },
