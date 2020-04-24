@@ -24,7 +24,8 @@ class ProjectCasesController extends Controller
     public function show(Project $project, Cases $case)
     {
 
-        if (auth()->user()->notOwnerNorInvited($project) && !auth()->user()->isAdmin()) {
+        if (auth()->user()->notOwnerNorInvited($project) && !auth()->user()->isAdmin())
+        {
             abort(403);
         }
         list($mediaValues, $availableMedia) = Cases::getMediaValues($case);
@@ -40,7 +41,6 @@ class ProjectCasesController extends Controller
             $project->path() => $project->name,
             $case->path() => substr($case->name, 0, 15) . '...'
         ];
-
         return view('entries.index', $data);
     }
 
@@ -51,7 +51,8 @@ class ProjectCasesController extends Controller
      */
     public function create(Project $project)
     {
-        if (auth()->user()->notOwnerNorInvited($project)) {
+        if (auth()->user()->notOwnerNorInvited($project))
+        {
             abort(403);
         }
         $data['breadcrumb'] = [
@@ -72,8 +73,9 @@ class ProjectCasesController extends Controller
     public function store(Project $project, Request $request)
     {
         $this->authorize('update', $project);
-        if (request('name') == "" || request('email') == "" || request('duration') == "") {
-            return redirect($project->path() . '/cases/new')->with(['message' => 'Please fill all the required inputs.']);
+        if (request('name') == "" || request('email') == "" || request('duration') == "")
+        {
+            return redirect($project->path() . '/cases/new')->with(['message' => __('Please fill all the required inputs.')]);
         }
         request()->validate(
             ['name' => 'required'],
@@ -111,10 +113,12 @@ class ProjectCasesController extends Controller
     public function destroy(Cases $case)
     {
         $project = $case->project;
-        if ($project->created_by == auth()->user()->id) {
+        if ($project->created_by == auth()->user()->id)
+        {
 
             $case->delete();
-        } else {
+        } else
+        {
             return response()->json(['message' => 'You can\'t delete this case'], 403);
         }
         $data['breadcrumb'] = [url('/') => 'Projects', '#' => substr($project->name, 0, 20) . '...'];
@@ -132,8 +136,9 @@ class ProjectCasesController extends Controller
      */
     public function export(Cases $case)
     {
-        if (auth()->user()->notOwnerNorInvited($case->project)) {
-            abort(403, 'you can\'t see the data of this project.');
+        if (auth()->user()->notOwnerNorInvited($case->project))
+        {
+            abort(403, __('you can\'t see the data of this project.'));
         }
         $headings = $this->getProjectInputHeadings($case->project);
         return (new CasesExport($case->id, $headings))->download('case ' . $case->name . '.xlsx');
@@ -146,7 +151,8 @@ class ProjectCasesController extends Controller
     private function getProjectInputHeadings(Project $project): array
     {
         $headings = [];
-        foreach (json_decode($project->inputs) as $input) {
+        foreach (json_decode($project->inputs) as $input)
+        {
             $isMultipleOrOneChoice = property_exists($input, "numberofanswer") && $input->numberofanswer > 0;
             if ($isMultipleOrOneChoice) for ($i = 0; $i < $input->numberofanswer; $i++) array_push($headings, $input->name);
             else array_push($headings, $input->name);
