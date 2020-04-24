@@ -53,6 +53,14 @@ Vue.prototype.trans = (key) => {
     return _.isUndefined(window.trans[key]) ? key : window.trans[key];
 };
 
+Vue.mixin({
+    data() {
+        return {
+            productionUrl: process.env.MIX_ENV_MODE === 'production' ? '/metag' : ''
+        }
+    },
+});
+
 window.app = new Vue({
     el: '#app',
     computed: {

@@ -73,7 +73,7 @@
             sendResetPassword(user) {
             let self = this;
 
-                window.axios.post('/users/password/reset',
+                window.axios.post(this.productionUrl+'/users/password/reset',
                     {email: user.email}).then(response => {
                     // confirm??
                     self.$buefy.snackbar.open(response.data);
