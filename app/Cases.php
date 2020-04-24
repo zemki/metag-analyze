@@ -22,10 +22,13 @@ class Cases extends Model
     public static function boot()
     {
         parent::boot();
-        static::deleting(function ($case) {
+        static::deleting(function ($case)
+        {
 
-            if ($case->project->created_by === auth()->user()->id) {
-                foreach ($case->entries as $entry) {
+            if ($case->project->created_by === auth()->user()->id)
+            {
+                foreach ($case->entries as $entry)
+                {
                     $entry->delete();
                 }
             }
@@ -50,7 +53,8 @@ class Cases extends Model
         $availableMedia = $case->entries()
             ->leftJoin('media', 'entries.media_id', '=', 'media.id')
             ->pluck('media.name')->unique()->toArray();
-        foreach (array_map('array_values', $mediaEntries) as $media) {
+        foreach (array_map('array_values', $mediaEntries) as $media)
+        {
             array_push($mediaValues, [self::VALUE => $media[0], "start" => $media[1], "end" => $media[2]]);
         }
         return array($mediaValues, $availableMedia);
@@ -75,29 +79,40 @@ class Cases extends Model
             ->where('entries.inputs', '<>', '[]')
             ->get()
             ->toArray();
-        $getInputTypeFunction = function ($value) {
+        
+        $inputType = function ($value)
+        {
             return $value->type;
         };
-        $availableInputs = array_map($getInputTypeFunction, json_decode($entries[0][self::PR_INPUTS]));
+        $availableInputs = array_map($inputType, json_decode($entries[0][self::PR_INPUTS]));
         $inputValues = [];
-        foreach ($entries as $entry) {
+
+
+        foreach ($entries as $entry)
+        {
             $inputs = json_decode($entry[self::INPUTS], true);
             $pr_inputs = json_decode($entry[self::PR_INPUTS], true);
-            foreach ($inputs as $key => $index) {
-                foreach ($pr_inputs as $pr_input) {
-                    if ($pr_input['name'] === $key) {
+            foreach ($inputs as $key => $index)
+            {
+                foreach ($pr_inputs as $pr_input)
+                {
+                    if ($pr_input['name'] === $key)
+                    {
                         array_push($inputValues, [self::VALUE => $index, "type" => $pr_input['type'], "name" => $key, "start" => $entry["begin"], "end" => $entry["end"]]);
                     }
                 }
             }
         }
         $availableOptions = json_decode($entries[0][self::PR_INPUTS]);
-        foreach ($availableOptions as $availableOption) {
+        foreach ($availableOptions as $availableOption)
+        {
             $availableOptions[$availableOption->type] = $availableOption;
         }
-        foreach ($availableInputs as $availableInput) {
+        foreach ($availableInputs as $availableInput)
+        {
             self::formatInputValues($data, $availableInput, $availableOptions, $inputValues);
-            foreach ($inputValues as $inputValue) {
+            foreach ($inputValues as $inputValue)
+            {
                 if ($inputValue['type'] == $availableInput && $inputValue != null) array_push($data['entries']['inputs'][$availableInput], $inputValue);
             }
         }
@@ -114,22 +129,28 @@ class Cases extends Model
     {
         $data[self::ENTRIES][self::INPUTS][$availableInput] = array();
         $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableInput;
-        if ($availableInput === self::MULTIPLE_CHOICE) {
+        if ($availableInput === self::MULTIPLE_CHOICE)
+        {
             $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableInput;
             $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = $availableOptions[self::MULTIPLE_CHOICE]->answers;
             $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions[self::MULTIPLE_CHOICE]->name;
-        } else if ($availableInput === self::ONE_CHOICE) {
+        } else if ($availableInput === self::ONE_CHOICE)
+        {
             $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = $availableOptions[self::ONE_CHOICE]->answers;
             $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions[self::ONE_CHOICE]->name;
-        } else if ($availableInput === self::SCALE) {
+        } else if ($availableInput === self::SCALE)
+        {
             $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = [0, 1, 2, 3, 4, 5];
             $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions[self::SCALE]->name;
-        } else if ($availableInput === "text") {
+        } else if ($availableInput === "text")
+        {
             $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = [];
             $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions["text"]->name;
             // loop through the values you already have and make it part of the 'available'
-            foreach ($inputValues as $inputValue) {
-                if ($inputValue['type'] === "text") {
+            foreach ($inputValues as $inputValue)
+            {
+                if ($inputValue['type'] === "text")
+                {
                     array_push($data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE], $inputValue[self::VALUE]);
                 }
             }
@@ -168,7 +189,8 @@ class Cases extends Model
     public function addUser($user)
     {
 
-        if (is_array($user)) {
+        if (is_array($user))
+        {
             $user = User::firstOrCreate($user);
         }
         $this->user()->associate($user);
@@ -196,7 +218,7 @@ class Cases extends Model
     public function isConsultable()
     {
         $timestampLastDay = strtotime($this->lastDay());
-        if($timestampLastDay == "") return "not yet logged in";
+        if ($timestampLastDay == "") return "not yet logged in";
         $now = strtotime(date("Y-m-d H:i:s"));
         return $timestampLastDay < $now;
     }
