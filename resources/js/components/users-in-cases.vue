@@ -78,10 +78,7 @@
                     // confirm??
                     self.$buefy.snackbar.open(response.data);
 
-                    this.message = {
-                        text: null,
-                        type: 'success'
-                    };
+
                 }).catch(error => {
                     console.log(error);
                 });
