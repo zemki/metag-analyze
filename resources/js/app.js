@@ -32,15 +32,14 @@ Vue.config.devtools = true;
 Vue.config.debug = true;
 Vue.config.silent = false;
 
-Vue.prototype.trans = (key) => {
-    return _.isUndefined(window.trans[key])? key : window.trans[key];
-};
 
 Vue.component('edit-project', require('./components/editproject.vue').default);
 Vue.component('consult-entries', require('./components/consultentries.vue').default);
 Vue.component('project-invites', require('./components/projectsInvites.vue').default);
 Vue.component('user-table', require('./components/usertable.vue').default);
 Vue.component('graph', require('./components/graph.vue').default);
+Vue.component('users-in-cases', require('./components/users-in-cases.vue').default);
+
 
 Vue.use(Buefy);
 
@@ -50,8 +49,11 @@ Vue.use(Buefy);
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
+Vue.prototype.trans = (key) => {
+    return _.isUndefined(window.trans[key]) ? key : window.trans[key];
+};
 
-const app = new Vue({
+window.app = new Vue({
     el: '#app',
     computed: {
         'newproject.formattedinputstring': function () {
@@ -126,7 +128,8 @@ const app = new Vue({
                 this.newcase.duration.value = "";
 
             }
-        }, 'newcase.duration.input': function (newVal, OldVal) {
+        },
+        'newcase.duration.input': function (newVal, OldVal) {
 
             this.newcase.duration.input = newVal.replace(/\D/g, '');
 
@@ -205,38 +208,6 @@ const app = new Vue({
             }).catch(error => {
                 console.log(error);
             });
-        },
-        'newuser.case.name': function (newVal, oldVal) {
-            if (this.newuser.case.project !== 0) {
-
-                window.axios.post('/cases/exist', {name: newVal, project: this.newuser.case.project}).then(response => {
-                    this.newuser.case.caseexist = response.data;
-                    if (response.data) {
-                        this.newuser.case.caseexistmessage = "This case exist!";
-                    } else {
-                        this.newuser.case.caseexistmessage = "This case will be created.";
-                    }
-
-                }).catch(error => {
-                    console.log(error);
-                });
-            }
-
-        },
-        'newuser.case.project': function (newVal, oldVal) {
-            if (this.newuser.case.name.length > 0) {
-                window.axios.post('/cases/exist', {name: newVal, project: this.newuser.case.project}).then(response => {
-                    this.newuser.case.caseexist = response.data;
-                    if (response.data) {
-                        this.newuser.case.caseexistmessage = "This case exist!";
-                    } else {
-                        this.newuser.case.caseexistmessage = "This case will be created.";
-                    }
-
-                }).catch(error => {
-                    console.log(error);
-                });
-            }
         },
         'newproject.ninputs': function (newVal, oldVal) {
 
@@ -359,7 +330,7 @@ const app = new Vue({
                 this.registration.valid_password = false;
             }
 
-            if(this.registration.password === this.registration.email) this.registration.valid_password = false;
+            if (this.registration.password === this.registration.email) this.registration.valid_password = false;
 
 
         },
@@ -420,9 +391,6 @@ const app = new Vue({
                 self.$buefy.snackbar.open(message);
             });
         },
-        replaceUndefinedOrNull() {
-
-        },
         validateSubmitCaseForm() {
             this.newproject.response = "";
             if (this.newproject.name == "") this.newproject.response += this.errormessages.namemissing;
@@ -482,15 +450,15 @@ const app = new Vue({
 
             this.newproject.inputs[questionindex].numberofanswer = this.newproject.inputs[questionindex].answers.length - 1;
         },
-        createUUID(length){
+        createUUID(length) {
 
-                var dt = new Date().getTime();
-                var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                    var r = (dt + Math.random()*16)%16 | 0;
-                    dt = Math.floor(dt/16);
-                    return (c=='x' ? r :(r&0x3|0x8)).toString(length);
-                });
-                return uuid;
+            var dt = new Date().getTime();
+            var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                var r = (dt + Math.random() * 16) % 16 | 0;
+                dt = Math.floor(dt / 16);
+                return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(length);
+            });
+            return uuid;
 
         },
         validateProject(e) {
@@ -541,7 +509,7 @@ const app = new Vue({
                 self.$buefy.snackbar.open("There it was an error during the request - refresh page and try again");
             });
         },
-        confirmDeleteProject: function (project,url) {
+        confirmDeleteProject: function (project, url) {
 
             let confirmDelete = this.$buefy.dialog.confirm(
                 {
@@ -551,11 +519,11 @@ const app = new Vue({
                     confirmText: 'YES',
                     hasIcon: true,
                     type: 'is-danger',
-                    onConfirm: () => this.deleteProject(project,url)
+                    onConfirm: () => this.deleteProject(project, url)
                 }
             );
         },
-        deleteProject: function (project,url) {
+        deleteProject: function (project, url) {
 
             let self = this;
             window.axios.delete(url, {project: project})

@@ -47,6 +47,7 @@ class ProjectController extends Controller
         $data['data']['media'] = Media::all();
         $data[self::PROJECT] = $project;
         $data['invites'] = $project->invited()->get();
+
         return view('projects.show', $data);
     }
 

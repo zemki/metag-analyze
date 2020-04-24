@@ -2,7 +2,7 @@
 
 namespace App;
 
-use Helper;
+use App\Helpers\Helper;
 use Illuminate\Database\Eloquent\Model;
 
 class Cases extends Model
@@ -191,11 +191,12 @@ class Cases extends Model
     }
 
     /**
-     * @return bool
+     * @return bool|string
      */
-    public function isConsultable(): bool
+    public function isConsultable()
     {
         $timestampLastDay = strtotime($this->lastDay());
+        if($timestampLastDay == "") return "not yet logged in";
         $now = strtotime(date("Y-m-d H:i:s"));
         return $timestampLastDay < $now;
     }

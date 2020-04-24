@@ -23,6 +23,7 @@ class ProjectCasesController extends Controller
      */
     public function show(Project $project, Cases $case)
     {
+
         if (auth()->user()->notOwnerNorInvited($project)) {
             abort(403);
         }
@@ -39,6 +40,7 @@ class ProjectCasesController extends Controller
             $project->path() => $project->name,
             $case->path() => substr($case->name, 0, 15) . '...'
         ];
+
         return view('entries.index', $data);
     }
 
