@@ -76,7 +76,6 @@ class Cases extends Model
             ->join('cases', 'entries.case_id', '=', 'cases.id')
             ->join('projects', 'cases.project_id', '=', 'projects.id')
             ->select('entries.inputs', 'entries.begin', 'entries.end', 'projects.inputs as pr_inputs')
-            ->where('entries.inputs', '<>', '[]')
             ->get()
             ->toArray();
 
