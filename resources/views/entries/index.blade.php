@@ -5,12 +5,14 @@
            :availabledata="{{json_encode($entries['availablemedia'])}}"
     ></graph>
 
-    @foreach($entries['inputs'] as $input)
-        <graph :info="{{json_encode($input)}}"
-               :title="{{json_encode($input['title'])}}"
-               :availabledata="{{json_encode($input['available'])}}"
-        ></graph>
-    @endforeach
+    @isset($entries['inputs'])
+        @foreach($entries['inputs'] as $input)
+            <graph :info="{{json_encode($input)}}"
+                   :title="{{json_encode($input['title'])}}"
+                   :availabledata="{{json_encode($input['available'])}}"
+            ></graph>
+        @endforeach
+    @endisset
 
 @endsection
 @section('pagespecificcss')
