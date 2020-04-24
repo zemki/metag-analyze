@@ -51,8 +51,8 @@
                                         {{__('View Entries')}}
                                     </button>
                                 </a>
-                            @else
-                                <p>{{__('User didn\'t enter anything.')}}</p>
+                            @elseif(!$case->isConsultable() && $case->entries()->count() > 0 && !$case->notYetStarted())
+                                <p>{{__('User is entering the data')}}</p>
                             @endif
                         </div>
 
