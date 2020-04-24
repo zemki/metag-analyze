@@ -41,16 +41,18 @@
                         </div>
                         <div class="py-2">
                             @if(!$case->notYetStarted() && $case->entries()->count() == 0)
-                                <p>{{__('Time has passed and user didn\'t register eny entry')}}</p>
+                                <p>{{__('Time has passed and user didn\'t register any entry')}}</p>
                             @elseif($case->notYetStarted())
                                 <p>{{__('Case is not yet started.')}}</p>
-                            @else
-                                <a href="{{$case->isConsultable() && $case->entries()->count() > 0 ? $project->id.$case->path() : '#' }}" class="no-underline">
+                            @elseif($case->isConsultable() && $case->entries()->count() > 0)
+                                <a href="{{$project->id.$case->path()}}" class="no-underline">
                                     <button
                                             class="block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded no-underline">
                                         {{__('View Entries')}}
                                     </button>
                                 </a>
+                            @else
+                                <p>{{__('User didn\'t enter anything.')}}</p>
                             @endif
                         </div>
 
