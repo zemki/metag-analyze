@@ -5,6 +5,7 @@ namespace App;
 use App\Mail\VerificationEmail;
 use Helper;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Http\Request;
@@ -71,6 +72,10 @@ class User extends Authenticatable implements MustVerifyEmail
         });
     }
 
+    /**
+     * @param $user
+     * @return mixed
+     */
     public static function createIfDoesNotExists($user)
     {
         if (!$user->exists) {
@@ -103,11 +108,17 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsToMany('App\Group', 'user_groups')->withTimestamps();
     }
 
+    /**
+     * @return bool
+     */
     public function isAdmin()
     {
         return in_array('admin', $this->roles()->pluck('roles.name')->toArray());
     }
 
+    /**
+     * @return BelongsToMany
+     */
     public function roles()
     {
         return $this->belongsToMany('App\Role', 'user_roles')->withTimestamps();
@@ -115,7 +126,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function notOwnerNorInvited($project)
     {
-        return auth()->user()->isNot($project->created_by()) && !in_array($project->id, auth()->user()->invites()->pluck('project_id')->toArray());
+        return auth()->user()->isNot($project->created_by()) && !in_array($project->id, auth()->user()->invites()->pluck('project_id')->toArray() ) ;
     }
 
     public function invites()
