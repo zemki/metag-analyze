@@ -29,7 +29,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'authorised', 'verif
 });
 
 
-Route::group(['middleware' => ['auth', 'authorised', 'verified']], function () {
+Route::group(['middleware' => ['auth', 'authorised', 'verified','LoggedUser']], function () {
     Route::get('/', 'ProjectController@index');
     /**
      * Project Routes
@@ -65,7 +65,7 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified']], function () {
      * User Routes
      */
     Route::post('/users', 'UserController@store')->name('users');
+    Route::post('/users/password/reset', 'Auth\ForgotPasswordController@SendsPasswordResetEmailFromCasesList');
     Route::post('/users/exist', 'UserController@userExists');
-    Route::post('/cases/exist', 'CaseController@caseExists');
 });
 

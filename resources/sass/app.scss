@@ -4,7 +4,6 @@
 @import '~bootstrap/scss/bootstrap';
 @import 'typos';
 @import 'variables';
-@import 'bulma_custom';
 @import 'bulma';
 @import "~tailwindcss/base";
 
@@ -22,7 +21,7 @@
 a {
   color: $text-blue;
   cursor: pointer;
-  text-decoration: none;
+  text-decoration: none !important;
 }
 
 .inputcreatecase{

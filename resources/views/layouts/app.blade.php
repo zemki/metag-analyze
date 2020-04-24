@@ -1,17 +1,16 @@
 @include('layouts.header')
 <body>
-<div id="app">
+<div id="app" class="w-full">
     @include('layouts.nav')
 
-    <main class="py-4 container mx-auto mx-auto px-40">
         @if(session()->has('message') || !empty($message))
             <div class="bg-blue-100 border-t border-b border-blue-500 text-blue-700 px-4 py-3" role="alert">
                 <p class="font-bold">{{session()->get('message') ? session()->get('message') : $message}}</p>
             </div>
         @endif
-
+        <div class="w-2/3 mx-auto pt-2">
         @yield('content')
-    </main>
+        </div>
 </div>
 
 @yield('pagespecificscripts')
