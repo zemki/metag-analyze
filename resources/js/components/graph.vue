@@ -11,21 +11,33 @@
         name: "graph",
         created() {
             let self = this;
+
+            this.avdata = this.reindex_array_keys(this.availabledata);
+
             this.preparedata();
             setTimeout(function () {
                 self.setChartTheme();
                 self.drawChart();
                 self.$forceUpdate();
-            }, 300);
+            }, 250);
 
         },
         data() {
             return {
+                avdata: [],
                 realdata: [],
                 graphid: Math.floor((Math.random() * 100) + 1)
             }
         },
         methods: {
+            reindex_array_keys: function(array){
+        var temp = [];
+        let start = 0;
+        for(var i in array){
+            temp[start++] = array[i];
+        }
+        return temp;
+    },
             setChartTheme: function () {
                 Highcharts.theme = {
                     colors: ['#058DC7', '#50B432', '#ED561B', '#DDDF00', '#24CBE5', '#64E572',
@@ -57,10 +69,9 @@
             },
             preparedata: function () {
                 let self = this;
-                console.log(this.realdata);
-                if (this.title == "" || !this.title) this.title = "Media";
-                _.forEach(this.availabledata, function (o) {
-                    self.realdata.push({name: o, data: []});
+
+                _.forEach(this.avdata, function (o) {
+                    self.realdata.push({name: o.toString().trim(), data: []});
                 });
 
                 _.forEach(this.info, function (data, key) {
@@ -78,7 +89,7 @@
                             split[1] -= 1;
                             let end = Date.UTC(...split);
 
-                            rl.data.push({start: start, end: end, name: (data['value'] != "") ? data['value'] : ""});
+                            rl.data.push({start: start, end: end, name: (data['value'] != "") ? data['value'].toString().trim() : ""});
 
                         }
                     });
@@ -93,7 +104,6 @@
             },
             drawChart: function () {
                 let self = this;
-                console.log(this.info);
                 Highcharts.ganttChart('chart' + self.graphid, {
                     plotOptions: {
                         column: {
@@ -112,7 +122,8 @@
                         tickInterval: 1000 * 60 * 60 * 24, // Day,
                     },
                     yAxis: {
-                        categories: self.availabledata,
+
+                        categories: self.avdata,
                         breaks: [{
                             breakSize: 0.1,
                             from: 0,

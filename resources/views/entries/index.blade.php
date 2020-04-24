@@ -2,6 +2,7 @@
 
 @section('content')
     <graph :info="{{json_encode($entries['media'])}}"
+           title="Media"
            :availabledata="{{json_encode($entries['availablemedia'])}}"
     ></graph>
 
