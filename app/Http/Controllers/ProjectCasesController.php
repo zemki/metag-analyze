@@ -24,7 +24,7 @@ class ProjectCasesController extends Controller
     public function show(Project $project, Cases $case)
     {
 
-        if (auth()->user()->notOwnerNorInvited($project) && !auth()->user()->isAdmin()) {
+        if (auth()->user()->notOwnerNorInvited($project)) {
             abort(403);
         }
         list($mediaValues, $availableMedia) = Cases::getMediaValues($case);
