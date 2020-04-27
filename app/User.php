@@ -49,7 +49,7 @@ class User extends Authenticatable implements MustVerifyEmail
                     // detach the user
                     // and assign a new created_by/owner of the project
                     if ($project->invited()->count() > 0) {
-                        $newOwner = $project->invites()->random();
+                        $newOwner = $project->invited()->random();
                         $project->created_by = $newOwner->id;
                     } else {
                         foreach ($project->cases as $case) {
