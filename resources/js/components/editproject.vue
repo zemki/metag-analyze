@@ -130,8 +130,7 @@
         watch: {
             'projectData.ninputs': function (newVal, oldVal) {
                 if (!this.firstLoading) {
-                    console.log(this.firstLoading);
-                    console.log("token number watcher fired");
+
                     if (newVal < 0 || oldVal < 0) {
                         newVal = 0;
                         oldVal = 0;
@@ -162,7 +161,6 @@
                         }
                     }
                 }else{
-                    console.log("not fired.")
                 }
             }
         },
@@ -178,7 +176,6 @@
                     config: window.inputs,
                     response: "",
                     media: "",
-                    config: window.inputs,
                 }
             }
         },
@@ -191,14 +188,12 @@
                 this.projectData.inputs = JSON.parse(this.project.inputs);
                 this.projectData.ninputs = JSON.parse(this.project.inputs, true).length;
 
-
-
-
                 this.projectData.name = this.project.name;
                 this.projectData.description = this.project.description;
                 this.projectData.media = this.project.media;
                 this.projectData.media.push("");
                 let self = this;
+
                 setTimeout(function () {
                     self.firstLoading = false;
                 }, 1000);

@@ -30,10 +30,18 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'authorised', 'verif
 
 
 Route::group(['middleware' => ['auth', 'authorised', 'verified','LoggedUser']], function () {
-    Route::get('/', 'ProjectController@index');
+
+    /**
+     * Backend Entry routes
+     */
+    Route::post('/cases/{case}/entries','EntryController@store');
+    Route::delete('/cases/{case}/entries/{entry}','EntryController@destroy');
+
+
     /**
      * Project Routes
      */
+    Route::get('/', 'ProjectController@index');
     Route::get('/home', 'ProjectController@index');
     Route::get('/projects', 'ProjectController@index');
     Route::post('/projects', 'ProjectController@store')->name('projects');

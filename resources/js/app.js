@@ -7,6 +7,7 @@
 require('./bootstrap');
 import "vue-material-design-icons/styles.css"
 import Buefy from 'buefy'
+import moment from 'moment'
 
 window.Vue = require('vue');
 
@@ -25,7 +26,6 @@ require('highcharts/modules/gantt')(Highcharts);
 
 // const files = require.context('./', true, /\.vue$/i);
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default));
-
 
 
 Vue.config.devtools = true;
@@ -254,6 +254,7 @@ window.app = new Vue({
         mainNotification: true,
         lastPressedKey: "",
         selectedEntriesData: [],
+        showentriestable: false,
         errormessages: {
             namemissing: "name is required. <br>",
             inputnamemissing: "input name is required. <br>",
@@ -270,7 +271,8 @@ window.app = new Vue({
                 message: "",
                 value: "",
             },
-            minDate: new Date()
+            minDate: new Date(),
+            backendcase: false
 
         },
         newproject: {
@@ -281,6 +283,17 @@ window.app = new Vue({
             response: "",
             description: "",
             media: [""]
+        },
+        newentry: {
+            case_id: 0,
+            inputs: {},
+            modal: false,
+            data: {
+                start: new Date(),
+                end: new Date(new Date().setMinutes(new Date().getMinutes() + 1)),
+                media_id: "",
+                inputs: {}
+            }
         },
         registration: {
             password: null,
@@ -316,6 +329,112 @@ window.app = new Vue({
         }
     },
     methods: {
+        confirmdelete: function (case_id,entry_id,lastentry) {
+
+            let confirmDelete = this.$buefy.dialog.confirm(
+                {
+                    title: 'Confirm Delete',
+                    message: '<div class="bg-red-600 p-2 text-white text-center">You re about to delete this Entry.<br><span class="has-text-weight-bold">Continue?</span></div>',
+                    cancelText: 'Cancel',
+                    confirmText: 'YES delete Entry',
+                    hasIcon: true,
+                    type: 'is-danger',
+                    onConfirm: () => this.deleteEntry(case_id,entry_id,lastentry)
+                }
+            );
+        },
+        deleteEntry: function (case_id,entry_id,lastentry) {
+            this.loading = true;
+            this.message = "";
+            let self = this;
+
+            window.axios.delete(window.location.origin + this.productionUrl + '/cases/' + case_id + '/entries/' +entry_id)
+                .then(response => {
+                    setTimeout(function () {
+                        self.loading = false;
+                        self.$buefy.snackbar.open("Entry deleted");
+
+                        if(!lastentry)window.location.reload();
+                        else  window.location.href = '../';
+
+                    }, 500);
+
+                }).catch(function (error) {
+
+                self.loading = false;
+                self.$buefy.snackbar.open("There it was an error during the request - refresh page and try again");
+            });
+        },
+        entrySaveAndClose() {
+
+            if (this.MandatoryNewEntry()) {
+                this.$buefy.snackbar.open(this.trans("Check your mandatory entries."));
+                return
+            }
+
+            let self = this;
+            window.axios.post('/cases/' + this.newentry.case_id + '/entries', {
+                case_id: this.newentry.case_id,
+                inputs: this.newentry.data.inputs,
+                begin: moment(this.newentry.data.start).format('YYYY-MM-DD HH:mm:ss.SSSSSS'),
+                end: moment(this.newentry.data.end).format('YYYY-MM-DD HH:mm:ss.SSSSSS'),
+                media_id: this.newentry.data.media_id
+            }).then(response => {
+
+                self.$buefy.snackbar.open(self.trans("Entry successfully sent."));
+
+            }).catch(function (error) {
+
+                self.$buefy.snackbar.open(self.trans("There it was an error during the request - refresh page and try again"));
+            });
+
+
+            this.toggleModal();
+            this.newentry.data = {};
+        },
+        entrySaveAndNewEntry() {
+
+            if (this.MandatoryNewEntry()) {
+                this.$buefy.snackbar.open(this.trans("Check your mandatory entries."));
+                return
+            }
+
+
+            let self = this;
+            window.axios.post('/cases/' + this.newentry.case_id + '/entries', {
+                case_id: this.newentry.case_id,
+                inputs: this.newentry.data.inputs,
+                begin: moment(this.newentry.data.start).format('YYYY-MM-DD HH:mm:ss.SSSSSS'),
+                end: moment(this.newentry.data.end).format('YYYY-MM-DD HH:mm:ss.SSSSSS'),
+                media_id: this.newentry.data.media_id
+            }).then(response => {
+
+                self.$buefy.snackbar.open(self.trans("Entry successfully sent."));
+                self.newentry.data.inputs = {};
+                self.newentry.data.media_id = "";
+                self.newentry.data.start = new Date();
+                self.newentry.data.end = new Date(new Date().setMinutes(new Date().getMinutes() + 1));
+            }).catch(function (error) {
+                self.$buefy.snackbar.open(self.trans("There it was an error during the request - double check your data or contact the support."));
+            });
+        },
+        MandatoryNewEntry() {
+            let self = this;
+            return (_.isEmpty(self.newentry.data.media_id) || self.newentry.data.start === "" || self.newentry.data.end === "");
+
+        },
+        toggleModal(id = "", inputs = {}) {
+            this.newentry.case_id = id;
+            this.newentry.inputs = inputs;
+            this.newentry.modal = !this.newentry.modal
+            const body = document.querySelector('body')
+            const modal = document.querySelector('.modal')
+            modal.classList.toggle('opacity-0')
+            modal.classList.toggle('pointer-events-none')
+            body.classList.toggle('modal-active')
+
+
+        },
         checkPassword() {
             this.registration.password_length = this.registration.password.length;
             const special_chars = /[ !@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;

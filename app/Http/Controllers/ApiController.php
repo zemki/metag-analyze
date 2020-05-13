@@ -78,9 +78,14 @@ class ApiController extends Controller
             if (!$userHasACase)
             {
                 $response = 'No cases';
-                return response()->json(['case' => $response], 200);
+                return response()->json(['case' => $response], 499);
             } else
             {
+                if ($userHasACase->isBackend())
+                {
+                    $response = 'No cases';
+                    return response()->json(['case' => $response], 499);
+                }
 
                 //User::saveDeviceId($request);
                 $lastDayPos = strpos($userHasACase->duration, "lastDay:");

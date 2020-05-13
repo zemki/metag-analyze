@@ -24,6 +24,15 @@ a {
   text-decoration: none !important;
 }
 
+// modal
+.modal {
+  transition: opacity 0.25s ease;
+}
+body.modal-active {
+  overflow-x: hidden;
+  overflow-y: visible !important;
+}
+
 .inputcreatecase{
   box-shadow: none;
     outline: 0;
