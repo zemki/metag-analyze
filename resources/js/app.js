@@ -373,7 +373,7 @@ window.app = new Vue({
             }
 
             let self = this;
-            window.axios.post('/cases/' + this.newentry.case_id + '/entries', {
+            window.axios.post(window.location.origin + this.productionUrl +'/cases/' + this.newentry.case_id + '/entries', {
                 case_id: this.newentry.case_id,
                 inputs: this.newentry.data.inputs,
                 begin: moment(this.newentry.data.start).format('YYYY-MM-DD HH:mm:ss.SSSSSS'),
@@ -401,7 +401,7 @@ window.app = new Vue({
 
 
             let self = this;
-            window.axios.post('/cases/' + this.newentry.case_id + '/entries', {
+            window.axios.post(window.location.origin + this.productionUrl +'/cases/' + this.newentry.case_id + '/entries', {
                 case_id: this.newentry.case_id,
                 inputs: this.newentry.data.inputs,
                 begin: moment(this.newentry.data.start).format('YYYY-MM-DD HH:mm:ss.SSSSSS'),
