@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Cases;
+use App\Entry;
 use App\Exports\CasesExport;
 use App\Media;
 use App\Project;
 use App\User;
+use Carbon\Carbon;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Redirector;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -30,6 +31,12 @@ class ProjectCasesController extends Controller
         }
         list($mediaValues, $availableMedia) = Cases::getMediaValues($case);
         list($availableInputs, $data) = Cases::getInputValues($case, $data);
+        $data['entries']['list'] = Entry::where('case_id', '=', $case->id)->get();
+        foreach ($data['entries']['list'] as $entry)
+        {
+            $entry['inputs'] = json_decode($entry['inputs']);
+            $entry['media_id'] = Media::firstWhere('id',$entry['media_id'])->name;
+        }
         $data['entries']['media'] = $mediaValues;
         $data['entries']['availablemedia'] = $availableMedia;
         //$data['entries']['inputs'] = $inputValues;
@@ -70,21 +77,27 @@ class ProjectCasesController extends Controller
      * @return RedirectResponse|Redirector
      * @throws AuthorizationException
      */
-    public function store(Project $project, Request $request)
+    public function store(Project $project)
     {
         $this->authorize('update', $project);
-        if (request('name') == "" || request('email') == "" || request('duration') == "")
+        if (request('name') == "")
         {
             return redirect($project->path() . '/cases/new')->with(['message' => __('Please fill all the required inputs.')]);
         }
         request()->validate(
-            ['name' => 'required'],
-            ['email' => 'required'],
-            ['duration' => 'required']
+            ['name' => 'required']
         );
-        $email = request('email');
-        $case = $project->addCase(request('name'), request('duration'));
-        $user = User::createIfDoesNotExists(User::firstOrNew(['email' => $email]));
+
+        if (request('backendCase'))
+        {
+            $user = auth()->user();
+            $case = $project->addCase(request('name'), 'value:0|days:0|lastDay:' . Carbon::now()->subDay());
+        } else
+        {
+            $email = request('email');
+            $case = $project->addCase(request('name'), request('duration'));
+            $user = User::createIfDoesNotExists(User::firstOrNew(['email' => $email]));
+        }
         $case->addUser($user);
         return redirect($project->path())->with(['message' => $user->email . ' has been invited.']);
     }

@@ -49,15 +49,17 @@ class EntryController extends Controller
             self::MEDIA_ID => self::REQUIRED,
             self::INPUTS => 'nullable',
         ]);
-        if (is_numeric($attributes[self::MEDIA_ID])) {
+
+        if (is_numeric($attributes[self::MEDIA_ID]))
+        {
 
             $attributes[self::INPUTS] = json_encode($attributes[self::INPUTS]);
-            $entry = Entry::create($attributes);
-        } else {
+        } else
+        {
             $attributes[self::MEDIA_ID] = Media::firstOrCreate(['name' => $attributes[self::MEDIA_ID]])->id;
             $attributes[self::INPUTS] = json_encode($attributes[self::INPUTS]);
-            $entry = Entry::create($attributes);
         }
+        $entry = Entry::create($attributes);
         return response(['id' => $entry->id], 200);
     }
 
@@ -72,7 +74,8 @@ class EntryController extends Controller
             self::MEDIA_ID => self::REQUIRED,
             self::INPUTS => 'nullable',
         ]);
-        if (is_string($attributes[self::MEDIA_ID])) {
+        if (is_string($attributes[self::MEDIA_ID]))
+        {
             $attributes[self::MEDIA_ID] = Media::firstOrCreate(['name' => $attributes[self::MEDIA_ID]])->id;
         }
         $attributes[self::INPUTS] = json_encode($attributes[self::INPUTS]);
@@ -101,9 +104,11 @@ class EntryController extends Controller
      */
     public function destroy(Cases $case, Entry $entry)
     {
-        try {
+        try
+        {
             $entry->delete();
-        } catch (Exception $error) {
+        } catch (Exception $error)
+        {
             echo 'Caught exception: ', $error->getMessage(), "\n";
         }
         return response("entry deleted", 200);

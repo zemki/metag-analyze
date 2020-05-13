@@ -247,4 +247,9 @@ class Cases extends Model
     {
         return Helper::get_string_between($this->duration, 'firstDay:', '|');
     }
+
+    public function isBackend(): bool
+    {
+        return (Helper::get_string_between($this->duration, 'value:', '|') == 0);
+    }
 }
