@@ -94,4 +94,11 @@ class AdminController extends Controller
         $this->notify(new \App\Notifications\CustomVerifyEmail);
     }
 
+    public function listForNewsletter()
+    {
+
+        $users = User::join('users_profiles', 'users.id', '=', 'user_id')->where('newsletter', '=', 2)->get();
+        return view('admin.newsletter', ['users' => $users]);
+    }
+
 }
