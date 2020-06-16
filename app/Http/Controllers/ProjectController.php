@@ -30,15 +30,7 @@ class ProjectController extends Controller
 
         $data['projects'] = auth()->user()->projects()->get();
         $data['invites'] = auth()->user()->invites()->get();
-
-        if (auth()->user()->profile()->exists())
-        {
-            $data['newsletter'] = auth()->user()->profile->newsletter === config('enums.newsletter_status.NOT DECIDED');
-        } else
-        {
-            $profile = auth()->user()->addProfile(auth()->user());
-            $data['newsletter'] = auth()->user()->profile->newsletter === config('enums.newsletter_status.NOT DECIDED');
-        }
+        $data = $this->checkNewsletter($data);
 
         return view('projects.index', $data);
     }
@@ -95,7 +87,7 @@ class ProjectController extends Controller
         $data['projects'] = auth()->user()->projects()->get();
         $data['invites'] = auth()->user()->invites()->get();
         $data[self::MESSAGE] = "project created!";
-
+        $data = $this->checkNewsletter($data);
         return view('projects.index', $data);
     }
 
@@ -187,5 +179,22 @@ class ProjectController extends Controller
         }
         $headings = Project::getProjectInputHeadings($project);
         return (new AllCasesExport($project->id, $headings))->download('cases from ' . $project->name . ' project.xlsx');
+    }
+
+    /**
+     * @param $data
+     * @return mixed
+     */
+    private function checkNewsletter($data)
+    {
+        if (auth()->user()->profile()->exists())
+        {
+            $data['newsletter'] = auth()->user()->profile->newsletter === config('enums.newsletter_status.NOT DECIDED');
+        } else
+        {
+            $profile = auth()->user()->addProfile(auth()->user());
+            $data['newsletter'] = auth()->user()->profile->newsletter === config('enums.newsletter_status.NOT DECIDED');
+        }
+        return $data;
     }
 }
