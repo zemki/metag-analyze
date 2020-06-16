@@ -16,12 +16,12 @@ class CreateUsersProfilesTable extends Migration
         Schema::create('users_profiles', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('user_id')->unsigned()->references('id')->on('users')->onDelete('cascade');
-            $table->string('name', 255);
-            $table->string('address', 255);
-            $table->date('birthday');
-            $table->string('phonenumber1', 190);
-            $table->string('phonenumber2', 190);
-            $table->string('workaddress', 255);
+            $table->string('name', 255)->nullable();
+            $table->string('address', 255)->nullable();
+            $table->date('birthday')->nullable();
+            $table->string('phonenumber1', 190)->nullable();
+            $table->string('phonenumber2', 190)->nullable();
+            $table->string('workaddress', 255)->nullable();
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users');

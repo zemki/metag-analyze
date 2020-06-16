@@ -329,6 +329,47 @@ window.app = new Vue({
         }
     },
     methods: {
+        iWantNewsletter(will)
+        {
+            console.log(will)
+            let subscribed = (will ===
+                'true');
+            console.log(subscribed)
+            let self = this;
+            axios.post(
+                'users/subscribe',
+                {"subscribed":subscribed}
+            ).
+                then(
+                    response =>
+                    {
+                    console.log(response);
+                    self.$buefy.snackbar.open(
+                        response.data.message);
+
+                    let newsDiv = document.querySelector(".newsletter");
+
+
+                    newsDiv.classList.remove('opacity-100');
+                    newsDiv.classList.add('opacity-0');
+                    setTimeout(() => { newsDiv.classList.add('hidden') }, 500);
+
+                    self.$forceUpdate();
+
+
+                    }).
+                catch(
+                    function(error)
+                    {
+
+                    console.log(
+                        error);
+
+                    self.$buefy.snackbar.open(
+                        'There it was an error during the request - refresh page and try again');
+                    });
+
+        },
         confirmdelete: function (case_id,entry_id,lastentry) {
 
             let confirmDelete = this.$buefy.dialog.confirm(
