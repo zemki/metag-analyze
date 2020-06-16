@@ -68,6 +68,14 @@
                     </div>
                 @endif
                 <div class="text-center align-middle">
+                    <label class="w-full block font-bold">
+                        <input class="mr-2 leading-tight" type="checkbox" checked name="newsletter">
+                        <span class="text-sm">
+                            Send me your newsletter!
+                        </span>
+                    </label>
+
+                    <p class="block">{!!__('By registering you confirmed that you read the <a class="text-blue-500" target="_blank" href="https://mesoftware.org/index.php/datenschutzerklaerung-metag/" title="Privacy Policy">Privacy Policy</a>')!!}</p>
 
                     <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l"
                             :class="{'opacity-50 cursor-not-allowed opacity-75' : !this.registration.valid_password}"

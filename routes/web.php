@@ -10,7 +10,6 @@
 |
 */
 Auth::routes(['verify' => true]);
-Auth::routes();
 
 Route::get('/password/set', 'Auth\VerificationController@showresetpassword');
 Route::get('/setpassword', 'Auth\VerificationController@showresetpassword');
@@ -75,5 +74,7 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified','LoggedUser']], 
     Route::post('/users', 'UserController@store')->name('users');
     Route::post('/users/password/reset', 'Auth\ForgotPasswordController@SendsPasswordResetEmailFromCasesList');
     Route::post('/users/exist', 'UserController@userExists');
+    Route::post('/users/subscribe', 'UserController@addToNewsletter');
+
 });
 

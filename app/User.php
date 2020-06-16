@@ -134,11 +134,6 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsToMany(Project::class, 'user_projects');
     }
 
-    public function profile()
-    {
-        return $this->hasOne(Profile::class);
-    }
-
     public function case()
     {
         return $this->hasMany(Cases::class, 'user_id');
@@ -177,6 +172,22 @@ class User extends Authenticatable implements MustVerifyEmail
     public function projects()
     {
         return $this->hasMany(Project::class, 'created_by');
+    }
+
+    public function profile()
+    {
+        return $this->hasOne(Profile::class);
+    }
+
+    /**
+     *
+     */
+    public function addProfile($user)
+    {
+        $profile = new Profile();
+        $profile->user_id = $user->id;
+        $profile->save();
+        return $profile;
     }
 
     /**

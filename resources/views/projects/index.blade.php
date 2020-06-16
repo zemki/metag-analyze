@@ -1,6 +1,19 @@
 @extends('layouts.app')
 
 @section('content')
+    @if($newsletter)
+        <div class="w-full h-auto text-center text-gray-900 bg-green-400 p-4 newsletter transition-all duration-500 ease-in-out opacity-100">
+            <p class="w-full">{{__('Would you be interested in receiving e-mails about future features and updates from MeSoftware?')}}</p>
+            <button @click="iWantNewsletter('true')" class="sm:m-2 md:mx-1 shadow sm:block sm:w-full md:w-auto md:inline bg-purple-500 hover:bg-purple-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded" type="button">
+                {!!  __('<strong>I want</strong> to receive emails from MeSoftware') !!}
+            </button>
+            <button @click="iWantNewsletter('false')" class="sm:m-2 md:mx-1 shadow sm:block sm:w-full md:w-auto md:inline bg-purple-500 hover:bg-purple-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded" type="button">
+                {!!  __(' <strong>I don\'t want</strong> to receive emails from MeSoftware')!!}
+            </button>
+            <p class="block text-blue-500"><a href="https://mesoftware.org/index.php/datenschutzerklaerung-metag/" title="Mesort Privacy Policy" target="_blank">{{__('Privacy Policy')}}</a></p>
+        </div>
+    @endif
+
     <div class="mx-auto w-full text-center uppercase font-bold p-2">
         <h4 class="text-4xl font-serif">{{ __("Project you created") }} </h4>
     </div>

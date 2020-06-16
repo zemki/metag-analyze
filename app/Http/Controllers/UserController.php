@@ -15,6 +15,7 @@ use Illuminate\Http\Response;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
+use mysql_xdevapi\Exception;
 
 class UserController extends Controller
 {
@@ -137,9 +138,41 @@ class UserController extends Controller
         return response()->json(!empty(User::where(self::EMAIL, '=', $request[self::EMAIL])->first()), 200);
     }
 
-
+    /**
+     *
+     */
     public function sendEmailVerificationNotification()
     {
         $this->notify(new \App\Notifications\CustomVerifyEmail);
+    }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function addToNewsletter(Request $request)
+    {
+        $subscribe = $request->input('subscribed') ? config('enums.newsletter_status.SUBSCRIBED') : config('enums.newsletter_status.NOT SUBSCRIBED');
+        try
+        {
+            if(auth()->user()->profile()->exists())
+            {
+                auth()->user()->profile->newsletter = $subscribe;
+                auth()->user()->profile->save();
+            }else{
+                $profile = auth()->user()->addProfile(auth()->user());
+                $profile->newsletter = $subscribe;
+                $profile->save();
+            }
+            return response()->json(['message' => 'Your preference was saved!','r' => $subscribe], 200);
+
+        }catch (Exception $exception)
+        {
+            return response()->json(['message' => 'A problem occurred, contact the administrator.'], 500);
+
+        }
+
+
+
     }
 }

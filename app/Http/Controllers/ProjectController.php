@@ -30,6 +30,16 @@ class ProjectController extends Controller
 
         $data['projects'] = auth()->user()->projects()->get();
         $data['invites'] = auth()->user()->invites()->get();
+
+        if (auth()->user()->profile()->exists())
+        {
+            $data['newsletter'] = auth()->user()->profile->newsletter === config('enums.newsletter_status.NOT DECIDED');
+        } else
+        {
+            $profile = auth()->user()->addProfile(auth()->user());
+            $data['newsletter'] = auth()->user()->profile->newsletter === config('enums.newsletter_status.NOT DECIDED');
+        }
+
         return view('projects.index', $data);
     }
 
