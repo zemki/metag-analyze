@@ -330,7 +330,7 @@ window.app = new Vue({
     },
     methods: {
         iWantNewsletter(will)
-        {
+        { 
             console.log(will)
             let subscribed = (will ===
                 'true');
