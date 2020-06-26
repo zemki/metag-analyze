@@ -2,26 +2,24 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="01efc22b-0816-4e0a-8210-fcb64f4272cb" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/config/enums.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/database/migrations/2020_06_02_173558_add_newsletter_to_user_profiles.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/metag_analyze.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/metag_analyze.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/php.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/php.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/views/projects/addentry.modal.project.blade.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Exceptions/Handler.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Exceptions/Handler.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/ProjectController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/ProjectController.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/UserController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/UserController.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Profile.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Profile.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/User.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/User.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/composer.json" beforeDir="false" afterPath="$PROJECT_DIR$/composer.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/composer.lock" beforeDir="false" afterPath="$PROJECT_DIR$/composer.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/migrations/2018_10_04_145119_create_users_profiles_table.php" beforeDir="false" afterPath="$PROJECT_DIR$/database/migrations/2018_10_04_145119_create_users_profiles_table.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Cases.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Cases.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Entry.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Entry.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/ProjectCasesController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/ProjectCasesController.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/public/css/app.css" beforeDir="false" afterPath="$PROJECT_DIR$/public/css/app.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/public/js/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/app.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/public/js/vendor.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/vendor.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/public/mix-manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/public/mix-manifest.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/vendor/telescope/app-dark.css" beforeDir="false" afterPath="$PROJECT_DIR$/public/vendor/telescope/app-dark.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/vendor/telescope/app.css" beforeDir="false" afterPath="$PROJECT_DIR$/public/vendor/telescope/app.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/vendor/telescope/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/vendor/telescope/app.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/vendor/telescope/mix-manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/public/vendor/telescope/mix-manifest.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/resources/js/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/resources/js/app.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/auth/register.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/auth/register.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/projects/index.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/projects/index.blade.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/js/components/graph.vue" beforeDir="false" afterPath="$PROJECT_DIR$/resources/js/components/graph.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/views/entries/index.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/entries/index.blade.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/views/projects/show.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/projects/show.blade.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/routes/web.php" beforeDir="false" afterPath="$PROJECT_DIR$/routes/web.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -47,6 +45,9 @@
     <layout place="tools.popupnpm">
       <scroll-view-position x="0" y="0" />
     </layout>
+  </component>
+  <component name="PackageJsonUpdateNotifier">
+    <dismissed value="$PROJECT_DIR$/package.json" />
   </component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="PHP 7.3 (1)">
     <include_path>
@@ -214,7 +215,7 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$/config" />
     <property name="nodejs_package_manager_path" value="yarn" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
-    <property name="settings.editor.selected.configurable" value="com.laravel_idea.plugin.blade.c.a" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -303,6 +304,8 @@
       <workItem from="1591800972570" duration="1160000" />
       <workItem from="1592292917712" duration="144000" />
       <workItem from="1592293705090" duration="2229000" />
+      <workItem from="1592316377223" duration="1460000" />
+      <workItem from="1593159648195" duration="12981000" />
     </task>
     <servers />
   </component>
@@ -330,48 +333,50 @@
       <screen x="0" y="0" width="2048" height="1280" />
     </state>
     <state x="906" y="571" key="Create Model/65.-1080.1920.1080/0.0.2048.1280@0.0.2048.1280" timestamp="1590659957449" />
-    <state width="2006" height="177" key="GridCell.Tab.0.bottom" timestamp="1589358554320">
+    <state width="2006" height="382" key="GridCell.Tab.0.bottom" timestamp="1593173722199">
       <screen x="0" y="0" width="2048" height="1280" />
     </state>
-    <state width="2006" height="177" key="GridCell.Tab.0.bottom/0.0.2048.1280@0.0.2048.1280" timestamp="1589358554320" />
-    <state width="2006" height="177" key="GridCell.Tab.0.center" timestamp="1589358554318">
+    <state width="2006" height="382" key="GridCell.Tab.0.bottom/0.0.2048.1280@0.0.2048.1280" timestamp="1593173722199" />
+    <state width="2006" height="382" key="GridCell.Tab.0.center" timestamp="1593173722198">
       <screen x="0" y="0" width="2048" height="1280" />
     </state>
-    <state width="2006" height="177" key="GridCell.Tab.0.center/0.0.2048.1280@0.0.2048.1280" timestamp="1589358554318" />
-    <state width="2006" height="177" key="GridCell.Tab.0.left" timestamp="1589358554317">
+    <state width="2006" height="382" key="GridCell.Tab.0.center/0.0.2048.1280@0.0.2048.1280" timestamp="1593173722198" />
+    <state width="2006" height="382" key="GridCell.Tab.0.left" timestamp="1593173722197">
       <screen x="0" y="0" width="2048" height="1280" />
     </state>
-    <state width="2006" height="177" key="GridCell.Tab.0.left/0.0.2048.1280@0.0.2048.1280" timestamp="1589358554317" />
-    <state width="2006" height="177" key="GridCell.Tab.0.right" timestamp="1589358554319">
+    <state width="2006" height="382" key="GridCell.Tab.0.left/0.0.2048.1280@0.0.2048.1280" timestamp="1593173722197" />
+    <state width="2006" height="382" key="GridCell.Tab.0.right" timestamp="1593173722198">
       <screen x="0" y="0" width="2048" height="1280" />
     </state>
-    <state width="2006" height="177" key="GridCell.Tab.0.right/0.0.2048.1280@0.0.2048.1280" timestamp="1589358554319" />
-    <state x="525" y="279" width="1092" height="722" key="SettingsEditor" timestamp="1590656096414">
+    <state width="2006" height="382" key="GridCell.Tab.0.right/0.0.2048.1280@0.0.2048.1280" timestamp="1593173722198" />
+    <state x="525" y="279" width="1092" height="722" key="SettingsEditor" timestamp="1592326672364">
       <screen x="0" y="0" width="2048" height="1280" />
     </state>
-    <state x="525" y="279" key="SettingsEditor/0.0.2048.1280@0.0.2048.1280" timestamp="1589214940057" />
+    <state x="525" y="279" key="SettingsEditor/0.0.2048.1280@0.0.2048.1280" timestamp="1592326672364" />
     <state x="525" y="279" key="SettingsEditor/128.-1080.1920.1080/0.0.2048.1280@0.0.2048.1280" timestamp="1588071656538" />
     <state x="525" y="279" width="1092" height="722" key="SettingsEditor/65.-1080.1920.1080/0.0.2048.1280@0.0.2048.1280" timestamp="1590656096414" />
-    <state x="754" y="373" width="597" height="535" key="StructurePopup" timestamp="1589388356075">
+    <state x="754" y="373" width="597" height="535" key="StructurePopup" timestamp="1593174379671">
       <screen x="0" y="0" width="2048" height="1280" />
     </state>
-    <state x="754" y="373" width="597" height="535" key="StructurePopup/0.0.2048.1280@0.0.2048.1280" timestamp="1589388356075" />
-    <state x="799" y="561" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1589210830643">
-      <screen x="0" y="0" width="2048" height="1280" />
+    <state x="754" y="373" width="597" height="535" key="StructurePopup/0.0.2048.1280@0.0.2048.1280" timestamp="1593174379671" />
+    <state x="799" y="574" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1593160989716">
+      <screen x="0" y="23" width="2048" height="1257" />
     </state>
     <state x="799" y="561" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.2048.1280@0.0.2048.1280" timestamp="1589210830643" />
-    <state x="148" y="105" width="1217" height="1117" key="find.popup" timestamp="1586257079838">
+    <state x="799" y="574" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.23.2048.1257@0.23.2048.1257" timestamp="1593160989716" />
+    <state x="148" y="167" width="1217" height="1059" key="find.popup" timestamp="1593176980087">
       <screen x="0" y="0" width="2048" height="1280" />
     </state>
-    <state x="148" y="105" width="1217" height="1117" key="find.popup/0.0.2048.1280@0.0.2048.1280" timestamp="1586257079838" />
+    <state x="148" y="167" width="1217" height="1059" key="find.popup/0.0.2048.1280@0.0.2048.1280" timestamp="1593176980087" />
     <state x="899" y="515" width="250" height="278" key="jetbrains.javascript.buildTools.run-task-popup" timestamp="1586248732783">
       <screen x="0" y="0" width="2048" height="1280" />
     </state>
     <state x="899" y="515" width="250" height="278" key="jetbrains.javascript.buildTools.run-task-popup/0.0.2048.1280@0.0.2048.1280" timestamp="1586248732783" />
-    <state x="689" y="292" width="715" height="677" key="search.everywhere.popup" timestamp="1592299540797">
+    <state x="689" y="292" width="715" height="677" key="search.everywhere.popup" timestamp="1593175259830">
       <screen x="0" y="0" width="2048" height="1280" />
     </state>
-    <state x="689" y="292" width="715" height="677" key="search.everywhere.popup/0.0.2048.1280@0.0.2048.1280" timestamp="1592299540797" />
+    <state x="689" y="292" width="715" height="677" key="search.everywhere.popup/0.0.2048.1280@0.0.2048.1280" timestamp="1593175259830" />
+    <state x="689" y="292" width="715" height="677" key="search.everywhere.popup/0.23.2048.1257@0.23.2048.1257" timestamp="1593160782855" />
     <state x="689" y="291" width="670" height="676" key="search.everywhere.popup/65.-1080.1920.1080/0.0.2048.1280@0.0.2048.1280" timestamp="1591800978695" />
   </component>
 </project>

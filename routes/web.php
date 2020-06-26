@@ -36,6 +36,7 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified','LoggedUser']], 
      * Backend Entry routes
      */
     Route::post('/cases/{case}/entries','EntryController@store');
+    Route::patch('/cases/{case}/entries/{entry}','EntryController@update');
     Route::delete('/cases/{case}/entries/{entry}','EntryController@destroy');
 
 

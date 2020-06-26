@@ -42,6 +42,8 @@ class ProjectCasesController extends Controller
         //$data['entries']['inputs'] = $inputValues;
         $data['entries']['availableinputs'] = $availableInputs;
         $data['case'] = $case;
+        $data['project'] = $project;
+
         $data['breadcrumb'] = [
             url('/') => 'Metag',
             url('/') => 'Projects',
