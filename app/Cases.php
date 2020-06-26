@@ -62,7 +62,7 @@ class Cases extends Model
 
     public function entries()
     {
-        return $this->hasMany(Entry::class, 'case_id');
+        return $this->hasMany(Entry::class, 'case_id','id');
     }
 
     /**
@@ -136,7 +136,7 @@ class Cases extends Model
             $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions[self::ONE_CHOICE]->name;
         } else if ($availableInput === self::SCALE)
         {
-            $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = [0, 1, 2, 3, 4, 5];
+            $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = ["0", "1", "2", "3", "4", "5"];
             $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions[self::SCALE]->name;
         } else if ($availableInput === "text")
         {
