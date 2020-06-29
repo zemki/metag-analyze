@@ -45,6 +45,7 @@
                             icon="calendar-today"
                             name="begin"
                             v-model="newentry.data.start"
+                            @input="newentrydateselected"
                     >
                     </b-datetimepicker>
                 </div>
