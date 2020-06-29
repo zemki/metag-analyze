@@ -44,6 +44,7 @@
                             icon="calendar-today"
                             name="begin"
                             v-model="editentry.data.start"
+                            @input="newentrydateselected('edit')"
                     >
                     </b-datetimepicker>
                 </div>

@@ -607,6 +607,27 @@ window.app = new Vue(
         },
       },
       methods: {
+        newentrydateselected(edit = '')
+        {
+          if(edit === '')
+          {
+            this.newentry.data.end =
+                new Date(
+                    new Date(
+                        this.newentry.data.start).setMinutes(
+                        new Date(
+                            this.newentry.data.start).getMinutes() +
+                        5));
+          }else{
+            this.editentry.data.end =
+                new Date(
+                    new Date(
+                        this.editentry.data.start).setMinutes(
+                        new Date(
+                            this.editentry.data.start).getMinutes() +
+                        5));
+          }
+        },
         iWantNewsletter(will)
         {
           let subscribed = (will ===
@@ -936,8 +957,7 @@ window.app = new Vue(
           end: null,
         },inputs)
         {
-          console.log(
-              entry);
+
           this.editentry.id = entry.id;
           this.editentry.case_id = entry.case_id;
           this.editentry.inputs = inputs;
