@@ -78,7 +78,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
             }
 
-            $user->profile->delete();
+            if($user->profile()->exists()) $user->profile->delete();
 
 
         });
