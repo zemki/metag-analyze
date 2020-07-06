@@ -21,7 +21,7 @@ class Project extends Model
 
             $project->invited()->detach();
             // if the user created the project
-            if ($project->created_by === auth()->user()->id && $project->cases->count() > 0) {
+            if (!app()->runningInConsole() && $project->created_by === auth()->user()->id && $project->cases->count() > 0) {
 
                 foreach ($project->cases as $case) {
                     foreach ($case->entries as $entry) {

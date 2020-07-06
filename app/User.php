@@ -69,6 +69,18 @@ class User extends Authenticatable implements MustVerifyEmail
                 $case->delete();
             }
             $user->roles()->sync([]);
+
+            foreach ($user->actions as $action)
+            {
+                $action->user_id = null;
+                $action->save();
+                $action->delete();
+
+            }
+
+            $user->profile->delete();
+
+
         });
     }
 
@@ -137,6 +149,11 @@ class User extends Authenticatable implements MustVerifyEmail
     public function case()
     {
         return $this->hasMany(Cases::class, 'user_id');
+    }
+
+    public function actions()
+    {
+        return $this->hasMany(Action::class, 'user_id');
     }
 
     /**
