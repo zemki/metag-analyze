@@ -25,7 +25,7 @@ class Cases extends Model
         static::deleting(function ($case)
         {
 
-            if ($case->project->created_by === auth()->user()->id)
+            if (!app()->runningInConsole() && $case->project->created_by === auth()->user()->id)
             {
                 foreach ($case->entries as $entry)
                 {

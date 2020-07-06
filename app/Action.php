@@ -4,9 +4,11 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Action extends Model
 {
+    Use SoftDeletes;
     /**
      * @var array
      */
