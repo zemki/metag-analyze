@@ -1,0 +1,31 @@
+
+Vue.component(
+    'edit-project',
+    require(
+        './components/editproject.vue').default,
+);
+Vue.component(
+    'consult-entries',
+    require(
+        './components/consultentries.vue').default,
+);
+Vue.component(
+    'project-invites',
+    require(
+        './components/projectsInvites.vue').default,
+);
+Vue.component(
+    'user-table',
+    require(
+        './components/usertable.vue').default,
+);
+Vue.component(
+    'graph',
+    require(
+        './components/graph.vue').default,
+);
+Vue.component(
+    'users-in-cases',
+    require(
+        './components/users-in-cases.vue').default,
+);
