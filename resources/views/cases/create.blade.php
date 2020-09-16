@@ -2,19 +2,28 @@
 
 @section('content')
 
-    <h1 class="text-4xl font-bold font-serif block">Create a Case</h1>
+    <h1 class="text-4xl font-bold font-serif block">{{__('Create a Case')}}</h1>
 
 
-    <form method="POST" action="{{url($project->path().'/cases')}}"
-          id="addcase" autocomplete="off">
+    <form method="POST"
+          class="mx-auto"
+          action="{{url($project->path().'/cases')}}"
+          id="addcase" autocomplete="off"
+          @submit="validateCase"
+    >
         @csrf
+        <div class="block">
+            <label for="name" class="uppercase tracking-wide text-gray-700 text-base font-bold">
+                {{__('Case Name')}} *
+            </label>
+            <input type="text"
+                   class="mb-0 bg-white focus:outline-none focus:shadow-outline border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none leading-normal w-full"
+                   name="name" v-model="newcase.name">
+            <span
+                    :class="newcase.inputLength.name <= newcase.name.length ? 'text-red-600 text-xs w-auto inline-flex float-right' : 'text-xs text-gray-500 w-auto inline-flex float-right'">@{{newcase.inputLength.name - newcase.name.length}} / @{{newcase.inputLength.name}}</span>
 
-        <label for="name" class="uppercase tracking-wide text-gray-700 text-base font-bold">
-            {{__('Case Name')}} *
-        </label>
-        <input type="text"
-               class="bg-white focus:outline-none focus:shadow-outline border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none leading-normal w-full"
-               name="name">
+        </div>
+
         {!! $errors->first('name', '<p class="has-text-danger">:message</p>') !!}
 
         <div class="full flex">
@@ -98,12 +107,18 @@
             {{__('Data for backend cases can only be entered via MeTag Analyze, they are not accessible from the MeTag mobile app. They don’t have a duration setting because they can be created, filled out and consulted at any time in the backend.')}}
         </p>
 
-        <div class="text-base my-3">* {{__('required')}}</div>
+        <div class="text-base my-2">* {{__('required')}}</div>
 
 
         <button class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-black py-2 px-4 border border-blue-500 hover:border-transparent rounded">{{__('Create Case')}}</button>
 
-
+        <div class="block mt-2">
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" v-if="newcase.response != ''"
+                 v-html="newcase.response">
+                <button class="delete"
+                        @click.preventdefault="newcase.response = ''"></button>
+            </div>
+        </div>
     </form>
 
 @endsection
