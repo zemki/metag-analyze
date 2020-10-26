@@ -157,7 +157,9 @@ class ProjectController extends Controller
         }
         if(!$user->hasVerifiedEmail())
         {
+            $user->api_token = Helper::random_str(60);
             $user->password_token = Helper::random_str(60);
+            $user->save();
             Mail::to($user->email)->send(new VerificationEmail($user, $request->emailtext ? $request->emailtext : config('utilities.emailDefaultText')));
         }
         $project->invited()->syncWithoutDetaching($user->id);

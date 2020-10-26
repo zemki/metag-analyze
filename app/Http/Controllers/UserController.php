@@ -143,7 +143,7 @@ class UserController extends Controller
      */
     public function sendEmailVerificationNotification()
     {
-        $this->notify(new \App\Notifications\CustomVerifyEmail);
+        $this->notify(new \App\Notifications\VerificationEmail);
     }
 
     /**
