@@ -1316,6 +1316,8 @@ window.app = new Vue(
 
 					let self = this;
 					window.axios.post(
+							window.location.origin +
+							self.productionUrl +
 							'/projects/invite/' +
 							userToDetach.id,
 							{
