@@ -161,6 +161,8 @@ class ProjectController extends Controller
             $user->password_token = Helper::random_str(60);
             $user->save();
             Mail::to($user->email)->send(new VerificationEmail($user, $request->emailtext ? $request->emailtext : config('utilities.emailDefaultText')));
+            $role = Role::where('name', '=', 'researcher')->first();
+            $user->roles()->sync($role);
         }
         $project->invited()->syncWithoutDetaching($user->id);
         return response()->json(['user' => $user, self::MESSAGE => 'user was invited!'], 200);
