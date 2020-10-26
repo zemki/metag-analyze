@@ -30,7 +30,7 @@
             </div>
             <form method="POST" action="{{ url('password/new') }}">
                 @csrf
-                <input type="hidden" id="token" name="token" value="{{ $user->password_token }}"></input>
+                <input type="hidden" id="token" name="token" value="{{ $user->password_token }}">
                 <div class="mb-4 flex flex-wrap">
                     <label for="email"
                            class="md:w-1/3 pl-4 pt-2 pb-2 mb-0 leading-normal text-md-right">{{ __('E-Mail Address') }}</label>
@@ -50,7 +50,7 @@
                         <input id="password" type="password"
                                class="input {{ $errors->has('password') ? ' bg-red-dark' : '' }}" name="password"
                                minlength="6"
-                               required></input>
+                               required>
 
                     </div>
                 </div>

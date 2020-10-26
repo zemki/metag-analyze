@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
 class VerificationController extends Controller
@@ -58,6 +59,8 @@ class VerificationController extends Controller
         {
             return view('errors.resetpassword');
         }
+
+
         $data['user'] = $user;
         return view('auth.passwords.verify', $data);
     }
