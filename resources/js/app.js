@@ -1293,10 +1293,8 @@ window.app = new Vue(
 						e.preventDefault();
 					}
 				},
-				confirmLeaveProject: function(userToDetach,
-																			project)
+				confirmLeaveProject: function(userToDetach,project)
 				{
-
 					let confirmDelete = this.$buefy.dialog.confirm(
 							{
 								title: 'Confirm Delete',
@@ -1314,6 +1312,7 @@ window.app = new Vue(
 														 project)
 				{
 
+
 					let self = this;
 					window.axios.post(
 							window.location.origin +
@@ -1322,7 +1321,7 @@ window.app = new Vue(
 							userToDetach.id,
 							{
 								email: userToDetach.email,
-								project: project,
+								project: project
 							})
 								.then(
 										response => {

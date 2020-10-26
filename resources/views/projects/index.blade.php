@@ -109,7 +109,7 @@
 
                     <div class="" style="float:right;">
                         <a class="button is-danger text-white"
-                           @click="confirmLeaveProject({{auth()->user(),$project->id}})">{{__('Leave Project')}}</a>
+                           @click="confirmLeaveProject({{auth()->user()}},{{$project->id}})">{{__('Leave Project')}}</a>
                     </div>
                 </article>
             </div>
