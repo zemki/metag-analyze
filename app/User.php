@@ -11,7 +11,6 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Mail;
-use Validator;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -138,13 +137,20 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function notOwnerNorInvited($project)
     {
-        return auth()->user()->isNot($project->created_by()) && !in_array($project->id, auth()->user()->invites()->pluck('project_id')->toArray() ) ;
+        return auth()->user()->isNot($project->created_by()) && !in_array($project->id, auth()->user()->invites()->pluck('project_id')->toArray()) ;
+    }
+
+    public function isInvited($project)
+    {
+        return in_array($project->id, auth()->user()->invites()->pluck('project_id')->toArray());
     }
 
     public function invites()
     {
         return $this->belongsToMany(Project::class, 'user_projects');
     }
+
+
 
     public function case()
     {

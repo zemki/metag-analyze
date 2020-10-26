@@ -15,7 +15,7 @@ Route::get('/password/set', 'Auth\VerificationController@showresetpassword');
 Route::get('/setpassword', 'Auth\VerificationController@showresetpassword');
 Route::post('/password/new', 'Auth\VerificationController@newpassword');
 
-Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'authorised', 'verified', 'haspowers','LoggedUser']], static function () {
+Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'verified', 'haspowers','LoggedUser']], static function () {
     /**
      * Admin Routes
      */
