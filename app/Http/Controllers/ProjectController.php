@@ -171,7 +171,10 @@ class ProjectController extends Controller
     public function removeFromProject(Request $request)
     {
 
-        $this->authorize(self::UPDATESTRING, Project::where('id', $request->input(self::PROJECT))->first());
+        $userWantsToBeRemovedFromStudy = $request->email != auth()->user()->email;
+        if($userWantsToBeRemovedFromStudy){
+            $this->authorize(self::UPDATESTRING, Project::where('id', $request->input(self::PROJECT))->first());
+        }
         $user = User::where('email', '=', $request->email)->first();
         if ($user) {
             $user->invites()->detach($request->input(self::PROJECT));
