@@ -4,6 +4,36 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * App\Project
+ *
+ * @property int $id
+ * @property string $name
+ * @property string $description
+ * @property string|null $inputs
+ * @property int $created_by
+ * @property int $is_locked
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Cases[] $cases
+ * @property-read int|null $cases_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\User[] $invited
+ * @property-read int|null $invited_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Media[] $media
+ * @property-read int|null $media_count
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Project newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Project newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Project query()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Project whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Project whereCreatedBy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Project whereDescription($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Project whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Project whereInputs($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Project whereIsLocked($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Project whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Project whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class Project extends Model
 {
     /**
@@ -61,6 +91,25 @@ class Project extends Model
     public function getInputs()
     {
         return json_decode($this->inputs);
+    }
+
+    public function getAnswersInputs()
+    {
+        $inputs = json_decode($this->inputs);
+        $answers = [];
+        foreach($inputs as $input)
+        {
+            if($input->type === "scale")
+            {
+                array_push($answers,[1,2,3,4,5]);
+            }
+            if($input->type === "one choice" || $input->type === "multiple choice" )
+            {
+                array_push($answers,array_filter($input->answers));
+            }
+
+        }
+        return $answers;
     }
 
     public function getSpecificInput($name)

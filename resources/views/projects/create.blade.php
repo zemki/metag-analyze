@@ -59,7 +59,7 @@
                 <div class="block mt-2" v-for="(m,index) in newproject.media">
                     <input type="text" name="media[]" class="inputcreatecase" :tabindex="index+1"
                            v-model="newproject.media[index]" @keyup.capture="handleMediaInputs(index,m)"
-                           autocomplete="off" @keydown.enter.prevent @keydown.shift.prevent>
+                           autocomplete="off" @keydown.enter.prevent>
                 </div>
             </div>
             <div class="w-1/5 mx-1 inline-block " v-for="(t,index) in newproject.inputs" :key="index">

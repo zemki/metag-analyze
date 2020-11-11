@@ -8,6 +8,7 @@ use App\Media;
 use App\Project;
 use App\Role;
 use App\User;
+use DB;
 use Helper;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\Factory;
@@ -42,12 +43,13 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
-
         $this->authorize(self::UPDATESTRING, $project);
+
         $data['breadcrumb'] = [url('/') => 'Projects', '#' => substr($project->name, 0, 20) . '...'];
-        $project->media = $project->media()->pluck('media.name')->toArray();
+      //  $project->media = $project->media()->pluck('media.name')->toArray();
         $data['data']['media'] = Media::all();
         $data[self::PROJECT] = $project;
+        $data[self::PROJECT.'media'] = $project->media()->pluck('media.name')->toArray();
         $data['invites'] = $project->invited()->get();
 
         return view('projects.show', $data);
@@ -101,7 +103,15 @@ class ProjectController extends Controller
         if ($media) {
             $mToSync = array();
             foreach (array_filter($media) as $singleMedia) {
-                array_push($mToSync, Media::firstOrCreate(['name' => $singleMedia])->id);
+                $media = Media::where(DB::raw('BINARY name'), $singleMedia)->first();
+                if(!$media){
+                    $media = new Media;
+
+                    $media->name = $singleMedia;
+
+                    $media->save();
+                }
+                array_push($mToSync, $media->id);
             }
             $project->media()->sync(Media::whereIn('id', $mToSync)->get());
         }

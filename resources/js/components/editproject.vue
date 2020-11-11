@@ -38,9 +38,9 @@
                 <label for="media" class="label inline-flex">
                     Media
                 </label>
-                <div class="control" v-for="(m,index) in projectData.media">
+                <div class="control" v-for="(singleMedia,index) in projectData.media">
                     <input :disabled="!editable" type="text" name="media[]" class="input inputcreatecase"
-                           v-model="projectData.media[index]" @keyup="handleMediaInputs(index,m)" autocomplete="off"
+                           v-model="projectData.media[index]" @keyup="handleMediaInputs(index,singleMedia.name)" autocomplete="off"
                            @keydown.enter.prevent @keydown.tab.prevent>
                 </div>
 
@@ -120,7 +120,7 @@
 
 <script>
     export default {
-        props: ['project', 'data', 'editable'],
+        props: ['project', 'data', 'editable','projectmedia'],
         computed: {
             'formattedinputstring': function () {
                 console.log("computed formattedstring");
@@ -190,7 +190,7 @@
 
                 this.projectData.name = this.project.name;
                 this.projectData.description = this.project.description;
-                this.projectData.media = this.project.media;
+                this.projectData.media = this.projectmedia;
                 this.projectData.media.push("");
                 let self = this;
 
