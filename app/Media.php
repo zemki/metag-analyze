@@ -4,6 +4,30 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * App\Media
+ *
+ * @property int $id
+ * @property string $name
+ * @property string|null $description
+ * @property string|null $properties
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Entry[] $entries
+ * @property-read int|null $entries_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Project[] $projects
+ * @property-read int|null $projects_count
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Media newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Media newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Media query()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Media whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Media whereDescription($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Media whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Media whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Media whereProperties($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Media whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class Media extends Model
 {
     protected $table = 'media';
@@ -11,17 +35,12 @@ class Media extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'description', 'properties', 'media_group_id'
+        'name', 'description', 'properties'
     ];
 
     public function path()
     {
         return "/media/{$this->id}";
-    }
-
-    public function media_group()
-    {
-        return $this->belongsTo(Media_group::class);
     }
 
     public function entries()

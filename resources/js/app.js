@@ -480,9 +480,9 @@ window.app = new Vue(
 					minDate: new Date(),
 					backendcase: false,
 					inputLength: {
-						name: 200
+						name: 200,
 					},
-					response: ''
+					response: '',
 				},
 				newproject: {
 					name: '',
@@ -780,7 +780,7 @@ window.app = new Vue(
 											self.newentry.data.end = new Date(
 													new Date().setMinutes(
 															new Date().getMinutes() +
-															1));
+															5));
 										})
 								.catch(
 										function(error) {
@@ -1293,7 +1293,8 @@ window.app = new Vue(
 						e.preventDefault();
 					}
 				},
-				confirmLeaveProject: function(userToDetach,project)
+				confirmLeaveProject: function(userToDetach,
+																			project)
 				{
 					let confirmDelete = this.$buefy.dialog.confirm(
 							{
@@ -1312,7 +1313,6 @@ window.app = new Vue(
 														 project)
 				{
 
-
 					let self = this;
 					window.axios.post(
 							window.location.origin +
@@ -1321,7 +1321,7 @@ window.app = new Vue(
 							userToDetach.id,
 							{
 								email: userToDetach.email,
-								project: project
+								project: project,
 							})
 								.then(
 										response => {

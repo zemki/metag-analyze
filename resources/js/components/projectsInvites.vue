@@ -1,7 +1,7 @@
 <template>
     <div class="p-2" :key="projectsInvite">
         <label for="invited">
-            Enter an email to invite a researcher to work in this project then press enter
+					{{ trans('Enter an email to invite a researcher to work with in this project, then press enter') }}
         </label>
         <input type="email" name="invited" class="input"
                v-model="toInvite" autocomplete="off"

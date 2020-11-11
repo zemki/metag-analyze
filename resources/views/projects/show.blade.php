@@ -264,7 +264,8 @@
             @endif
 
             <edit-project :editable="{{$project->isEditable() ? 'true' : 'false'}}"
-                          :project="{{$project}}"></edit-project>
+                          :project="{{$project}}"
+            :projectmedia="{{json_encode($projectmedia)}}"></edit-project>
         </b-tab-item>
 
         @if($project->created_by == auth()->user()->id)
