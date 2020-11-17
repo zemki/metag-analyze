@@ -164,8 +164,7 @@ class ProjectController extends Controller
             Mail::to($user->email)->send(new VerificationEmail($user, $request->emailtext ? $request->emailtext : config('utilities.emailDefaultText')));
             $role = Role::where('name', '=', 'researcher')->first();
             $user->roles()->sync($role);
-        }
-        if(!$user->hasVerifiedEmail())
+        }else if(!$user->hasVerifiedEmail())
         {
             $user->api_token = Helper::random_str(60);
             $user->password_token = Helper::random_str(60);

@@ -10,6 +10,7 @@ use App\Role;
 use App\User;
 use Exception;
 use Illuminate\Foundation\Auth\RegistersUsers;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Validator;
 use Spatie\WebhookServer\WebhookCall;
@@ -75,11 +76,15 @@ class RegisterController extends Controller
             $user->password_token = bcrypt(Helper::random_str(60));
             $user->save();
             $user->roles()->sync($role);
-            WebhookCall::create()
-                ->url('https://chat.zemki.uni-bremen.de/hooks/pggPQhGehrPiRSb2S/3xJ2bPWfYk2pqBBhtGGkgb3Q2JMGvH4DKaPdTANSTdZCtfxk')
-                ->payload(['text' => 'User '.$data['email'].' has registered on Metag Analyze. We have a total of '.User::all()->count().' users!'])
-                ->useSecret('pggPQhGehrPiRSb2S/3xJ2bPWfYk2pqBBhtGGkgb3Q2JMGvH4DKaPdTANSTdZCtfxk')
-                ->dispatch();
+
+            if (!App::environment('local'))
+            {
+                WebhookCall::create()
+                    ->url('https://chat.zemki.uni-bremen.de/hooks/pggPQhGehrPiRSb2S/3xJ2bPWfYk2pqBBhtGGkgb3Q2JMGvH4DKaPdTANSTdZCtfxk')
+                    ->payload(['text' => 'User ' . $data['email'] . ' has registered on Metag Analyze. We have a total of ' . User::all()->count() . ' users!'])
+                    ->useSecret('pggPQhGehrPiRSb2S/3xJ2bPWfYk2pqBBhtGGkgb3Q2JMGvH4DKaPdTANSTdZCtfxk')
+                    ->dispatch();
+            }
 
             return $user;
         }
