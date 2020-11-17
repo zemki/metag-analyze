@@ -28,6 +28,10 @@ class VerificationEmail extends Mailable
      */
     public function build()
     {
-        return $this->from('mesoftware@uni-bremen.de')->markdown('email.setpassword')->with(['user' => $this->user, 'text' => $this->emailtext]);
+        return $this->from('mesoftware@uni-bremen.de')
+            ->markdown('email.setpassword')
+            ->with(['user' => $this->user, 'text' => $this->emailtext]);
     }
+
+
 }
