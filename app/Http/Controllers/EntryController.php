@@ -14,6 +14,7 @@ use Illuminate\Contracts\View\Factory;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\View\View;
+use Log;
 
 class EntryController extends Controller
 {
@@ -29,7 +30,6 @@ class EntryController extends Controller
      */
     public function entriesByCase(Cases $case)
     {
-        dump(EntryResource::collection($case->entries->sortByDesc(self::BEGIN)));
         return EntryResource::collection($case->entries->sortByDesc(self::BEGIN));
     }
 
@@ -41,7 +41,6 @@ class EntryController extends Controller
      */
     public function store(Cases $case)
     {
-
         $this->authorize('update', [Entry::class, $case]);
         $attributes = request()->validate([
             self::BEGIN => self::REQUIRED,
@@ -50,7 +49,6 @@ class EntryController extends Controller
             self::MEDIA_ID => self::REQUIRED,
             self::INPUTS => 'nullable',
         ]);
-
         if (is_numeric($attributes[self::MEDIA_ID]))
         {
 
@@ -58,7 +56,7 @@ class EntryController extends Controller
         } else
         {
             $attributes[self::MEDIA_ID] = Media::firstOrCreate(['name' => $attributes[self::MEDIA_ID]])->id;
-            $attributes[self::INPUTS] = json_encode($attributes[self::INPUTS]);
+            $attributes[self::INPUTS] = json_encode(request()->inputs);
         }
         $entry = Entry::create($attributes);
         return response(['id' => $entry->id], 200);
