@@ -29,6 +29,7 @@ class EntryController extends Controller
      */
     public function entriesByCase(Cases $case)
     {
+        dump(EntryResource::collection($case->entries->sortByDesc(self::BEGIN)));
         return EntryResource::collection($case->entries->sortByDesc(self::BEGIN));
     }
 
