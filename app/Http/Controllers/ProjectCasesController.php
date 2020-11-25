@@ -17,6 +17,9 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ProjectCasesController extends Controller
 {
+
+    protected const PROJECT = 'project';
+    
     /**
      * @param Project $project
      * @param Cases   $case
@@ -35,7 +38,7 @@ class ProjectCasesController extends Controller
         foreach ($data['entries']['list'] as $entry)
         {
             $entry['inputs'] = json_decode($entry['inputs']);
-            $entry['media_id'] = Media::firstWhere('id',$entry['media_id'])->name;
+            $entry['media_id'] = Media::firstWhere('id', $entry['media_id'])->name;
         }
         $data['entries']['media'] = $mediaValues;
         $data['entries']['availablemedia'] = $availableMedia;
@@ -43,7 +46,6 @@ class ProjectCasesController extends Controller
         $data['entries']['availableinputs'] = $availableInputs;
         $data['case'] = $case;
         $data['project'] = $project;
-
         $data['breadcrumb'] = [
             url('/') => 'Metag',
             url('/') => 'Projects',
@@ -51,6 +53,100 @@ class ProjectCasesController extends Controller
             $case->path() => substr($case->name, 0, 15) . '...'
         ];
         return view('entries.index', $data);
+    }
+
+    public function tempshow(Project $project, Cases $case)
+    {
+        $tempArray = Entry::where('case_id', '=', $case->id)->with('media')->get()->toArray();
+        $data['entries'] = [];
+        $data['availableInputs'] = $project->getAnswersInputs();
+
+        foreach ($tempArray as $entry)
+        {
+            $tempInputsArray = json_decode($entry['inputs'], true);
+            $inputEntry = [];
+            $inputEntry['inputs'] = [];
+
+            // format the inputs for the graph
+            foreach ($tempInputsArray as $answer)
+            {
+                if (is_array($answer))
+                {
+
+                    foreach ($answer as $singularAnswer)
+                    {
+                        $aritemp['id'] = $entry['id'];
+                        $aritemp['name'] = $singularAnswer;
+                        foreach ($data['availableInputs'] as $availableInput)
+                        {
+                            if($availableInput->name == $singularAnswer)
+                            {
+                                $aritemp['color'] = $availableInput->color;
+                                break;
+                            }
+                        }
+                        array_push($inputEntry['inputs'], (object)$aritemp);
+                    }
+                }else if(strlen($answer) > 1){
+
+                    $aritemp['id'] = $entry['id'];
+                    $aritemp['name'] = $answer;
+
+                    foreach ($data['availableInputs'] as $availableInput)
+                    {
+                        if($availableInput->name == $answer)
+                        {
+                            $aritemp['color'] = $availableInput->color;
+                            break;
+                        }
+                    }
+                    array_push($inputEntry['inputs'], (object)$aritemp);
+                } else
+                {
+                    $aritemp['id'] = $entry['id'];
+                    $aritemp['name'] = $answer;
+                    foreach ($data['availableInputs'] as $availableInput)
+                    {
+                        if($availableInput->name == $singularAnswer)
+                        {
+                            $aritemp['color'] = $availableInput->color;
+                            break;
+                        }
+                    }
+                    array_push($inputEntry['inputs'], (object)$aritemp);
+                }
+            }
+            // translate the object to array
+            foreach ($entry as $key => $property)
+            {
+                if ($key == "inputs") continue;
+                $inputEntry[$key] = $property;
+            }
+            $inputEntry['begin'] = strtotime($inputEntry['begin']);
+            $inputEntry['end'] = strtotime($inputEntry['end']);
+            $inputEntry['color'] = array_rand(array_flip(config('colors.chartCategories')), 1);
+            array_push($data['entries'], $inputEntry);
+        }
+        /* $data['media'] = $case->entries()
+             ->leftJoin('media', 'entries.media_id', '=', 'media.id')
+             ->get()->unique(); */
+        $tempArray = $case->entries()
+            ->leftJoin('media', 'entries.media_id', '=', 'media.id')
+            ->get()->unique()->toArray();
+        $data['media'] = [];
+        foreach ($tempArray as $media)
+        {
+            $mediaEntry = [];
+            foreach ($media as $key => $property)
+            {
+                $mediaEntry[$key] = $property;
+            }
+            $mediaEntry['color'] = array_rand(array_flip(config('colors.chartCategories')), 1);
+            array_push($data['media'], $mediaEntry);
+        }
+
+
+        return view('entries.tempindex', $data);
     }
 
     /**
@@ -89,7 +185,6 @@ class ProjectCasesController extends Controller
         request()->validate(
             ['name' => 'required']
         );
-
         if (request('backendCase'))
         {
             $user = auth()->user();
@@ -141,6 +236,7 @@ class ProjectCasesController extends Controller
         $data['data']['media'] = Media::all();
         $data['project'] = $project;
         $data['invites'] = $project->invited()->get();
+        $data[self::PROJECT.'media'] = $project->media()->pluck('media.name')->toArray();
         $data['message'] = "Case deleted";
         return view('projects.show', $data);
     }
