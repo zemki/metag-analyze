@@ -43,8 +43,10 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
-        $this->authorize(self::UPDATESTRING, $project);
-
+        if (auth()->user()->notOwnerNorInvited($project) && !auth()->user()->isAdmin())
+        {
+            abort(403);
+        }
         $data['breadcrumb'] = [url('/') => 'Projects', '#' => substr($project->name, 0, 20) . '...'];
       //  $project->media = $project->media()->pluck('media.name')->toArray();
         $data['data']['media'] = Media::all();
