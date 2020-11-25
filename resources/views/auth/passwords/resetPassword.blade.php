@@ -1,9 +1,8 @@
 @extends('auth.layouts.app')
 
 @section('content')
-    <div class="flex items-center justify-center h-screen z-10">
-
-        <div class="bg-white p-4 rounded overflow-hidden shadow-lg w-1/3">
+    <div class="flex sm:items-start md:items-center md:justify-center h-screen z-10">
+        <div class="bg-white p-4 rounded overflow-hidden shadow-lg  md:w-1/2 lg:w-1/3 sm:w-full">
             @if (session('status'))
                 <div class="flex relative px-3 py-3 mb-4 border text-green-800 bg-green-200">
                     {{ session('status') }}

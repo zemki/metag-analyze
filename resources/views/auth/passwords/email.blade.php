@@ -2,9 +2,8 @@
 
 @section('content')
 
-    <div class="flex items-center justify-center h-screen z-10">
-
-        <div class="bg-white p-4 rounded overflow-hidden shadow-lg w-1/3">
+    <div class="flex sm:items-start md:items-center md:justify-center h-screen">
+        <div class="bg-white p-4 rounded overflow-hidden shadow-lg sm:h-auto  md:w-1/2 lg:w-1/3 sm:w-full">
             @if (session('status'))
                 <div class="flex relative px-3 py-3 mb-4 border text-green-800 bg-green-200">
                     {{ session('status') }}
@@ -30,14 +29,13 @@
 
                 <div class="mb-4 flex flex-wrap">
                     <label for="email"
-                           class="md:w-1/3 pl-4 pt-2 pb-2 mb-0 leading-normal">{{ __('E-Mail Address') }}</label>
+                           class="w-full mr-2 pl-1 pt-2 pb-2 mb-0 leading-normal">{{ __('E-Mail Address') }}</label>
 
-                    <div class="md:w-1/2">
+
                         <input id="email" type="email"
                                class="block appearance-none w-full py-1 px-2 mb-1 text-base leading-normal bg-white text-grey-darker border border-grey rounded{{ $errors->has('email') ? ' bg-red-dark' : '' }}"
                                name="email" value="{{ old('email') }}" required>
 
-                    </div>
                 </div>
 
 

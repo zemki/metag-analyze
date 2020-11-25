@@ -3,9 +3,8 @@
 @section('content')
 
 
-    <div class="flex items-center justify-center h-screen z-10">
-
-        <div class="bg-white p-4 rounded overflow-hidden shadow-lg w-1/3">
+    <div class="flex sm:items-start md:items-center sm:justify-center md:justify-center h-screen z-10">
+        <div class="bg-white p-4 rounded overflow-hidden shadow-lg  md:w-1/2 xl:w-1/4 sm:w-full">
             @if (session('status'))
                 <div class="flex relative px-3 py-3 mb-4 border text-green-800 bg-green-200">
                     {{ session('status') }}
@@ -33,7 +32,7 @@
                 <input type="hidden" id="token" name="token" value="{{ $user->password_token }}">
                 <div class="mb-4 flex flex-wrap">
                     <label for="email"
-                           class="md:w-1/3 pl-4 pt-2 pb-2 mb-0 leading-normal text-md-right">{{ __('E-Mail Address') }}</label>
+                           class=" pt-2 pb-2 pl-1 mb-0 mr-2 leading-normal text-md-right">{{ __('E-Mail Address') }}</label>
 
                     <div class="md:w-1/2">
                         <input id="email" disabled type="email" value="{{$user->email}}"
@@ -44,7 +43,7 @@
                 </div>
                 <div class="mb-4 flex flex-wrap">
                     <label for="email"
-                           class="md:w-1/3 pl-4 pt-2 pb-2 mb-0 leading-normal text-md-right">{{ __('Password') }}</label>
+                           class="mr-2 pl-1 pt-2 pb-2 mb-0 leading-normal text-md-right">{{ __('Password') }}</label>
 
                     <div class="md:w-1/2">
                         <input id="password" type="password"

@@ -2,9 +2,8 @@
 
 @section('content')
 
-    <div class="flex items-center justify-center h-screen z-10">
-
-        <div class="bg-white p-4 rounded overflow-hidden shadow-lg w-1/3">
+    <div class="flex sm:items-start md:items-center md:justify-center h-screen z-10">
+        <div class="bg-white p-4 rounded overflow-hidden shadow-lg  md:w-1/2 lg:w-1/3 sm:w-full">
 
             <h1 class="text-4xl pb-2 m-auto max-w-full font-extrabold text-center">{{ __('Verify Your Email Address') }}</h1>
             <div class="text-justify">
