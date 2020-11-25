@@ -1,8 +1,8 @@
 @extends('auth.layouts.app')
 
 @section('content')
-    <div class="flex items-center justify-center h-screen">
-        <div class="bg-white p-4 rounded overflow-hidden shadow-lg  w-1/3">
+    <div class="flex sm:items-start md:items-center md:justify-center h-screen">
+        <div class="bg-white p-4 rounded overflow-hidden shadow-lg  md:w-1/2 lg:w-1/3 sm:w-full">
             @if(session()->has('message') || !empty($message))
                 <div class="bg-blue-100 border-t border-b border-blue-500 text-blue-700 px-4 py-3" role="alert">
                     <p class="font-bold">{{session()->get('message') ? session()->get('message') : $message}}</p>
