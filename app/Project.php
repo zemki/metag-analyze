@@ -112,6 +112,7 @@ class Project extends Model
                     $tempObj['id'] = $idForInputs;
                     $tempObj['name'] = $i;
                     $tempObj['color'] = config('colors.chartCategories')[$idForInputs];
+                    $tempObj['type'] = 'scale';
                     array_push($availableAnswers,(object)$tempObj);
                     $idForInputs++;
                 }
@@ -120,6 +121,7 @@ class Project extends Model
 
             if($input->type === "one choice" || $input->type === "multiple choice" )
             {
+
                 $tempArray = [];
                 foreach (array_filter($input->answers) as $key => $answer)
                 {
@@ -136,6 +138,7 @@ class Project extends Model
             {
                 $tempObj['id'] = $idForInputs;
                 $tempObj['name'] = $input->name;
+                $tempObj['type'] = 'text';
                 $tempObj['color'] = config('colors.chartCategories')[$idForInputs];
                 array_push($availableAnswers,(object)$tempObj);
                 $idForInputs++;

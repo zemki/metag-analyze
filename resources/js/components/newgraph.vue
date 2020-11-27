@@ -103,6 +103,7 @@ export default {
         },
       });
 
+      console.log("test1")
       let self = this;
       // initialize chart on the element
 
@@ -194,6 +195,7 @@ export default {
         (category) => category.name
       );
 
+
       this.yAxisCategoryIds = this.categories.map((category) => category.id);
       this.allSeries = this.getColoredCategories().map((category) => {
         let series = {
@@ -216,6 +218,7 @@ export default {
             coloredAttributeAsArray[0] &&
             coloredAttributeAsArray[0].name === category.name
           ) {
+          	console.log("inside");
             if (!_.isEmpty(entry[this.yAxisAttribute])) {
               // the index of the y axis category
               let x = this.yAxisCategoryNames.indexOf(
