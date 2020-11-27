@@ -60,6 +60,7 @@ class ProjectCasesController extends Controller
         $tempArray = Entry::where('case_id', '=', $case->id)->with('media')->get()->toArray();
         $data['entries'] = [];
         $data['availableInputs'] = $project->getAnswersInputs();
+        $textInputToUnset = [];
 
         foreach ($tempArray as $entry)
         {
@@ -68,7 +69,7 @@ class ProjectCasesController extends Controller
             $inputEntry['inputs'] = [];
 
             // format the inputs for the graph
-            foreach ($tempInputsArray as $answer)
+            foreach ($tempInputsArray as $question => $answer)
             {
                 if (is_array($answer))
                 {
@@ -88,23 +89,27 @@ class ProjectCasesController extends Controller
                         array_push($inputEntry['inputs'], (object)$aritemp);
                     }
                 }else if(strlen($answer) > 1){
-
+#text
                     $aritemp['id'] = $entry['id'];
                     $aritemp['name'] = $answer;
 
-                    foreach ($data['availableInputs'] as $availableInput)
+                    foreach ($data['availableInputs'] as $key => $availableInput)
                     {
-                        if($availableInput->name == $answer)
+                        if($availableInput->name == $question)
                         {
+                            array_push($data['availableInputs'],(object)["id" => count($data['availableInputs'])+1,"name" => $answer,"color" => $availableInput->color]);
                             $aritemp['color'] = $availableInput->color;
+                            array_push($textInputToUnset,$key);
                             break;
                         }
                     }
                     array_push($inputEntry['inputs'], (object)$aritemp);
                 } else
                 {
+                    # scale
                     $aritemp['id'] = $entry['id'];
                     $aritemp['name'] = $answer;
+
                     foreach ($data['availableInputs'] as $availableInput)
                     {
                         if($availableInput->name == $answer)
@@ -127,6 +132,10 @@ class ProjectCasesController extends Controller
             $inputEntry['color'] = array_rand(array_flip(config('colors.chartCategories')), 1);
             array_push($data['entries'], $inputEntry);
         }
+        foreach ($textInputToUnset as $key)
+        {
+            unset($data['availableInputs'][$key]);
+        }
         /* $data['media'] = $case->entries()
              ->leftJoin('media', 'entries.media_id', '=', 'media.id')
              ->get()->unique(); */
@@ -145,6 +154,7 @@ class ProjectCasesController extends Controller
             array_push($data['media'], $mediaEntry);
         }
 
+        sort($data['availableInputs']);
 
         return view('entries.haribocases', $data);
     }
