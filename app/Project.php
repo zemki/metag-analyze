@@ -97,6 +97,7 @@ class Project extends Model
     public function getAnswersInputs()
     {
         $inputs = json_decode($this->inputs);
+
         $availableAnswers = [];
         $idForInputs = 1;
         foreach($inputs as $input)

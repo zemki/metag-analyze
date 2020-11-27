@@ -105,6 +105,7 @@ export default {
 
       let self = this;
       // initialize chart on the element
+			debugger;
 
       let container = document.getElementById("container");
       this.chart = Highcharts.chart({
@@ -195,7 +196,6 @@ export default {
       );
 
       this.yAxisCategoryIds = this.categories.map((category) => category.id);
-
       this.allSeries = this.getColoredCategories().map((category) => {
         let series = {
           id: category.id + "",

@@ -88,21 +88,23 @@
                             v-model="newentry.data.inputs[value.name]"
                     >
                     </b-taginput>
-                    <div class="relative"  v-if="value.type === 'one choice'">
+                    <div class="relative" v-if="value.type === 'one choice'">
                         <select
                                 v-model="newentry.data.inputs[value.name]"
-                                class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" >
+                                class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
                             <option v-for="answer in value.answers" :value="answer">@{{answer}}</option>
                         </select>
                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                            </svg>
                         </div>
                     </div>
 
-                    <div class="relative"  v-if="value.type === 'scale'">
+                    <div class="relative" v-if="value.type === 'scale'">
                         <select
                                 v-model="newentry.data.inputs[value.name]"
-                                class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" >
+                                class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
                             <option value="1">1</option>
                             <option value="2">2</option>
                             <option value="3">3</option>
@@ -110,7 +112,9 @@
                             <option value="5">5</option>
                         </select>
                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                            </svg>
                         </div>
                     </div>
 
@@ -173,22 +177,24 @@
                         <div class="py-2">
                             @if($case->isBackend())
                                 @if($case->entries()->count() > 0)
-                                <div class="mb-2">
-                                    <a href="{{$project->id.$case->distinctpath()}}" class="no-underline">
-                                        <button
-                                                class="block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded no-underline">
-                                            {{__('Distinct Entries Graph')}}
-                                        </button>
-                                    </a>
-                                </div>
-                                <div class="mb-2">
-                                    <a href="{{$project->id.$case->haribopath()}}" class="no-underline">
-                                        <button
-                                                class="block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded no-underline">
-                                            {{__('Haribo Graph')}}
-                                        </button>
-                                    </a>
-                                </div>
+                                    <div class="mb-2">
+                                        <a href="{{$project->id.$case->distinctpath()}}" class="no-underline">
+                                            <button
+                                                    class="block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded no-underline">
+                                                {{__('Distinct Entries Graph')}}
+                                            </button>
+                                        </a>
+                                    </div>
+                                    @if($project->inputs != "[]")
+                                        <div class="mb-2">
+                                            <a href="{{$project->id.$case->haribopath()}}" class="no-underline">
+                                                <button
+                                                        class="block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded no-underline">
+                                                    {{__('Haribo Graph')}}
+                                                </button>
+                                            </a>
+                                        </div>
+                                    @endif
                                 @endif
                                 <div class="mb-2">
                                     <a @click.prevent="toggleModal({{$case->id}},{{$project->inputs}})"
@@ -211,13 +217,14 @@
                                         {{__('Distinct Entries Graph')}}
                                     </button>
                                 </a>
-
-                                    <a href="{{$project->id.$case->haribopath()}}" class="no-underline">
-                                        <button
-                                                class="block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded no-underline">
-                                            {{__('Haribo Graph')}}
-                                        </button>
-                                    </a>
+                                @if($project->inputs != "[]")
+                                <a href="{{$project->id.$case->haribopath()}}" class="no-underline">
+                                    <button
+                                            class="block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded no-underline">
+                                        {{__('Haribo Graph')}}
+                                    </button>
+                                </a>
+                                    @endif
                             @elseif(!$case->isConsultable() && $case->entries()->count() > 0 && !$case->notYetStarted())
                                 <p>{{__('User is entering the data')}}</p>
                             @endif
@@ -280,7 +287,7 @@
 
             <edit-project :editable="{{$project->isEditable() ? 'true' : 'false'}}"
                           :project="{{$project}}"
-            :projectmedia="{{json_encode($projectmedia)}}"></edit-project>
+                          :projectmedia="{{json_encode($projectmedia)}}"></edit-project>
         </b-tab-item>
 
         @if($project->created_by == auth()->user()->id)

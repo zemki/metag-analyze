@@ -33,7 +33,6 @@
 
     </div>
 
-
     <div id="container">
         <medtaggraph
                 :media="{{json_encode($media)}}"
