@@ -30,12 +30,9 @@
                 <div class="mb-4 flex flex-wrap">
                     <label for="email"
                            class="w-full mr-2 pl-1 pt-2 pb-2 mb-0 leading-normal">{{ __('E-Mail Address') }}</label>
-
-
                         <input id="email" type="email"
                                class="block appearance-none w-full py-1 px-2 mb-1 text-base leading-normal bg-white text-grey-darker border border-grey rounded{{ $errors->has('email') ? ' bg-red-dark' : '' }}"
                                name="email" value="{{ old('email') }}" required>
-
                 </div>
 
 

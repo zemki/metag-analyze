@@ -11,6 +11,8 @@ const tailwindcss = require('tailwindcss');
  |
  */
 
+
+
  mix.js('resources/js/app.js', 'public/js').extract([
  	'vue',
  	'axios',
@@ -18,9 +20,9 @@ const tailwindcss = require('tailwindcss');
  	'jquery',
  	'lodash',
  	'popper.js'
- 	])
- .sass('resources/sass/app.scss', 'public/css',{ implementation: require('node-sass') })
- .version()
+ 	]).version();
+
+ mix.sass('resources/sass/app.scss', 'public/css',{ implementation: require('node-sass') })
  .options({
  	processCssUrls: false,
 	 postCss: [ tailwindcss('tailwind.config.js') ],

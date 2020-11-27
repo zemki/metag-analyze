@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use stdClass;
 
 /**
  * App\Project
@@ -96,20 +97,52 @@ class Project extends Model
     public function getAnswersInputs()
     {
         $inputs = json_decode($this->inputs);
-        $answers = [];
+        $availableAnswers = [];
+        $idForInputs = 1;
         foreach($inputs as $input)
         {
+            $tempObj = [];
             if($input->type === "scale")
             {
-                array_push($answers,[1,2,3,4,5]);
-            }
-            if($input->type === "one choice" || $input->type === "multiple choice" )
-            {
-                array_push($answers,array_filter($input->answers));
+
+               $tempArray = [];
+                for ($i = 1; $i < 6;$i++)
+                {
+                    $tempObj['id'] = $idForInputs;
+                    $tempObj['name'] = $i;
+                    $tempObj['color'] = config('colors.chartCategories')[$idForInputs];
+                    array_push($availableAnswers,(object)$tempObj);
+                    $idForInputs++;
+                }
+             //   array_push($availableAnswers,(object)$tempArray);
             }
 
+            if($input->type === "one choice" || $input->type === "multiple choice" )
+            {
+                $tempArray = [];
+                foreach (array_filter($input->answers) as $key => $answer)
+                {
+                    $tempObj['id'] = $idForInputs;
+                    $tempObj['name'] = $answer;
+                    $tempObj['color'] = config('colors.chartCategories')[$idForInputs];
+                    array_push($availableAnswers,(object)$tempObj);
+                    $idForInputs++;
+                }
+
+            }
+
+            if($input->type === "text")
+            {
+                $tempObj['id'] = $idForInputs;
+                $tempObj['name'] = $input->name;
+                $tempObj['color'] = config('colors.chartCategories')[$idForInputs];
+                array_push($availableAnswers,(object)$tempObj);
+                $idForInputs++;
+            }
         }
-        return $answers;
+
+
+        return $availableAnswers;
     }
 
     public function getSpecificInput($name)

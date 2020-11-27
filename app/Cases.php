@@ -5,6 +5,32 @@ namespace App;
 use App\Helpers\Helper;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * App\Cases
+ *
+ * @property int $id
+ * @property string $name
+ * @property string $duration
+ * @property int $project_id
+ * @property int|null $user_id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Entry[] $entries
+ * @property-read int|null $entries_count
+ * @property-read \App\Project $project
+ * @property-read \App\User|null $user
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases query()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases whereDuration($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases whereProjectId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases whereUserId($value)
+ * @mixin \Eloquent
+ */
 class Cases extends Model
 {
     protected const VALUE = "value";
@@ -174,6 +200,16 @@ class Cases extends Model
     public function path()
     {
         return "/cases/{$this->id}";
+    }
+
+    public function haribopath()
+    {
+        return "/haribocases/{$this->id}";
+    }
+
+    public function distinctpath()
+    {
+        return "/distinctcases/{$this->id}";
     }
 
     /**

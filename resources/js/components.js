@@ -29,3 +29,9 @@ Vue.component(
     require(
         './components/users-in-cases.vue').default,
 );
+
+Vue.component(
+    'medtaggraph',
+    require(
+        './components/newgraph.vue').default,
+);
