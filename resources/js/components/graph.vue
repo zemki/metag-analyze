@@ -4,6 +4,10 @@
 
 <script>
     import Highcharts from 'highcharts'
+		import highchartsMorePlugin from 'highcharts/highcharts-more';
+		import highchartsExportPlugin from 'highcharts/modules/exporting';
+		import highchartsOfflineExportPlugin from 'highcharts/modules/offline-exporting';
+		import highchartsNoDataToDisplayPlugin from 'highcharts/modules/no-data-to-display';
 
 
     export default {
@@ -142,7 +146,7 @@
                             'Click and drag in the plot area to zoom in' : 'Pinch the chart to zoom in'
                     },
                     xAxis: {
-                        tickInterval: 1000 * 60 * 60 * 24, // Day,
+                        tickInterval: 1000 * 60 * 60 * 12, // Day,
                     },
                     yAxis: {
 

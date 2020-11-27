@@ -12,6 +12,59 @@ use Illuminate\Http\Request;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Mail;
 
+/**
+ * App\User
+ *
+ * @property int $id
+ * @property string|null $email
+ * @property string $password
+ * @property string|null $remember_token
+ * @property string|null $password_token
+ * @property string|null $api_token
+ * @property string|null $last_login_date
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property array|null $deviceID
+ * @property string|null $email_verified_at
+ * @property string|null $latest_activity
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Action[] $actions
+ * @property-read int|null $actions_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Cases[] $case
+ * @property-read int|null $case_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Group[] $groups
+ * @property-read int|null $groups_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Project[] $invites
+ * @property-read int|null $invites_count
+ * @property-read \App\Cases|null $latestCase
+ * @property-read \Illuminate\Notifications\DatabaseNotificationCollection|\Illuminate\Notifications\DatabaseNotification[] $notifications
+ * @property-read int|null $notifications_count
+ * @property-read \App\Profile|null $profile
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Project[] $projects
+ * @property-read int|null $projects_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Role[] $roles
+ * @property-read int|null $roles_count
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\User newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\User newQuery()
+ * @method static \Illuminate\Database\Query\Builder|\App\User onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\User query()
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereApiToken($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereDeviceID($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereEmail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereEmailVerifiedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereLastLoginDate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereLatestActivity($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\User wherePassword($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\User wherePasswordToken($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereRememberToken($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\User withTrashed()
+ * @method static \Illuminate\Database\Query\Builder|\App\User withoutTrashed()
+ * @mixin \Eloquent
+ */
 class User extends Authenticatable implements MustVerifyEmail
 {
     use Notifiable, SoftDeletes;
@@ -231,4 +284,6 @@ class User extends Authenticatable implements MustVerifyEmail
         $action->save();
         return $action;
     }
+
+
 }

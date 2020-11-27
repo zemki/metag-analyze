@@ -219,6 +219,4 @@
 
 @endsection
 @section('pagespecificcss')
-
-
 @endsection

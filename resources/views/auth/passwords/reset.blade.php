@@ -19,11 +19,11 @@
                 </div>
 
                 <label for="email" class="label">{{ __('E-Mail Address') }}</label>
-                <div class="control">
+
                     <input id="email" type="email"
                            class="input {{ $errors->has('email') ? ' bg-red-dark' : '' }}" name="email"
                            value="{{ old('email') }}" required autofocus v-model="registration.email">
-                </div>
+
 
 
                 <ul class="w-full my-2">

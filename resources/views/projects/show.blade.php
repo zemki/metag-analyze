@@ -174,10 +174,18 @@
                             @if($case->isBackend())
                                 @if($case->entries()->count() > 0)
                                 <div class="mb-2">
-                                    <a href="{{$project->id.$case->path()}}" class="no-underline">
+                                    <a href="{{$project->id.$case->distinctpath()}}" class="no-underline">
                                         <button
                                                 class="block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded no-underline">
-                                            {{__('View Entries')}}
+                                            {{__('Distinct Entries Graph')}}
+                                        </button>
+                                    </a>
+                                </div>
+                                <div class="mb-2">
+                                    <a href="{{$project->id.$case->haribopath()}}" class="no-underline">
+                                        <button
+                                                class="block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded no-underline">
+                                            {{__('Haribo Graph')}}
                                         </button>
                                     </a>
                                 </div>
@@ -197,12 +205,19 @@
                             @elseif($case->notYetStarted())
                                 <p>{{__('Case is not yet started.')}}</p>
                             @elseif($case->isConsultable() && $case->entries()->count() > 0)
-                                <a href="{{$project->id.$case->path()}}" class="no-underline">
+                                <a href="{{$project->id.$case->distinctpath()}}" class="no-underline mb-2">
                                     <button
-                                            class="block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded no-underline">
-                                        {{__('View Entries')}}
+                                            class="block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded no-underline mb-2">
+                                        {{__('Distinct Entries Graph')}}
                                     </button>
                                 </a>
+
+                                    <a href="{{$project->id.$case->haribopath()}}" class="no-underline">
+                                        <button
+                                                class="block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded no-underline">
+                                            {{__('Haribo Graph')}}
+                                        </button>
+                                    </a>
                             @elseif(!$case->isConsultable() && $case->entries()->count() > 0 && !$case->notYetStarted())
                                 <p>{{__('User is entering the data')}}</p>
                             @endif

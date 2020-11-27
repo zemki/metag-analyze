@@ -25,7 +25,7 @@ class ProjectCasesController extends Controller
      * @param Cases   $case
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function show(Project $project, Cases $case)
+    public function distinctshow(Project $project, Cases $case)
     {
 
         if (auth()->user()->notOwnerNorInvited($project) && !auth()->user()->isAdmin())
@@ -52,10 +52,10 @@ class ProjectCasesController extends Controller
             $project->path() => $project->name,
             $case->path() => substr($case->name, 0, 15) . '...'
         ];
-        return view('entries.index', $data);
+        return view('entries.distinctcases', $data);
     }
 
-    public function tempshow(Project $project, Cases $case)
+    public function hariboshow(Project $project, Cases $case)
     {
         $tempArray = Entry::where('case_id', '=', $case->id)->with('media')->get()->toArray();
         $data['entries'] = [];
@@ -146,7 +146,7 @@ class ProjectCasesController extends Controller
         }
 
 
-        return view('entries.tempindex', $data);
+        return view('entries.haribocases', $data);
     }
 
     /**

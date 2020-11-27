@@ -96,11 +96,15 @@ return [
         'users' => [
             'provider' => 'users',
             'table' => 'password_resets',
-            'expire' => 60,
+            'expire' => 120,
+        ],
+        'verification' => [
+            'expire' => 1, // One year in minutes
         ],
     ],
     'verification' => [
         'expire' => 525600, // One year in minutes
     ],
+
 
 ];
