@@ -107,7 +107,7 @@ class ProjectCasesController extends Controller
                     $aritemp['name'] = $answer;
                     foreach ($data['availableInputs'] as $availableInput)
                     {
-                        if($availableInput->name == $singularAnswer)
+                        if($availableInput->name == $answer)
                         {
                             $aritemp['color'] = $availableInput->color;
                             break;
