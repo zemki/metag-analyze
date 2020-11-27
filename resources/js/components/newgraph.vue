@@ -105,7 +105,6 @@ export default {
 
       let self = this;
       // initialize chart on the element
-			debugger;
 
       let container = document.getElementById("container");
       this.chart = Highcharts.chart({
