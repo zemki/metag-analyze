@@ -190,7 +190,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function notOwnerNorInvited($project)
     {
-        return auth()->user()->isNot($project->created_by()) && !in_array($project->id, auth()->user()->invites()->pluck('project_id')->toArray()) ;
+        return !auth()->user()->isAdmin() && (auth()->user()->isNot($project->created_by()) && !in_array($project->id, auth()->user()->invites()->pluck('project_id')->toArray()));
     }
 
     public function isInvited($project)
