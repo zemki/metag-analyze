@@ -187,8 +187,10 @@ class ProjectCasesController extends Controller
      */
     public function store(Project $project)
     {
-        $this->authorize('update', $project);
-        if (request('name') == "")
+        if (auth()->user()->notOwnerNorInvited($project))
+        {
+            abort(403);
+        }        if (request('name') == "")
         {
             return redirect($project->path() . '/cases/new')->with(['message' => __('Please fill all the required inputs.')]);
         }
