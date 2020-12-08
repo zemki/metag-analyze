@@ -49,7 +49,8 @@ class EntryController extends Controller
             self::MEDIA_ID => self::REQUIRED,
             self::INPUTS => 'nullable',
         ]);
-        if (is_numeric($attributes[self::MEDIA_ID]))
+        $isComingFromBackend = is_numeric($attributes[self::MEDIA_ID]);
+        if ($isComingFromBackend)
         {
 
             $attributes[self::INPUTS] = json_encode($attributes[self::INPUTS]);

@@ -60,6 +60,7 @@ class ProjectCasesController extends Controller
         $tempArray = Entry::where('case_id', '=', $case->id)->with('media')->get()->toArray();
         $data['entries'] = [];
         $data['availableInputs'] = $project->getAnswersInputs();
+      //  $data['availableInputs'] = [];
         $textInputToUnset = [];
 
         foreach ($tempArray as $entry)
@@ -76,49 +77,49 @@ class ProjectCasesController extends Controller
 
                     foreach ($answer as $singularAnswer)
                     {
-                        $aritemp['id'] = $entry['id'];
-                        $aritemp['name'] = $singularAnswer;
+                        $tempEntryInputs['id'] = $entry['id'];
+                        $tempEntryInputs['name'] = $singularAnswer;
                         foreach ($data['availableInputs'] as $availableInput)
                         {
                             if($availableInput->name == $singularAnswer)
                             {
-                                $aritemp['color'] = $availableInput->color;
+                                $tempEntryInputs['color'] = $availableInput->color;
                                 break;
                             }
                         }
-                        array_push($inputEntry['inputs'], (object)$aritemp);
+                        array_push($inputEntry['inputs'], (object)$tempEntryInputs);
                     }
                 }else if(strlen($answer) > 1){
-#text
-                    $aritemp['id'] = $entry['id'];
-                    $aritemp['name'] = $answer;
+                    #text
+                    $tempEntryInputs['id'] = $entry['id'];
+                    $tempEntryInputs['name'] = $answer;
 
                     foreach ($data['availableInputs'] as $key => $availableInput)
                     {
                         if($availableInput->name == $question)
                         {
                             array_push($data['availableInputs'],(object)["id" => count($data['availableInputs'])+1,"name" => $answer,"color" => $availableInput->color]);
-                            $aritemp['color'] = $availableInput->color;
+                            $tempEntryInputs['color'] = $availableInput->color;
                             array_push($textInputToUnset,$key);
                             break;
                         }
                     }
-                    array_push($inputEntry['inputs'], (object)$aritemp);
+                    array_push($inputEntry['inputs'], (object)$tempEntryInputs);
                 } else
                 {
                     # scale
-                    $aritemp['id'] = $entry['id'];
-                    $aritemp['name'] = $answer;
+                    $tempEntryInputs['id'] = $entry['id'];
+                    $tempEntryInputs['name'] = $answer;
 
                     foreach ($data['availableInputs'] as $availableInput)
                     {
                         if($availableInput->name == $answer)
                         {
-                            $aritemp['color'] = $availableInput->color;
+                            $tempEntryInputs['color'] = $availableInput->color;
                             break;
                         }
                     }
-                    array_push($inputEntry['inputs'], (object)$aritemp);
+                    array_push($inputEntry['inputs'], (object)$tempEntryInputs);
                 }
             }
             // translate the object to array
@@ -132,27 +133,8 @@ class ProjectCasesController extends Controller
             $inputEntry['color'] = array_rand(array_flip(config('colors.chartCategories')), 1);
             array_push($data['entries'], $inputEntry);
         }
-        foreach ($textInputToUnset as $key)
-        {
-            unset($data['availableInputs'][$key]);
-        }
-        /* $data['media'] = $case->entries()
-             ->leftJoin('media', 'entries.media_id', '=', 'media.id')
-             ->get()->unique(); */
-        $tempArray = $case->entries()
-            ->leftJoin('media', 'entries.media_id', '=', 'media.id')
-            ->get()->unique()->toArray();
-        $data['media'] = [];
-        foreach ($tempArray as $media)
-        {
-            $mediaEntry = [];
-            foreach ($media as $key => $property)
-            {
-                $mediaEntry[$key] = $property;
-            }
-            $mediaEntry['color'] = array_rand(array_flip(config('colors.chartCategories')), 1);
-            array_push($data['media'], $mediaEntry);
-        }
+        $this->filterUnusedInputs($data, $textInputToUnset, $inputsToFilter);
+        $this->assignColorsToMedia($case, $data);
 
         sort($data['availableInputs']);
 
@@ -281,5 +263,65 @@ class ProjectCasesController extends Controller
             else array_push($headings, $input->name);
         }
         return $headings;
+    }
+
+    /**
+     * @param Cases $case
+     * @param array $data
+     */
+    private function assignColorsToMedia(Cases $case, array &$data): void
+    {
+        /* $data['media'] = $case->entries()
+                     ->leftJoin('media', 'entries.media_id', '=', 'media.id')
+                     ->get()->unique(); */
+        $tempArray = $case->entries()
+            ->leftJoin('media', 'entries.media_id', '=', 'media.id')
+            ->get()->unique()->toArray();
+        $data['media'] = [];
+        foreach ($tempArray as $media)
+        {
+            $mediaEntry = [];
+            foreach ($media as $key => $property)
+            {
+                $mediaEntry[$key] = $property;
+            }
+            $mediaEntry['color'] = array_rand(array_flip(config('colors.chartCategories')), 1);
+            array_push($data['media'], $mediaEntry);
+        }
+    }
+
+    /**
+     * @param array $data
+     * @param array $textInputToUnset
+     * @param       $inputsToFilter
+     */
+    private function filterUnusedInputs(array &$data, array $textInputToUnset, &$inputsToFilter): void
+    {
+        $inputs = array_column($data['entries'], 'inputs');
+        //  $inputs = array_map(function($o) { return $o['inputs']; }, $data['entries']);
+        $inputs = array_map(function ($o)
+        {
+            $return = isset($o[0]) ? $o[0]->name : '';
+            return $return;
+        }, $inputs);
+        // $inputsa = array_column($inputs, 'name');
+        // dd($data['availableInputs']);
+        $inputsToFilter = [];
+        foreach ($data['availableInputs'] as $key => $availableInput)
+        {
+
+            if (!in_array($availableInput->name, $inputs))
+            {
+                array_push($inputsToFilter, $key);
+            }
+        }
+        foreach ($inputsToFilter as $key)
+        {
+            unset($data['availableInputs'][$key]);
+        }
+        foreach ($textInputToUnset as $key)
+        {
+            unset($data['availableInputs'][$key]);
+        }
     }
 }

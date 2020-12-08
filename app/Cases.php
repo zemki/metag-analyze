@@ -113,14 +113,14 @@ class Cases extends Model
         foreach ($entries as $entry)
         {
             $inputs = json_decode($entry[self::INPUTS], true);
-            $pr_inputs = json_decode($entry[self::PR_INPUTS], true);
+            $project_inputs = json_decode($entry[self::PR_INPUTS], true);
             foreach ($inputs as $key => $index)
             {
-                foreach ($pr_inputs as $pr_input)
+                foreach ($project_inputs as $project_input)
                 {
-                    if ($pr_input['name'] === $key)
+                    if ($project_input['name'] === $key)
                     {
-                        array_push($inputValues, [self::VALUE => $index, "type" => $pr_input['type'], "name" => $key, "start" => $entry["begin"], "end" => $entry["end"]]);
+                        array_push($inputValues, [self::VALUE => $index, "type" => $project_input['type'], "name" => $key, "start" => $entry["begin"], "end" => $entry["end"]]);
                     }
                 }
             }
