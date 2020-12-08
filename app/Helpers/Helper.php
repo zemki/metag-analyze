@@ -96,28 +96,4 @@ class Helper
         return $arrayKeys;
     }
 
-    /**
-     * @param string $currentKey
-     * @param mixed  $needle   The item to search for
-     * @param array  $haystack The array to search
-     *                         Searches for $needle in the multidimensional array $haystack.
-     * @return array|bool The indices of $needle in $haystack across the
-     *                         various dimensions. FALSE if $needle was not found.
-     */
-    public static function recursive_array_search($needle, $haystack, $currentKey = '')
-    {
-        foreach ($haystack as $key => $value) {
-            dd(is_array($value));
-            if (is_array($value)) {
-
-                $nextKey = recursive_array_search($needle, $value, $currentKey . '[' . $key . ']');
-                if ($nextKey) {
-                    return $nextKey;
-                }
-            } else if ($value === $needle) {
-                return is_numeric($key) ? $currentKey . '[' . $key . ']' : $currentKey;
-            }
-        }
-        return false;
-    }
 }
