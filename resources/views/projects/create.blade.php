@@ -32,7 +32,7 @@
             {{__('Description')}} *
         </label>
 
-        <textarea name="description" id="textarea" class="p-2 resize-y border rounded focus:outline-none focus:shadow-outline w-full h-32"
+        <textarea name="description" id="textarea" class="p-2 resize-y border rounded focus:outline-none focus:ring w-full h-32"
                   v-model="newproject.description"></textarea>
         <span
                 :class="newproject.inputLength.description <= newproject.description.length ? 'text-red-600 text-xs w-auto inline-flex float-right' : 'text-xs text-gray-500 w-auto inline-flex float-right'">@{{newproject.inputLength.description - newproject.description.length}} / @{{newproject.inputLength.description}}</span>
@@ -69,7 +69,7 @@
                         {{__('Input Name')}}
                     </label>
 
-                    <input type="text" class="mb-0 bg-white focus:outline-none focus:shadow-outline border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none leading-normal w-full" v-model="newproject.inputs[index].name">
+                    <input type="text" class="mb-0 bg-white focus:outline-none focus:ring border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none leading-normal w-full" v-model="newproject.inputs[index].name">
 
                     <label class="md:w-2/3 block text-gray-500 font-bold">
                         <input class="mr-2 leading-tight" type="checkbox" v-model="newproject.inputs[index].mandatory">
@@ -96,7 +96,7 @@
                                             <label class="uppercase tracking-wide text-gray-700 text-base font-bold">{{__('Answers')}}</label>
                                                 <div class="block"
                                                      v-for="(m,answerindex) in newproject.inputs[index].answers">
-                                                    <input type="text" class="mb-0 bg-white focus:outline-none focus:shadow-outline border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none leading-normal w-full inputcreatecase"
+                                                    <input type="text" class="mb-0 bg-white focus:outline-none focus:ring border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none leading-normal w-full inputcreatecase"
                                                            v-model="newproject.inputs[index].answers[answerindex]"
                                                            @keyup="handleAdditionalInputs(index,answerindex,m)"
                                                            autocomplete="off"

@@ -67,7 +67,7 @@
                     </label>
                     <input type="text" name="media_id"
                            v-model="editentry.data.media_id"
-                           class="bg-white focus:outline-none focus:shadow-outline border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none leading-normal"></input>
+                           class="bg-white focus:outline-none focus:ring border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none leading-normal"></input>
 
                 </div>
                 <h1 class="text-2xl font-bold text-center my-4 uppercase tracking-wide text-gray-700">Inputs</h1>
@@ -77,7 +77,7 @@
                     </label>
                     <input type="text" v-if="value.type === 'text'" :name="'text'+value.name"
                            v-model="editentry.data.inputs[value.name]"
-                           class="bg-white focus:outline-none focus:shadow-outline border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none leading-normal "></input>
+                           class="bg-white focus:outline-none focus:ring border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none leading-normal "></input>
                     <b-taginput
                             :data=value.answers
                             autocomplete
