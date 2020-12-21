@@ -27,7 +27,7 @@
                     {{ props.row.deviceID }}
                 </b-table-column>
 
-                <b-table-column field="api_token" label="Api Token" sortable class="whitespace-no-wrap text-xs w-1/12">
+                <b-table-column field="api_token" label="Api Token" sortable class="whitespace-nowrap text-xs w-1/12">
                     {{ props.row.api_token ? "YES" : "NO" }}
                 </b-table-column>
 

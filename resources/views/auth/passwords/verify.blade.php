@@ -62,7 +62,7 @@
 
                 <div class="pr-4 pl-4  text-center">
                     <button type="submit"
-                            class="inline-block align-middle text-center select-none border font-normal whitespace-no-wrap py-2 px-4 rounded text-base leading-normal no-underline text-blue-lightest bg-blue hover:bg-blue-light">
+                            class="inline-block align-middle text-center select-none border font-normal whitespace-nowrap py-2 px-4 rounded text-base leading-normal no-underline text-blue-lightest bg-blue hover:bg-blue-light">
                         {{ __('Set password') }}
                     </button>
                 </div>

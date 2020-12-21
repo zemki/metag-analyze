@@ -17,7 +17,7 @@
                 {{__('Case Name')}} *
             </label>
             <input type="text"
-                   class="mb-0 bg-white focus:outline-none focus:shadow-outline border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none leading-normal w-full"
+                   class="mb-0 bg-white focus:outline-none focus:ring border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none leading-normal w-full"
                    name="name" v-model="newcase.name">
             <span
                     :class="newcase.inputLength.name <= newcase.name.length ? 'text-red-600 text-xs w-auto inline-flex float-right' : 'text-xs text-gray-500 w-auto inline-flex float-right'">@{{newcase.inputLength.name - newcase.name.length}} / @{{newcase.inputLength.name}}</span>
@@ -32,7 +32,7 @@
                     {{__('Duration')}} *
                 </label>
                 <input type="text"
-                       class="bg-white focus:outline-none focus:shadow-outline border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none leading-normal "
+                       class="bg-white focus:outline-none focus:ring border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none leading-normal "
                        v-model="newcase.duration.input"
                        :disabled="newcase.backendcase">
             </div>
@@ -88,8 +88,8 @@
             {{__('User')}} *
         </label>
         <input type="email"
-               class="bg-white focus:outline-none focus:shadow-outline border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none leading-normal"
-               :class="newcase.backendcase ? 'disabled cursor-not-allowed bg-gray-700 opacity-50' : 'bg-white focus:outline-none focus:shadow-outline border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none leading-normal'"
+               class="bg-white focus:outline-none focus:ring border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none leading-normal"
+               :class="newcase.backendcase ? 'disabled cursor-not-allowed bg-gray-700 opacity-50' : 'bg-white focus:outline-none focus:ring border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none leading-normal'"
                name="email" list="email" autocomplete="off" required
                :disabled="newcase.backendcase">
 
