@@ -27,7 +27,6 @@ class ProjectCasesController extends Controller
      */
     public function distinctshow(Project $project, Cases $case)
     {
-
         if (auth()->user()->notOwnerNorInvited($project) && !auth()->user()->isAdmin())
         {
             abort(403);
@@ -57,6 +56,11 @@ class ProjectCasesController extends Controller
 
     public function hariboshow(Project $project, Cases $case)
     {
+  
+        if (auth()->user()->notOwnerNorInvited($project) && !auth()->user()->isAdmin())
+        {
+            abort(403);
+        }
         $tempArray = Entry::where('case_id', '=', $case->id)->with('media')->get()->toArray();
         $data['entries'] = [];
         $data['availableInputs'] = $project->getAnswersInputs();
