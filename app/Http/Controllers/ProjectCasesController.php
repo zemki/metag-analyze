@@ -45,11 +45,16 @@ class ProjectCasesController extends Controller
         $data['entries']['availableinputs'] = $availableInputs;
         $data['case'] = $case;
         $data['project'] = $project;
+
+        if(env('APP_ENV') === 'Production'){
+            $slug= '/metag';
+        }else $slug = '';
+
         $data['breadcrumb'] = [
             url('/') => 'Metag',
             url('/') => 'Projects',
-            $project->path() => $project->name,
-            $case->path() => substr($case->name, 0, 15) . '...'
+            $slug.$project->path() => $project->name,
+            $slug.$case->path() => substr($case->name, 0, 15) . '...'
         ];
         return view('entries.distinctcases', $data);
     }
@@ -141,7 +146,16 @@ class ProjectCasesController extends Controller
         $this->assignColorsToMedia($case, $data);
 
         sort($data['availableInputs']);
+        if(env('APP_ENV') === 'Production'){
+            $slug= '/metag';
+        }else $slug = '';
 
+        $data['breadcrumb'] = [
+            url('/') => 'Metag',
+            url('/') => 'Projects',
+            $slug.$project->path() => $project->name,
+            $slug.$case->path() => substr($case->name, 0, 15) . '...'
+        ];
         return view('entries.haribocases', $data);
     }
 
