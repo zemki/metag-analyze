@@ -46,7 +46,7 @@ class ProjectCasesController extends Controller
         $data['case'] = $case;
         $data['project'] = $project;
 
-        if(env('APP_ENV') === 'Production'){
+        if(env('APP_ENV') === 'production'){
             $slug= '/metag';
         }else $slug = '';
 
