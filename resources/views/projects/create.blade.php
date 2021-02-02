@@ -101,7 +101,7 @@
                                                            @keyup="handleAdditionalInputs(index,answerindex,m)"
                                                            autocomplete="off"
                                                            @keydown.enter.prevent
-                                                           @keydown.shift.prevent>
+                                                           >
                                                 </div>
 						            </span>
 

@@ -770,30 +770,32 @@ window.app = new Vue({
     },
     handleMediaInputs(index, mediaName) {
       let tabKey = 9;
-      let isLastElement = index + 1 == this.newproject.media.length;
+      let isLastElement = index + 1 === this.newproject.media.length;
 
       if (isLastElement) {
-        if (mediaName != "") {
+        if (mediaName !== "") {
           this.newproject.media.push("");
         }
       }
-      if (index != 0 && mediaName == "" && lastPressedKey != tabKey) {
+
+      if (index != 0 && mediaName === "" && lastPressedKey !== tabKey) {
         this.newproject.media.splice(index, 1);
       }
     },
     handleAdditionalInputs(questionindex, answerindex, answer) {
-      let isLastElement =
-        answerindex + 1 == this.newproject.inputs[questionindex].answers.length;
+      let isLastElement = answerindex + 1 === this.newproject.inputs[questionindex].answers.length;
+      let shiftKey = 16;
 
+      if(lastPressedKey === shiftKey) return;
       if (isLastElement) {
-        if (answer != "") {
+        if (answer !== "") {
           this.newproject.inputs[questionindex].answers.push("");
         }
       }
       //this.newproject.inputs[questionindex].id = this.createUUID(16);
       let tabKey = 9;
-      let middleElementRemoved = answerindex != 0 && answer == "";
-      if (middleElementRemoved && lastPressedKey != tabKey) {
+      let middleElementRemoved = answerindex !== 0 && answer == "";
+      if (middleElementRemoved && lastPressedKey !== tabKey) {
         this.newproject.inputs[questionindex].answers.splice(answerindex, 1);
       }
 
