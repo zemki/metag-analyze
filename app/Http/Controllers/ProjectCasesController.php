@@ -45,21 +45,11 @@ class ProjectCasesController extends Controller
         $data['entries']['availableinputs'] = $availableInputs;
         $data['case'] = $case;
         $data['project'] = $project;
-
-        if(env('APP_ENV') === 'production'){
-            $slug= '/metag';
-        }else $slug = '';
-
-        $data['breadcrumb'] = [
-            url('/') => 'Metag',
-            url('/') => 'Projects',
-            $slug.$project->path() => $project->name,
-            $slug.$case->path() => substr($case->name, 0, 15) . '...'
-        ];
+        $data = $this->getGraphBreadcrumb($project, $case, $data);
         return view('entries.distinctcases', $data);
     }
 
-    public function hariboshow(Project $project, Cases $case)
+    public function groupedshow(Project $project, Cases $case)
     {
   
         if (auth()->user()->notOwnerNorInvited($project) && !auth()->user()->isAdmin())
@@ -146,17 +136,8 @@ class ProjectCasesController extends Controller
         $this->assignColorsToMedia($case, $data);
 
         sort($data['availableInputs']);
-        if(env('APP_ENV') === 'production'){
-            $slug= '/metag';
-        }else $slug = '';
-
-        $data['breadcrumb'] = [
-            url('/') => 'Metag',
-            url('/') => 'Projects',
-            $slug.$project->path() => $project->name,
-            $slug.$case->path() => substr($case->name, 0, 15) . '...'
-        ];
-        return view('entries.haribocases', $data);
+        $data = $this->getGraphBreadcrumb($project, $case, $data);
+        return view('entries.groupedcases', $data);
     }
 
     /**
@@ -341,5 +322,26 @@ class ProjectCasesController extends Controller
         {
             unset($data['availableInputs'][$key]);
         }
+    }
+
+    /**
+     * @param Project $project
+     * @param Cases   $case
+     * @param mixed   $data
+     * @return mixed
+     */
+    private function getGraphBreadcrumb(Project $project, Cases $case, mixed $data)
+    {
+        if (env('APP_ENV') === 'production')
+        {
+            $slug = '/metag';
+        } else $slug = '';
+        $data['breadcrumb'] = [
+            url('/') => 'Metag',
+            url('/') => 'Projects',
+            $slug . $project->path() => $project->name,
+            $slug . $case->path() => substr($case->name, 0, 15) . '...'
+        ];
+        return $data;
     }
 }

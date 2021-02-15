@@ -187,10 +187,10 @@
                                     </div>
                                     @if($project->inputs != "[]")
                                         <div class="mb-2">
-                                            <a href="{{$project->id.$case->haribopath()}}" class="no-underline">
+                                            <a href="{{$project->id.$case->groupedEntriesPath()}}" class="no-underline">
                                                 <button
                                                         class="block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded no-underline">
-                                                    {{__('Haribo Graph')}}
+                                                    {{__('Grouped Entries Graph')}}
                                                 </button>
                                             </a>
                                         </div>
@@ -218,10 +218,10 @@
                                     </button>
                                 </a>
                                 @if($project->inputs != "[]")
-                                <a href="{{$project->id.$case->haribopath()}}" class="no-underline">
+                                <a href="{{$project->id.$case->groupedEntriesPath()}}" class="no-underline">
                                     <button
                                             class="block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded no-underline">
-                                        {{__('Haribo Graph')}}
+                                        {{__('Grouped Entries Graph')}}
                                     </button>
                                 </a>
                                     @endif
