@@ -202,9 +202,9 @@ class Cases extends Model
         return "/cases/{$this->id}";
     }
 
-    public function haribopath()
+    public function groupedEntriesPath()
     {
-        return "/haribocases/{$this->id}";
+        return "/groupedcases/{$this->id}";
     }
 
     public function distinctpath()

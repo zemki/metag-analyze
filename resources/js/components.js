@@ -33,5 +33,5 @@ Vue.component(
 Vue.component(
     'medtaggraph',
     require(
-        './components/newgraph.vue').default,
+        './components/groupedentries.vue').default,
 );
