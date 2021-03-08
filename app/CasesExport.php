@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Exports;
+namespace App;
 
 use App\Cases;
 use App\Entry;
