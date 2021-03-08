@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Cases;
 use App\Entry;
-use App\Exports\CasesExport;
+use App\CasesExport;
 use App\Media;
 use App\Project;
 use App\User;
