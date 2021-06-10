@@ -25,6 +25,7 @@ class ProjectController extends Controller
     protected const NULLABLE = 'nullable';
     protected const INPUTS = 'inputs';
     protected const MESSAGE = 'message';
+protected const CASES = 'cases';
 
     public function index()
     {
@@ -51,6 +52,8 @@ class ProjectController extends Controller
       //  $project->media = $project->media()->pluck('media.name')->toArray();
         $data['data']['media'] = Media::all();
         $data[self::PROJECT] = $project;
+        $data[self::CASES] = $project->cases;
+        $data['casesWithUsers'] = $project->cases()->with('user')->get();
         $data[self::PROJECT.'media'] = $project->media()->pluck('media.name')->toArray();
         $data['invites'] = $project->invited()->get();
 

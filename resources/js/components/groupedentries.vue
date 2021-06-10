@@ -4,8 +4,9 @@
 
 <script>
 import Highcharts from "highcharts";
+import HighchartsMore from "highcharts/highcharts-more"
 import { mapActions, mapState } from "vuex";
-
+HighchartsMore(Highcharts);
 export default {
   name: "medtaggraph",
   props: ["media", "inputs", "entries", "yColumn"],
@@ -143,6 +144,7 @@ export default {
           startOnTick: false,
           endOnTick: false,
           labels: {
+
             formatter: null
           },
         },
@@ -328,11 +330,65 @@ export default {
     },
     download: function (type) {
       let container = document.getElementById("container");
-
+    let self = this;
       this.chart.exportChart({
         sourceWidth: this.chart.offsetWidth,
         sourceHeight: this.chart.offsetHeight,
         type: type,
+      },{
+        chart: {
+          type: "columnrange",
+          inverted: true,
+          zoomType: "y",
+          height: (9 / 16) * 100 + "%",
+          animation: false,
+        },
+
+        credits: {
+          enabled: false,
+        },
+        title: null,
+        xAxis: {
+          labels: {
+            step: 10,
+          },
+        },
+        yAxis: {
+          type: "datetime",
+          title: {
+            text: null,
+          },
+          opposite: true,
+          tickInterval: 24 * 60 * 60 * 1000,
+          minorTickInterval: 6 * 60 * 60 * 1000,
+          minorTickWidth: 1,
+          minorTickLength: 10,
+          minorGridLineWidth: 0,
+          lineWidth: 1,
+          startOnTick: false,
+          endOnTick: false,
+        },
+        plotOptions: {
+          columnrange: {
+            grouping: false,
+            allAreas: true,
+            crisp:true,
+            dataGrouping: false
+          },
+          series: {
+            states: {
+              inactive: {
+                opacity: 1,
+              },
+              hover: {
+                opacity: 1,
+              },
+            },
+          },
+        },
+        legend: {
+          itemWidth: 275,
+        },
       });
     },
   },

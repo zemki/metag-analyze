@@ -4,6 +4,7 @@ namespace App;
 
 use App\Helpers\Helper;
 use Illuminate\Database\Eloquent\Model;
+use JetBrains\PhpStorm\Pure;
 
 /**
  * App\Cases
@@ -245,6 +246,7 @@ class Cases extends Model
     }
 
     /**
+     * Check whether right now is past the time of the last day
      * @return bool|string
      */
     public function isConsultable()
@@ -261,7 +263,6 @@ class Cases extends Model
      */
     public function lastDay(): string
     {
-
         return Helper::get_string_between($this->duration, 'lastDay:', '|');
     }
 
@@ -279,12 +280,12 @@ class Cases extends Model
      * write the duration from the database value to a readable format
      * @return string
      */
-    public function firstDay(): string
+    #[Pure] public function firstDay(): string
     {
         return Helper::get_string_between($this->duration, 'firstDay:', '|');
     }
 
-    public function isBackend(): bool
+    #[Pure] public function isBackend(): bool
     {
         return (Helper::get_string_between($this->duration, 'value:', '|') == 0);
     }

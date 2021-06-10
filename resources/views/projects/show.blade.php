@@ -155,12 +155,17 @@
                 <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">{{__('Download all the data from this project')}}</button>
             </a>
         </div>
+        <div class="inline">
+            <a href="{{url($project->path().'/notifications')}}" >
+                <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">{{__('Notification Center')}}</button>
+            </a>
+        </div>
     </div>
 
     <b-tabs class="block w-full" expanded>
         <b-tab-item label="{{__('Cases List')}}">
             <div class="flex flex-wrap w-full">
-                @forelse($project->cases as $key => $case)
+                @forelse($cases as $key => $case)
 
                     <div class="rounded-none overflow-hidden text-center border border-r-0 border-solid border-gray-400 mt-2 py-2 w-1/4 px-2">
                         <div class="font-bold text-xl mb-2 flex items-center">
@@ -242,7 +247,7 @@
                         @endif
 
                         <div class="py-2">
-                            <button type="submit" class="block button is-danger text-white"
+                            <button type="submit" class="block button bg-red-600 text-white"
                                     @click="confirmdeletecase('{{url('/cases/'.$case->id)}}')">
                                 {{__('Delete Case')}}
                             </button>
@@ -296,7 +301,7 @@
             </b-tab-item>
         @endif
         <b-tab-item label="Users">
-            <users-in-cases :cases="{{$project->cases()->with('user')->get()}}"></users-in-cases>
+            <users-in-cases :cases="{{$casesWithUsers}}"></users-in-cases>
         </b-tab-item>
     </b-tabs>
 @endsection
