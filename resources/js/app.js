@@ -868,7 +868,7 @@ window.app = new Vue({
     },
     confirmLeaveProject: function (userToDetach, project) {
       let confirmDelete = this.$buefy.dialog.confirm({
-        title: "Confirm Delete",
+        title: "Confirm Leave",
         message: "Are you sure you want to leave this project?",
         cancelText: "No",
         confirmText: "YES remove me",

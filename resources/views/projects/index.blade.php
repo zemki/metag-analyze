@@ -2,7 +2,7 @@
 
 @section('content')
     @if($newsletter)
-        <div class="w-full h-auto text-center text-gray-900 bg-green-400 p-4 newsletter transition-all duration-500 ease-in-out opacity-100">
+        <div class="w-full h-auto text-center text-gray-900 bg-green-500 p-4 newsletter transition-all duration-500 ease-in-out opacity-100">
             <p class="w-full">{{__('Would you be interested in receiving e-mails about future features and updates from MeSoftware?')}}</p>
             <button @click="iWantNewsletter('true')" class="sm:m-2 md:mx-1 shadow sm:block sm:w-full md:w-auto md:inline bg-purple-500 hover:bg-purple-400 focus:ring focus:outline-none text-white font-bold py-2 px-4 rounded" type="button">
                 {!!  __('<strong>I want</strong> to receive emails from MeSoftware') !!}
@@ -48,12 +48,12 @@
                     <div class="py-2">
 
                         <a href="{{url($project->path().'/export')}}" title="{{__('from cases that are already closed.')}}">
-                            <button class="button is-link is-primary">{{__('Download all the data')}}</button>
+                            <button class="button bg-green-500 text-white">{{__('Download all the data')}}</button>
                         </a>
                     </div>
                     <div class="py-2">
 
-                        <button class="button is-danger mt-1">
+                        <button class="button bg-red-600 mt-1">
                             <a class="text-gray-100 hover:text-black"
                                @click="confirmDeleteProject({{$project->id}},'{{url('/projects/'.$project->id)}}')">{{__('Delete Project')}}</a>
                         </button>
@@ -108,7 +108,7 @@
 
 
                     <div class="" style="float:right;">
-                        <a class="button is-danger text-white"
+                        <a class="button bg-red-600 text-white"
                            @click="confirmLeaveProject({{auth()->user()}},{{$project->id}})">{{__('Leave Project')}}</a>
                     </div>
                 </article>
