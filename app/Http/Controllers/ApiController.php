@@ -87,7 +87,12 @@ class ApiController extends Controller
                     return response()->json(['case' => $response], 499);
                 }
 
-                //User::saveDeviceId($request);
+                if(!auth()->user()->profile()->exists())
+                {
+                    $profile = auth()->user()->addProfile(auth()->user());
+                }
+
+                User::saveDeviceId($request);
                 $lastDayPos = strpos($userHasACase->duration, "lastDay:");
                 $startDay = Helper::get_string_between($userHasACase->duration, "startDay:", "|");
                 $duration = $lastDayPos ? substr($userHasACase->duration, $lastDayPos + strlen('lastDay:'), strlen($userHasACase->duration) - 1) : Cases::calculateDuration($request->datetime, $userHasACase->duration);
