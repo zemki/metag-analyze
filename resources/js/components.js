@@ -35,3 +35,9 @@ Vue.component(
     require(
         './components/groupedentries.vue').default,
 );
+
+Vue.component(
+    'notification-center',
+    require(
+        './components/notificationcenter.vue').default,
+);

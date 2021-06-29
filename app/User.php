@@ -167,6 +167,7 @@ class User extends Authenticatable implements MustVerifyEmail
         auth()->user()->forceFill(['deviceID' => $currentDeviceId ?? ''])->save();
     }
 
+
     public function groups()
     {
         return $this->belongsToMany('App\Group', 'user_groups')->withTimestamps();
@@ -286,4 +287,20 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
 
+    /**
+     * Specifies the user's FCM tokens
+     *
+     * @return string|array
+     */
+    public function routeNotificationForFcm()
+    {
+        return $this->getDeviceTokens();
+    }
+
+    private function getDeviceTokens()
+    {
+
+        return $this->deviceID;
+
+    }
 }

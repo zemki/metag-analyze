@@ -58,6 +58,7 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified','LoggedUser']], 
      * Case Routes
      * Case is dependant of project, so we concatenate with it
      */
+    Route::get('/projects/{project}/notifications', 'ProjectNotificationController@show');
     Route::get('/projects/{project}/cases/new', 'ProjectCasesController@create');
     Route::post('/projects/{project}/cases', 'ProjectCasesController@store');
     //Route::get('/projects/{project}/cases/{case}', 'ProjectCasesController@show');
