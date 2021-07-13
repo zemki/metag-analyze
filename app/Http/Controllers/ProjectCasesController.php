@@ -156,7 +156,6 @@ class ProjectCasesController extends Controller
             url($project->path()) => $project->name,
             '#' => 'Create Case'
         ];
-        $data['users'] = User::all();
         $data['project'] = $project;
         return view('cases.create', $data);
     }

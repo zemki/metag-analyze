@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\VerificationEmail;
+use App\Notifications\researcherNotificationToUser;
 use App\Project;
 use App\Role;
 use App\User;
@@ -172,7 +173,33 @@ class UserController extends Controller
 
         }
 
+    }
 
+    /**
+     *
+     */
+    public function notifyDevice(Request $request)
+    {
+        $user = User::where('id',$request->input('user')['id'])->first();
+        $user->profile->last_notification_at = date("Y-m-d H:i:s");
+        $user->profile->save();
+
+
+        $user->notify((new researcherNotificationToUser(['title' => $request->input('title'), 'message' => $request->input('message'), 'case' => $request->input('cases')])));
+        return response()->json(['message' => 'Notification Sent!','notified' => date("Y-m-d H:i:s")], 200);
+
+    }
+
+    /**
+     *
+     */
+    public function planNotification(Request $request): JsonResponse
+    {
+        $user = User::where('id',$request->input('user')['id'])->first();
+     //   $user->profile->last_notification_at = date("Y-m-d H:i:s");
+        $user->profile->save();
+        $user->notify(new researcherNotificationToUser(['title' => $request->input('title'), 'message' => $request->input('message'), 'case' => $request->input('cases'), 'planning' => $request->input('planning')]));
+        return response()->json(['message' => 'Notification Planned!',''], 200);
 
     }
 }
