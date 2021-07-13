@@ -7,7 +7,8 @@
         {{$project->description}}
     </p>
 
-    <notification-center :cases="{{$casesWithUsers}}"></notification-center>
+    <notification-center :cases="{{$casesWithUsers}}" :notifications="{{$notifications}}" :plannednotifications="{{$plannedNotifications}}"></notification-center>
+
 
 
 

@@ -40,7 +40,6 @@
                                     </svg>
                                 @endif
                                 {{$case->name}}
-
                             </div>
                             <div class="py-2">
                                 @if(!$case->notYetStarted() && $case->entries()->count() == 0)
