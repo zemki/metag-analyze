@@ -59,7 +59,7 @@ class researcherNotificationToUser extends Notification implements ShouldQueue
         {
             WebhookCall::create()
                 ->url('https://chat.zemki.uni-bremen.de/hooks/pggPQhGehrPiRSb2S/3xJ2bPWfYk2pqBBhtGGkgb3Q2JMGvH4DKaPdTANSTdZCtfxk')
-                ->payload(['text' => 'User ' . auth()->user()->email . ' sent a Notification to ' . $this->cases['user']['email'] . ' for the case "' . $this->cases['name'] . '". Poor human being!'])
+                ->payload(['text' => 'Sent a Notification to ' . $this->cases['user']['email'] . ' for the case "' . $this->cases['name'] . '". Poor human being!'])
                 ->useSecret('pggPQhGehrPiRSb2S/3xJ2bPWfYk2pqBBhtGGkgb3Q2JMGvH4DKaPdTANSTdZCtfxk')
                 ->dispatch();
         }
