@@ -68,6 +68,16 @@ use Illuminate\Support\Facades\Mail;
 class User extends Authenticatable implements MustVerifyEmail
 {
     use Notifiable, SoftDeletes;
+
+    /**
+     * The model's default values for attributes.
+     *
+     * @var array
+     */
+    protected $attributes = [
+        'deviceID' => '[]',
+    ];
+
     /**
      * The attributes that should be cast to native types.
      * @var array
