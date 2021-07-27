@@ -15,7 +15,7 @@ class ProjectNotificationController extends Controller
      */
     public function show(Project $project){
 
-
+        $data['breadcrumb'] = [url('/') => 'Projects', $project->path() => substr($project->name, 0, 20) . '...', '#' => 'Notification Center'];
         $data['cases'] = $project->cases;
         $data['project'] = $project;
         $data['casesWithUsers'] = $project->cases()->with('user')->get();

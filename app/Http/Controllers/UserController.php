@@ -7,6 +7,7 @@ use App\Notifications\researcherNotificationToUser;
 use App\Project;
 use App\Role;
 use App\User;
+use DB;
 use Helper;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Http\JsonResponse;
@@ -199,7 +200,16 @@ class UserController extends Controller
      //   $user->profile->last_notification_at = date("Y-m-d H:i:s");
         $user->profile->save();
         $user->notify(new researcherNotificationToUser(['title' => $request->input('title'), 'message' => $request->input('message'), 'case' => $request->input('cases'), 'planning' => $request->input('planning')]));
-        return response()->json(['message' => 'Notification Planned!',''], 200);
+        $notification = DB::table('notifications')->latest('created_at')->first();
+        return response()->json(['message' => 'Notification Planned!','notification' =>$notification], 200);
 
+    }
+
+    public function deletePlannedNotification(Request $request)
+    {
+
+      DB::table('notifications')->where('id', '=', $request->input('notification')['id'])->delete();
+
+        return response()->json(['message' => 'Notification Deleted!'], 200);
     }
 }
