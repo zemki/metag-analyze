@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Mail\VerificationEmail;
+use App\Notifications\researcherNotificationToUser;
 use App\Project;
 use App\Role;
 use App\User;
+use DB;
 use Helper;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Http\JsonResponse;
@@ -172,7 +174,42 @@ class UserController extends Controller
 
         }
 
+    }
+
+    /**
+     *
+     */
+    public function notifyDevice(Request $request)
+    {
+        $user = User::where('id',$request->input('user')['id'])->first();
+        $user->profile->last_notification_at = date("Y-m-d H:i:s");
+        $user->profile->save();
 
 
+        $user->notify((new researcherNotificationToUser(['title' => $request->input('title'), 'message' => $request->input('message'), 'case' => $request->input('cases')])));
+        return response()->json(['message' => 'Notification Sent!','notified' => date("Y-m-d H:i:s")], 200);
+
+    }
+
+    /**
+     *
+     */
+    public function planNotification(Request $request): JsonResponse
+    {
+        $user = User::where('id',$request->input('user')['id'])->first();
+     //   $user->profile->last_notification_at = date("Y-m-d H:i:s");
+        $user->profile->save();
+        $user->notify(new researcherNotificationToUser(['title' => $request->input('title'), 'message' => $request->input('message'), 'case' => $request->input('cases'), 'planning' => $request->input('planning')]));
+        $notification = DB::table('notifications')->latest('created_at')->first();
+        return response()->json(['message' => 'Notification Planned!','notification' =>$notification], 200);
+
+    }
+
+    public function deletePlannedNotification(Request $request)
+    {
+
+      DB::table('notifications')->where('id', '=', $request->input('notification')['id'])->delete();
+
+        return response()->json(['message' => 'Notification Deleted!'], 200);
     }
 }
