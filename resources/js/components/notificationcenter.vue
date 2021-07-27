@@ -446,28 +446,37 @@ export default {
       cases.selectedMinutes = 0;
       cases.selectedFrequency = "Every day";
       let duration = cases.duration;
+
       cases.real_duration = duration.split("|").pop();
-      cases.real_duration = cases.real_duration
-        .substring(
-          cases.real_duration.indexOf(":") + 1,
-          cases.real_duration.length
-        )
-        .split(".");
-      cases.real_duration = moment(
-        cases.real_duration[2] +
+      if(!cases.real_duration.includes('days:'))
+      {
+        cases.real_duration = cases.real_duration
+          .substring(
+            cases.real_duration.indexOf(":") + 1,
+            cases.real_duration.length
+          )
+          .split(".");
+        cases.real_duration = moment(
+          cases.real_duration[2] +
           "-" +
           cases.real_duration[1] +
           "-" +
           cases.real_duration[0]
-      );
-      cases.real_duration_readable = moment(cases.real_duration).format(
-        "DD.MM.YYYY"
-      );
+        );
+        cases.real_duration_readable = moment(cases.real_duration).format(
+          "DD.MM.YYYY"
+        );
 
-      if (cases.real_duration_readable === "Invalid date")
+        if (cases.real_duration_readable === "Invalid date")
+          cases.real_duration_readable = "User didn't login yet.";
+
+        cases.expired = cases.real_duration.isBefore(moment());
+
+      }else{
+        cases.expired = false
         cases.real_duration_readable = "User didn't login yet.";
+      }
 
-      cases.expired = cases.real_duration.isBefore(moment());
 
       if (cases.user.profile != null) {
         if (cases.user.profile.last_notification_at !== null) {
