@@ -155,11 +155,13 @@
                 <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">{{__('Download all the data from this project')}}</button>
             </a>
         </div>
-        <div class="inline">
-            <a href="{{url($project->path().'/notifications')}}" >
-                <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">{{__('Notification Center')}}</button>
-            </a>
-        </div>
+        @if(auth()->user()->isAdmin())
+            <div class="inline">
+                <a href="{{url($project->path().'/notifications')}}">
+                    <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">{{__('Notification Center')}}</button>
+                </a>
+            </div>
+        @endif
     </div>
 
     <b-tabs class="block w-full" expanded>
@@ -223,13 +225,13 @@
                                     </button>
                                 </a>
                                 @if($project->inputs != "[]")
-                                <a href="{{$project->id.$case->groupedEntriesPath()}}" class="no-underline">
-                                    <button
-                                            class="block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded no-underline">
-                                        {{__('Grouped Entries Graph')}}
-                                    </button>
-                                </a>
-                                    @endif
+                                    <a href="{{$project->id.$case->groupedEntriesPath()}}" class="no-underline">
+                                        <button
+                                                class="block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded no-underline">
+                                            {{__('Grouped Entries Graph')}}
+                                        </button>
+                                    </a>
+                                @endif
                             @elseif(!$case->isConsultable() && $case->entries()->count() > 0 && !$case->notYetStarted())
                                 <p>{{__('User is entering the data')}}</p>
                             @endif

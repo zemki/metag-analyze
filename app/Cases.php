@@ -5,6 +5,7 @@ namespace App;
 use App\Helpers\Helper;
 use DB;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\DatabaseNotificationCollection;
 use JetBrains\PhpStorm\Pure;
 
 /**
@@ -285,17 +286,27 @@ class Cases extends Model
         return Helper::get_string_between($this->duration, 'firstDay:', '|');
     }
 
+    /**
+     * @return bool
+     */
     #[Pure] public function isBackend(): bool
     {
         return (Helper::get_string_between($this->duration, 'value:', '|') == 0);
     }
 
-    public function notifications()
+    /**
+     * @return array|DatabaseNotificationCollection
+     */
+    public function notifications(): array|DatabaseNotificationCollection
     {
 
         return $this->user->notifications->sortByDesc('created_at')->where('data.case',$this->id)->where('data.planning',false);
     }
-    public function plannedNotifications()
+
+    /**
+     * @return array
+     */
+    public function plannedNotifications(): array
     {
         return DB::select('SELECT *  FROM notifications WHERE data NOT LIKE ? and data LIKE ? and data LIKE ?', ['%"planning":false%','%planning%','%"case":'.$this->id.'%']);
     }
