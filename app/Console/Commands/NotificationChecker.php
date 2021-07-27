@@ -49,7 +49,7 @@ class NotificationChecker extends Command
             $notification->data = json_decode($notification->data);
             $case = Cases::where('id',$notification->data->case)->first();
 
-            $caseClosed = strtotime($case->lastDay()) < strtotime('now');
+            $caseClosed = ($case->lastDay() !== "" && strtotime($case->lastDay()) < strtotime('now'));
             if($caseClosed){
                 $this->error("Notification NOT sent to ".$case->user->email." because last day was ".$case->lastDay());
                 // delete planned notification not valid anymore
