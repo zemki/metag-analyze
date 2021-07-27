@@ -3,23 +3,24 @@
 namespace App;
 
 use App\Helpers\Helper;
+use DB;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\DatabaseNotificationCollection;
 use JetBrains\PhpStorm\Pure;
 
 /**
  * App\Cases
- *
- * @property int $id
- * @property string $name
- * @property string $duration
- * @property int $project_id
- * @property int|null $user_id
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int                                                        $id
+ * @property string                                                     $name
+ * @property string                                                     $duration
+ * @property int                                                        $project_id
+ * @property int|null                                                   $user_id
+ * @property \Illuminate\Support\Carbon|null                            $created_at
+ * @property \Illuminate\Support\Carbon|null                            $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Entry[] $entries
- * @property-read int|null $entries_count
- * @property-read \App\Project $project
- * @property-read \App\User|null $user
+ * @property-read int|null                                              $entries_count
+ * @property-read \App\Project                                          $project
+ * @property-read \App\User|null                                        $user
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases query()
@@ -89,7 +90,7 @@ class Cases extends Model
 
     public function entries()
     {
-        return $this->hasMany(Entry::class, 'case_id','id');
+        return $this->hasMany(Entry::class, 'case_id', 'id');
     }
 
     /**
@@ -285,8 +286,28 @@ class Cases extends Model
         return Helper::get_string_between($this->duration, 'firstDay:', '|');
     }
 
+    /**
+     * @return bool
+     */
     #[Pure] public function isBackend(): bool
     {
         return (Helper::get_string_between($this->duration, 'value:', '|') == 0);
+    }
+
+    /**
+     * @return array|DatabaseNotificationCollection
+     */
+    public function notifications(): array|DatabaseNotificationCollection
+    {
+
+        return $this->user->notifications->sortByDesc('created_at')->where('data.case',$this->id)->where('data.planning',false);
+    }
+
+    /**
+     * @return array
+     */
+    public function plannedNotifications(): array
+    {
+        return DB::select('SELECT *  FROM notifications WHERE data NOT LIKE ? and data LIKE ? and data LIKE ?', ['%"planning":false%','%planning%','%"case":'.$this->id.'%']);
     }
 }

@@ -58,6 +58,7 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified','LoggedUser']], 
      * Case Routes
      * Case is dependant of project, so we concatenate with it
      */
+    Route::get('/projects/{project}/notifications', 'ProjectNotificationController@show');
     Route::get('/projects/{project}/cases/new', 'ProjectCasesController@create');
     Route::post('/projects/{project}/cases', 'ProjectCasesController@store');
     //Route::get('/projects/{project}/cases/{case}', 'ProjectCasesController@show');
@@ -80,6 +81,9 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified','LoggedUser']], 
     Route::post('/users/password/reset', 'Auth\ForgotPasswordController@SendsPasswordResetEmailFromCasesList');
     Route::post('/users/exist', 'UserController@userExists');
     Route::post('/users/subscribe', 'UserController@addToNewsletter');
+    Route::post('/users/notify', 'UserController@notifyDevice');
+    Route::post('/users/plannotification', 'UserController@planNotification');
+    Route::post('/users/deletenotification', 'UserController@deletePlannedNotification');
 
 });
 
