@@ -74,7 +74,7 @@ class NotificationChecker extends Command
 
                 // I'm using a deltaTime because I'm not sure if checking exactly X hours before returns an error.
                 // probably is worse though. It will send notification 10 minutes earlier every day.
-                $notificationAlreadySentRecently = $case->user->profile->last_notification_at >= (time() - $time);
+                $notificationAlreadySentRecently = $case->user->profile->last_notification_at >= (time() - $time - 1);
                 if($notificationAlreadySentRecently){
                     $this->info("notification already sent last ".($time/60/60)."h");
                 }else $this->sendNotification($case, $notification, $notificationSent);
