@@ -434,7 +434,7 @@ export default {
         23,
         24,
       ],
-      minutes: [0, 15, 30, 45],
+      minutes: ["00", 15, 30, 45],
       frequency: ["Every day", "Every two days", "Every three days"],
     };
   },
@@ -443,7 +443,7 @@ export default {
 
     this.arrayOfCases.forEach((cases) => {
       cases.selectedHour = 1;
-      cases.selectedMinutes = 0;
+      cases.selectedMinutes = "00";
       cases.selectedFrequency = "Every day";
       let duration = cases.duration;
 
@@ -603,6 +603,7 @@ export default {
       if (!this.validPlanning(oneCase)) {
         this.$buefy.snackbar.open(this.trans("Your data are not valid."));
       } else {
+
         let data = {
           user: oneCase.user,
           title: oneCase.title,
