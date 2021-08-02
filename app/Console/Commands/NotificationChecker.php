@@ -61,23 +61,32 @@ class NotificationChecker extends Command
             if($timeIsSameAsInDatabase)
             {
                 if((str_contains(explode('at ', $notification->data->planning)[0],"Every day"))){
-                    $time = 86400;
+                    $timeOfLastNotification = 86400;
                 }elseif ((str_contains(explode('at ', $notification->data->planning)[0],"Every two days"))){
-                    $time = 86400 * 2;
+                    $timeOfLastNotification = 86400 * 2;
                 }elseif ((str_contains(explode('at ', $notification->data->planning)[0],"Every three days"))){
-                    $time = 86400 * 3;
+                    $timeOfLastNotification = 86400 * 3;
                 }else{
                     $this->error("Something went wrong while parsing the frequency of Notification ".$notification->id);
                     return 0;
                 }
 
 
+
                 // I'm using a deltaTime because I'm not sure if checking exactly X hours before returns an error.
                 // probably is worse though. It will send notification 10 minutes earlier every day.
-                $notificationAlreadySentRecently = strtotime($case->user->profile->last_notification_at) >= (time() - $time );
-                if($notificationAlreadySentRecently){
-                    $this->info("notification already sent last ".($time/60/60)."h");
-                }else $this->sendNotification($case, $notification, $notificationSent);
+            //    $notificationAlreadySentRecently = strtotime($case->user->profile->last_notification_at) >= (time() - $timeOfLastNotification - $difference);
+
+                $timefromdatabase = strtotime($case->user->profile->last_notification_at);
+
+                $dif = time() - $timefromdatabase;
+
+                if($dif > $timeOfLastNotification)
+                {
+                    $this->sendNotification($case, $notification, $notificationSent);
+                }else{
+                    $this->info("notification already sent last ".($timeOfLastNotification/60/60)."h");
+                }
 
 
             }
