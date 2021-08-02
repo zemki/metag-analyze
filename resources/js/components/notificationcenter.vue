@@ -53,6 +53,13 @@
                 oneCase.real_duration_readable
               }}</span>
             </h2>
+            <button
+              v-if="admin"
+              @click="cleanupNotification(oneCase)"
+              class="bg-transparent hover:bg-red-500 text-red-700 font-semibold hover:text-white py-1 px-2 border border-red-500 hover:border-transparent"
+            >
+              {{ trans("Forget Notification") }}
+            </button>
             <p class="break-words font-serif">
               {{ trans("Send notification to user: ") }}
               <span class="font-bold">{{ oneCase.user.email }}</span>
@@ -228,11 +235,11 @@
           </div>
         </div>
         <div id="second" class="p-4" v-show="activeTab === 2">
-            <p
-                    class="break-words font-bold bg-yellow-500 p-1 text-black"
-            >
-        {{trans('You can sort the Id - Case Name or the Sent At columns.')}}
-            </p>
+          <p class="break-words font-bold bg-yellow-500 p-1 text-black">
+            {{
+              trans("You can sort the Id - Case Name or the Sent At columns.")
+            }}
+          </p>
           <table class="table-auto w-full border-solid bg-blue-100 border-2">
             <thead>
               <tr class="bg-blue-500 uppercase">
@@ -241,16 +248,21 @@
                   class="cursor-pointer border-b-2 border-black border-solid px-4 py-2 font-bold text-white align-middle w-64"
                 >
                   {{ trans("Id") }}
-                    <span
-                            class="mx-2 text-sm"
-                            v-if="this.currentSort === 'id' && this.currentSortDir==='asc'"
-                    >
+                  <span
+                    class="mx-2 text-sm"
+                    v-if="
+                      this.currentSort === 'id' && this.currentSortDir === 'asc'
+                    "
+                  >
                     Asc
                   </span>
-                    <span
-                            class="mx-2 text-sm"
-                            v-if="this.currentSort === 'id' && this.currentSortDir==='desc'"
-                    >
+                  <span
+                    class="mx-2 text-sm"
+                    v-if="
+                      this.currentSort === 'id' &&
+                      this.currentSortDir === 'desc'
+                    "
+                  >
                     Desc
                   </span>
                 </th>
@@ -259,16 +271,22 @@
                   class="cursor-pointer border-b-2 border-black border-solid px-2 py-2 font-bold text-white align-middle w-32"
                 >
                   {{ trans("Case") }}
-                    <span
-                            class="mx-2 text-sm"
-                            v-if="this.currentSort === 'case.name' && this.currentSortDir==='asc'"
-                    >
+                  <span
+                    class="mx-2 text-sm"
+                    v-if="
+                      this.currentSort === 'case.name' &&
+                      this.currentSortDir === 'asc'
+                    "
+                  >
                     Asc
                   </span>
-                    <span
-                            class="mx-2 text-sm"
-                            v-if="this.currentSort === 'case.name' && this.currentSortDir==='desc'"
-                    >
+                  <span
+                    class="mx-2 text-sm"
+                    v-if="
+                      this.currentSort === 'case.name' &&
+                      this.currentSortDir === 'desc'
+                    "
+                  >
                     Desc
                   </span>
                 </th>
@@ -288,14 +306,20 @@
                 >
                   {{ trans("Sent At") }}
                   <span
-                          class="mx-2"
-                    v-if="this.currentSort === 'created_at_readable' && this.currentSortDir==='asc'"
+                    class="mx-2"
+                    v-if="
+                      this.currentSort === 'created_at_readable' &&
+                      this.currentSortDir === 'asc'
+                    "
                   >
                     Asc
                   </span>
                   <span
-                          class="mx-2"
-                    v-if="this.currentSort === 'created_at_readable' && this.currentSortDir==='desc'"
+                    class="mx-2"
+                    v-if="
+                      this.currentSort === 'created_at_readable' &&
+                      this.currentSortDir === 'desc'
+                    "
                   >
                     Desc
                   </span>
@@ -397,7 +421,7 @@
 import moment from "moment";
 
 export default {
-  props: ["cases", "notifications", "plannednotifications"],
+  props: ["cases", "notifications", "plannednotifications", "admin"],
   data() {
     return {
       inputLength: { title: 100, message: 900 },
@@ -448,8 +472,7 @@ export default {
       let duration = cases.duration;
 
       cases.real_duration = duration.split("|").pop();
-      if(!cases.real_duration.includes('days:'))
-      {
+      if (!cases.real_duration.includes("days:")) {
         cases.real_duration = cases.real_duration
           .substring(
             cases.real_duration.indexOf(":") + 1,
@@ -458,10 +481,10 @@ export default {
           .split(".");
         cases.real_duration = moment(
           cases.real_duration[2] +
-          "-" +
-          cases.real_duration[1] +
-          "-" +
-          cases.real_duration[0]
+            "-" +
+            cases.real_duration[1] +
+            "-" +
+            cases.real_duration[0]
         );
         cases.real_duration_readable = moment(cases.real_duration).format(
           "DD.MM.YYYY"
@@ -471,12 +494,10 @@ export default {
           cases.real_duration_readable = "User didn't login yet.";
 
         cases.expired = cases.real_duration.isBefore(moment());
-
-      }else{
-        cases.expired = false
+      } else {
+        cases.expired = false;
         cases.real_duration_readable = "User didn't login yet.";
       }
-
 
       if (cases.user.profile != null) {
         if (cases.user.profile.last_notification_at !== null) {
@@ -511,11 +532,19 @@ export default {
       return this.notifications.sort((a, b) => {
         let modifier = 1;
         if (this.currentSortDir === "desc") modifier = -1;
-        if(this.currentSort.includes('.')){
-          let multipleKeys = this.currentSort.split('.');
-          if (a[multipleKeys[0]][multipleKeys[1]] < b[multipleKeys[0]][multipleKeys[1]]) return -1 * modifier;
-          if (a[multipleKeys[0]][multipleKeys[1]] > b[multipleKeys[0]][multipleKeys[1]]) return 1 * modifier;
-        }else{
+        if (this.currentSort.includes(".")) {
+          let multipleKeys = this.currentSort.split(".");
+          if (
+            a[multipleKeys[0]][multipleKeys[1]] <
+            b[multipleKeys[0]][multipleKeys[1]]
+          )
+            return -1 * modifier;
+          if (
+            a[multipleKeys[0]][multipleKeys[1]] >
+            b[multipleKeys[0]][multipleKeys[1]]
+          )
+            return 1 * modifier;
+        } else {
           if (a[this.currentSort] < b[this.currentSort]) return -1 * modifier;
           if (a[this.currentSort] > b[this.currentSort]) return 1 * modifier;
         }
@@ -603,7 +632,6 @@ export default {
       if (!this.validPlanning(oneCase)) {
         this.$buefy.snackbar.open(this.trans("Your data are not valid."));
       } else {
-
         let data = {
           user: oneCase.user,
           title: oneCase.title,
@@ -654,6 +682,26 @@ export default {
       )
         return false;
       return true;
+    },
+    cleanupNotification: function (cases) {
+      let data = {
+        user: cases.user,
+        cases: cases,
+      };
+      window.axios
+        .post(this.productionUrl + "/users/cleanuplastnotification", data)
+        .then((response) => {
+          if (response.message) this.response = response.message;
+          else {
+            this.$buefy.snackbar.open(response.data);
+          }
+        })
+        .catch((error) => {
+          if (error.message) this.$buefy.snackbar.open(error.message);
+          else {
+            this.$buefy.snackbar.open(error.response.data);
+          }
+        });
     },
   },
 };
