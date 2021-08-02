@@ -6,11 +6,5 @@
     <p class="break-words my-4">
         {{$project->description}}
     </p>
-
-    <notification-center :cases="{{$casesWithUsers}}" :notifications="{{$notifications}}" :plannednotifications="{{$plannedNotifications}}"></notification-center>
-
-
-
-
-
+    <notification-center :cases="{{$casesWithUsers}}" :notifications="{{$notifications}}" :plannednotifications="{{$plannedNotifications}}" :admin="{{auth()->user()->isAdmin() ? "1" : "0"}}"></notification-center>
 @endsection

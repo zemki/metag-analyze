@@ -212,4 +212,25 @@ class UserController extends Controller
 
         return response()->json(['message' => 'Notification Deleted!'], 200);
     }
+
+    public function cleanupNotifications(Request $request)
+    {
+
+        if(!auth()->user()->isAdmin())
+        {
+            return response()->json(['message' => 'Don\'t even try!'], 200);
+
+        }else{
+            $user = User::where('id',$request->input('user')['id'])->first();
+            $user->profile->last_notification_at = null;
+            $user->profile->save();
+            $notification = DB::table('notifications')->where('notifiable_id',$request->input('user')['id'])->where('data->case',$request->input('cases')['id'])->latest('created_at')->limit(1)->delete();
+            ray($notification);
+            return response()->json(['message' => 'Deleted last notification!'], 200);
+
+
+        }
+
+
+    }
 }
