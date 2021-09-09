@@ -46,6 +46,7 @@ class NotificationChecker extends Command
         $notificationSent = 0;
         foreach ($notifications as $notification)
         {
+            $this->info($notification);
             $notification->data = json_decode($notification->data);
             $case = Cases::where('id',$notification->data->case)->first();
 
