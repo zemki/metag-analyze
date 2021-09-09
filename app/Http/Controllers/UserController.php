@@ -225,7 +225,6 @@ class UserController extends Controller
             $user->profile->last_notification_at = null;
             $user->profile->save();
             $notification = DB::table('notifications')->where('notifiable_id',$request->input('user')['id'])->where('data->case',$request->input('cases')['id'])->where('data->planned',false)->latest('created_at')->limit(1)->delete();
-            ray($notification);
             return response()->json(['message' => 'Deleted last notification!'], 200);
 
 
