@@ -61,11 +61,11 @@ class NotificationChecker extends Command
             if($timeIsSameAsInDatabase)
             {
                 if((str_contains(explode('at ', $notification->data->planning)[0],"Every day"))){
-                    $timeOfLastNotification = 86400;
+                    $differenceBetweenLastNotification = 86400;
                 }elseif ((str_contains(explode('at ', $notification->data->planning)[0],"Every two days"))){
-                    $timeOfLastNotification = 86400 * 2;
+                    $differenceBetweenLastNotification = 86400 * 2;
                 }elseif ((str_contains(explode('at ', $notification->data->planning)[0],"Every three days"))){
-                    $timeOfLastNotification = 86400 * 3;
+                    $differenceBetweenLastNotification = 86400 * 3;
                 }else{
                     $this->error("Something went wrong while parsing the frequency of Notification ".$notification->id);
                     return 0;
@@ -75,8 +75,8 @@ class NotificationChecker extends Command
                 $timefromdatabase = strtotime($case->user->profile->last_notification_at);
 
                 $dif = time() - $timefromdatabase;
-
-                if($dif > $timeOfLastNotification)
+                $enoughTimeHasPassed = $dif >= $differenceBetweenLastNotification;
+                if($enoughTimeHasPassed)
                 {
                     $this->sendNotification($case, $notification, $notificationSent);
                 }else{
