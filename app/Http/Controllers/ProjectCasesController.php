@@ -3,13 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Cases;
-use App\Entry;
 use App\CasesExport;
+use App\Entry;
 use App\Media;
 use App\Project;
 use App\User;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Redirector;
@@ -17,13 +21,12 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ProjectCasesController extends Controller
 {
-
     protected const PROJECT = 'project';
-    
+
     /**
      * @param Project $project
      * @param Cases   $case
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @return Factory|\Illuminate\View\View
      */
     public function distinctshow(Project $project, Cases $case)
     {
@@ -51,7 +54,7 @@ class ProjectCasesController extends Controller
 
     public function groupedshow(Project $project, Cases $case)
     {
-  
+
         if (auth()->user()->notOwnerNorInvited($project) && !auth()->user()->isAdmin())
         {
             abort(403);
@@ -59,15 +62,13 @@ class ProjectCasesController extends Controller
         $tempArray = Entry::where('case_id', '=', $case->id)->with('media')->get()->toArray();
         $data['entries'] = [];
         $data['availableInputs'] = $project->getAnswersInputs();
-      //  $data['availableInputs'] = [];
+        //  $data['availableInputs'] = [];
         $textInputToUnset = [];
-
         foreach ($tempArray as $entry)
         {
             $tempInputsArray = json_decode($entry['inputs'], true);
             $inputEntry = [];
             $inputEntry['inputs'] = [];
-
             // format the inputs for the graph
             foreach ($tempInputsArray as $question => $answer)
             {
@@ -80,7 +81,7 @@ class ProjectCasesController extends Controller
                         $tempEntryInputs['name'] = $singularAnswer;
                         foreach ($data['availableInputs'] as $availableInput)
                         {
-                            if($availableInput->name == $singularAnswer)
+                            if ($availableInput->name == $singularAnswer)
                             {
                                 $tempEntryInputs['color'] = $availableInput->color;
                                 break;
@@ -88,18 +89,18 @@ class ProjectCasesController extends Controller
                         }
                         array_push($inputEntry['inputs'], (object)$tempEntryInputs);
                     }
-                }else if(strlen($answer) > 1){
+                } else if (strlen($answer) > 1)
+                {
                     #text
                     $tempEntryInputs['id'] = $entry['id'];
                     $tempEntryInputs['name'] = $answer;
-
                     foreach ($data['availableInputs'] as $key => $availableInput)
                     {
-                        if($availableInput->name == $question)
+                        if ($availableInput->name == $question)
                         {
-                            array_push($data['availableInputs'],(object)["id" => count($data['availableInputs'])+1,"name" => $answer,"color" => $availableInput->color]);
+                            array_push($data['availableInputs'], (object)["id" => count($data['availableInputs']) + 1, "name" => $answer, "color" => $availableInput->color]);
                             $tempEntryInputs['color'] = $availableInput->color;
-                            array_push($textInputToUnset,$key);
+                            array_push($textInputToUnset, $key);
                             break;
                         }
                     }
@@ -109,10 +110,9 @@ class ProjectCasesController extends Controller
                     # scale
                     $tempEntryInputs['id'] = $entry['id'];
                     $tempEntryInputs['name'] = $answer;
-
                     foreach ($data['availableInputs'] as $availableInput)
                     {
-                        if($availableInput->name == $answer)
+                        if ($availableInput->name == $answer)
                         {
                             $tempEntryInputs['color'] = $availableInput->color;
                             break;
@@ -134,7 +134,6 @@ class ProjectCasesController extends Controller
         }
         $this->filterUnusedInputs($data, $textInputToUnset, $inputsToFilter);
         $this->assignColorsToMedia($case, $data);
-
         sort($data['availableInputs']);
         $data = $this->getGraphBreadcrumb($project, $case, $data);
         return view('entries.groupedcases', $data);
@@ -143,7 +142,7 @@ class ProjectCasesController extends Controller
     /**
      * Create a case belonging to a project
      * @param Project $project
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @return Factory|\Illuminate\View\View
      */
     public function create(Project $project)
     {
@@ -170,7 +169,8 @@ class ProjectCasesController extends Controller
         if (auth()->user()->notOwnerNorInvited($project))
         {
             abort(403);
-        }        if (request('name') == "")
+        }
+        if (request('name') == "")
         {
             return redirect($project->path() . '/cases/new')->with(['message' => __('Please fill all the required inputs.')]);
         }
@@ -209,8 +209,8 @@ class ProjectCasesController extends Controller
 
     /**
      * @param Cases $case
-     * @return RedirectResponse|Redirector
-     * @throws \Exception
+     * @return Application|Factory|View
+     * @throws Exception
      */
     public function destroy(Cases $case)
     {
@@ -224,11 +224,13 @@ class ProjectCasesController extends Controller
             return response()->json(['message' => 'You can\'t delete this case'], 403);
         }
         $data['breadcrumb'] = [url('/') => 'Projects', '#' => substr($project->name, 0, 20) . '...'];
-        $project->media = $project->media()->pluck('media.name')->toArray();
+      //  $project->media = $project->media()->pluck('media.name')->toArray();
         $data['data']['media'] = Media::all();
-        $data['project'] = $project;
-        $data['invites'] = $project->invited()->get();
+        $data[self::PROJECT] = $project;
+        $data['cases'] = $project->cases;
+        $data['casesWithUsers'] = $project->cases()->with('user')->get();
         $data[self::PROJECT.'media'] = $project->media()->pluck('media.name')->toArray();
+        $data['invites'] = $project->invited()->get();
         $data['message'] = "Case deleted";
         return view('projects.show', $data);
     }
