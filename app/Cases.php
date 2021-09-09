@@ -59,6 +59,13 @@ class Cases extends Model
                 {
                     $entry->delete();
                 }
+
+                foreach ($case->plannedNotifications() as $notification)
+                {
+
+                DB::delete('delete from notifications where id = ?',[$notification->id]);
+
+                }
             }
         });
     }
@@ -300,7 +307,7 @@ class Cases extends Model
     public function notifications(): array|DatabaseNotificationCollection
     {
 
-        return $this->user->notifications->sortByDesc('created_at')->where('data.case',$this->id)->where('data.planning',false);
+        return $this->user->notifications->sortByDesc('created_at')->where('data.case', $this->id)->where('data.planning', false);
     }
 
     /**
@@ -308,6 +315,6 @@ class Cases extends Model
      */
     public function plannedNotifications(): array
     {
-        return DB::select('SELECT *  FROM notifications WHERE data NOT LIKE ? and data LIKE ? and data LIKE ?', ['%"planning":false%','%planning%','%"case":'.$this->id.'%']);
+        return DB::select('SELECT *  FROM notifications WHERE data NOT LIKE ? and data LIKE ? and data LIKE ?', ['%"planning":false%', '%planning%', '%"case":' . $this->id . '%']);
     }
 }
