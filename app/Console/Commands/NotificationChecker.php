@@ -80,7 +80,7 @@ class NotificationChecker extends Command
                 {
                     $this->sendNotification($case, $notification, $notificationSent);
                 }else{
-                    $this->info("notification already sent last ".($timeOfLastNotification/60/60)."h");
+                    $this->info("notification already sent last ".($timefromdatabase/60/60)."h");
                 }
 
 
