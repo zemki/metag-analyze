@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Cases;
+use App\Notifications\researcherNotificationToUser;
 use DB;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
