@@ -105,11 +105,7 @@ class NotificationChecker extends Command
         $user = $case->user;
         $user->profile->last_notification_at = date("Y-m-d H:i:s");
         $user->profile->save();
-        $user->notify(new researcherNotif            WebhookCall::create()
-        ->url('https://chat.zemki.uni-bremen.de/hooks/pggPQhGehrPiRSb2S/3xJ2bPWfYk2pqBBhtGGkgb3Q2JMGvH4DKaPdTANSTdZCtfxk')
-        ->payload(['text' => 'Sent a Notification to ' . $this->cases['user']['email'] . ' for the case "' . $this->cases['name'] . '". Poor human being!'])
-        ->useSecret('pggPQhGehrPiRSb2S/3xJ2bPWfYk2pqBBhtGGkgb3Q2JMGvH4DKaPdTANSTdZCtfxk')
-        ->dispatch();icationToUser(['title' => $notification->data->title, 'message' => $notification->data->message, 'case' => $case]));
+        $user->notify(new researcherNotificationToUser(['title' => $notification->data->title, 'message' => $notification->data->message, 'case' => $case]));
         $this->info("Notification sent to " . $user->email);
         $notificationSent++;
     }
