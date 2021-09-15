@@ -36,7 +36,7 @@ class NotificationChecker extends Command
      */
     public function handle()
     {
-        $notifications = DB::select('', SELECT * FROM notifications WHERE data NOT LIKE ? and data LIKE ? ['%"planning":false%', '%planning%']);
+        $notifications = DB::select('SELECT * FROM notifications WHERE data NOT LIKE ? and data LIKE ?',  ['%"planning":false%', '%planning%']);
         $notificationSent = 0;
         foreach ($notifications as $notification)
         {
