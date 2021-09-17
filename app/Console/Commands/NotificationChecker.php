@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App;
 use App\Cases;
 use App\Notifications\researcherNotificationToUser;
 use DB;
@@ -39,6 +40,7 @@ class NotificationChecker extends Command
     {
         $notifications = DB::select('SELECT * FROM notifications WHERE data NOT LIKE ? and data LIKE ?',  ['%"planning":false%', '%planning%']);
         $notificationSent = 0;
+        $notificationCheckedButNotSent = 0;
         foreach ($notifications as $notification)
         {
             $notification->data = json_decode($notification->data);
@@ -76,6 +78,7 @@ class NotificationChecker extends Command
                     $this->sendNotification($case, $notification, $notificationSent);
                 } else
                 {
+                    $notificationCheckedButNotSent++;
                     $this->info("notification already sent last " . ($differenceBetweenLastNotification / 60 / 60) . "h");
                 }
             }
@@ -88,6 +91,14 @@ class NotificationChecker extends Command
             WebhookCall::create()
             ->url('https://chat.zemki.uni-bremen.de/hooks/pggPQhGehrPiRSb2S/3xJ2bPWfYk2pqBBhtGGkgb3Q2JMGvH4DKaPdTANSTdZCtfxk')
             ->payload(['text' => 'Command executed and  ' . $notificationSent . ' Notifications sent. "'])
+            ->useSecret('pggPQhGehrPiRSb2S/3xJ2bPWfYk2pqBBhtGGkgb3Q2JMGvH4DKaPdTANSTdZCtfxk')
+            ->dispatch();
+        }
+
+        if(!App::environment('local')){
+            WebhookCall::create()
+            ->url('https://chat.zemki.uni-bremen.de/hooks/pggPQhGehrPiRSb2S/3xJ2bPWfYk2pqBBhtGGkgb3Q2JMGvH4DKaPdTANSTdZCtfxk')
+            ->payload(['text' => 'Command executed and  ' . $notificationCheckedButNotSent . ' Notifications checked but not sent because time was not passed. "'])
             ->useSecret('pggPQhGehrPiRSb2S/3xJ2bPWfYk2pqBBhtGGkgb3Q2JMGvH4DKaPdTANSTdZCtfxk')
             ->dispatch();
         }
