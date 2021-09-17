@@ -95,13 +95,17 @@ class NotificationChecker extends Command
             ->dispatch();
         }
 
-        if(!App::environment('local')){
+        if($notificationCheckedButNotSent > 0)
+        {
+             if(!App::environment('local')){
             WebhookCall::create()
             ->url(config('utilities.url_rc_notifications'))
-            ->payload(['text' => 'Command executed and  ' . $notificationCheckedButNotSent . ' Notifications checked but not sent because time was not passed. "'])
+            ->payload(['text' => 'Command executed and  ' . $notificationCheckedButNotSent . ' Notifications checked but not sent because time was not passed.'])
             ->useSecret(config('utilities.secret_rc_notifications'))
             ->dispatch();
         }
+        }
+
 
 
         return 0;
