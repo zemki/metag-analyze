@@ -89,17 +89,17 @@ class NotificationChecker extends Command
 
         if(config('utilities.notificationcommandtochat') === 1){
             WebhookCall::create()
-            ->url('https://chat.zemki.uni-bremen.de/hooks/pggPQhGehrPiRSb2S/3xJ2bPWfYk2pqBBhtGGkgb3Q2JMGvH4DKaPdTANSTdZCtfxk')
+            ->url(config('utilities.url_rc_notifications'))
             ->payload(['text' => 'Command executed and  ' . $notificationSent . ' Notifications sent. "'])
-            ->useSecret('pggPQhGehrPiRSb2S/3xJ2bPWfYk2pqBBhtGGkgb3Q2JMGvH4DKaPdTANSTdZCtfxk')
+            ->useSecret(config('utilities.secret_rc_notifications'))
             ->dispatch();
         }
 
         if(!App::environment('local')){
             WebhookCall::create()
-            ->url('https://chat.zemki.uni-bremen.de/hooks/pggPQhGehrPiRSb2S/3xJ2bPWfYk2pqBBhtGGkgb3Q2JMGvH4DKaPdTANSTdZCtfxk')
+            ->url(config('utilities.url_rc_notifications'))
             ->payload(['text' => 'Command executed and  ' . $notificationCheckedButNotSent . ' Notifications checked but not sent because time was not passed. "'])
-            ->useSecret('pggPQhGehrPiRSb2S/3xJ2bPWfYk2pqBBhtGGkgb3Q2JMGvH4DKaPdTANSTdZCtfxk')
+            ->useSecret(config('utilities.secret_rc_notifications'))
             ->dispatch();
         }
 

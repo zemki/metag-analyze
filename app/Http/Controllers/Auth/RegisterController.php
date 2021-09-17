@@ -80,9 +80,9 @@ class RegisterController extends Controller
             if (!App::environment('local'))
             {
                 WebhookCall::create()
-                    ->url('https://chat.zemki.uni-bremen.de/hooks/pggPQhGehrPiRSb2S/3xJ2bPWfYk2pqBBhtGGkgb3Q2JMGvH4DKaPdTANSTdZCtfxk')
+                    ->url(config('utilities.url_rc_registration'))
                     ->payload(['text' => 'User ' . $data['email'] . ' has registered on Metag Analyze. We have a total of ' . User::all()->count() . ' users!'])
-                    ->useSecret('pggPQhGehrPiRSb2S/3xJ2bPWfYk2pqBBhtGGkgb3Q2JMGvH4DKaPdTANSTdZCtfxk')
+                    ->useSecret(config('utilities.secret_rc_registration'))
                     ->dispatch();
             }
 
