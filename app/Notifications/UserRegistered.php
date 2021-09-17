@@ -28,9 +28,9 @@ class UserRegistered extends Notification
     public function toRocketChat(): RocketChatMessage
     {
         WebhookCall::create()
-            ->url('https://chat.zemki.uni-bremen.de/hooks/pggPQhGehrPiRSb2S/3xJ2bPWfYk2pqBBhtGGkgb3Q2JMGvH4DKaPdTANSTdZCtfxk')
+            ->url(config('utilities.url_rc_registration'))
             ->payload(['text' => 'User '.$this->email.' has registered. We have a total of '.$this->users])
-            ->useSecret('pggPQhGehrPiRSb2S/3xJ2bPWfYk2pqBBhtGGkgb3Q2JMGvH4DKaPdTANSTdZCtfxk')
+            ->useSecret(config('utilities.secret_rc_registration'))
             ->dispatch();
     }
 
