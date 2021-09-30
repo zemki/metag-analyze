@@ -155,13 +155,13 @@
                 <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">{{__('Download all the data from this project')}}</button>
             </a>
         </div>
-        @if(auth()->user()->isAdmin())
+
             <div class="inline">
                 <a href="{{url($project->path().'/notifications')}}">
                     <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">{{__('Notification Center')}}</button>
                 </a>
             </div>
-        @endif
+
     </div>
 
     <b-tabs class="block w-full" expanded>
