@@ -44,19 +44,20 @@ class NotificationTableCheck extends Command
             ['24', '48', '72', 'anytime'],
             0
         );
+        $groupBy = ' GROUP BY notifiable_id,data,created_at';
         $notificationTimeArray = ["24" => 'WHERE created_at >= NOW() - INTERVAL 1 DAY', "48" => 'WHERE created_at >= NOW() - INTERVAL 2 DAY', "72" => 'WHERE created_at >= NOW() - INTERVAL 3 DAY', "anytime" => ''];
         $headers = ['data', 'notifiable_id', 'created_at'];
         if ($notificationType === "All")
         {
-            $mainNotifications = DB::select('SELECT data,notifiable_id,created_at FROM notifications ' . $notificationTimeArray[$notificationTime]);
+            $mainNotifications = DB::select('SELECT data,notifiable_id,created_at FROM notifications ' . $notificationTimeArray[$notificationTime].$groupBy);
         } elseif ($notificationType === "Planned")
         {
             $stringForSql = str_replace('WHERE','and',$notificationTimeArray[$notificationTime]);
-            $mainNotifications = DB::select('SELECT data,notifiable_id,created_at FROM notifications WHERE data NOT LIKE ? and data LIKE ? ' . $stringForSql, ['%"planning":false%', '%planning%']);
+            $mainNotifications = DB::select('SELECT data,notifiable_id,created_at FROM notifications WHERE data NOT LIKE ? and data LIKE ? ' . $stringForSql.$groupBy, ['%"planning":false%', '%planning%']);
         } elseif ($notificationType === "exclude planned")
         {
             $stringForSql = str_replace('WHERE','and',$notificationTimeArray[$notificationTime]);
-            $mainNotifications = DB::select('SELECT data,notifiable_id,created_at FROM notifications WHERE data LIKE ? ' . $stringForSql, ['%"planning":false%']);
+            $mainNotifications = DB::select('SELECT data,notifiable_id,created_at FROM notifications WHERE data LIKE ? ' . $stringForSql.$groupBy, ['%"planning":false%']);
 
         }
         $printNotifications = [];
