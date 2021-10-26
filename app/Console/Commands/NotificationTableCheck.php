@@ -36,7 +36,7 @@ class NotificationTableCheck extends Command
 
         $notificationType = $this->choice(
             'Planned or all?',
-            ['All', 'Planned'],
+            ['All', 'Planned','exclude planned'],
             0
         );
         $notificationTime = $this->choice(
@@ -53,6 +53,11 @@ class NotificationTableCheck extends Command
         {
             $stringForSql = str_replace('WHERE','and',$notificationTimeArray[$notificationTime]);
             $mainNotifications = DB::select('SELECT data,notifiable_id,created_at FROM notifications WHERE data NOT LIKE ? and data LIKE ? ' . $stringForSql, ['%"planning":false%', '%planning%']);
+        } elseif ($notificationType === "exclude planned")
+        {
+            $stringForSql = str_replace('WHERE','and',$notificationTimeArray[$notificationTime]);
+            $mainNotifications = DB::select('SELECT data,notifiable_id,created_at FROM notifications WHERE data LIKE ? ' . $stringForSql, ['%"planning":false%']);
+
         }
         $printNotifications = [];
         foreach ($mainNotifications as $notification)
