@@ -70,9 +70,10 @@ class NotificationChecker extends Command
                     $this->error("Something went wrong while parsing the frequency of Notification " . $notification->id);
                     return 0;
                 }
-                $timefromdatabase = strtotime($case->user->profile->last_notification_at);
-                $dif = time() - $timefromdatabase;
-                $enoughTimeHasPassed = $dif >= $differenceBetweenLastNotification;
+                $timeFromDatabase = strtotime($case->user->profile->last_notification_at);
+                $nowMinusTimeFromDatabase = time() - $timeFromDatabase;
+                $acceptanceWindow = 10;
+                $enoughTimeHasPassed = $nowMinusTimeFromDatabase + $acceptanceWindow  >= $differenceBetweenLastNotification;
                 if ($enoughTimeHasPassed)
                 {
                     $this->sendNotification($case, $notification, $notificationSent);
