@@ -3,6 +3,7 @@
 namespace App\Console;
 
 use App\Console\Commands\NotificationChecker;
+use App\Console\Commands\NotificationCleanDeviceID;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -24,6 +25,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->job(new NotificationChecker())->everyMinute();
+        $schedule->job(new NotificationCleanDeviceID())->dailyAt('01:30');
     }
 
     /**

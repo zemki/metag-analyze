@@ -2,13 +2,13 @@
 
 @section('content')
 
-    <h1 class="font-bold font-6xl mb-2">Total of {{$projects->count()}} projects</h1>
+    <h1 class="font-bold font-6xl mb-2">Total of {{$projects->total()}} projects - {{$projects->count()}} on this page</h1>
     @foreach($projects as $project)
 
         <h1 class="break-words text-4xl font-bold font-serif">{{$project->name}}</h1>
 
         <p class="break-words my-4">
-            {{$project->description}}
+            {{$project->description}} - Created {{$project->created_at}}
         </p>
 
         <div class="block">
@@ -42,19 +42,58 @@
                                 {{$case->name}}
                             </div>
                             <div class="py-2">
-                                @if(!$case->notYetStarted() && $case->entries()->count() == 0)
+                                @if($case->isBackend())
+                                    @if($case->entries()->count() > 0)
+                                        <div class="mb-2">
+                                            <a href="../projects/{{$project->id.$case->distinctpath()}}" class="no-underline">
+                                                <button
+                                                        class="block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded no-underline">
+                                                    {{__('Distinct Entries Graph')}}
+                                                </button>
+                                            </a>
+                                        </div>
+                                        @if($project->inputs != "[]")
+                                            <div class="mb-2">
+                                                <a href="../projects/{{$project->id.$case->groupedEntriesPath()}}" class="no-underline">
+                                                    <button
+                                                            class="block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded no-underline">
+                                                        {{__('Grouped Entries Graph')}}
+                                                    </button>
+                                                </a>
+                                            </div>
+                                        @endif
+                                    @endif
+                                    <div class="mb-2">
+                                        <a @click.prevent="toggleModal({{$case->id}},{{$project->inputs}})"
+                                           class="no-underline">
+                                            <button
+
+                                                    class="block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded no-underline">
+                                                {{__('Add Entries')}}
+                                            </button>
+                                        </a>
+                                    </div>
+                                @elseif(!$case->notYetStarted() && $case->entries()->count() == 0)
                                     <p>{{__('Time has passed and user didn\'t register any entry')}}</p>
                                 @elseif($case->notYetStarted())
                                     <p>{{__('Case is not yet started.')}}</p>
                                 @elseif($case->isConsultable() && $case->entries()->count() > 0)
-                                    <a href="../projects/{{$project->id.$case->path()}}" class="no-underline">
+                                    <a href="../projects/{{$project->id.$case->distinctpath()}}" class="no-underline mb-2">
                                         <button
-                                                class="block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded no-underline">
-                                            {{__('View Entries')}}
+                                                class="block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded no-underline mb-2">
+                                            {{__('Distinct Entries Graph')}}
                                         </button>
                                     </a>
-                                @else
-                                    <p>{{__('User didn\'t enter anything.')}}</p>
+                                    @if($project->inputs != "[]")
+                                        <a href="../projects/{{$project->id.$case->groupedEntriesPath()}}" class="no-underline">
+                                            <button
+                                                    class="block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded no-underline">
+                                                {{__('Grouped Entries Graph')}}
+                                            </button>
+                                        </a>
+                                    @endif
+                                @elseif(!$case->isConsultable() && $case->entries()->count() > 0 && !$case->notYetStarted())
+                                    <p>{{__('User is entering the data')}}</p>
                                 @endif
                             </div>
 
@@ -119,4 +158,7 @@
 
 
     @endforeach
+
+
+    {{ $projects->links() }}
 @endsection

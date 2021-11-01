@@ -255,12 +255,11 @@ class Cases extends Model
 
     /**
      * Check whether right now is past the time of the last day
-     * @return bool|string
+     * @return bool
      */
     public function isConsultable()
     {
         $timestampLastDay = strtotime($this->lastDay());
-        if ($timestampLastDay == "") return "not yet logged in";
         $now = strtotime(date("Y-m-d H:i:s"));
         return $timestampLastDay < $now;
     }

@@ -67,7 +67,7 @@ class AdminController extends Controller
 
     public function indexCases()
     {
-        $data['projects'] = Project::with("cases","invited")->get();
+        $data['projects'] = Project::with("cases","invited")->orderBy('created_at','DESC')->paginate(15);
         $data['cases'] = Cases::all();
 
 
