@@ -297,7 +297,7 @@
                           :projectmedia="{{json_encode($projectmedia)}}"></edit-project>
         </b-tab-item>
 
-        @if($project->created_by == auth()->user()->id)
+        @if($project->created_by == auth()->user()->id || auth()->user()->isAdmin())
             <b-tab-item label="Invites">
                 <project-invites :invitedlist="{{$invites}}" :project="{{$project->id}}"></project-invites>
             </b-tab-item>
