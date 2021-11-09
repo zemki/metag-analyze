@@ -40,19 +40,29 @@ class NotificationCleanDeviceID extends Command
         {
             if ($user->latestCase && $user->latestCase->isConsultable())
             {
+                if ($user->deviceID != []) $usersCleaned++;
                 $user->deviceID = [];
                 $user->save();
-                $usersCleaned++;
             }
         }
         $this->info($usersCleaned . " deviceID cleaned because users where in an expired case.");
         if (!App::environment('local'))
         {
-            WebhookCall::create()
-                ->url(config('utilities.url_rc_registration'))
-                ->payload(['text' => $usersCleaned . " deviceID cleaned because users where in an expired case."])
-                ->useSecret(config('utilities.secret_rc_notifications'))
-                ->dispatch();
+            if ($usersCleaned > 0)
+            {
+                WebhookCall::create()
+                    ->url(config('utilities.url_rc_registration'))
+                    ->payload(['text' => $usersCleaned . " deviceID cleaned because users where in an expired case."])
+                    ->useSecret(config('utilities.secret_rc_notifications'))
+                    ->dispatch();
+            } else
+            {
+                WebhookCall::create()
+                    ->url(config('utilities.url_rc_registration'))
+                    ->payload(['text' => "No deviceID cleaned."])
+                    ->useSecret(config('utilities.secret_rc_notifications'))
+                    ->dispatch();
+            }
         }
         return 0;
     }
