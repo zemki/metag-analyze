@@ -45,9 +45,9 @@ class NotificationCleanDeviceID extends Command
                 $user->save();
             }
         }
-        $this->info($usersCleaned . " deviceID cleaned because users where in an expired case.");
         if (!App::environment('local'))
         {
+
             if ($usersCleaned > 0)
             {
                 WebhookCall::create()
