@@ -4,17 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Cases;
 use App\Entry;
+use App\Files;
 use App\Http\Resources\Entry as EntryResource;
 use App\Media;
+use Crypt;
 use Exception;
-use Helper;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\View\View;
-use Log;
 
 class EntryController extends Controller
 {
@@ -42,6 +42,23 @@ class EntryController extends Controller
     public function store(Cases $case)
     {
         $this->authorize('update', [Entry::class, $case]);
+        if (request()->hasHeader('x-file-token') && request()->header('x-file-token') !== "0") {
+            $appToken = request()->header('x-file-token');
+            $clientFileTokenIsSameWithServer = strcmp(Crypt::decryptString($case->file_token), $appToken) !== 0;
+            if ($clientFileTokenIsSameWithServer) {
+                return response('You are not authorized!', 403);
+            } else {
+                if (request()->has('audio')) {
+                    // save file!
+                    $filename = "";
+                    Files::storeEntryFile(request()->input('audio'), 'audio', $case->project, $case, $filename);
+                } elseif (request()->has('image')) {
+                    // save file!
+                    $filename = "";
+                    Files::storeEntryFile(request()->input('image'), 'image', $case->project, $case, $filename);
+                }
+            }
+        }
         $attributes = request()->validate([
             self::BEGIN => self::REQUIRED,
             'end' => self::REQUIRED,
@@ -50,18 +67,18 @@ class EntryController extends Controller
             self::INPUTS => 'nullable',
         ]);
         $isComingFromBackend = is_numeric($attributes[self::MEDIA_ID]);
-        if ($isComingFromBackend)
-        {
+        if ($isComingFromBackend) {
 
             $attributes[self::INPUTS] = json_encode($attributes[self::INPUTS]);
-        } else
-        {
+        } else {
             $attributes[self::MEDIA_ID] = Media::firstOrCreate(['name' => $attributes[self::MEDIA_ID]])->id;
             $attributes[self::INPUTS] = json_encode(request()->inputs);
         }
         $entry = Entry::create($attributes);
         return response(['id' => $entry->id], 200);
     }
+
+
 
     public function update(Cases $case, Entry $entry)
     {
@@ -74,8 +91,7 @@ class EntryController extends Controller
             self::MEDIA_ID => self::REQUIRED,
             self::INPUTS => 'nullable',
         ]);
-        if (is_string($attributes[self::MEDIA_ID]))
-        {
+        if (is_string($attributes[self::MEDIA_ID])) {
             $attributes[self::MEDIA_ID] = Media::firstOrCreate(['name' => $attributes[self::MEDIA_ID]])->id;
         }
         $attributes[self::INPUTS] = json_encode($attributes[self::INPUTS]);
@@ -104,11 +120,9 @@ class EntryController extends Controller
      */
     public function destroy(Cases $case, Entry $entry)
     {
-        try
-        {
+        try {
             $entry->delete();
-        } catch (Exception $error)
-        {
+        } catch (Exception $error) {
             echo 'Caught exception: ', $error->getMessage(), "\n";
         }
         return response("entry deleted", 200);

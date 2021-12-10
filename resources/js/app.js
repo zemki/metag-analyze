@@ -853,7 +853,8 @@ window.app = new Vue({
         if (
           value.numberofanswer == 0 &&
           value.type !== "text" &&
-          value.type !== "scale"
+          value.type !== "scale" &&
+          value.type !== "audio recording"
         ) {
           self.newproject.response += "Enter answers for each input<br>";
         }

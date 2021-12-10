@@ -7,7 +7,8 @@ return [
             'text',
             'multiple choice',
             'one choice',
-            'scale'
+            'scale',
+            'audio recording'
         ],
     'limit' => 10,
     'random' => 0,

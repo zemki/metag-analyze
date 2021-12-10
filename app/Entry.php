@@ -45,7 +45,7 @@ class Entry extends Model
      */
     public function cases()
     {
-        return $this->belongsTo(Cases::class,'cases_id','id');
+        return $this->belongsTo(Cases::class, 'cases_id', 'id');
     }
 
     /**
@@ -63,6 +63,4 @@ class Entry extends Model
     {
         return $this->belongsTo(Media::class);
     }
-
-
 }

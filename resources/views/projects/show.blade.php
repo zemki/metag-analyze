@@ -2,15 +2,15 @@
 
 @section('content')
     <!--Modal-->
-    <div class="modal opacity-0 pointer-events-none fixed w-full h-auto top-0 left-0 flex items-center justify-center"
+    <div class="fixed top-0 left-0 flex items-center justify-center w-full h-auto opacity-0 pointer-events-none modal"
          v-show="newentry.modal">
         <div class="absolute w-full h-full bg-gray-900 opacity-50" @click="toggleModal()"></div>
 
-        <div class="modal-container bg-white w-full md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto">
+        <div class="z-50 w-full mx-auto overflow-y-auto bg-white rounded shadow-lg modal-container md:max-w-md">
 
             <div @click="toggleModal()"
-                 class="absolute top-0 right-0 cursor-pointer flex flex-col items-center mt-4 mr-4 text-white text-sm z-50">
-                <svg class="fill-current text-white" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                 class="absolute top-0 right-0 z-50 flex flex-col items-center mt-4 mr-4 text-sm text-white cursor-pointer">
+                <svg class="text-white fill-current" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
                      viewBox="0 0 18 18">
                     <path d="M14.53 4.53l-1.06-1.06L9 7.94 4.53 3.47 3.47 4.53 7.94 9l-4.47 4.47 1.06 1.06L9 10.06l4.47 4.47 1.06-1.06L10.06 9z"></path>
                 </svg>
@@ -18,18 +18,18 @@
             </div>
 
             <!-- Add margin if you want to see some of the overlay behind the modal-->
-            <div class="modal-content py-4 text-left px-6 h-auto w-auto">
+            <div class="w-auto h-auto px-6 py-4 text-left modal-content">
                 <!--Title-->
-                <div class="flex justify-between items-center pb-3">
+                <div class="flex items-center justify-between pb-3">
                     <p class="text-2xl font-bold">{{__('Add Entry')}}</p>
-                    <div @click="toggleModal()" class="cursor-pointer z-50">
-                        <svg class="fill-current text-black" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                    <div @click="toggleModal()" class="z-50 cursor-pointer">
+                        <svg class="text-black fill-current" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
                              viewBox="0 0 18 18">
                             <path d="M14.53 4.53l-1.06-1.06L9 7.94 4.53 3.47 3.47 4.53 7.94 9l-4.47 4.47 1.06 1.06L9 10.06l4.47 4.47 1.06-1.06L10.06 9z"></path>
                         </svg>
                     </div>
                 </div>
-                <p class="mt-3 bg-yellow-500 text-black font-bold p-3 text-center">
+                <p class="p-3 mt-3 font-bold text-center text-black bg-yellow-500">
                     {{__('Please scroll if you don\'t see all the content.')}}
                     {{__('To see the changes remember to reload the page.')}}
                 </p>
@@ -37,7 +37,7 @@
                 <!--Body-->
                 <input type="hidden" :value="newentry.case_id"/>
                 <div class="my-2">
-                    <label class="uppercase tracking-wide text-gray-700 text-base font-bold">
+                    <label class="text-base font-bold tracking-wide text-gray-700 uppercase">
                         Start Date/time *
                     </label>
                     <b-datetimepicker
@@ -51,7 +51,7 @@
                 </div>
                 <div class="my-2">
 
-                    <label class="uppercase tracking-wide text-gray-700 text-base font-bold">
+                    <label class="text-base font-bold tracking-wide text-gray-700 uppercase">
                         End Date/time *
                     </label>
                     <b-datetimepicker
@@ -63,22 +63,22 @@
                     </b-datetimepicker>
                 </div>
                 <div class="my-2">
-                    <label class="uppercase tracking-wide text-gray-700 text-base font-bold">
+                    <label class="text-base font-bold tracking-wide text-gray-700 uppercase">
                         Media *
                     </label>
                     <input type="text" name="media_id"
                            v-model="newentry.data.media_id"
-                           class="bg-white focus:outline-none focus:ring border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none leading-normal"></input>
+                           class="block w-full px-4 py-2 leading-normal bg-white border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring"></input>
 
                 </div>
-                <h1 class="text-2xl font-bold text-center my-4 uppercase tracking-wide text-gray-700">Inputs</h1>
+                <h1 class="my-4 text-2xl font-bold tracking-wide text-center text-gray-700 uppercase">Inputs</h1>
                 <div v-for="(value) in newentry.inputs">
-                    <label class="uppercase tracking-wide text-gray-700 text-base font-bold my-2" v-text="value.mandatory ? value.name +' *' : value.name">
+                    <label class="my-2 text-base font-bold tracking-wide text-gray-700 uppercase" v-text="value.mandatory ? value.name +' *' : value.name">
 
                     </label>
                     <input type="text" v-if="value.type === 'text'" :name="'text'+value.name"
                            v-model="newentry.data.inputs[value.name]"
-                           class="bg-white focus:outline-none focus:ring border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none leading-normal "></input>
+                           class="block w-full px-4 py-2 leading-normal bg-white border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring "></input>
                     <b-taginput
                             :data=value.answers
                             autocomplete
@@ -91,11 +91,11 @@
                     <div class="relative" v-if="value.type === 'one choice'">
                         <select
                                 v-model="newentry.data.inputs[value.name]"
-                                class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
+                                class="block w-full px-4 py-3 pr-8 leading-tight text-gray-700 bg-gray-200 border border-gray-200 rounded appearance-none focus:outline-none focus:bg-white focus:border-gray-500">
                             <option v-for="answer in value.answers" :value="answer">@{{answer}}</option>
                         </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                        <div class="absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 pointer-events-none">
+                            <svg class="w-4 h-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                                 <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
                             </svg>
                         </div>
@@ -104,31 +104,31 @@
                     <div class="relative" v-if="value.type === 'scale'">
                         <select
                                 v-model="newentry.data.inputs[value.name]"
-                                class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
+                                class="block w-full px-4 py-3 pr-8 leading-tight text-gray-700 bg-gray-200 border border-gray-200 rounded appearance-none focus:outline-none focus:bg-white focus:border-gray-500">
                             <option value="1">1</option>
                             <option value="2">2</option>
                             <option value="3">3</option>
                             <option value="4">4</option>
                             <option value="5">5</option>
                         </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                        <div class="absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 pointer-events-none">
+                            <svg class="w-4 h-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                                 <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
                             </svg>
                         </div>
                     </div>
 
                 </div>
-                <div class="text-base my-3">* {{__('required')}}</div>
+                <div class="my-3 text-base">* {{__('required')}}</div>
 
 
                 <!--Footer-->
                 <div class="flex justify-end pt-2">
-                    <button class="px-4 bg-transparent p-3 rounded-lg text-blue-500 hover:bg-gray-100 hover:text-blue-400 mr-2"
+                    <button class="p-3 px-4 mr-2 text-blue-500 bg-transparent rounded-lg hover:bg-gray-100 hover:text-blue-400"
                             @click="entrySaveAndClose()">{{__('Save and Close')}}</button>
-                    <button class="px-4 bg-transparent p-3 rounded-lg text-blue-500 hover:bg-gray-100 hover:text-blue-400 mr-2"
+                    <button class="p-3 px-4 mr-2 text-blue-500 bg-transparent rounded-lg hover:bg-gray-100 hover:text-blue-400"
                             @click="entrySaveAndNewEntry()">{{__('Save and add new Entry')}}</button>
-                    <button class="px-4 bg-blue-500 p-3 rounded-lg text-white hover:bg-blue-400"
+                    <button class="p-3 px-4 text-white bg-blue-500 rounded-lg hover:bg-blue-400"
                             @click="toggleModal()">{{__('Close')}}</button>
                 </div>
 
@@ -137,28 +137,28 @@
     </div>
     <!--End Modal-->
 
-    <h1 class="break-words text-4xl font-bold font-serif">{{$project->name}}</h1>
+    <h1 class="font-serif text-4xl font-bold break-words">{{$project->name}}</h1>
 
-    <p class="break-words my-4">
+    <p class="my-4 break-words">
         {{$project->description}}
     </p>
 
     <div class="block">
         <div class="inline">
             <a href="{{url($project->path().'/cases/new')}}">
-                <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">{{__('Create Case')}}</button>
+                <button class="px-4 py-2 font-bold text-white bg-green-500 rounded hover:bg-green-700">{{__('Create Case')}}</button>
             </a>
 
         </div>
         <div class="inline">
             <a href="{{url($project->path().'/export')}}" title="{{__('from cases that are already closed.')}}">
-                <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">{{__('Download all the data from this project')}}</button>
+                <button class="px-4 py-2 font-bold text-white bg-green-500 rounded hover:bg-green-700">{{__('Download all the data from this project')}}</button>
             </a>
         </div>
 
             <div class="inline">
                 <a href="{{url($project->path().'/notifications')}}">
-                    <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">{{__('Notification Center')}}</button>
+                    <button class="px-4 py-2 font-bold text-white bg-green-500 rounded hover:bg-green-700">{{__('Notification Center')}}</button>
                 </a>
             </div>
 
@@ -169,11 +169,11 @@
             <div class="flex flex-wrap w-full">
                 @forelse($cases as $key => $case)
 
-                    <div class="rounded-none overflow-hidden text-center border border-r-0 border-solid border-gray-400 mt-2 py-2 w-1/4 px-2">
-                        <div class="font-bold text-xl mb-2 flex items-center">
+                    <div class="w-1/4 px-2 py-2 mt-2 overflow-hidden text-center border border-r-0 border-gray-400 border-solid rounded-none">
+                        <div class="flex items-center mb-2 text-xl font-bold">
 
                             @if(!$case->isConsultable())
-                                <svg class="fill-current text-gray-500 w-3 mb-2 font-medium leading-tight text-2xl mr-2"
+                                <svg class="w-3 mb-2 mr-2 text-2xl font-medium leading-tight text-gray-500 fill-current"
                                      xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                                     <path d="M4 8V6a6 6 0 1 1 12 0v2h1a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-8c0-1.1.9-2 2-2h1zm5 6.73V17h2v-2.27a2 2 0 1 0-2 0zM7 6v2h6V6a3 3 0 0 0-6 0z"/>
                                 </svg>
@@ -187,7 +187,7 @@
                                     <div class="mb-2">
                                         <a href="{{$project->id.$case->distinctpath()}}" class="no-underline">
                                             <button
-                                                    class="block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded no-underline">
+                                                    class="block px-4 py-2 font-bold text-white no-underline bg-blue-500 rounded hover:bg-blue-700">
                                                 {{__('Distinct Entries Graph')}}
                                             </button>
                                         </a>
@@ -196,7 +196,7 @@
                                         <div class="mb-2">
                                             <a href="{{$project->id.$case->groupedEntriesPath()}}" class="no-underline">
                                                 <button
-                                                        class="block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded no-underline">
+                                                        class="block px-4 py-2 font-bold text-white no-underline bg-blue-500 rounded hover:bg-blue-700">
                                                     {{__('Grouped Entries Graph')}}
                                                 </button>
                                             </a>
@@ -208,7 +208,7 @@
                                        class="no-underline">
                                         <button
 
-                                                class="block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded no-underline">
+                                                class="block px-4 py-2 font-bold text-white no-underline bg-blue-500 rounded hover:bg-blue-700">
                                             {{__('Add Entries')}}
                                         </button>
                                     </a>
@@ -218,16 +218,16 @@
                             @elseif($case->notYetStarted())
                                 <p>{{__('Case is not yet started.')}}</p>
                             @elseif($case->isConsultable() && $case->entries()->count() > 0)
-                                <a href="{{$project->id.$case->distinctpath()}}" class="no-underline mb-2">
+                                <a href="{{$project->id.$case->distinctpath()}}" class="mb-2 no-underline">
                                     <button
-                                            class="block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded no-underline mb-2">
+                                            class="block px-4 py-2 mb-2 font-bold text-white no-underline bg-blue-500 rounded hover:bg-blue-700">
                                         {{__('Distinct Entries Graph')}}
                                     </button>
                                 </a>
                                 @if($project->inputs != "[]")
                                     <a href="{{$project->id.$case->groupedEntriesPath()}}" class="no-underline">
                                         <button
-                                                class="block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded no-underline">
+                                                class="block px-4 py-2 font-bold text-white no-underline bg-blue-500 rounded hover:bg-blue-700">
                                             {{__('Grouped Entries Graph')}}
                                         </button>
                                     </a>
@@ -241,15 +241,25 @@
                         @if($case->isConsultable() && $case->entries()->count() > 0)
                             <div class="py-2">
                                 <a href="{{url('cases/'.$case->id.'/export')}}" target="_blank">
-                                    <button class="block  bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-2 rounded">
+                                    <button class="block px-2 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700">
                                         {{__('Download')}}
                                     </button>
                                 </a>
                             </div>
                         @endif
 
+                        @if($case->isConsultable() && $case->files()->count() > 0)
+                            <div class="py-2">
+                                <a href="{{url('cases/'.$case->id.'/files')}}" target="_blank">
+                                    <button class="block px-2 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700">
+                                        {{__('Check Files')}}
+                                    </button>
+                                </a>
+                            </div>
+                        @endif
+
                         <div class="py-2">
-                            <button type="submit" class="block button bg-red-600 text-white"
+                            <button type="submit" class="block text-white bg-red-600 button"
                                     @click="confirmdeletecase('{{url('/cases/'.$case->id)}}')">
                                 {{__('Delete Case')}}
                             </button>
@@ -257,11 +267,11 @@
 
                         </div>
                         <div class="px-2 py-2">
-                            <div class="block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700">
+                            <div class="block px-3 py-1 text-sm font-semibold text-gray-700 bg-gray-200 rounded-full">
                                 {{__('User')}}: {{$case->user? $case->user->email : 'no user assigned'}}</div>
-                            <div class="block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700">
+                            <div class="block px-3 py-1 text-sm font-semibold text-gray-700 bg-gray-200 rounded-full">
                                 {{__('Entries')}}: {{$case->entries->count()}}</div>
-                            <div class="block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700">
+                            <div class="block px-3 py-1 text-sm font-semibold text-gray-700 bg-gray-200 rounded-full">
                                 @if($case->isBackend())
                                     {{__('No last day.')}}
                                 @else

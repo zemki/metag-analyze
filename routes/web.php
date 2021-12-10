@@ -15,7 +15,7 @@ Route::get('/password/set', 'Auth\VerificationController@showresetpassword');
 Route::get('/setpassword', 'Auth\VerificationController@showresetpassword');
 Route::post('/password/new', 'Auth\VerificationController@newpassword');
 
-Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'verified', 'haspowers','LoggedUser']], static function () {
+Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'verified', 'haspowers', 'LoggedUser']], static function () {
     /**
      * Admin Routes
      */
@@ -26,18 +26,17 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'verified', 'haspowe
     Route::get('/deletedeviceid/{user}', 'AdminController@deletedeviceid')->name('deletedeviceid');
     Route::get('/resetapitoken/{user}', 'AdminController@resetapitoken')->name('resetapitoken');
     Route::get('/newsletter', 'AdminController@listForNewsletter');
-
 });
 
 
-Route::group(['middleware' => ['auth', 'authorised', 'verified','LoggedUser']], function () {
+Route::group(['middleware' => ['auth', 'authorised', 'verified', 'LoggedUser']], function () {
 
     /**
      * Backend Entry routes
      */
-    Route::post('/cases/{case}/entries','EntryController@store');
-    Route::patch('/cases/{case}/entries/{entry}','EntryController@update');
-    Route::delete('/cases/{case}/entries/{entry}','EntryController@destroy');
+    Route::post('/cases/{case}/entries', 'EntryController@store');
+    Route::patch('/cases/{case}/entries/{entry}', 'EntryController@update');
+    Route::delete('/cases/{case}/entries/{entry}', 'EntryController@destroy');
 
 
     /**
@@ -54,6 +53,7 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified','LoggedUser']], 
     Route::get('/projects/{project}/export', 'ProjectController@export');
     Route::post('/projects/invite', 'ProjectController@inviteUser');
     Route::post('/projects/invite/{user}', 'ProjectController@removeFromProject');
+
     /**
      * Case Routes
      * Case is dependant of project, so we concatenate with it
@@ -67,6 +67,7 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified','LoggedUser']], 
     Route::get('/cases/{case}/export', 'ProjectCasesController@export');
     Route::patch('/projects/{project}/cases/{case}', 'ProjectCasesController@update');
     Route::delete('/cases/{case}', 'ProjectCasesController@destroy');
+    Route::get('/cases/{case}/files', 'FileCasesController@index');
     /**
      * Media Routes
      */
@@ -85,6 +86,4 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified','LoggedUser']], 
     Route::post('/users/plannotification', 'UserController@planNotification');
     Route::post('/users/deletenotification', 'UserController@deletePlannedNotification');
     Route::post('/users/cleanuplastnotification', 'UserController@cleanupNotifications');
-
 });
-

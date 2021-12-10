@@ -9,7 +9,9 @@ use App\Media;
 use App\Project;
 use App\User;
 use Carbon\Carbon;
+use Crypt;
 use Exception;
+use Helper;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
@@ -186,6 +188,17 @@ class ProjectCasesController extends Controller
             $email = request('email');
             $case = $project->addCase(request('name'), request('duration'));
             $user = User::createIfDoesNotExists(User::firstOrNew(['email' => $email]));
+            foreach ($project->getInputs() as $object)
+            {
+                $hasFileUpload = property_exists($object, 'type') && $object->type === 'audio recording';
+                if ($hasFileUpload)
+                {
+                    $encrypted = Crypt::encryptString(Helper::random_str(60));
+                    $case->forceFill([
+                        'file_token' => $encrypted,
+                    ])->save();
+                }
+            }
         }
         $case->addUser($user);
         return redirect($project->path())->with(['message' => $user->email . ' has been invited.']);
@@ -224,12 +237,12 @@ class ProjectCasesController extends Controller
             return response()->json(['message' => 'You can\'t delete this case'], 403);
         }
         $data['breadcrumb'] = [url('/') => 'Projects', '#' => substr($project->name, 0, 20) . '...'];
-      //  $project->media = $project->media()->pluck('media.name')->toArray();
+        //  $project->media = $project->media()->pluck('media.name')->toArray();
         $data['data']['media'] = Media::all();
         $data[self::PROJECT] = $project;
         $data['cases'] = $project->cases;
         $data['casesWithUsers'] = $project->cases()->with('user')->get();
-        $data[self::PROJECT.'media'] = $project->media()->pluck('media.name')->toArray();
+        $data[self::PROJECT . 'media'] = $project->media()->pluck('media.name')->toArray();
         $data['invites'] = $project->invited()->get();
         $data['message'] = "Case deleted";
         return view('projects.show', $data);
