@@ -25,8 +25,8 @@ class Helper
     }
 
     /**
-     * return extension of base64 image
-     * @param String $uri base64 image uri
+     * return extension of base64 file
+     * @param String $uri base64 file uri
      * @return String      image extension
      */
     public static function extension($uri)

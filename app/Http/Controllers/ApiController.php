@@ -6,8 +6,8 @@ use App\Cases;
 use App\Project;
 use App\Role;
 use App\User;
-use Auth;
-use DB;
+use Crypt;
+use Exception;
 use Helper;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\JsonResponse;
@@ -81,17 +81,16 @@ class ApiController extends Controller
                 return response()->json(['case' => $response], 499);
             } else
             {
+
                 if ($userHasACase->isBackend())
                 {
                     $response = 'No cases';
                     return response()->json(['case' => $response], 499);
                 }
-
-                if(!auth()->user()->profile()->exists())
+                if (!auth()->user()->profile()->exists())
                 {
                     $profile = auth()->user()->addProfile(auth()->user());
                 }
-
                 User::saveDeviceId($request);
                 $lastDayPos = strpos($userHasACase->duration, "lastDay:");
                 $startDay = Helper::get_string_between($userHasACase->duration, "startDay:", "|");
@@ -104,6 +103,7 @@ class ApiController extends Controller
                     self::INPUTS => $inputs[self::INPUTS],
                     'case' => $userHasACase,
                     self::TOKEN => $token,
+                    'file_token' => Crypt::decryptString($userHasACase->file_token),
                     'duration' => $duration,
                     self::CUSTOMINPUTS => $inputs[self::INPUTS][self::CUSTOMINPUTS],
                     self::NOTSTARTED => $notStarted
@@ -173,10 +173,11 @@ class ApiController extends Controller
      * Update the authenticated user's API token.
      * @param Request $request
      * @return array
+     * @throws Exception
      */
     public function update(Request $request)
     {
-        $token = Str::random(60);
+        $token = Helper::random_str(60);
         $request->user()->forceFill([
             'api_token' => hash('sha256', $token),
         ])->save();
