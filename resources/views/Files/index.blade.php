@@ -2,6 +2,8 @@
 
 @section('content')
 
-{{dd($files)}}
+@foreach($files as $file)
+<audio-player file={{$file['audiofile']}} loop="true" autoplay="false" name="{{$file['path']}}"></audio-player>
+@endforeach
 
 @endsection

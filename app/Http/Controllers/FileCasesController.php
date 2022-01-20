@@ -15,6 +15,12 @@ class FileCasesController extends Controller
         $caseFiles = Files::where('case_id', '=', $case->id)->get();
 
         $data['files'] = $caseFiles;
+
+
+        foreach ($data['files'] as $file) {
+            $file['audiofile'] = decrypt(file_get_contents($file['path']));
+        }
+
         return view('files.index', $data);
     }
 }

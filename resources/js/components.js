@@ -41,3 +41,9 @@ Vue.component(
     require(
         './components/notificationcenter.vue').default,
 );
+
+Vue.component(
+    'audio-player',
+    require(
+        './components/audioplayer.vue').default,
+);
