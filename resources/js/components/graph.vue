@@ -3,18 +3,18 @@
 </template>
 
 <script>
-import Highcharts from "highcharts";
+import Highcharts from 'highcharts';
 
 export default {
-  props: ["info", "title", "availabledata"],
-  name: "graph",
+  props: ['info', 'title', 'availabledata'],
+  name: 'graph',
   created() {
-    let self = this;
+    const self = this;
 
     this.avdata = this.reindex_array_keys(this.availabledata);
 
     this.preparedata();
-    setTimeout(function () {
+    setTimeout(() => {
       self.setChartTheme();
       self.drawChart();
       self.$forceUpdate();
@@ -28,46 +28,46 @@ export default {
     };
   },
   methods: {
-    reindex_array_keys: function (array) {
-      var temp = [];
+    reindex_array_keys(array) {
+      const temp = [];
       let start = 0;
-      for (var i in array) {
+      for (const i in array) {
         temp[start++] = array[i];
       }
       return temp;
     },
-    setChartTheme: function () {
+    setChartTheme() {
       Highcharts.theme = {
         credits: {
           enabled: false,
         },
         colors: [
-          "#058DC7",
-          "#50B432",
-          "#ED561B",
-          "#DDDF00",
-          "#24CBE5",
-          "#64E572",
-          "#FF9655",
-          "#FFF263",
-          "#6AF9C4",
+          '#058DC7',
+          '#50B432',
+          '#ED561B',
+          '#DDDF00',
+          '#24CBE5',
+          '#64E572',
+          '#FF9655',
+          '#FFF263',
+          '#6AF9C4',
         ],
         title: {
           style: {
-            color: "#000",
-            fontSize: "25px",
-            textTransform: "uppercase",
+            color: '#000',
+            fontSize: '25px',
+            textTransform: 'uppercase',
           },
         },
         subtitle: {
           style: {
-            color: "#666666",
+            color: '#666666',
             font: 'bold 12px "Trebuchet MS", Verdana, sans-serif',
           },
         },
         legend: {
           itemHoverStyle: {
-            color: "gray",
+            color: 'gray',
           },
         },
       };
@@ -75,8 +75,8 @@ export default {
       // Apply the theme
       Highcharts.setOptions(Highcharts.theme);
     },
-    preparedata: function () {
-      let self = this;
+    preparedata() {
+      const self = this;
 
       function arraysEqual(a, b) {
         if (a === b) return true;
@@ -88,64 +88,64 @@ export default {
         // Please note that calling sort on an array will modify that array.
         // you might want to clone your array first.
 
-        for (var i = 0; i < a.length; ++i) {
+        for (let i = 0; i < a.length; ++i) {
           if (a[i] !== b[i]) return false;
         }
         return true;
       }
 
-      _.forEach(this.avdata, function (o) {
-        self.realdata.push({name: o.toString().trim(), data: []});
+      _.forEach(this.avdata, (o) => {
+        self.realdata.push({ name: o.toString().trim(), data: [] });
       });
 
-      _.forEach(this.info, function (data, key) {
-        if (key === "available" || key === "title") return;
+      _.forEach(this.info, (data, key) => {
+        if (key === 'available' || key === 'title') return;
 
-        _.forEach(self.realdata, function (rl) {
-          let isScale = arraysEqual(
+        _.forEach(self.realdata, (rl) => {
+          const isScale = arraysEqual(
             Array.from(self.realdata, (x) => x.name),
-            ["0", "1", "2", "3", "4", "5"]
+            ['0', '1', '2', '3', '4', '5'],
           );
           if (
-            data["value"] == rl.name ||
-            (_.isArray(data["value"]) && data["value"].includes(rl.name)) ||
-            isScale
+            data.value == rl.name
+            || (_.isArray(data.value) && data.value.includes(rl.name))
+            || isScale
           ) {
-            var split = data["start"]
-              .substring(0, data["start"].indexOf("."))
+            var split = data.start
+              .substring(0, data.start.indexOf('.'))
               .split(/[^0-9]/);
             split[1] -= 1;
             let start = Date.UTC(...split);
 
-            var split = data["end"]
-              .substring(0, data["start"].indexOf("."))
+            var split = data.end
+              .substring(0, data.start.indexOf('.'))
               .split(/[^0-9]/);
             split[1] -= 1;
             let end = Date.UTC(...split);
-            let datavalue = data["value"];
-            if (isScale && data["value"] != rl.name) {
-              datavalue = "";
-              start = "";
-              end = "";
+            let datavalue = data.value;
+            if (isScale && data.value != rl.name) {
+              datavalue = '';
+              start = '';
+              end = '';
             }
             rl.data.push({
-              start: start,
-              end: end,
-              name: datavalue != "" ? datavalue.toString().trim() : "",
+              start,
+              end,
+              name: datavalue != '' ? datavalue.toString().trim() : '',
             });
           }
         });
       });
 
-      _.forEach(self.realdata, function (d, i) {
-        _.forEach(d.data, function (data) {
+      _.forEach(self.realdata, (d, i) => {
+        _.forEach(d.data, (data) => {
           data.y = i;
         });
       });
     },
-    drawChart: function () {
-      let self = this;
-      Highcharts.ganttChart("chart" + self.graphid, {
+    drawChart() {
+      const self = this;
+      Highcharts.ganttChart(`chart${self.graphid}`, {
         plotOptions: {
           column: {
             grouping: false,
@@ -158,8 +158,8 @@ export default {
         subtitle: {
           text:
             document.ontouchstart === undefined
-              ? "Click and drag in the plot area to zoom in"
-              : "Pinch the chart to zoom in",
+              ? 'Click and drag in the plot area to zoom in'
+              : 'Pinch the chart to zoom in',
         },
         xAxis: {
           tickInterval: 1000 * 60 * 60 * 12, // Day,
@@ -175,14 +175,14 @@ export default {
           ],
         },
         chart: {
-          zoomType: "x",
+          zoomType: 'x',
           spacingRight: 10,
         },
         navigator: {
           enabled: true,
           liveRedraw: true,
           series: {
-            type: "gantt",
+            type: 'gantt',
           },
         },
         scrollbar: {

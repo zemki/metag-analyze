@@ -11,19 +11,40 @@ const tailwindcss = require('tailwindcss');
  |
  */
 
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.css$/,
+        use: [{
+          loader: 'css-loader',
+          options: {
+            // 0 => no loaders (default);
+            // 1 => postcss-loader;
+            // 2 => postcss-loader, sass-loader
+            importLoaders: 1,
+          },
+        },
+        // other loaders
+        'postcss-loader',
+        ],
+      },
+      // other rules
+    ],
+  },
 
+};
+mix.js('resources/js/app.js', 'public/js').extract([
+  'vue',
+  'axios',
+  'bootstrap',
+  'jquery',
+  'lodash',
+  'popper.js',
+]).version();
 
- mix.js('resources/js/app.js', 'public/js').extract([
- 	'vue',
- 	'axios',
- 	'bootstrap',
- 	'jquery',
- 	'lodash',
- 	'popper.js'
- 	]).version();
-
- mix.sass('resources/sass/app.scss', 'public/css',{ implementation: require('node-sass') })
- .options({
- 	processCssUrls: false,
-	 postCss: [ tailwindcss('tailwind.config.js') ],
- });
+mix.sass('resources/sass/app.scss', 'public/css', { implementation: require('node-sass') })
+  .options({
+    processCssUrls: false,
+    postCss: [tailwindcss('tailwind.config.js')],
+  });
