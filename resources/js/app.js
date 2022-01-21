@@ -6,7 +6,6 @@
  */
 
 import './bootstrap';
-import 'vue-material-design-icons/styles.css';
 import Buefy from 'buefy';
 import moment from 'moment';
 import HighchartsMore from 'highcharts/highcharts-more';

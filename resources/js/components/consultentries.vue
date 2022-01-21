@@ -1,32 +1,30 @@
 <template>
     <svg width='200' height='600'></svg>
-
 </template>
 
 <script>
 
-    export default {
-        props: ['entries'],
-        name: "consultentries",
-        data() {
-            return {
-            loaddata: {}
-            }
-        },
-        mounted() {
-            this.fetchData();
-            this.drawGraph();
-        },
-        methods: {
-            fetchData() {
-                this.loaddatadata = JSON.parse(this.entries);
-            },
-            drawGraph() {
+export default {
+  props: ['entries'],
+  name: 'consultentries',
+  data() {
+    return {
+      loaddata: {},
+    };
+  },
+  mounted() {
+    this.fetchData();
+    this.drawGraph();
+  },
+  methods: {
+    fetchData() {
+      this.loaddatadata = JSON.parse(this.entries);
+    },
+    drawGraph() {
 
-
-            }
-        }
-    }
+    },
+  },
+};
 </script>
 
 <style scoped>
