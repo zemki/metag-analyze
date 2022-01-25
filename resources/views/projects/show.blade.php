@@ -242,7 +242,7 @@
                             <div class="py-2">
                                 <a href="{{url('cases/'.$case->id.'/export')}}" target="_blank">
                                     <button class="block px-2 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700">
-                                        {{__('Download')}}
+                                        {{__('Download Case Data as xlsx')}}
                                     </button>
                                 </a>
                             </div>

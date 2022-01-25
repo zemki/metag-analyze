@@ -138,12 +138,12 @@ window.app = new Vue({
     },
     'newcase.duration.input': function (newVal, OldVal) {
       this.newcase.duration.input = newVal.replace(/\D/g, '');
-
+      let numberOfDaysToAdd;
       if (!_.isEmpty(this.newcase.duration.selectedUnit)) {
         if (this.newcase.duration.selectedUnit === 'week') {
-          let numberOfDaysToAdd = parseInt(newVal) * 7;
+          numberOfDaysToAdd = parseInt(newVal) * 7;
         } else {
-          let numberOfDaysToAdd = parseInt(newVal);
+          numberOfDaysToAdd = parseInt(newVal);
         }
 
         const { cdd, cmm, cy } = this.formatDurationMessage(numberOfDaysToAdd);
@@ -640,7 +640,7 @@ window.app = new Vue({
     },
     formatdatestartingat() {
       if (!this.newcase.duration.starts_with_login) {
-        let numberOfDaysToAdd;
+        var numberOfDaysToAdd;
         if (this.newcase.duration.selectedUnit === 'week') {
           numberOfDaysToAdd = parseInt(this.newcase.duration.input) * 7;
         } else {

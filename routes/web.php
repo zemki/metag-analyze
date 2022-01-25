@@ -68,6 +68,8 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified', 'LoggedUser']],
     Route::patch('/projects/{project}/cases/{case}', 'ProjectCasesController@update');
     Route::delete('/cases/{case}', 'ProjectCasesController@destroy');
     Route::get('/cases/{case}/files', 'FileCasesController@index');
+    Route::delete('/cases/{case}/files/{file}', 'FileCasesController@destroy');
+    
     /**
      * Media Routes
      */

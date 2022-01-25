@@ -99,6 +99,7 @@ class ApiController extends Controller
                 $userHasACase->save();
                 $inputs = $this->formatLoginResponse($userHasACase);
                 $notStarted = (strtotime(date("d.m.Y")) < strtotime($startDay));
+                
                 return response()->json([
                     self::INPUTS => $inputs[self::INPUTS],
                     'case' => $userHasACase,

@@ -99,11 +99,11 @@ return [
             'expire' => 120,
         ],
         'verification' => [
-            'expire' => 1, // One year in minutes
+            'expire' => 1,
         ],
     ],
     'verification' => [
-        'expire' => 525600, // One year in minutes
+        'expire' => 525600,
     ],
 
 
