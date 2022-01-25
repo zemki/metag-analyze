@@ -1,9 +1,15 @@
 <template>
 
-<div class="flex px-2 ml-1 border-2 border-blue-500 border-solid">
-  <p class="flex w-full text-sm">{{formattedName}}</p>
-  <div class="flex">
-  <div class="ml-2">
+<div :class="!deleted ? 'relative flex flex-wrap px-2 ml-1 overflow-hidden border-2 border-blue-500 border-solid' : 'hidden'">
+  <div class="w-full px-1 my-1 overflow-hidden"><p class="text-base font-bold">{{formattedName}}</p></div>
+  <div class="w-full px-1 mt-1 mb-2 overflow-hidden"><p class="text-xs">{{date}}</p></div>
+  <div class="absolute top-0 right-0 mt-1 mr-1" v-on:click="confirmDeleteFile">
+    <svg width="20px" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 120 120">
+    <path d="M 10,10 l 90,90 M 100,10 l -90,90" stroke="red" stroke-width="15" />
+    </svg>
+</div>
+  <div class="flex w-full px-1 my-1">
+  <div class="">
 					<a v-on:click.prevent="stop" title="Stop" href="#">
 						<svg width="18px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
 	 						<path fill="currentColor" d="M16,4.995v9.808C16,15.464,15.464,16,14.804,16H4.997C4.446,16,4,15.554,4,15.003V5.196C4,4.536,4.536,4,5.196,4h9.808C15.554,4,16,4.446,16,4.995z"/>
@@ -19,14 +25,13 @@
 					</a>
 				</div>
 				<div class="ml-2">
-					<div v-on:click="seek" class="player-progress" title="Time played : Total time">
-						<div :style="{ width: this.percentComplete + '%' }" class="player-seeker"></div>
+					<div v-on:click="seek" class="w-64 bg-black player-progress" title="Time played : Total time">
+						<div :style="{ width: this.percentComplete + '%' }" class="z-20 bg-blue-500 player-seeker"></div>
 					</div>
-					<div class="player-time">
-						<div class="player-time-current">{{ currentTime }}</div>
-						<div class="player-time-total">{{ durationTime }}</div>
-					</div>
-				</div>
+						<div class="player-time-current ">{{ currentTime }} - {{ durationTime }}</div>
+        </div>
+        </div>
+        <div class="flex w-full px-1 my-1">
 				<div class="ml-2">
 					<a v-on:click.prevent="download" href="#">
 						<svg width="18px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
@@ -51,14 +56,14 @@
 					</a>
 				</div>
 				<div class="ml-2">
-					<a v-on:click.prevent="" title="Volume" href="#">
-						<svg width="18px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+
+						<svg title="Volume" width="18px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
 							<path fill="currentColor" d="M19,13.805C19,14.462,18.462,15,17.805,15H1.533c-0.88,0-0.982-0.371-0.229-0.822l16.323-9.055C18.382,4.67,19,5.019,19,5.9V13.805z"/>
 						</svg>
-						<input v-model.lazy.number="volume" v-show="showVolume" type="range" min="0" max="100"/>
-					</a>
+						<input v-model.lazy.number="volume" type="range" min="0" max="100"/>
+
 			</div>
-			<audio :loop="innerLoop" ref="audiofile" :src="file" preload="auto" style="display: none;"></audio>
+			<audio :loop="innerLoop" ref="audiofile" :src="file.audiofile" preload="auto" style="display: none;"></audio>
 		</div>
     </div>
 </template>
@@ -72,7 +77,7 @@ const convertTimeHHMMSS = (val) => {
 };
 
 export default ({
-  props: ['file', 'autoplay', 'loop', 'name'],
+  props: ['file', 'autoplay', 'loop', 'name', 'date', 'caseid'],
   name: 'audioPlayer',
   data() {
     return {
@@ -84,6 +89,7 @@ export default ({
       playing: false,
       previousVolume: 35,
       showVolume: true,
+      deleted: false,
       volume: 100,
       formattedName: `${this.name.substring(this.name.lastIndexOf('/') + 1, this.name.length)}.mp3`,
     };
@@ -117,7 +123,7 @@ export default ({
     download() {
       this.stop();
       const a = document.createElement('a');
-      a.href = this.file;
+      a.href = this.file.audiofile;
       a.download = `${this.name.substring(this.name.lastIndexOf('/') + 1, this.name.length)}.mp3`;
       a.click();
     },
@@ -129,6 +135,29 @@ export default ({
       }
 
       throw new Error('Failed to load sound file.');
+    },
+    confirmDeleteFile() {
+      this.$buefy.dialog.confirm({
+        title: 'Confirm Delete',
+        message:
+          '<div class="p-2 text-center text-white bg-red-600">You re about to delete this File.<br><span class="has-text-weight-bold">Continue?</span></div>',
+        cancelText: 'Cancel',
+        confirmText: 'YES delete File',
+        hasIcon: true,
+        type: 'is-danger',
+        onConfirm: () => this.deleteFile(),
+      });
+    },
+    deleteFile() {
+      const self = this;
+      window.axios.delete(`${window.location.origin + self.productionUrl}/cases/${self.caseid}/files/${self.file.id}`, { file: self.file.id })
+        .then((response) => {
+          self.stop();
+          self.$buefy.snackbar.open(response.data.message);
+          self.deleted = true;
+        }).catch((error) => {
+          self.$buefy.snackbar.open('There it was an error during the request - refresh page and try again');
+        });
     },
     mute() {
       if (this.muted) {
@@ -171,5 +200,18 @@ export default ({
 </script>
 
 <style scoped>
+.player-progress {
+	background-color: gray;
+	cursor: pointer;
+	height: 50%;
+	max-width: 200px;
+	position: relative;
+}
 
+	.player-seeker {
+		bottom: 0;
+		left: 0;
+		position: absolute;
+		top: 0;
+	}
 </style>

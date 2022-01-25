@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Image;
+use Carbon\Carbon;
 
 /**
  * App\Files
@@ -41,6 +42,14 @@ class Files extends Model
     protected $fillable = [
         'type', 'path', 'size', 'case_id',
     ];
+
+
+    public static function boot()
+    {
+        parent::boot();
+        static::deleting(function ($file) {
+        });
+    }
 
     /**
      * @return mixed
@@ -118,8 +127,9 @@ class Files extends Model
         $file_interview->save();
     }
 
-    public function cases()
+    public function case()
     {
         return $this->belongsTo(Cases::class);
     }
+
 }

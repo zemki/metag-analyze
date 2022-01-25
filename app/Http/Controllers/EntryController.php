@@ -24,10 +24,6 @@ class EntryController extends Controller
     protected const INPUTS = 'inputs';
     protected const ENTRIES = 'entries';
 
-    /**
-     * @param Cases $case
-     * @return AnonymousResourceCollection
-     */
     public function entriesByCase(Cases $case)
     {
         return EntryResource::collection($case->entries->sortByDesc(self::BEGIN));
