@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Cases;
 use App\Files;
+use App\Media;
 use File;
 
 class FileCasesController extends Controller
@@ -19,10 +20,16 @@ class FileCasesController extends Controller
         $data['case'] = $case;
 
 
+        $entries = $case->entries();
         foreach ($data['files'] as $file) {
             $file['audiofile'] = decrypt(file_get_contents($file['path']));
+            $file['entry'] = $case->entries()->whereJsonContains('inputs->file',$file['id'])->first();
+            if(!empty($file['entry'])){
+                $file['entry']->media_id = Media::where('id',$file['entry']->media_id)->first()->name;
+            }
         }
-        $data['breadcrumb'] = [url('/') => 'Cases', '#' => substr($case->name, 0, 20) . '...'];
+
+        $data['breadcrumb'] = [url('/projects/'.$case->project->id) => 'Cases', '#' => substr($case->name, 0, 20) . '...'];
 
         return view('files.index', $data);
     }

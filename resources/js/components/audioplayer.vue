@@ -2,6 +2,8 @@
 
 <div :class="!deleted ? 'relative flex flex-wrap px-2 ml-1 overflow-hidden border-2 border-blue-500 border-solid' : 'hidden'">
   <div class="w-full px-1 my-1 overflow-hidden"><p class="text-base font-bold">{{formattedName}}</p></div>
+    <p class="w-auto p-1 m-auto text-base text-center text-white bg-blue-500 rounded">{{file.entry ? file.entry.media_id : ''}}</p>
+
   <div class="w-full px-1 mt-1 mb-2 overflow-hidden"><p class="text-xs">{{date}}</p></div>
   <div class="absolute top-0 right-0 mt-1 mr-1" v-on:click="confirmDeleteFile">
     <svg width="20px" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 120 120">

@@ -50,7 +50,7 @@ protected const CASES = 'cases';
         }
         $data['breadcrumb'] = [url('/') => 'Projects', '#' => substr($project->name, 0, 20) . '...'];
       //  $project->media = $project->media()->pluck('media.name')->toArray();
-        $data['data']['media'] = Media::all();
+        //$data['data']['media'] = Media::all();
         $data[self::PROJECT] = $project;
         $data[self::CASES] = $project->cases;
         $data['casesWithUsers'] = $project->cases()->with('user')->get();
