@@ -43,14 +43,6 @@ class Files extends Model
         'type', 'path', 'size', 'case_id',
     ];
 
-
-    public static function boot()
-    {
-        parent::boot();
-        static::deleting(function ($file) {
-        });
-    }
-
     /**
      * @return mixed
      */
@@ -65,13 +57,11 @@ class Files extends Model
      * @param Cases   $case
      * @param         $name
      */
-    public static function storeEntryFile($file, $type, Project $project, Cases $case, &$name): void
+    public static function storeEntryFile($file, $type, Project $project, Cases $case, Entry $entry, &$name): void
     {
         $name = 'interview_' . $case->name . date("dmyhis");
         $projectPath = storage_path('app/project' . $project->id . '/files/');
         $extension = Helper::extension($file);
-        ray($extension);
-        ray(explode(',', $file, 2)[1]);
         $notEncryptedContent = $projectPath . $name . '.' . $extension;
         File::isDirectory($projectPath) or File::makeDirectory($projectPath, 0775, true, true);
         if ($type === 'audio') {
@@ -86,8 +76,8 @@ class Files extends Model
 
         $arr = explode(',', $file, 2);
         self::SaveEncryptedFile($project, $name, $arr, $notEncryptedContent, $encryptedPath);
-        // add to files_interview
-        self::SaveFileDbRecord($case->id, $name, $projectPath, $encryptedPath);
+        self::SaveFileDbRecord($case->id, $name, $projectPath, $encryptedPath,$entry);
+
     }
 
     /**
@@ -114,7 +104,7 @@ class Files extends Model
      * @param string $projectPath
      * @param string $encryptedPath
      */
-    private static function SaveFileDbRecord($caseid, &$name, string $projectPath, string $encryptedPath): void
+    private static function SaveFileDbRecord($caseid, &$name, string $projectPath, string $encryptedPath, Entry $entry): void
     {
         $file_interview = new Files();
         // write here if audio or image
@@ -125,6 +115,13 @@ class Files extends Model
         } else $file_interview->size = 0;
         $file_interview->case_id = $caseid;
         $file_interview->save();
+        $entry->update([
+            'inputs' => [
+            'file' => $file_interview->id
+            ],
+        ]);
+
+        
     }
 
     public function case()

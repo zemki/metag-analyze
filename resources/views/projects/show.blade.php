@@ -169,7 +169,7 @@
             <div class="flex flex-wrap w-full">
                 @forelse($cases as $key => $case)
 
-                    <div class="w-1/4 px-2 py-2 mt-2 overflow-hidden text-center border border-r-0 border-gray-400 border-solid rounded-none">
+                    <div class="w-1/4 px-2 py-2 mt-2 overflow-hidden text-center border border-gray-400 border-solid rounded-none">
                         <div class="flex items-center mb-2 text-xl font-bold">
 
                             @if(!$case->isConsultable())
@@ -248,7 +248,6 @@
                             </div>
                         @endif
 
-                        @if($case->isConsultable() && $case->files()->count() > 0)
                             <div class="py-2">
                                 <a href="{{url('cases/'.$case->id.'/files')}}" target="_blank">
                                     <button class="block px-2 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700">
@@ -256,7 +255,6 @@
                                     </button>
                                 </a>
                             </div>
-                        @endif
 
                         <div class="py-2">
                             <button type="submit" class="block text-white bg-red-600 button"
