@@ -11,8 +11,9 @@ import moment from 'moment';
 import HighchartsMore from 'highcharts/highcharts-more';
 import Vuex from 'vuex';
 import store from './store';
+import Vue from 'vue';
 
-window.Vue = require('vue');
+window.Vue = Vue;
 
 window.Vue.use(Vuex);
 

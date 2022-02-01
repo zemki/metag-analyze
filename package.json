@@ -1,32 +1,32 @@
 {
     "private": true,
     "scripts": {
-        "dev": "npm run development",
-        "development": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js",
-        "watch": "npm run development -- --watch",
-        "watch-poll": "npm run watch -- --watch-poll",
+        "dev": "mix dev",
+        "development": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --progress --config=node_modules/laravel-mix/setup/webpack.config.js",
+        "watch": "mix watch",
+        "watch-poll": "npm run watch --watch-poll",
         "hot": "cross-env NODE_ENV=development node_modules/webpack-dev-server/bin/webpack-dev-server.js --inline --hot --config=node_modules/laravel-mix/setup/webpack.config.js",
         "prod": "npm run production",
-        "production": "cross-env NODE_ENV=production node_modules/webpack/bin/webpack.js --no-progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js"
+        "production": "mix --production"
     },
     "devDependencies": {
         "autoprefixer": "^10.4.2",
         "axios": "^0.21.4",
         "bootstrap": "^4.6.1",
         "cross-env": "^5.2.1",
-        "eslint": "^8.7.0",
+        "eslint": "^8.8.0",
         "eslint-config-airbnb-base": "^15.0.0",
         "eslint-plugin-import": "^2.25.4",
-        "eslint-plugin-vue": "^8.3.0",
+        "eslint-plugin-vue": "^8.4.0",
         "google-charts": "^2.0.0",
         "jquery": "^3.6.0",
-        "laravel-mix": "^4.1.4",
+        "laravel-mix": "^6.0",
         "lodash": "^4.17.21",
         "popper.js": "^1.16.0",
         "postcss": "^8.4.5",
         "resolve-url-loader": "^2.3.1",
         "sass-loader": "^7.3.1",
-        "tailwindcss": "^3.0.15",
+        "tailwindcss": "^3.0.18",
         "vue": "^2.6.14",
         "vue-template-compiler": "^2.6.14"
     },
@@ -40,7 +40,9 @@
         "highcharts": "^9.3.2",
         "moment": "^2.25.3",
         "node-sass": "^4.14.0",
+        "sass": "^1.49.4",
         "vue-chartkick": "^0.5.3",
+        "vue-loader": "^15.9.8",
         "vuex": "^3.6.2"
     }
 }

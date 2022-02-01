@@ -20,8 +20,6 @@ class CreateFilesInterviewTable extends Migration
             $table->string('size', 100);
             $table->integer('case_id')->nullable()->unsigned()->references('id')->on('cases')->onDelete('cascade');
             $table->timestamps();
-
-            $table->foreign('case_id')->references('id')->on('cases');
         });
     }
 
