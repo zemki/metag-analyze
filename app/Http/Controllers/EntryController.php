@@ -50,7 +50,6 @@ class EntryController extends Controller
 
         $isComingFromBackend = is_numeric($attributes[self::MEDIA_ID]);
         if ($isComingFromBackend) {
-
             $attributes[self::INPUTS] = json_encode($attributes[self::INPUTS]);
         } else {
             $attributes[self::MEDIA_ID] = Media::firstOrCreate(['name' => $attributes[self::MEDIA_ID]])->id;
@@ -67,7 +66,7 @@ class EntryController extends Controller
                 if (request()->has('audio')) {
                     // save file!
                     $filename = "";
-                    Files::storeEntryFile(request()->input('audio'), 'audio', $case->project, $case,$entry, $filename);
+                    Files::storeEntryFile(request()->input('audio'), 'audio', $case->project, $case, $entry, $filename);
                 } elseif (request()->has('image')) {
                     // save file!
                     $filename = "";
@@ -84,7 +83,6 @@ class EntryController extends Controller
 
     public function update(Cases $case, Entry $entry)
     {
-
         $this->authorize('update', [Entry::class, $case]);
         $attributes = request()->validate([
             self::BEGIN => self::REQUIRED,
@@ -123,20 +121,18 @@ class EntryController extends Controller
     public function destroy(Cases $case, Entry $entry)
     {
         try {
-            if($case->file_token !== "")
-            {
-            if(isset(json_decode($entry->inputs)->file)){
-            $file_id = json_decode($entry->inputs)->file;
-            $file = Files::where('id','=',$file_id)->first();
-            File::delete($file->path);
-            $file->delete();
-            }
+            if ($case->file_token !== "") {
+                if (isset(json_decode($entry->inputs)->file)) {
+                    $file_id = json_decode($entry->inputs)->file;
+                    $file = Files::where('id', '=', $file_id)->first();
+                    File::delete($file->path);
+                    $file->delete();
+                }
             }
             $entry->delete();
         } catch (Exception $error) {
             echo 'Caught exception: ', $error->getMessage(), "\n";
-                    return response("error!", 500);
-
+            return response("error!", 500);
         }
         return response("entry deleted", 200);
     }
