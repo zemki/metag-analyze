@@ -15,8 +15,12 @@ class Entry extends JsonResource
      */
     public function toArray($request)
     {
-
-        return [
+        if (is_null($request)) {
+            return [];
+        }
+        
+        {
+            return [
             'id' => $this->id,
             'begin' => $this->begin,
             'end' => $this->end,
@@ -31,5 +35,6 @@ class Entry extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
+        }
     }
 }
