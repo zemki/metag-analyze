@@ -7,7 +7,6 @@ use File;
 use Helper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Image;
 
@@ -90,13 +89,13 @@ class Files extends Model
     public static function updateEntryFile($file, $type, Project $project, Cases $case, Entry $entry, &$name, $oldInputs): void
     {
         $oldInputs = json_decode($oldInputs);
-        Log::info($oldInputs);
 
-        Log::info(array_key_exists('file', $oldInputs));
+        ray($oldInputs);
         
-        if (array_key_exists('file', $oldInputs)) {
-            $existingFile = File::where('id', '=', $oldInputs['file'])->first();
+        if (property_exists($oldInputs, 'file')) {
+            $existingFile = Files::where('id', '=', $oldInputs->file)->first();
             File::delete($existingFile->path);
+            $existingFile->delete();
         }
 
         $name = 'interview_' . $case->name . date("dmyhis");
@@ -106,7 +105,6 @@ class Files extends Model
         File::isDirectory($projectPath) or File::makeDirectory($projectPath, 0775, true, true);
         if ($type === 'audio') {
             file_put_contents($notEncryptedContent, base64_decode(substr(explode(',', $file, 2)[1], 0, -1)));
-        //exec("ffmpeg -i " . storage_path('app/project' . $project->id . '/files/') . 'entry_audio.bin' . " " . storage_path('app/project' . $project->id . '/files/') . 'entry_audio.mp3');
         } else {
         }
         // open file a image resource
@@ -156,11 +154,11 @@ class Files extends Model
         }
         $file_interview->case_id = $caseid;
         $file_interview->save();
-        $entry->update([
-            'inputs' => [
-            'file' => $file_interview->id
+        $entry->update(
+            [
+            'inputs->file' => $file_interview->id
             ],
-        ]);
+        );
     }
 
     public function case()
