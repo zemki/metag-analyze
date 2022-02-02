@@ -5,26 +5,27 @@
  * building robust, powerful web applications using Vue and Laravel.
  */
 
-import './bootstrap';
-import Buefy from 'buefy';
-import moment from 'moment';
-import HighchartsMore from 'highcharts/highcharts-more';
-import Vuex from 'vuex';
-import store from './store';
-import Vue from 'vue';
+import "./bootstrap";
+import Buefy from "buefy";
+import moment from "moment";
+import HighchartsMore from "highcharts/highcharts-more";
+import Vuex from "vuex";
+import store from "./store";
+import Vue from "vue";
+import _ from "lodash";
 
 window.Vue = Vue;
 
 window.Vue.use(Vuex);
 
-const Highcharts = require('highcharts');
+const Highcharts = require("highcharts");
 
 // Load module after Highcharts is loaded
-require('highcharts/modules/exporting')(Highcharts);
-require('highcharts/modules/gantt')(Highcharts);
+require("highcharts/modules/exporting")(Highcharts);
+require("highcharts/modules/gantt")(Highcharts);
 
 HighchartsMore(Highcharts);
-require('./components');
+require("./components");
 /**
  * The following block of code may be used to automatically register your
  * Vue components. It will recursively scan this directory for the Vue
@@ -47,33 +48,34 @@ Vue.use(Buefy);
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
-Vue.prototype.trans = (key) => (_.isUndefined(window.trans[key]) ? key : window.trans[key]);
+Vue.prototype.trans = (key) =>
+  _.isUndefined(window.trans[key]) ? key : window.trans[key];
 
 Vue.mixin({
   data() {
     return {
-      productionUrl: process.env.MIX_ENV_MODE === 'production' ? '/metag' : '',
+      productionUrl: process.env.MIX_ENV_MODE === "production" ? "/metag" : "",
     };
   },
 });
 
 window.app = new Vue({
-  el: '#app',
+  el: "#app",
   store,
   computed: {
-    'newproject.formattedinputstring': function () {
+    "newproject.formattedinputstring": function () {
       return JSON.stringify(this.newproject.inputs);
     },
     url() {
-      return document.URL.split('/').pop();
+      return document.URL.split("/").pop();
     },
   },
   mounted() {
-    window.addEventListener('keydown', function (e) {
+    window.addEventListener("keydown", function (e) {
       this.lastPressedKey = e.keyCode;
     });
     const replaceUndefinedOrNull = function (key, value) {
-      if (value === null || value === undefined || value === '') {
+      if (value === null || value === undefined || value === "") {
         return undefined;
       }
 
@@ -81,35 +83,38 @@ window.app = new Vue({
     };
   },
   watch: {
-    'newcase.duration.starts_with_login': function (newVal, OldVal) {
+    "newcase.duration.starts_with_login": function (newVal, OldVal) {
       if (newVal) {
         if (
-          !_.isEmpty(this.newcase.duration.selectedUnit)
-          && !_.isEmpty(this.newcase.duration.input)
+          !_.isEmpty(this.newcase.duration.selectedUnit) &&
+          !_.isEmpty(this.newcase.duration.input)
         ) {
-          if (this.newcase.duration.selectedUnit === 'week') {
+          if (this.newcase.duration.selectedUnit === "week") {
             let numberOfDaysToAdd = parseInt(this.newcase.duration.input) * 7;
           } else {
             let numberOfDaysToAdd = parseInt(this.newcase.duration.input);
           }
 
-          const { cdd, cmm, cy } = this.formatDurationMessage(numberOfDaysToAdd);
+          const { cdd, cmm, cy } =
+            this.formatDurationMessage(numberOfDaysToAdd);
 
           // duration in days and change to this after first login
           this.newcase.duration.message = `${cdd}.${cmm}.${cy}`;
-          this.newcase.duration.value = `value:${numberOfDaysToAdd * 24}|days:${numberOfDaysToAdd}`;
+          this.newcase.duration.value = `value:${
+            numberOfDaysToAdd * 24
+          }|days:${numberOfDaysToAdd}`;
         } else {
-          this.newcase.duration.message = '';
-          this.newcase.duration.value = '';
+          this.newcase.duration.message = "";
+          this.newcase.duration.value = "";
         }
       }
     },
-    'newcase.duration.startdate': function (newVal, OldVal) {
+    "newcase.duration.startdate": function (newVal, OldVal) {
       if (
-        !_.isEmpty(this.newcase.duration.input)
-        && !_.isEmpty(this.newcase.duration.selectedUnit)
+        !_.isEmpty(this.newcase.duration.input) &&
+        !_.isEmpty(this.newcase.duration.selectedUnit)
       ) {
-        if (this.newcase.duration.selectedUnit === 'week') {
+        if (this.newcase.duration.selectedUnit === "week") {
           let numberOfDaysToAdd = parseInt(this.newcase.duration.input, 10) * 7;
         } else {
           let numberOfDaysToAdd = parseInt(this.newcase.duration.input, 10);
@@ -118,9 +123,9 @@ window.app = new Vue({
         this.formatdatestartingat();
       }
     },
-    'newcase.duration.selectedUnit': function (newVal, OldVal) {
+    "newcase.duration.selectedUnit": function (newVal, OldVal) {
       if (!_.isEmpty(this.newcase.duration.input)) {
-        if (newVal === 'week') {
+        if (newVal === "week") {
           let numberOfDaysToAdd = parseInt(this.newcase.duration.input) * 7;
         } else {
           let numberOfDaysToAdd = parseInt(this.newcase.duration.input);
@@ -129,19 +134,21 @@ window.app = new Vue({
         const { cdd, cmm, cy } = this.formatDurationMessage(numberOfDaysToAdd);
 
         this.newcase.duration.message = `${cdd}.${cmm}.${cy}`;
-        this.newcase.duration.value = `value:${numberOfDaysToAdd * 24}|days:${numberOfDaysToAdd}`;
+        this.newcase.duration.value = `value:${
+          numberOfDaysToAdd * 24
+        }|days:${numberOfDaysToAdd}`;
 
         this.formatdatestartingat();
       } else {
-        this.newcase.duration.message = '';
-        this.newcase.duration.value = '';
+        this.newcase.duration.message = "";
+        this.newcase.duration.value = "";
       }
     },
-    'newcase.duration.input': function (newVal, OldVal) {
-      this.newcase.duration.input = newVal.replace(/\D/g, '');
+    "newcase.duration.input": function (newVal, OldVal) {
+      this.newcase.duration.input = newVal.replace(/\D/g, "");
       let numberOfDaysToAdd;
       if (!_.isEmpty(this.newcase.duration.selectedUnit)) {
-        if (this.newcase.duration.selectedUnit === 'week') {
+        if (this.newcase.duration.selectedUnit === "week") {
           numberOfDaysToAdd = parseInt(newVal) * 7;
         } else {
           numberOfDaysToAdd = parseInt(newVal);
@@ -151,18 +158,20 @@ window.app = new Vue({
 
         // duration in days and change to this after first login
         this.newcase.duration.message = `${cdd}.${cmm}.${cy}`;
-        this.newcase.duration.value = `value:${numberOfDaysToAdd * 24}|days:${numberOfDaysToAdd}`;
+        this.newcase.duration.value = `value:${
+          numberOfDaysToAdd * 24
+        }|days:${numberOfDaysToAdd}`;
         this.formatdatestartingat();
       } else {
-        this.newcase.duration.message = '';
-        this.newcase.duration.value = '';
+        this.newcase.duration.message = "";
+        this.newcase.duration.value = "";
       }
     },
-    'newuser.case.duration.input': function (newVal, OldVal) {
-      this.newuser.case.duration.input = newVal.replace(/\D/g, '');
+    "newuser.case.duration.input": function (newVal, OldVal) {
+      this.newuser.case.duration.input = newVal.replace(/\D/g, "");
 
       if (!_.isEmpty(this.newuser.case.duration.selectedUnit)) {
-        if (this.newuser.case.duration.selectedUnit === 'week') {
+        if (this.newuser.case.duration.selectedUnit === "week") {
           let numberOfDaysToAdd = parseInt(newVal) * 7;
         } else {
           let numberOfDaysToAdd = parseInt(newVal);
@@ -172,18 +181,21 @@ window.app = new Vue({
 
         // duration in days and change to this after first login
         this.newuser.case.duration.message = `${cdd}.${cmm}.${cy}`;
-        this.newuser.case.duration.value = `value:${numberOfDaysToAdd * 24}|days:${numberOfDaysToAdd}`;
+        this.newuser.case.duration.value = `value:${
+          numberOfDaysToAdd * 24
+        }|days:${numberOfDaysToAdd}`;
 
         this.formatdatestartingat();
       } else {
-        this.newuser.case.duration.message = '';
-        this.newuser.case.duration.value = '';
+        this.newuser.case.duration.message = "";
+        this.newuser.case.duration.value = "";
       }
     },
-    'newuser.case.duration.selectedUnit': function (newVal, OldVal) {
+    "newuser.case.duration.selectedUnit": function (newVal, OldVal) {
       if (!_.isEmpty(this.newuser.case.duration.input)) {
-        if (newVal === 'week') {
-          let numberOfDaysToAdd = parseInt(this.newuser.case.duration.input) * 7;
+        if (newVal === "week") {
+          let numberOfDaysToAdd =
+            parseInt(this.newuser.case.duration.input) * 7;
         } else {
           let numberOfDaysToAdd = parseInt(this.newuser.case.duration.input);
         }
@@ -191,30 +203,33 @@ window.app = new Vue({
         const { cdd, cmm, cy } = this.formatDurationMessage(numberOfDaysToAdd);
 
         this.newuser.case.duration.message = `${cdd}.${cmm}.${cy}`;
-        this.newuser.case.duration.value = `value:${numberOfDaysToAdd * 24}|days:${numberOfDaysToAdd}`;
+        this.newuser.case.duration.value = `value:${
+          numberOfDaysToAdd * 24
+        }|days:${numberOfDaysToAdd}`;
 
         this.formatdatestartingat();
       } else {
-        this.newuser.case.duration.message = '';
-        this.newuser.case.duration.value = '';
+        this.newuser.case.duration.message = "";
+        this.newuser.case.duration.value = "";
       }
     },
-    'newuser.email': function (newVal, oldVal) {
+    "newuser.email": function (newVal, oldVal) {
       window.axios
-        .post('/users/exist', { email: newVal })
+        .post("/users/exist", { email: newVal })
         .then((response) => {
           this.newuser.emailexist = response.data;
           if (response.data) {
-            this.newuser.emailexistmessage = 'This user will be invited.';
+            this.newuser.emailexistmessage = "This user will be invited.";
           } else {
-            this.newuser.emailexistmessage = 'This user is not registered, an invitation email will be sent.';
+            this.newuser.emailexistmessage =
+              "This user is not registered, an invitation email will be sent.";
           }
         })
         .catch((error) => {
           console.log(error);
         });
     },
-    'newproject.ninputs': function (newVal, oldVal) {
+    "newproject.ninputs": function (newVal, oldVal) {
       if (newVal < 0 || oldVal < 0) {
         newVal = 0;
         oldVal = 0;
@@ -224,11 +239,11 @@ window.app = new Vue({
 
       if (direction > 0) {
         const inputtemplate = {
-          name: '',
-          type: '',
+          name: "",
+          type: "",
           mandatory: true,
           numberofanswer: 0,
-          answers: [''],
+          answers: [""],
         };
 
         for (let i = 0; i < direction; i++) {
@@ -247,40 +262,40 @@ window.app = new Vue({
   },
   data: {
     mainNotification: true,
-    lastPressedKey: '',
+    lastPressedKey: "",
     selectedEntriesData: [],
     showentriestable: false,
     errormessages: {
-      namemissing: 'name is required. <br>',
-      inputnamemissing: 'input name is required. <br>',
-      inputtypemissing: 'input type is required. <br>',
-      multipleinputnoanswer: 'provide a valid number of answers. <br>',
+      namemissing: "name is required. <br>",
+      inputnamemissing: "input name is required. <br>",
+      inputtypemissing: "input type is required. <br>",
+      multipleinputnoanswer: "provide a valid number of answers. <br>",
     },
     newcase: {
-      name: '',
+      name: "",
       duration: {
-        input: '',
+        input: "",
         starts_with_login: true,
-        selectedUnit: 'days',
-        allowedUnits: ['day(s)', 'week(s)'],
-        message: '',
-        value: '',
+        selectedUnit: "days",
+        allowedUnits: ["day(s)", "week(s)"],
+        message: "",
+        value: "",
       },
       minDate: new Date(),
       backendcase: false,
       inputLength: {
         name: 200,
       },
-      response: '',
+      response: "",
     },
     newproject: {
-      name: '',
+      name: "",
       ninputs: 0,
       inputs: [],
       config: window.inputs,
-      response: '',
-      description: '',
-      media: [''],
+      response: "",
+      description: "",
+      media: [""],
       inputLength: {
         name: 200,
         description: 255,
@@ -293,7 +308,7 @@ window.app = new Vue({
       data: {
         start: new Date(),
         end: new Date(new Date().setMinutes(new Date().getMinutes() + 5)),
-        media_id: '',
+        media_id: "",
         inputs: {},
       },
     },
@@ -305,7 +320,7 @@ window.app = new Vue({
       data: {
         start: new Date(),
         end: new Date(new Date().setMinutes(new Date().getMinutes() + 1)),
-        media_id: '',
+        media_id: "",
         inputs: {},
       },
     },
@@ -317,24 +332,24 @@ window.app = new Vue({
       contains_letters: false,
       contains_special_character: false,
       valid_password: false,
-      email: '',
+      email: "",
     },
     newuser: {
       role: 2,
-      email: '',
+      email: "",
       emailexist: false,
-      emailexistmessage: '',
+      emailexistmessage: "",
       assignToCase: false,
       case: {
         duration: {
-          input: '',
-          selectedUnit: '',
-          allowedUnits: ['day(s)', 'week(s)'],
-          message: '',
-          value: '',
+          input: "",
+          selectedUnit: "",
+          allowedUnits: ["day(s)", "week(s)"],
+          message: "",
+          value: "",
         },
-        name: '',
-        caseexistmessage: '',
+        name: "",
+        caseexistmessage: "",
         caseexist: false,
       },
       project: 0,
@@ -342,44 +357,44 @@ window.app = new Vue({
     },
     chart: {
       typeSelect: {
-        pdf: 'application/pdf',
-        png: 'image/png',
-        svg: 'image/svg+xml',
+        pdf: "application/pdf",
+        png: "image/png",
+        svg: "image/svg+xml",
       },
-      type: 'application/pdf',
+      type: "application/pdf",
     },
   },
   methods: {
-    newentrydateselected(edit = '') {
-      if (edit === '') {
+    newentrydateselected(edit = "") {
+      if (edit === "") {
         this.newentry.data.end = new Date(
           new Date(this.newentry.data.start).setMinutes(
-            new Date(this.newentry.data.start).getMinutes() + 5,
-          ),
+            new Date(this.newentry.data.start).getMinutes() + 5
+          )
         );
       } else {
         this.editentry.data.end = new Date(
           new Date(this.editentry.data.start).setMinutes(
-            new Date(this.editentry.data.start).getMinutes() + 5,
-          ),
+            new Date(this.editentry.data.start).getMinutes() + 5
+          )
         );
       }
     },
     iWantNewsletter(will) {
-      const subscribed = will === 'true';
+      const subscribed = will === "true";
       const self = this;
       axios
-        .post('users/subscribe', { subscribed })
+        .post("users/subscribe", { subscribed })
         .then((response) => {
           console.log(response);
           self.$buefy.snackbar.open(response.data.message);
 
-          const newsDiv = document.querySelector('.newsletter');
+          const newsDiv = document.querySelector(".newsletter");
 
-          newsDiv.classList.remove('opacity-100');
-          newsDiv.classList.add('opacity-0');
+          newsDiv.classList.remove("opacity-100");
+          newsDiv.classList.add("opacity-0");
           setTimeout(() => {
-            newsDiv.classList.add('hidden');
+            newsDiv.classList.add("hidden");
           }, 500);
 
           self.$forceUpdate();
@@ -388,86 +403,84 @@ window.app = new Vue({
           console.log(error);
 
           self.$buefy.snackbar.open(
-            'There it was an error during the request - refresh page and try again',
+            "There it was an error during the request - refresh page and try again"
           );
         });
     },
     confirmdelete(case_id, entry_id, lastentry) {
       const confirmDelete = this.$buefy.dialog.confirm({
-        title: 'Confirm Delete',
+        title: "Confirm Delete",
         message:
           '<div class="bg-red-600 p-2 text-white text-center">You re about to delete this Entry.<br><span class="has-text-weight-bold">Continue?</span></div>',
-        cancelText: 'Cancel',
-        confirmText: 'YES delete Entry',
+        cancelText: "Cancel",
+        confirmText: "YES delete Entry",
         hasIcon: true,
-        type: 'is-danger',
+        type: "is-danger",
         onConfirm: () => this.deleteEntry(case_id, entry_id, lastentry),
       });
     },
     deleteEntry(case_id, entry_id, lastentry) {
       this.loading = true;
-      this.message = '';
+      this.message = "";
       const self = this;
 
       window.axios
         .delete(
-          `${window.location.origin
-          + this.productionUrl
-          }/cases/${case_id
-          }/entries/${entry_id}`,
+          `${
+            window.location.origin + this.productionUrl
+          }/cases/${case_id}/entries/${entry_id}`
         )
         .then((response) => {
           setTimeout(() => {
             self.loading = false;
-            self.$buefy.snackbar.open('Entry deleted');
+            self.$buefy.snackbar.open("Entry deleted");
 
             if (!lastentry) {
               window.location.reload();
             } else {
-              window.location.href = '../';
+              window.location.href = "../";
             }
           }, 500);
         })
         .catch((error) => {
           self.loading = false;
           self.$buefy.snackbar.open(
-            'There it was an error during the request - refresh page and try again',
+            "There it was an error during the request - refresh page and try again"
           );
         });
     },
     entrySaveAndClose() {
       if (this.MandatoryNewEntry()) {
-        this.$buefy.snackbar.open(this.trans('Check your mandatory entries.'));
+        this.$buefy.snackbar.open(this.trans("Check your mandatory entries."));
         return;
       }
 
       const self = this;
       window.axios
         .post(
-          `${window.location.origin
-          + this.productionUrl
-          }/cases/${this.newentry.case_id
+          `${window.location.origin + this.productionUrl}/cases/${
+            this.newentry.case_id
           }/entries`,
           {
             case_id: this.newentry.case_id,
             inputs: this.newentry.data.inputs,
             begin: moment(this.newentry.data.start).format(
-              'YYYY-MM-DD HH:mm:ss.SSSSSS',
+              "YYYY-MM-DD HH:mm:ss.SSSSSS"
             ),
             end: moment(this.newentry.data.end).format(
-              'YYYY-MM-DD HH:mm:ss.SSSSSS',
+              "YYYY-MM-DD HH:mm:ss.SSSSSS"
             ),
             media_id: this.newentry.data.media_id,
-          },
+          }
         )
         .then((response) => {
-          self.$buefy.snackbar.open(self.trans('Entry successfully sent.'));
+          self.$buefy.snackbar.open(self.trans("Entry successfully sent."));
         })
         .catch((error) => {
           self.$buefy.snackbar.open(
             self.trans(
-              'There it was an error during the request - refresh page and try again',
-            ),
+              "There it was an error during the request - refresh page and try again"
+            )
           );
         });
 
@@ -476,108 +489,106 @@ window.app = new Vue({
     },
     entrySaveAndNewEntry() {
       if (this.MandatoryNewEntry()) {
-        this.$buefy.snackbar.open(this.trans('Check your mandatory entries.'));
+        this.$buefy.snackbar.open(this.trans("Check your mandatory entries."));
         return;
       }
 
       const self = this;
       window.axios
         .post(
-          `${window.location.origin
-          + this.productionUrl
-          }/cases/${this.newentry.case_id
+          `${window.location.origin + this.productionUrl}/cases/${
+            this.newentry.case_id
           }/entries`,
           {
             case_id: this.newentry.case_id,
             inputs: this.newentry.data.inputs,
             begin: moment(this.newentry.data.start).format(
-              'YYYY-MM-DD HH:mm:ss.SSSSSS',
+              "YYYY-MM-DD HH:mm:ss.SSSSSS"
             ),
             end: moment(this.newentry.data.end).format(
-              'YYYY-MM-DD HH:mm:ss.SSSSSS',
+              "YYYY-MM-DD HH:mm:ss.SSSSSS"
             ),
             media_id: this.newentry.data.media_id,
-          },
+          }
         )
         .then((response) => {
-          self.$buefy.snackbar.open(self.trans('Entry successfully sent.'));
+          self.$buefy.snackbar.open(self.trans("Entry successfully sent."));
           self.newentry.data.inputs = {};
-          self.newentry.data.media_id = '';
+          self.newentry.data.media_id = "";
           self.newentry.data.start = new Date();
           self.newentry.data.end = new Date(
-            new Date().setMinutes(new Date().getMinutes() + 5),
+            new Date().setMinutes(new Date().getMinutes() + 5)
           );
         })
         .catch((error) => {
           self.$buefy.snackbar.open(
             self.trans(
-              'There it was an error during the request - double check your data or contact the support.',
-            ),
+              "There it was an error during the request - double check your data or contact the support."
+            )
           );
         });
     },
     MandatoryNewEntry() {
       const self = this;
       return (
-        _.isEmpty(self.newentry.data.media_id)
-        || self.newentry.data.start === ''
-        || self.newentry.data.end === ''
+        _.isEmpty(self.newentry.data.media_id) ||
+        self.newentry.data.start === "" ||
+        self.newentry.data.end === ""
       );
     },
     MandatoryEditEntry() {
       const self = this;
       return (
-        _.isEmpty(self.editentry.data.media_id)
-        || self.editentry.data.start === ''
-        || self.editentry.data.end === ''
+        _.isEmpty(self.editentry.data.media_id) ||
+        self.editentry.data.start === "" ||
+        self.editentry.data.end === ""
       );
     },
     editEntryAndClose() {
       if (this.MandatoryEditEntry()) {
-        this.$buefy.snackbar.open(this.trans('Check your mandatory entries.'));
+        this.$buefy.snackbar.open(this.trans("Check your mandatory entries."));
         return;
       }
 
       const self = this;
       window.axios
         .patch(
-          `${window.location.origin
-          + this.productionUrl
-          }/cases/${this.editentry.case_id
+          `${window.location.origin + this.productionUrl}/cases/${
+            this.editentry.case_id
           }/entries/${this.editentry.id}`,
           {
             case_id: this.editentry.case_id,
             inputs: this.editentry.data.inputs,
             begin: moment(this.editentry.data.start).format(
-              'YYYY-MM-DD HH:mm:ss.SSSSSS',
+              "YYYY-MM-DD HH:mm:ss.SSSSSS"
             ),
             end: moment(this.editentry.data.end).format(
-              'YYYY-MM-DD HH:mm:ss.SSSSSS',
+              "YYYY-MM-DD HH:mm:ss.SSSSSS"
             ),
             media_id: this.editentry.data.media_id,
-          },
+          }
         )
         .then((response) => {
-          self.$buefy.snackbar.open(self.trans('Entry successfully updated.'));
+          self.$buefy.snackbar.open(self.trans("Entry successfully updated."));
           setTimeout(() => window.location.reload(), 500);
         })
         .catch((error) => {
           self.$buefy.snackbar.open(
             self.trans(
-              'There it was an error during the request - double check your data or contact the support.',
-            ),
+              "There it was an error during the request - double check your data or contact the support."
+            )
           );
         });
     },
-    toggleModal(id = '', inputs = {}) {
+    toggleModal(id = "", inputs = {}) {
       this.newentry.case_id = id;
       this.newentry.inputs = inputs;
       this.newentry.modal = !this.newentry.modal;
-      const body = document.querySelector('body');
-      const modal = document.querySelector('.modal');
-      modal.classList.toggle('opacity-0');
-      modal.classList.toggle('pointer-events-none');
-      body.classList.toggle('modal-active');
+      const body = document.querySelector("body");
+      const modal = document.querySelector(".modal");
+      modal.classList.toggle("opacity-0");
+      modal.classList.toggle("pointer-events-none");
+      body.classList.toggle("modal-active");
     },
     toggleEntryModal(
       entry = {
@@ -588,7 +599,7 @@ window.app = new Vue({
         begin: null,
         end: null,
       },
-      inputs,
+      inputs
     ) {
       this.editentry.id = entry.id;
       this.editentry.case_id = entry.case_id;
@@ -597,15 +608,15 @@ window.app = new Vue({
       this.editentry.data.media_id = entry.media_id;
       this.editentry.data.start = moment(
         entry.begin,
-        'YYYY-MM-DD HH:mm',
+        "YYYY-MM-DD HH:mm"
       ).toDate();
-      this.editentry.data.end = moment(entry.end, 'YYYY-MM-DD HH:mm').toDate();
+      this.editentry.data.end = moment(entry.end, "YYYY-MM-DD HH:mm").toDate();
       this.editentry.modal = !this.editentry.modal;
-      const body = document.querySelector('body');
-      const modal = document.querySelector('.modal');
-      modal.classList.toggle('opacity-0');
-      modal.classList.toggle('pointer-events-none');
-      body.classList.toggle('modal-active');
+      const body = document.querySelector("body");
+      const modal = document.querySelector(".modal");
+      modal.classList.toggle("opacity-0");
+      modal.classList.toggle("pointer-events-none");
+      body.classList.toggle("modal-active");
     },
     checkPassword() {
       this.registration.password_length = this.registration.password.length;
@@ -619,16 +630,16 @@ window.app = new Vue({
 
       this.registration.contains_number = /\d/.test(this.registration.password);
       this.registration.contains_letters = /[a-z]/.test(
-        this.registration.password,
+        this.registration.password
       );
       this.registration.contains_special_character = special_chars.test(
-        this.registration.password,
+        this.registration.password
       );
 
       if (
-        this.registration.contains_six_characters === true
-        && this.registration.contains_letters === true
-        && this.registration.contains_number === true
+        this.registration.contains_six_characters === true &&
+        this.registration.contains_letters === true &&
+        this.registration.contains_number === true
       ) {
         this.registration.valid_password = true;
       } else {
@@ -642,7 +653,7 @@ window.app = new Vue({
     formatdatestartingat() {
       if (!this.newcase.duration.starts_with_login) {
         var numberOfDaysToAdd;
-        if (this.newcase.duration.selectedUnit === 'week') {
+        if (this.newcase.duration.selectedUnit === "week") {
           numberOfDaysToAdd = parseInt(this.newcase.duration.input) * 7;
         } else {
           numberOfDaysToAdd = parseInt(this.newcase.duration.input);
@@ -651,7 +662,7 @@ window.app = new Vue({
         // calculate and format end date
         const { cdd, cmm, cy } = this.formatDurationMessage(
           numberOfDaysToAdd,
-          new Date(this.newcase.duration.startdate),
+          new Date(this.newcase.duration.startdate)
         );
         this.newcase.duration.message = `${cdd}.${cmm}.${cy}`;
 
@@ -663,19 +674,18 @@ window.app = new Vue({
         const startingDateMessage = `${startingDay}.${startingMonth}.${startingYear}`;
 
         this.newcase.duration.value = `startDay:${startingDateMessage}|${this.newcase.duration.value}`;
-        this.newcase.duration.value
-          += `|lastDay:${this.newcase.duration.message}`;
+        this.newcase.duration.value += `|lastDay:${this.newcase.duration.message}`;
       }
     },
     confirmdeletecase(url) {
       this.$buefy.dialog.confirm({
-        title: 'Confirm Case deletion',
+        title: "Confirm Case deletion",
         message:
           '<strong class="bg-red-600 text-yellow-400 p-2">Do you want to delete this case and all the entries?</strong>',
-        cancelText: 'No',
-        confirmText: 'Yes DELETE',
+        cancelText: "No",
+        confirmText: "Yes DELETE",
         hasIcon: true,
-        type: 'is-danger',
+        type: "is-danger",
         onConfirm: () => this.deleteCase(url),
       });
     },
@@ -686,13 +696,13 @@ window.app = new Vue({
         .then((response) => {
           setTimeout(() => {
             self.loading = false;
-            self.$buefy.snackbar.open('Case deleted');
+            self.$buefy.snackbar.open("Case deleted");
 
             window.location.reload();
           }, 500);
         })
         .catch((error) => {
-          let message = 'A problem occurred';
+          let message = "A problem occurred";
           if (error.response.data.message) {
             message = error.response.data.message;
           }
@@ -701,16 +711,16 @@ window.app = new Vue({
         });
     },
     validateSubmitCaseForm() {
-      this.newproject.response = '';
-      if (this.newproject.name == '') {
+      this.newproject.response = "";
+      if (this.newproject.name == "") {
         this.newproject.response += this.errormessages.namemissing;
       }
 
       if (this.newproject.ninputs > 0) {
-        if (_.find(this.newproject.inputs, { name: '' })) {
+        if (_.find(this.newproject.inputs, { name: "" })) {
           this.newproject.response += this.errormessages.inputnamemissing;
         }
-        if (_.find(this.newproject.inputs, { type: '' })) {
+        if (_.find(this.newproject.inputs, { type: "" })) {
           this.newproject.response += this.errormessages.inputtypemissing;
         }
 
@@ -718,8 +728,8 @@ window.app = new Vue({
         if (
           _.find(this.newproject.inputs, (o) => {
             if (
-              o.type == 'multiple choice'
-              || (o.type == 'one choice' && o.numberofanswer != o.answers.length)
+              o.type == "multiple choice" ||
+              (o.type == "one choice" && o.numberofanswer != o.answers.length)
             ) {
               return true;
             }
@@ -729,7 +739,7 @@ window.app = new Vue({
         }
       }
 
-      if (this.newproject.response == '') {
+      if (this.newproject.response == "") {
         return true;
       }
       return false;
@@ -756,107 +766,116 @@ window.app = new Vue({
       const isLastElement = index + 1 === this.newproject.media.length;
 
       if (isLastElement) {
-        if (mediaName !== '') {
-          this.newproject.media.push('');
+        if (mediaName !== "") {
+          this.newproject.media.push("");
         }
       }
 
-      if (index != 0 && mediaName === '' && lastPressedKey !== tabKey) {
+      if (index != 0 && mediaName === "" && lastPressedKey !== tabKey) {
         this.newproject.media.splice(index, 1);
       }
     },
     handleAdditionalInputs(questionindex, answerindex, answer) {
-      const isLastElement = answerindex + 1 === this.newproject.inputs[questionindex].answers.length;
+      const isLastElement =
+        answerindex + 1 ===
+        this.newproject.inputs[questionindex].answers.length;
       const shiftKey = 16;
 
       if (lastPressedKey === shiftKey) return;
       if (isLastElement) {
-        if (answer !== '') {
-          this.newproject.inputs[questionindex].answers.push('');
+        if (answer !== "") {
+          this.newproject.inputs[questionindex].answers.push("");
         }
       }
       // this.newproject.inputs[questionindex].id = this.createUUID(16);
       const tabKey = 9;
-      const middleElementRemoved = answerindex !== 0 && answer == '';
+      const middleElementRemoved = answerindex !== 0 && answer == "";
       if (middleElementRemoved && lastPressedKey !== tabKey) {
         this.newproject.inputs[questionindex].answers.splice(answerindex, 1);
       }
 
-      this.newproject.inputs[questionindex].numberofanswer = this.newproject.inputs[questionindex].answers.length - 1;
+      this.newproject.inputs[questionindex].numberofanswer =
+        this.newproject.inputs[questionindex].answers.length - 1;
     },
     createUUID(length) {
       let dt = new Date().getTime();
-      const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
+      const uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
         /[xy]/g,
         (c) => {
           const r = (dt + Math.random() * 16) % 16 | 0;
           dt = Math.floor(dt / 16);
-          return (c == 'x' ? r : (r & 0x3) | 0x8).toString(length);
-        },
+          return (c == "x" ? r : (r & 0x3) | 0x8).toString(length);
+        }
       );
       return uuid;
     },
     validateCase(e) {
       const self = this;
-      self.newcase.response = '';
-      if (this.newcase.name === '') {
-        this.newcase.response = 'Enter a case name <br>';
+      self.newcase.response = "";
+      if (this.newcase.name === "") {
+        this.newcase.response = "Enter a case name <br>";
       }
       if (this.newcase.name.length > 200) {
-        this.newcase.response += 'Case name is too long <br>';
+        this.newcase.response += "Case name is too long <br>";
       }
-      if (this.newcase.response !== '') {
+      if (this.newcase.response !== "") {
         e.preventDefault();
       }
     },
     validateProject(e) {
       const self = this;
-      self.newproject.response = '';
-      if (this.newproject.name === '') {
-        this.newproject.response = 'Enter a project name <br>';
+      self.newproject.response = "";
+      if (this.newproject.name === "") {
+        this.newproject.response = "Enter a project name <br>";
       }
 
       if (this.newproject.name.length > 200) {
-        this.newproject.response += 'Project name is too long <br>';
+        this.newproject.response += "Project name is too long <br>";
       }
 
-      if (this.newproject.description === '') {
-        this.newproject.response += 'Enter a project description <br>';
+      if (this.newproject.description === "") {
+        this.newproject.response += "Enter a project description <br>";
       }
 
       if (this.newproject.description.length > 255) {
-        this.newproject.response += 'Description is too long <br>';
+        this.newproject.response += "Description is too long <br>";
       }
 
       // if(this.newproject.media.length === 0 || this.newproject.media[0] === "")this.newproject.response +="Enter the list of media<br>";
 
+      let onlyOneAudio = Object.values(
+        _.pickBy(this.newproject.inputs, (e) => e.type === "audio recording")
+      );
+      if (onlyOneAudio.length > 1)
+        this.newproject.response += "please pick only one audio<br>";
+
       _.forEach(this.newproject.inputs, (value) => {
-        console.log(value);
         if (
-          value.numberofanswer == 0
-          && value.type !== 'text'
-          && value.type !== 'scale'
-          && value.type !== 'audio recording'
+          value.numberofanswer == 0 &&
+          value.type !== "text" &&
+          value.type !== "scale" &&
+          value.type !== "audio recording"
         ) {
-          self.newproject.response += 'Enter answers for each input<br>';
+          self.newproject.response += "Enter answers for each input<br>";
         }
-        if (value.name === '') {
-          self.newproject.response += 'Enter a name for each input. <br>';
+
+        if (value.name === "") {
+          self.newproject.response += "Enter a name for each input. <br>";
         }
       });
 
-      if (this.newproject.response !== '') {
+      if (this.newproject.response !== "") {
         e.preventDefault();
       }
     },
     confirmLeaveProject(userToDetach, project) {
       const confirmDelete = this.$buefy.dialog.confirm({
-        title: 'Confirm Leave',
-        message: 'Are you sure you want to leave this project?',
-        cancelText: 'No',
-        confirmText: 'YES remove me',
+        title: "Confirm Leave",
+        message: "Are you sure you want to leave this project?",
+        cancelText: "No",
+        confirmText: "YES remove me",
         hasIcon: true,
-        type: 'is-danger',
+        type: "is-danger",
         onConfirm: () => this.detachUser(userToDetach, project),
       });
     },
@@ -864,13 +883,13 @@ window.app = new Vue({
       const self = this;
       window.axios
         .post(
-          `${window.location.origin
-          + self.productionUrl
-          }/projects/invite/${userToDetach.id}`,
+          `${window.location.origin + self.productionUrl}/projects/invite/${
+            userToDetach.id
+          }`,
           {
             email: userToDetach.email,
             project,
-          },
+          }
         )
         .then((response) => {
           self.$buefy.snackbar.open(response.data.message);
@@ -881,19 +900,19 @@ window.app = new Vue({
         })
         .catch((error) => {
           self.$buefy.snackbar.open(
-            'There it was an error during the request - refresh page and try again',
+            "There it was an error during the request - refresh page and try again"
           );
         });
     },
     confirmDeleteProject(project, url) {
       const confirmDelete = this.$buefy.dialog.confirm({
-        title: 'Confirm Delete',
+        title: "Confirm Delete",
         message:
           '<strong class="bg-red-600 text-yellow-400 p-2">Are you sure you want to delete this project and all the data included with it?</strong>',
-        cancelText: 'NO',
-        confirmText: 'YES',
+        cancelText: "NO",
+        confirmText: "YES",
         hasIcon: true,
-        type: 'is-danger',
+        type: "is-danger",
         onConfirm: () => this.deleteProject(project, url),
       });
     },
@@ -913,13 +932,13 @@ window.app = new Vue({
         });
     },
     switchMediaAndInputsOnGraph() {
-      this.$store.commit('switchyAxisAttribute', false);
+      this.$store.commit("switchyAxisAttribute", false);
     },
     downloadChart() {
       this.$refs.graph.download(this.chart.type);
     },
     switchFormatter() {
-      this.$store.commit('switchFormatter', false);
+      this.$store.commit("switchFormatter", false);
     },
   },
 });
