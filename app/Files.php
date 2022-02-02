@@ -2,13 +2,14 @@
 
 namespace App;
 
+use Carbon\Carbon;
 use File;
 use Helper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Image;
-use Carbon\Carbon;
 
 /**
  * App\Files
@@ -66,7 +67,7 @@ class Files extends Model
         File::isDirectory($projectPath) or File::makeDirectory($projectPath, 0775, true, true);
         if ($type === 'audio') {
             file_put_contents($notEncryptedContent, base64_decode(substr(explode(',', $file, 2)[1], 0, -1)));
-            //exec("ffmpeg -i " . storage_path('app/project' . $project->id . '/files/') . 'entry_audio.bin' . " " . storage_path('app/project' . $project->id . '/files/') . 'entry_audio.mp3');
+        //exec("ffmpeg -i " . storage_path('app/project' . $project->id . '/files/') . 'entry_audio.bin' . " " . storage_path('app/project' . $project->id . '/files/') . 'entry_audio.mp3');
         } else {
         }
         // open file a image resource
@@ -76,8 +77,46 @@ class Files extends Model
 
         $arr = explode(',', $file, 2);
         self::SaveEncryptedFile($project, $name, $arr, $notEncryptedContent, $encryptedPath);
-        self::SaveFileDbRecord($case->id, $name, $projectPath, $encryptedPath,$entry);
+        self::SaveFileDbRecord($case->id, $name, $projectPath, $encryptedPath, $entry);
+    }
 
+    /**
+     * @param         $file
+     * @param Project $project
+     *
+     * @param Cases   $case
+     * @param         $name
+     */
+    public static function updateEntryFile($file, $type, Project $project, Cases $case, Entry $entry, &$name, $oldInputs): void
+    {
+        $oldInputs = json_decode($oldInputs);
+        Log::info($oldInputs);
+
+        Log::info(array_key_exists('file', $oldInputs));
+        
+        if (array_key_exists('file', $oldInputs)) {
+            $existingFile = File::where('id', '=', $oldInputs['file'])->first();
+            File::delete($existingFile->path);
+        }
+
+        $name = 'interview_' . $case->name . date("dmyhis");
+        $projectPath = storage_path('app/project' . $project->id . '/files/');
+        $extension = Helper::extension($file);
+        $notEncryptedContent = $projectPath . $name . '.' . $extension;
+        File::isDirectory($projectPath) or File::makeDirectory($projectPath, 0775, true, true);
+        if ($type === 'audio') {
+            file_put_contents($notEncryptedContent, base64_decode(substr(explode(',', $file, 2)[1], 0, -1)));
+        //exec("ffmpeg -i " . storage_path('app/project' . $project->id . '/files/') . 'entry_audio.bin' . " " . storage_path('app/project' . $project->id . '/files/') . 'entry_audio.mp3');
+        } else {
+        }
+        // open file a image resource
+        //  Image::make($sorting['sortingscreenshot'])->save($notEncryptedContent);
+
+
+
+        $arr = explode(',', $file, 2);
+        self::SaveEncryptedFile($project, $name, $arr, $notEncryptedContent, $encryptedPath);
+        self::SaveFileDbRecord($case->id, $name, $projectPath, $encryptedPath, $entry);
     }
 
     /**
@@ -112,7 +151,9 @@ class Files extends Model
         $file_interview->path = $projectPath . $name . '.mfile';
         if (is_file(storage_path('app/' . $encryptedPath))) {
             $file_interview->size = File::size(storage_path('app/' . $encryptedPath));
-        } else $file_interview->size = 0;
+        } else {
+            $file_interview->size = 0;
+        }
         $file_interview->case_id = $caseid;
         $file_interview->save();
         $entry->update([
@@ -120,13 +161,10 @@ class Files extends Model
             'file' => $file_interview->id
             ],
         ]);
-
-        
     }
 
     public function case()
     {
         return $this->belongsTo(Cases::class);
     }
-
 }
