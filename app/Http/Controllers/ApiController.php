@@ -3,16 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Cases;
+use App\Helpers\Helper;
 use App\Project;
 use App\Role;
 use App\User;
-use Crypt;
 use Exception;
-use Helper;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Crypt;
 
 class ApiController extends Controller
 {
@@ -30,8 +30,7 @@ class ApiController extends Controller
      */
     public function returnUser($id)
     {
-        if ($id === 0)
-        {
+        if ($id === 0) {
             $user = new User();
             return response($user, 200);
         }
@@ -68,27 +67,21 @@ class ApiController extends Controller
             self::EMAIL => $request->email,
             self::PASSWORD => $request->password
         ];
-        if (auth()->attempt($credentials))
-        {
+        if (auth()->attempt($credentials)) {
             $token = Helper::random_str(60);
             auth()->user()->forceFill([
                 'api_token' => hash('sha256', $token),
             ])->save();
             $userHasACase = auth()->user()->latestCase;
-            if (!$userHasACase)
-            {
+            if (!$userHasACase) {
                 $response = 'No cases';
                 return response()->json(['case' => $response], 499);
-            } else
-            {
-
-                if ($userHasACase->isBackend())
-                {
+            } else {
+                if ($userHasACase->isBackend()) {
                     $response = 'No cases';
                     return response()->json(['case' => $response], 499);
                 }
-                if (!auth()->user()->profile()->exists())
-                {
+                if (!auth()->user()->profile()->exists()) {
                     $profile = auth()->user()->addProfile(auth()->user());
                 }
                 User::saveDeviceId($request);
@@ -110,8 +103,7 @@ class ApiController extends Controller
                     self::NOTSTARTED => $notStarted
                 ], 200);
             }
-        } else
-        {
+        } else {
             return response()->json(['error' => 'invalid credentials'], 401);
         }
     }
@@ -154,8 +146,7 @@ class ApiController extends Controller
      */
     public function logout()
     {
-        auth()->user()->tokens->each(function ($token)
-        {
+        auth()->user()->tokens->each(function ($token) {
             $token->delete();
         });
         return response()->json('Logged out successfully', 200);
@@ -191,7 +182,6 @@ class ApiController extends Controller
      */
     public function getInputs(Project $project)
     {
-
         $data[self::MEDIA] = $project->media;
         return response()->json($data, 200);
     }
