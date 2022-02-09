@@ -15,10 +15,6 @@ class Entry extends JsonResource
      */
     public function toArray($request)
     {
-        if (is_null($request)) {
-            return [];
-        }
-        
         {
             return [
             'id' => $this->id,

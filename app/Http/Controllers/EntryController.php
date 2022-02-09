@@ -58,7 +58,7 @@ class EntryController extends Controller
         $entry = Entry::create($attributes);
         
 
-        if (request()->hasHeader('x-file-token') && request()->header('x-file-token') !== "0") {
+        if (request()->hasHeader('x-file-token') && request()->header('x-file-token') !== "0" && request()->header('x-file-token') !== "") {
             $appToken = request()->header('x-file-token');
             $clientFileTokenIsSameWithServer = strcmp(Crypt::decryptString($case->file_token), $appToken) !== 0;
             if ($clientFileTokenIsSameWithServer) {

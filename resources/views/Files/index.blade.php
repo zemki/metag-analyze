@@ -12,7 +12,7 @@
         </span>
         <p class="ml-3 font-medium text-white truncate">
           <span class="hidden md:inline">
-            {{__('When you delete a file here, the entry rest untouched.')}}
+            {{__('When you delete a file here, the entry rests untouched.')}}
           </span>
         </p>
       </div>

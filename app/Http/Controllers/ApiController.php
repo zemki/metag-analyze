@@ -68,7 +68,7 @@ class ApiController extends Controller
             self::PASSWORD => $request->password
         ];
         if (auth()->attempt($credentials)) {
-            $token = Helper::random_str(60);
+            $token = Helper::random_str(60, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
             auth()->user()->forceFill([
                 'api_token' => hash('sha256', $token),
             ])->save();
@@ -95,9 +95,9 @@ class ApiController extends Controller
                 
                 return response()->json([
                     self::INPUTS => $inputs[self::INPUTS],
-                    'case' => $userHasACase,
+                    'case' => $userHasACase->makeHidden('file_token'),
                     self::TOKEN => $token,
-                    'file_token' => Crypt::decryptString($userHasACase->file_token),
+                    'file_token' => $userHasACase->file_token ? Crypt::decryptString($userHasACase->file_token): '',
                     'duration' => $duration,
                     self::CUSTOMINPUTS => $inputs[self::INPUTS][self::CUSTOMINPUTS],
                     self::NOTSTARTED => $notStarted
