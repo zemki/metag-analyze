@@ -29,6 +29,10 @@ use Image;
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Files whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Files whereUpdatedAt($value)
  * @mixin \Eloquent
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Cases|null $case
+ * @method static \Illuminate\Database\Eloquent\Builder|Files whereCaseId($value)
  */
 class Files extends Model
 {

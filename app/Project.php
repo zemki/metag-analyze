@@ -34,6 +34,8 @@ use stdClass;
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Project whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Project whereUpdatedAt($value)
  * @mixin \Eloquent
+ * @property string|null $properties
+ * @method static \Illuminate\Database\Eloquent\Builder|Project whereProperties($value)
  */
 class Project extends Model
 {

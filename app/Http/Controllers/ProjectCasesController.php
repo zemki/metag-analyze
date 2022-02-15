@@ -32,15 +32,13 @@ class ProjectCasesController extends Controller
      */
     public function distinctshow(Project $project, Cases $case)
     {
-        if (auth()->user()->notOwnerNorInvited($project) && !auth()->user()->isAdmin())
-        {
+        if (auth()->user()->notOwnerNorInvited($project) && !auth()->user()->isAdmin()) {
             abort(403);
         }
         list($mediaValues, $availableMedia) = Cases::getMediaValues($case);
         list($availableInputs, $data) = Cases::getInputValues($case, $data);
         $data['entries']['list'] = Entry::where('case_id', '=', $case->id)->get();
-        foreach ($data['entries']['list'] as $entry)
-        {
+        foreach ($data['entries']['list'] as $entry) {
             $entry['inputs'] = json_decode($entry['inputs']);
             $entry['media_id'] = Media::firstWhere('id', $entry['media_id'])->name;
         }
@@ -56,9 +54,7 @@ class ProjectCasesController extends Controller
 
     public function groupedshow(Project $project, Cases $case)
     {
-
-        if (auth()->user()->notOwnerNorInvited($project) && !auth()->user()->isAdmin())
-        {
+        if (auth()->user()->notOwnerNorInvited($project) && !auth()->user()->isAdmin()) {
             abort(403);
         }
         $tempArray = Entry::where('case_id', '=', $case->id)->with('media')->get()->toArray();
@@ -66,40 +62,32 @@ class ProjectCasesController extends Controller
         $data['availableInputs'] = $project->getAnswersInputs();
         //  $data['availableInputs'] = [];
         $textInputToUnset = [];
-        foreach ($tempArray as $entry)
-        {
+        foreach ($tempArray as $entry) {
             $tempInputsArray = json_decode($entry['inputs'], true);
             $inputEntry = [];
+    
+
             $inputEntry['inputs'] = [];
             // format the inputs for the graph
-            foreach ($tempInputsArray as $question => $answer)
-            {
-                if (is_array($answer))
-                {
-
-                    foreach ($answer as $singularAnswer)
-                    {
+            foreach ($tempInputsArray as $question => $answer) {
+                if (is_array($answer)) {
+                    foreach ($answer as $singularAnswer) {
                         $tempEntryInputs['id'] = $entry['id'];
                         $tempEntryInputs['name'] = $singularAnswer;
-                        foreach ($data['availableInputs'] as $availableInput)
-                        {
-                            if ($availableInput->name == $singularAnswer)
-                            {
+                        foreach ($data['availableInputs'] as $availableInput) {
+                            if ($availableInput->name == $singularAnswer) {
                                 $tempEntryInputs['color'] = $availableInput->color;
                                 break;
                             }
                         }
                         array_push($inputEntry['inputs'], (object)$tempEntryInputs);
                     }
-                } else if (strlen($answer) > 1)
-                {
-                    #text
+                } elseif (strlen($answer) > 1) {
+                    #text & file
                     $tempEntryInputs['id'] = $entry['id'];
-                    $tempEntryInputs['name'] = $answer;
-                    foreach ($data['availableInputs'] as $key => $availableInput)
-                    {
-                        if ($availableInput->name == $question)
-                        {
+                    $tempEntryInputs['name'] = $question !== "file" ? $answer : "file";
+                    foreach ($data['availableInputs'] as $key => $availableInput) {
+                        if ($availableInput->name == $question) {
                             array_push($data['availableInputs'], (object)["id" => count($data['availableInputs']) + 1, "name" => $answer, "color" => $availableInput->color]);
                             $tempEntryInputs['color'] = $availableInput->color;
                             array_push($textInputToUnset, $key);
@@ -107,15 +95,13 @@ class ProjectCasesController extends Controller
                         }
                     }
                     array_push($inputEntry['inputs'], (object)$tempEntryInputs);
-                } else
-                {
+                } else {
+                    
                     # scale
                     $tempEntryInputs['id'] = $entry['id'];
                     $tempEntryInputs['name'] = $answer;
-                    foreach ($data['availableInputs'] as $availableInput)
-                    {
-                        if ($availableInput->name == $answer)
-                        {
+                    foreach ($data['availableInputs'] as $availableInput) {
+                        if ($availableInput->name == $answer) {
                             $tempEntryInputs['color'] = $availableInput->color;
                             break;
                         }
@@ -124,9 +110,12 @@ class ProjectCasesController extends Controller
                 }
             }
             // translate the object to array
-            foreach ($entry as $key => $property)
-            {
-                if ($key == "inputs") continue;
+            // check here input type file and remark when there's a file - now it shows only the id of the file
+
+            foreach ($entry as $key => $property) {
+                if ($key == "inputs") {
+                    continue;
+                }
                 $inputEntry[$key] = $property;
             }
             $inputEntry['begin'] = strtotime($inputEntry['begin']);
@@ -148,8 +137,7 @@ class ProjectCasesController extends Controller
      */
     public function create(Project $project)
     {
-        if (auth()->user()->notOwnerNorInvited($project))
-        {
+        if (auth()->user()->notOwnerNorInvited($project)) {
             abort(403);
         }
         $data['breadcrumb'] = [
@@ -168,31 +156,25 @@ class ProjectCasesController extends Controller
      */
     public function store(Project $project)
     {
-        if (auth()->user()->notOwnerNorInvited($project))
-        {
+        if (auth()->user()->notOwnerNorInvited($project)) {
             abort(403);
         }
-        if (request('name') == "")
-        {
+        if (request('name') == "") {
             return redirect($project->path() . '/cases/new')->with(['message' => __('Please fill all the required inputs.')]);
         }
         request()->validate(
             ['name' => 'required']
         );
-        if (request('backendCase'))
-        {
+        if (request('backendCase')) {
             $user = auth()->user();
             $case = $project->addCase(request('name'), 'value:0|days:0|lastDay:' . Carbon::now()->subDay());
-        } else
-        {
+        } else {
             $email = request('email');
             $case = $project->addCase(request('name'), request('duration'));
             $user = User::createIfDoesNotExists(User::firstOrNew(['email' => $email]));
-            foreach ($project->getInputs() as $object)
-            {
+            foreach ($project->getInputs() as $object) {
                 $hasFileUpload = property_exists($object, 'type') && $object->type === 'audio recording';
-                if ($hasFileUpload)
-                {
+                if ($hasFileUpload) {
                     $encrypted = Crypt::encryptString(Helper::random_str(60));
                     $case->forceFill([
                         'file_token' => $encrypted,
@@ -228,12 +210,9 @@ class ProjectCasesController extends Controller
     public function destroy(Cases $case)
     {
         $project = $case->project;
-        if ($project->created_by == auth()->user()->id)
-        {
-
+        if ($project->created_by == auth()->user()->id) {
             $case->delete();
-        } else
-        {
+        } else {
             return response()->json(['message' => 'You can\'t delete this case'], 403);
         }
         $data['breadcrumb'] = [url('/') => 'Projects', '#' => substr($project->name, 0, 20) . '...'];
@@ -254,8 +233,7 @@ class ProjectCasesController extends Controller
      */
     public function export(Cases $case)
     {
-        if (auth()->user()->notOwnerNorInvited($case->project))
-        {
+        if (auth()->user()->notOwnerNorInvited($case->project)) {
             abort(403, __('you can\'t see the data of this project.'));
         }
         $headings = $this->getProjectInputHeadings($case->project);
@@ -269,11 +247,15 @@ class ProjectCasesController extends Controller
     private function getProjectInputHeadings(Project $project): array
     {
         $headings = [];
-        foreach (json_decode($project->inputs) as $input)
-        {
+        foreach (json_decode($project->inputs) as $input) {
             $isMultipleOrOneChoice = property_exists($input, "numberofanswer") && $input->numberofanswer > 0;
-            if ($isMultipleOrOneChoice) for ($i = 0; $i < $input->numberofanswer; $i++) array_push($headings, $input->name);
-            else array_push($headings, $input->name);
+            if ($isMultipleOrOneChoice) {
+                for ($i = 0; $i < $input->numberofanswer; $i++) {
+                    array_push($headings, $input->name);
+                }
+            } else {
+                array_push($headings, $input->name);
+            }
         }
         return $headings;
     }
@@ -291,11 +273,9 @@ class ProjectCasesController extends Controller
             ->leftJoin('media', 'entries.media_id', '=', 'media.id')
             ->get()->unique()->toArray();
         $data['media'] = [];
-        foreach ($tempArray as $media)
-        {
+        foreach ($tempArray as $media) {
             $mediaEntry = [];
-            foreach ($media as $key => $property)
-            {
+            foreach ($media as $key => $property) {
                 $mediaEntry[$key] = $property;
             }
             $mediaEntry['color'] = array_rand(array_flip(config('colors.chartCategories')), 1);
@@ -312,28 +292,22 @@ class ProjectCasesController extends Controller
     {
         $inputs = array_column($data['entries'], 'inputs');
         //  $inputs = array_map(function($o) { return $o['inputs']; }, $data['entries']);
-        $inputs = array_map(function ($o)
-        {
+        $inputs = array_map(function ($o) {
             $return = isset($o[0]) ? $o[0]->name : '';
             return $return;
         }, $inputs);
         // $inputsa = array_column($inputs, 'name');
         // dd($data['availableInputs']);
         $inputsToFilter = [];
-        foreach ($data['availableInputs'] as $key => $availableInput)
-        {
-
-            if (!in_array($availableInput->name, $inputs))
-            {
+        foreach ($data['availableInputs'] as $key => $availableInput) {
+            if (!in_array($availableInput->name, $inputs)) {
                 array_push($inputsToFilter, $key);
             }
         }
-        foreach ($inputsToFilter as $key)
-        {
+        foreach ($inputsToFilter as $key) {
             unset($data['availableInputs'][$key]);
         }
-        foreach ($textInputToUnset as $key)
-        {
+        foreach ($textInputToUnset as $key) {
             unset($data['availableInputs'][$key]);
         }
     }
@@ -346,10 +320,11 @@ class ProjectCasesController extends Controller
      */
     private function getGraphBreadcrumb(Project $project, Cases $case, mixed $data)
     {
-        if (env('APP_ENV') === 'production')
-        {
+        if (env('APP_ENV') === 'production') {
             $slug = '/metag';
-        } else $slug = '';
+        } else {
+            $slug = '';
+        }
         $data['breadcrumb'] = [
             url('/') => 'Metag',
             url('/') => 'Projects',
