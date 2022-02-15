@@ -34,6 +34,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Profile whereUserId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Profile whereWorkaddress($value)
  * @mixin \Eloquent
+ * @property string|null $last_notification_at
+ * @method static \Illuminate\Database\Eloquent\Builder|Profile whereLastNotificationAt($value)
  */
 class Profile extends Model
 {

@@ -247,7 +247,7 @@
                                 </a>
                             </div>
                         @endif
-
+                        @if($case->isConsultable() && $case->files()->count() > 0 || (auth()->user()->isAdmin()))
                             <div class="py-2">
                                 <a href="{{url('cases/'.$case->id.'/files')}}" target="_blank">
                                     <button class="block px-2 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700">
@@ -255,6 +255,7 @@
                                     </button>
                                 </a>
                             </div>
+                        @endif
 
                         <div class="py-2">
                             <button type="submit" class="block text-white bg-red-600 button"

@@ -10,6 +10,7 @@ use JetBrains\PhpStorm\Pure;
 
 /**
  * App\Cases
+ *
  * @property int                                                        $id
  * @property string                                                     $name
  * @property string                                                     $duration
@@ -32,6 +33,10 @@ use JetBrains\PhpStorm\Pure;
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases whereUserId($value)
  * @mixin \Eloquent
+ * @property string|null $file_token
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Files[] $files
+ * @property-read int|null $files_count
+ * @method static \Illuminate\Database\Eloquent\Builder|Cases whereFileToken($value)
  */
 class Cases extends Model
 {
@@ -51,14 +56,12 @@ class Cases extends Model
     {
         parent::boot();
         static::deleting(function ($case) {
-
             if (!app()->runningInConsole() && $case->project->created_by === auth()->user()->id) {
                 foreach ($case->entries as $entry) {
                     $entry->delete();
                 }
 
                 foreach ($case->plannedNotifications() as $notification) {
-
                     DB::delete('delete from notifications where id = ?', [$notification->id]);
                 }
             }
@@ -117,8 +120,13 @@ class Cases extends Model
             $project_inputs = json_decode($entry[self::PR_INPUTS], true);
             foreach ($inputs as $key => $index) {
                 foreach ($project_inputs as $project_input) {
+                    if ($key === "file") {
+                        $project_input['name'] = "file";
+                    }
+
                     if ($project_input['name'] === $key) {
                         array_push($inputValues, [self::VALUE => $index, "type" => $project_input['type'], "name" => $key, "start" => $entry["begin"], "end" => $entry["end"]]);
+                        ray($inputValues);
                     }
                 }
             }
@@ -127,16 +135,27 @@ class Cases extends Model
         foreach ($availableOptions as $availableOption) {
             $availableOptions[$availableOption->type] = $availableOption;
         }
+
         foreach ($availableInputs as $availableInput) {
             self::formatInputValues($data, $availableInput, $availableOptions, $inputValues);
             foreach ($inputValues as $inputValue) {
-                if ($inputValue['type'] == $availableInput && $inputValue != null) array_push($data['entries']['inputs'][$availableInput], $inputValue);
+                ray($inputValue['type']);
+                ray($availableInput);
+                ray($inputValue);
+                $inputIsUsedInEntries = $inputValue['type'] == $availableInput && $inputValue != null;
+                if ($inputIsUsedInEntries) {
+                    if ($inputValue['type'] === "audio recording") {
+                        $inputValue['value'] = "File";
+                    }
+                    array_push($data['entries']['inputs'][$availableInput], $inputValue);
+                }
             }
         }
         return array($availableInputs, $data);
     }
 
     /**
+     * Provide the available values for the default additional inputs
      * @param       $data
      * @param       $availableInput
      * @param       $availableOptions
@@ -150,13 +169,13 @@ class Cases extends Model
             $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableInput;
             $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = $availableOptions[self::MULTIPLE_CHOICE]->answers;
             $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions[self::MULTIPLE_CHOICE]->name;
-        } else if ($availableInput === self::ONE_CHOICE) {
+        } elseif ($availableInput === self::ONE_CHOICE) {
             $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = $availableOptions[self::ONE_CHOICE]->answers;
             $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions[self::ONE_CHOICE]->name;
-        } else if ($availableInput === self::SCALE) {
+        } elseif ($availableInput === self::SCALE) {
             $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = ["0", "1", "2", "3", "4", "5"];
             $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions[self::SCALE]->name;
-        } else if ($availableInput === "text") {
+        } elseif ($availableInput === "text") {
             $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = [];
             $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions["text"]->name;
             // loop through the values you already have and make it part of the 'available'
@@ -165,6 +184,9 @@ class Cases extends Model
                     array_push($data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE], $inputValue[self::VALUE]);
                 }
             }
+        } elseif ($availableInput === "audio recording") {
+            $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = ["File","No File"];
+            $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions["audio recording"]->name;
         }
     }
 
@@ -175,7 +197,6 @@ class Cases extends Model
      */
     public static function calculateDuration(int $datetime, $caseDuration)
     {
-
         $sub = substr($caseDuration, strpos($caseDuration, ":") + strlen(":"), strlen($caseDuration));
         $realDuration = (int)substr($sub, 0, strpos($sub, "|"));
         return date("d.m.Y", $datetime + $realDuration * 3600);
@@ -209,7 +230,6 @@ class Cases extends Model
      */
     public function addUser($user)
     {
-
         if (is_array($user)) {
             $user = User::firstOrCreate($user);
         }
@@ -284,7 +304,6 @@ class Cases extends Model
      */
     public function notifications(): array|DatabaseNotificationCollection
     {
-
         return $this->user->notifications->sortByDesc('created_at')->where('data.case', $this->id)->where('data.planning', false);
     }
 
