@@ -1,91 +1,103 @@
 @extends('auth.layouts.app')
 
 @section('content')
-    <div class="flex sm:items-start md:items-center md:justify-center h-screen">
-        <div class="bg-white p-4 rounded overflow-hidden shadow-lg  md:w-1/2 lg:w-1/3 sm:w-full">
-            <form method="POST" action="{{ route('register') }}">
-                @csrf
 
-                <figure class="image is-64x64" style="margin: 0 auto; max-width: 100%;">
-                    <img src="{{config('utilities.base64logo')}}" alt="Mesort Logo">
-
-                </figure>
-                <div class="text-center">
-                    <h1 class="title pb-2" style="margin: 0 auto; max-width: 100%;">Metag Analyze</h1>
-                    <h4> {{ __('Register') }} </h4>
-                    <div class="py-4 w-full text-center ">
-                        <a class="text-blue-500 hover:text-red-600" href="{{url('login')}}">{{__("Login Page")}}</a>
-                    </div>
-                </div>
-
-                <label for="email" class="label">{{ __('E-Mail Address') }}</label>
-                <div class="control">
-                    <input id="email" type="email"
-                           class="input {{ $errors->has('email') ? ' bg-red-dark' : '' }}" name="email"
-                           value="{{ old('email') }}" required autofocus v-model="registration.email">
-                </div>
-
-
-                <ul class="w-full my-2">
-                    <li class="list-item-registration w-auto"
-                        :class="{ is_valid: registration.contains_six_characters }">{{__('6 Characters')}}
-                    </li>
-                    <li class="list-item-registration" :class="{ is_valid: registration.contains_number }">
-                        {{__('Contains Number')}}
-                    </li>
-                    <li class="list-item-registration" :class="{ is_valid: registration.contains_letters }">
-                        {{__('Contains Letters')}}
-                    </li>
-                </ul>
-
-                <div class="my-2">
-                <label for="password" class="label">{{ __('Password') }}</label>
-
-                <input id="password" type="password" v-model="registration.password"
-                       @input="checkPassword()"
-                       class="input {{ $errors->has('password') ? ' bg-red-dark' : '' }}"
-                       name="password"
-                       required>
-                </div>
-                <div class="my-2">
-                    <label for="password-confirm"
-                           class="label">{{ __('Confirm Password') }}</label>
-
-                    <input id="password-confirm" type="password" class="input"
-                           name="password_confirmation" required>
-                </div>
-                @if ($errors->has('email'))
-                    <div class="bg-red-700 my-2 pl-2 py-2">
-                        <strong>{{ $errors->first('email') }}</strong>
-                    </div>
-                @endif
-
-                @if ($errors->has('password'))
-                    <div class="bg-red-700 my-2  pl-2 py-2">
-                        <strong>{{ $errors->first('password') }}</strong>
-                    </div>
-                @endif
-                <div class="text-center align-middle">
-                    <label class="w-full block font-bold">
-                        <input class="mr-2 leading-tight" type="checkbox" checked name="newsletter">
-                        <span class="text-sm">
-                            Send me your newsletter!
-                        </span>
-                    </label>
-
-                    <p class="block">{!!__('By registering you confirmed that you read the <a class="text-blue-500" target="_blank" href="https://mesoftware.org/index.php/datenschutzerklaerung-metag/" title="Privacy Policy">Privacy Policy</a>')!!}</p>
-
-                    <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l"
-                            :class="{'opacity-50 cursor-not-allowed opacity-75' : !this.registration.valid_password}"
-                            :disabled="!this.registration.valid_password"
-                    >
-                        {{__('Register')}}
-                    </button>
-
-                </div>
-            </form>
-        </div>
+<div class="flex items-center justify-center min-h-full px-4 py-12 sm:px-6 lg:px-8">
+  <div class="w-full max-w-md space-y-8">
+    <div>
+      <img class="w-auto h-24 mx-auto" src="{{config('utilities.base64logo')}}" alt="Metag Analyze Logo">
+      <h1 class="mt-6 text-3xl font-extrabold text-center text-gray-900">Register to Metag Analyze</h1>
+      <p class="mt-2 text-sm text-center text-gray-600">
+        Or
+        <a href="{{url('login')}}" class="font-medium text-blue-600 hover:text-blue-500"> Login </a>
+      </p>
     </div>
+    <form class="mt-8 space-y-6" method="POST" action="{{ route('register') }}">
+      <input type="hidden" name="remember" value="true">
+      @csrf
+      <div class="-space-y-px rounded-md shadow-sm">
+        <div>
+          <label for="email-address" class="sr-only">{{ __('E-Mail Address') }}</label>
+          <input id="email-address" name="email" type="email" autocomplete="email" required
+            class="relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-none appearance-none focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+            placeholder="Email address">
+        </div>
+
+        <ul class="w-full my-2">
+          <li class="mb-2 text-sm font-bold break-words whitespace-normal list-item-registration"
+            :class="{ is_valid: registration.contains_six_characters }">{{__('6
+            Characters')}}
+          </li>
+          <li class="mb-2 text-sm font-bold break-words whitespace-normal list-item-registration"
+            :class="{ is_valid: registration.contains_number }">
+            {{__('Contains Number')}}
+          </li>
+          <li class="text-sm font-bold break-words whitespace-normal list-item-registration"
+            :class="{ is_valid: registration.contains_letters }">
+            {{__('Contains Letters')}}
+          </li>
+        </ul>
+        <div>
+          <label for="password" class="sr-only">{{ __('Password') }}</label>
+          <input id="password" type="password" v-model="registration.password" @input="checkPassword()" name="password"
+            required autocomplete="new-password" required
+            class="{{ $errors->has('password') ? ' bg-red-100 text-white' : '' }} relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-none appearance-none rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+            placeholder="{{ __('Password') }}">
+        </div>
+        <div>
+          <input id="password-confirm" type="password" autocomplete="new-password"
+            placeholder="{{ __('Confirm Password') }}"
+            class="{{ $errors->has('password') ? ' bg-red-100 text-white' : '' }} relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-none appearance-none rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+            name="password_confirmation" required>
+        </div>
+        @if ($errors->has('email'))
+        <div class="py-2 pl-2 my-2 text-white bg-red-500">
+          {{ $errors->first('email') }}
+        </div>
+        @endif
+
+        @if ($errors->has('password'))
+        <div class="py-2 pl-2 my-2 text-white bg-red-500">
+          {{ $errors->first('password') }}
+        </div>
+        @endif
+        <div class="relative flex items-start my-2">
+          <div class="flex items-center h-5">
+            <input checked aria-describedby="newsletter-subscription" name="newsletter" type="checkbox"
+              class="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500">
+          </div>
+          <div class="ml-3 text-sm">
+            <label for="comments" class="font-medium text-gray-700">{{__('Send me your newsletter!')}}</label>
+          </div>
+        </div>
+
+
+
+        <div>
+
+          <p class="block">{!!__('By registering you confirmed that you read the <a class="text-blue-500"
+              target="_blank" href="https://mesoftware.org/index.php/datenschutzerklaerung-metag/"
+              title="Privacy Policy">Privacy Policy</a>')!!}</p>
+          <button type="submit"
+            class="relative flex justify-center w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md group hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            :class="{'opacity-50 cursor-not-allowed opacity-75' : !this.registration.valid_password}"
+            :disabled="!this.registration.valid_password">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+              <!-- Heroicon name: solid/lock-closed -->
+              <svg class="w-5 h-5 text-blue-500 group-hover:text-blue-400" xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd"
+                  d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                  clip-rule="evenodd" />
+              </svg>
+            </span>
+            {{__('Register')}}
+          </button>
+        </div>
+    </form>
+  </div>
+</div>
+
+
 
 @endsection
-
