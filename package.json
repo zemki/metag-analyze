@@ -9,32 +9,45 @@
         "prod": "npm run production",
         "production": "mix --production"
     },
+        "postcss": {
+        "plugins": {
+            "tailwindcss": "./tailwind.config.js"
+        },
+        "autoprefixer": {}
+    },
     "devDependencies": {
         "autoprefixer": "^10.4.2",
         "axios": "^0.21.4",
         "bootstrap": "^4.6.1",
-        "cross-env": "^5.2.1",
+        "cross-env": "^6.0.3",
         "eslint": "^8.8.0",
         "eslint-config-airbnb-base": "^15.0.0",
         "eslint-plugin-import": "^2.25.4",
         "eslint-plugin-vue": "^8.4.0",
         "google-charts": "^2.0.0",
         "jquery": "^3.6.0",
-        "laravel-mix": "^6.0",
+        "laravel-mix": "^6.0.0",
+        "laravel-mix-polyfill": "^3.0.0",
+        "laravel-mix-purgecss": "^6.0.0",
         "lodash": "^4.17.21",
         "popper.js": "^1.16.0",
-        "postcss": "^8.4.6",
+        "postcss": "^8.4.8",
+        "postcss-import": "^14.0.2",
         "resolve-url-loader": "^2.3.1",
-        "sass-loader": "^7.3.1",
-        "tailwindcss": "^3.0.18",
+        "sass": "^1.49.7",
+        "sass-loader": "^8.0.2",
+        "tailwindcss": "^3.0.23",
         "vue": "^2.6.14",
+        "vue-loader": "^15.9.7",
+        "@vue/runtime-dom": "latest",
+        "@tailwindcss/forms": "^0.5.0",
         "vue-template-compiler": "^2.6.14"
+        
     },
     "dependencies": {
         "@mdi/font": "^3.9.97",
         "buefy": "^0.8.16",
         "bulma": "^0.8.2",
-        "chart.js": "^2.9.3",
         "dart-sass": "^1.25.0",
         "es6-promise": "^4.2.8",
         "highcharts": "^9.3.2",
@@ -42,7 +55,6 @@
         "node-sass": "^4.14.0",
         "sass": "^1.49.4",
         "vue-chartkick": "^0.5.3",
-        "vue-loader": "^15.9.8",
         "vuex": "^3.6.2"
     }
 }
