@@ -1,123 +1,111 @@
 @extends('layouts.app')
 
 @section('content')
-    @if($newsletter)
-        <div class="w-full h-auto text-center text-gray-900 bg-green-500 p-4 newsletter transition-all duration-500 ease-in-out opacity-100">
-            <p class="w-full">{{__('Would you be interested in receiving e-mails about future features and updates from MeSoftware?')}}</p>
-            <button @click="iWantNewsletter('true')" class="sm:m-2 md:mx-1 shadow sm:block sm:w-full md:w-auto md:inline bg-purple-500 hover:bg-purple-400 focus:ring focus:outline-none text-white font-bold py-2 px-4 rounded" type="button">
-                {!!  __('<strong>I want</strong> to receive emails from MeSoftware') !!}
-            </button>
-            <button @click="iWantNewsletter('false')" class="sm:m-2 md:mx-1 shadow sm:block sm:w-full md:w-auto md:inline bg-purple-500 hover:bg-purple-400 focus:ring focus:outline-none text-white font-bold py-2 px-4 rounded" type="button">
-                {!!  __(' <strong>I don\'t want</strong> to receive emails from MeSoftware')!!}
-            </button>
-            <p class="block text-blue-500"><a href="https://mesoftware.org/index.php/datenschutzerklaerung-metag/" title="Mesort Privacy Policy" target="_blank">{{__('Privacy Policy')}}</a></p>
+<div class="flex-grow w-full mx-auto max-w-7xl xl:px-8 lg:flex">
+    <div class="flex-1 min-w-0 bg-white xl:flex">
+        <div class="bg-white border-r xl:flex-shrink-0 xl:w-64 xl:border-gray-200">
+            <div class="py-6 pl-4 pr-6 sm:pl-6 lg:pl-8 xl:pl-0">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1 space-y-8">
+                        <div
+                            class="space-y-8 sm:space-y-0 sm:flex sm:justify-between sm:items-center xl:block xl:space-y-8">
+                            <div class="flex items-center space-x-3">
+                                <div class="flex-shrink-0 w-12 h-12">
+                                    <img alt="{{__('Your Gravatar User Profile')}}" class="w-12 h-12 rounded-full"
+                                        src="{{\Gravatar::get(Auth::user()->email)}}" alt="">
+                                </div>
+                                <div class="space-y-1">
+                                    <div class="text-sm font-medium text-gray-900"><span
+                                            class="sr-only">{{__('Your Email')}}</span>{{
+                    Auth::user()->email }}</div>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col sm:flex-row xl:flex-col">
+                                <a title="{{__('Create a new Project')}}"
+                                    href="{{session('hasReachMaxNumberOfStudies') ? '#' : url('/projects/new')}}"><button
+                                        type="button" class="{{session('hasReachMaxNumberOfStudies') ? 'pointer-events-none select-none cursor-not-allowed opacity-50 inline-flex items-center justify-center px-4 py-2 mt-3 text-sm font-medium text-white bg-blue-500 border border-gray-300 rounded-md shadow-sm hover:bg-blue-700 hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 xl:ml-0 xl:mt-3 xl:w-full'
+                                    : 'inline-flex items-center justify-center px-4 py-2 mt-3 text-sm font-medium hover:text-gray-200 text-white bg-blue-500 border border-gray-300 rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 xl:ml-0 xl:mt-3 xl:w-full'}}
+                            ">
+                                        {{__('New Project')}}
+                                    </button></a>
+                            </div>
+                        </div>
+                        <div
+                            class="flex flex-col space-y-6 sm:flex-row sm:space-y-0 sm:space-x-8 xl:flex-col xl:space-x-0 xl:space-y-6">
+                            <div class="flex items-center space-x-2">
+                                <svg class="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd"
+                                        d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span class="text-sm font-medium text-gray-500">Free Member</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <svg class="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path
+                                        d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+                                </svg>
+                                <span class="text-sm font-medium text-gray-500" aria-valuenow="{{count($projects)}}"
+                                    aria-valuemax="15">{{count($projects)}}/
+                                    {{(config('utilities.maxNumberOfStudies'))}}
+                                    {{('Projects')}}</span>
+                            </div>
+                            @if(session('hasReachMaxNumberOfStudies'))
+                            <h2 class="items-center w-full p-3 mr-4 text-base text-white bg-red-700">
+                                {{__('You have reached the max number of projects! Contact us for solutions!')}}
+                            </h2>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    @endif
 
-    <div class="mx-auto w-full text-center uppercase font-bold p-2">
-        <h4 class="text-4xl font-serif">{{ __("Project you created") }} </h4>
-    </div>
+        <!-- Studies List -->
+        <div class="bg-white lg:min-w-0 lg:flex-1">
 
-    <div class="pb-4">
-        <a href="{{url('projects/new')}}">
-            <button class="button bg-blue-500 hover:bg-blue-700 text-white mr-2 focus:border-gray-100">
-                <i class="px-1">+</i> {{ __('New Project') }}
-            </button>
-        </a>
-    </div>
+            @if(count($projects) === 0 && count($invited_projects) === 0)
 
-    <div class="columns is-multiline subpixel-antialiased">
-        @forelse($projects as $project)
 
-            <div class="max-w-xs rounded overflow-auto shadow-lg ml-2 mt-2">
-                <div class="px-4 py-2">
-                    <div class="font-bold text-xl mb-2 block text-center break-words">
-                        {{$project->name}}
-
-                    </div>
-
-                    <div class="py-2">
-                        <a href="{{url($project->path())}}">
-                            <button type="submit"
-                                    class="button">
-
-                                {{__('Consult Project')}}
-                            </button>
-                        </a>
-                    </div>
-                    <div class="py-2">
-
-                        <a href="{{url($project->path().'/export')}}" title="{{__('from cases that are already closed.')}}">
-                            <button class="button bg-green-500 text-white">{{__('Download all the data')}}</button>
-                        </a>
-                    </div>
-                    <div class="py-2">
-
-                        <button class="button bg-red-600 mt-1">
-                            <a class="text-gray-100 hover:text-black"
-                               @click="confirmDeleteProject({{$project->id}},'{{url('/projects/'.$project->id)}}')">{{__('Delete Project')}}</a>
+            <div class="mt-12 text-center">
+                <svg class="w-12 h-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    aria-hidden="true">
+                    <path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">{{__('No projects')}}</h3>
+                <p class="mt-1 text-sm text-gray-500">{{__('Get started by creating a new project.')}}</p>
+                <div class="mt-6">
+                    <a title="{{__('Create a new Project')}}" href="{{url('/projects/new')}}">
+                        <button type="button"
+                            class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-500 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <svg class="w-5 h-5 mr-2 -ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                                fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd"
+                                    d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            {{__('New Project')}}
                         </button>
-                    </div>
+                    </a>
                 </div>
-                <div class="px-6 py-4 ">
-                    <div class="block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700"> {{__('Created by')}} {{\App\User::where('id',$project->created_by)->first()->email}}</div>
-                    <div class="block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700">
-                        {{__('Cases')}}: {{$project->cases->count()}}</div>
-                    <div class="break-words block bg-gray-200 px-3 py-1 text-sm font-semibold text-gray-700">{{$project->description}} </div>
-
-                </div>
-
             </div>
+        </div>
+        @else
 
 
 
-        @empty
-            <div class="column text-center">
-                {{__('You don\'t have any personal project.')}}
-            </div>
-        @endforelse
+        <projects-list projects="{{$projects->merge($invites)}}" user="{{auth()->user()}}"></projects-list>
+        @endif
     </div>
 
-
-    <div class="columns is-multiline subpixel-antialiased">
-        <h4 class="text-4xl mx-auto w-full text-center uppercase font-bold p-2 font-serif">{{ __("Project you're invited to") }} </h4>
-
-        @forelse($invites as $project)
-
-            <div class="column is-4 overflow-auto ">
-                <article
-                        class="cards-projects items-stretch flex-grow-0 h-56 px-2 border-solid border-4 border-blue-100">
-                    <div class="mb-2">
-                        <p class="text-2xl font-bold ">
-                            <a class="align-middle text-center" href="{{url($project->path())}}">
-                                {{$project->name}}
-                                <i class="">&rsaquo;</i>
-                            </a>
-                        </p>
-                        <p class="text-sm text-gray-600">
-                            {{ __('Created by') }} {{\App\User::where('id',$project->created_by)->first()->email}}
-                        </p>
-
-                    </div>
-                    <div>
-                        {{ __('Cases: ') }} {{$project->cases->count()}}
-                    </div>
-                    <div class="mb-3">
-                        <p class="text-base">{{$project->description}} </p>
-                    </div>
+</div>
+</div>
 
 
-                    <div class="" style="float:right;">
-                        <a class="button bg-red-600 text-white"
-                           @click="confirmLeaveProject({{auth()->user()}},{{$project->id}})">{{__('Leave Project')}}</a>
-                    </div>
-                </article>
-            </div>
-        @empty
-            <div class="column text-center">
-                {{__('You have not received any invite.')}}
-            </div>
-        @endforelse
-    </div>
 
 @endsection

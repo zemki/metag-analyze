@@ -1,39 +1,83 @@
-<header class="bg-blue-500 sm:flex sm:justify-between sm:items-center sm:px-4 sm:py-3 min-w-screen border-t border-b border-blue-500 text-blue-700 ">
-    <div class="flex items-center inline justify-between px-4 sm:p-0">
-        <div class="">
-            <a href="{{url('/')}}" class="text-3xl text-gray-100 font-bold hover:text-red-600">
-                <img class="h-8 inline"
-                     src="{{config('utilities.base64logo')}}"
-                     alt="Metag Analyze">
-                Metag Analyze</a>
+<div class="relative flex flex-col min-h-full print:hidden">
+    <!-- Navbar -->
+    <nav class="flex-shrink-0 bg-blue-500">
+        <div class="px-2 mx-auto max-w-7xl sm:px-4 lg:px-8">
+            <div class="relative flex items-center justify-between h-16">
+                <!-- Logo section -->
+                <div class="flex items-center px-2 lg:px-0 xl:w-64">
+                    <div class="flex-shrink-0">
+                        <a class="flex items-center justify-center text-white align-middle hover:text-gray-200"
+                            href="{{url('/')}}" title="Home button">
+                            <img class="w-auto h-10" src="{{config('utilities.base64logo')}}" alt="MeSort Logo">
+                            <p class="px-3 py-2 text-sm font-medium text-gray-200 rounded-md hover:text-white">Home</p>
+                        </a>
+                    </div>
+                </div>
+                <div class="hidden lg:block lg:w-80">
+                    <div class="flex items-center justify-end">
+
+                        @if(Request::is('/'))
+
+                        {{-- <notification-bell></notification-bell> --}}
+
+                        @endif
+                        @if(Auth::user()->hasRole('admin'))
+                        <a target="_blank"
+                            class="px-3 py-2 text-sm font-medium text-gray-200 rounded-md hover:text-white"
+                            href="{{url('translations')}}">
+                            {{ __('Translations') }}
+
+                        </a>
+                        @endif
+                        <div class="flex">
+                            <a title="{{__('MeSort User Manuals')}}" href="https://mesoftware.org/index.php/mesort/"
+                                class="px-3 py-2 text-sm font-medium text-gray-200 rounded-md hover:text-white">Manuals</a>
+                        </div>
+
+                        <div class="flex shrink-0">
+                            <span class="sr-only">{{__('Your Email')}}</span>
+                            <span
+                                class="px-3 py-2 text-sm font-medium text-gray-200 rounded-md cursor-pointer pointer-events-none hover:text-gray-200">{{
+                Auth::user()->email }}</span>
+                        </div>
+                        <div class="relative z-50 flex-shrink-0 ml-4">
+                            <div>
+
+                                <button ref="usermenu" @click="showdropdown('dropdownLogout')"
+                                    @mouseover="showdropdown('dropdownLogout')" type="button"
+                                    class="flex text-sm rounded-full bg-sky-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-sky-500 focus:ring-white"
+                                    id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                                    <span class="sr-only">Open user menu</span>
+                                    <img class="w-8 h-8 rounded-full" src="{{\Gravatar::get(Auth::user()->email)}}"
+                                        alt="">
+                                </button>
+                            </div>
+
+                            <div id="dropdownLogout"
+                                class="absolute right-0 hidden w-48 py-1 mt-2 origin-top-right bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                                role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button"
+                                tabindex="-1">
+                                @if(auth()->user()->isAdmin())
+                                <a title="User Profile"
+                                    class="flex w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    role="menuitem" tabindex="-1" id="user-menu-item-0" href="#">{{__('User
+                  Profile')}}</a>
+                                @endif
+                                <form id="logout-form" action="{{ route('logout') }}" method="POST"
+                                    style="display: none;">
+                                    @csrf
+                                </form>
+                                <a title="Logout" class="flex w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    role="menuitem" tabindex="-1" id="user-menu-item-1" href="{{ route('logout') }}"
+                                    onclick="event.preventDefault();
+                        document.getElementById('logout-form').submit();">{{__('Log out')}}</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
+</div>
+</nav>
 
-    @component('layouts.breadcrumb', ['breadcrumb'=>$breadcrumb ??''])
-    @endcomponent
-
-    <nav class="px-2 sm:flex sm:p-0 align-baseline">
-
-        @if(Auth::user()->hasReachMaxNumberOfProjecs())
-            <p class="text-yellow-300 bg-red-600 px-2 py-1 lg:inline-block lg:mt-0 mr-4 ">
-                {{__('You have reached the max number of Projects! Contact us for solutions!')}}
-            </p>
-        @endif
-
-        <p class="flex text-white font-bold px-2 py-1">{{auth()->user()->email}}</p>
-
-
-        <a href="{{url('projects/new')}}" class="flex px-2 py-1 text-white font-semibold rounded hover:bg-red-600"><i
-                    class="px-1">+</i> {{ __('New Project') }}</a>
-
-        <a class="flex px-2 py-1 text-white font-semibold rounded hover:bg-red-600"
-           href="{{ route('logout') }}"
-           onclick="event.preventDefault();
-                        document.getElementById('logout-form').submit();">
-            {{ __('Logout') }}
-        </a>
-        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
-            @csrf
-        </form>
-    </nav>
 </header>

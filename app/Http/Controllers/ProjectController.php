@@ -25,13 +25,38 @@ class ProjectController extends Controller
     protected const NULLABLE = 'nullable';
     protected const INPUTS = 'inputs';
     protected const MESSAGE = 'message';
-protected const CASES = 'cases';
+    protected const CASES = 'cases';
+
 
     public function index()
     {
-
+        // return all the users projects
         $data['projects'] = auth()->user()->projects()->get();
+        foreach ($data['projects'] as $key => $value) {
+            $data['projects'][$key]['authiscreator'] = auth()->user()->is($data['projects'][$key]->creator());
+            foreach ($data['projects'][$key]->cases as $cases) {
+                $data['projects'][$key]['entries'] += $cases->entries->count();
+            }
+
+            $data['projects'][$key]['casescount'] = $data['projects'][$key]->cases()->count();
+            
+ 
+            
+            $data['projects'][$key]['editable'] =  $data['projects'][$key]->isEditable();
+        }
+
         $data['invites'] = auth()->user()->invites()->get();
+        
+        foreach ($data['invites'] as $key => $value) {
+            $data['invites'][$key]['casescount'] = $data['invites'][$key]->cases()->count();
+            $data['invites'][$key]['authiscreator'] = false;
+            $data['invites'][$key]['editable'] =  false;
+            $data['invites'][$key]['owner'] =   $data['invites'][$key]->creator()->email;
+            foreach ($data['projects'][$key]->cases() as $cases) {
+                $data['projects'][$key]['entries'] += $cases->entries()->count();
+            }
+        }
+        $data['invited_projects'] =  auth()->user()->invites;
         $data = $this->checkNewsletter($data);
 
         return view('projects.index', $data);
@@ -44,12 +69,11 @@ protected const CASES = 'cases';
      */
     public function show(Project $project)
     {
-        if (auth()->user()->notOwnerNorInvited($project) && !auth()->user()->isAdmin())
-        {
+        if (auth()->user()->notOwnerNorInvited($project) && !auth()->user()->isAdmin()) {
             abort(403);
         }
         $data['breadcrumb'] = [url('/') => 'Projects', '#' => substr($project->name, 0, 20) . '...'];
-      //  $project->media = $project->media()->pluck('media.name')->toArray();
+        //  $project->media = $project->media()->pluck('media.name')->toArray();
         //$data['data']['media'] = Media::all();
         $data[self::PROJECT] = $project;
         $data[self::CASES] = $project->cases;
@@ -109,7 +133,7 @@ protected const CASES = 'cases';
             $mToSync = array();
             foreach (array_filter($media) as $singleMedia) {
                 $media = Media::where(DB::raw('BINARY name'), $singleMedia)->first();
-                if(!$media){
+                if (!$media) {
                     $media = new Media;
 
                     $media->name = $singleMedia;
@@ -141,7 +165,6 @@ protected const CASES = 'cases';
 
     public function destroy(Project $project, Request $request)
     {
-
         if ($project->created_by == auth()->user()->id) {
             $project->delete();
             auth()->user()->addAction('delete project', $request->url(), 'user deleted project ' . $project->name);
@@ -157,7 +180,6 @@ protected const CASES = 'cases';
      */
     public function inviteUser(Request $request)
     {
-
         $project = Project::where('id', $request->input(self::PROJECT))->first();
         $user = User::where('email', '=', $request->email)->first();
         if (!$user) {
@@ -169,8 +191,7 @@ protected const CASES = 'cases';
             Mail::to($user->email)->send(new VerificationEmail($user, $request->emailtext ? $request->emailtext : config('utilities.emailDefaultText')));
             $role = Role::where('name', '=', 'researcher')->first();
             $user->roles()->sync($role);
-        }else if(!$user->hasVerifiedEmail())
-        {
+        } elseif (!$user->hasVerifiedEmail()) {
             $user->api_token = Helper::random_str(60);
             $user->password_token = Helper::random_str(60);
             $user->save();
@@ -184,9 +205,8 @@ protected const CASES = 'cases';
 
     public function removeFromProject(Request $request)
     {
-
         $userWantsToBeRemovedFromStudy = $request->email != auth()->user()->email;
-        if($userWantsToBeRemovedFromStudy){
+        if ($userWantsToBeRemovedFromStudy) {
             $this->authorize(self::UPDATESTRING, Project::where('id', $request->input(self::PROJECT))->first());
         }
         $user = User::where('email', '=', $request->email)->first();
@@ -213,11 +233,9 @@ protected const CASES = 'cases';
      */
     private function checkNewsletter($data)
     {
-        if (auth()->user()->profile()->exists())
-        {
+        if (auth()->user()->profile()->exists()) {
             $data['newsletter'] = auth()->user()->profile->newsletter === config('enums.newsletter_status.NOT DECIDED');
-        } else
-        {
+        } else {
             $profile = auth()->user()->addProfile(auth()->user());
             $data['newsletter'] = auth()->user()->profile->newsletter === config('enums.newsletter_status.NOT DECIDED');
         }
