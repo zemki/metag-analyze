@@ -104,7 +104,6 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         parent::boot();
         static::deleting(function ($user) {
-
             foreach ($user->projects as $project) {
                 // if the user created the project
                 if ($project->created_by == $user->id) {
@@ -132,17 +131,15 @@ class User extends Authenticatable implements MustVerifyEmail
             }
             $user->roles()->sync([]);
 
-            foreach ($user->actions as $action)
-            {
+            foreach ($user->actions as $action) {
                 $action->user_id = null;
                 $action->save();
                 $action->delete();
-
             }
 
-            if($user->profile()->exists()) $user->profile->delete();
-
-
+            if ($user->profile()->exists()) {
+                $user->profile->delete();
+            }
         });
     }
 
@@ -252,7 +249,6 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function hasReachMaxNumberOfProjecs(): bool
     {
-
         return $this->projects()->count() >= config('utilities.maxNumberOfProjects');
     }
 
@@ -309,8 +305,20 @@ class User extends Authenticatable implements MustVerifyEmail
 
     private function getDeviceTokens()
     {
-
         return $this->deviceID;
-
+    }
+    
+    /**
+     * Check if the user has a certain or array of roles
+     * @return bool
+     * @var array
+     */
+    public function hasRole($roles)
+    {
+        if (is_array($roles)) {
+            return (count(array_intersect($roles, $this->roles()->distinct()->pluck('name')->toArray())) > 0);
+        } else {
+            return in_array($roles, $this->roles()->distinct()->pluck('name')->toArray());
+        }
     }
 }

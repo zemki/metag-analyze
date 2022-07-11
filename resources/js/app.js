@@ -392,6 +392,9 @@ window.app = new Vue({
         });
     },
     confirmdelete(case_id, entry_id, lastentry) {
+      // show a toast message using vuejs and tailwindcss
+      const self = this;
+
       const confirmDelete = this.$buefy.dialog.confirm({
         title: "Confirm Delete",
         message:

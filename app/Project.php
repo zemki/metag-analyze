@@ -51,11 +51,9 @@ class Project extends Model
     {
         parent::boot();
         static::deleting(function ($project) {
-
             $project->invited()->detach();
             // if the user created the project
             if (!app()->runningInConsole() && $project->created_by === auth()->user()->id && $project->cases->count() > 0) {
-
                 foreach ($project->cases as $case) {
                     foreach ($case->entries as $entry) {
                         $entry->delete();
@@ -86,10 +84,6 @@ class Project extends Model
         return $headings;
     }
 
-    public function entries($class)
-    {
-        return $this->hasMany($class, 'case_id');
-    }
 
     public function getInputs()
     {
@@ -102,47 +96,38 @@ class Project extends Model
 
         $availableAnswers = [];
         $idForInputs = 1;
-        foreach($inputs as $input)
-        {
+        foreach ($inputs as $input) {
             $tempObj = [];
-            if($input->type === "scale")
-            {
-
-               $tempArray = [];
-                for ($i = 1; $i < 6;$i++)
-                {
+            if ($input->type === "scale") {
+                $tempArray = [];
+                for ($i = 1; $i < 6;$i++) {
                     $tempObj['id'] = $idForInputs;
                     $tempObj['name'] = $i;
                     $tempObj['color'] = config('colors.chartCategories')[$idForInputs];
                     $tempObj['type'] = 'scale';
-                    array_push($availableAnswers,(object)$tempObj);
+                    array_push($availableAnswers, (object)$tempObj);
                     $idForInputs++;
                 }
-             //   array_push($availableAnswers,(object)$tempArray);
+                //   array_push($availableAnswers,(object)$tempArray);
             }
 
-            if($input->type === "one choice" || $input->type === "multiple choice" )
-            {
-
+            if ($input->type === "one choice" || $input->type === "multiple choice") {
                 $tempArray = [];
-                foreach (array_filter($input->answers) as $key => $answer)
-                {
+                foreach (array_filter($input->answers) as $key => $answer) {
                     $tempObj['id'] = $idForInputs;
                     $tempObj['name'] = $answer;
                     $tempObj['color'] = config('colors.chartCategories')[$idForInputs];
-                    array_push($availableAnswers,(object)$tempObj);
+                    array_push($availableAnswers, (object)$tempObj);
                     $idForInputs++;
                 }
-
             }
 
-            if($input->type === "text")
-            {
+            if ($input->type === "text") {
                 $tempObj['id'] = $idForInputs;
                 $tempObj['name'] = $input->name;
                 $tempObj['type'] = 'text';
                 $tempObj['color'] = config('colors.chartCategories')[$idForInputs];
-                array_push($availableAnswers,(object)$tempObj);
+                array_push($availableAnswers, (object)$tempObj);
                 $idForInputs++;
             }
         }
@@ -245,5 +230,12 @@ class Project extends Model
     public function invited()
     {
         return $this->belongsToMany(User::class, 'user_projects');
+    }
+    /**
+    * @return User instance of the creator of the study.
+    */
+    public function creator()
+    {
+        return User::find($this->created_by);
     }
 }
