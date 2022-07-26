@@ -31,3 +31,7 @@ Vue.component(
   require("./components/projects-list.vue").default
 );
 Vue.component("toast", require("./components/toast.vue").default);
+Vue.component(
+  "selected-case",
+  require("./components/selected-case.vue").default
+);

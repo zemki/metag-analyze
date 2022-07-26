@@ -245,6 +245,7 @@ window.app = new Vue({
     },
   },
   data: {
+    selectedCase: {},
     mainNotification: true,
     lastPressedKey: "",
     selectedEntriesData: [],
