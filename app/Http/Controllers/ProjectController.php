@@ -78,6 +78,18 @@ class ProjectController extends Controller
         $data[self::PROJECT] = $project;
         $data[self::CASES] = $project->cases;
         $data['casesWithUsers'] = $project->cases()->with('user')->get();
+        $data['casesWithEntries'] = $project->cases()->with('user', 'project', 'entries')->get();
+
+        foreach ($data['casesWithEntries'] as $case) {
+            $case->entries->map(function ($entry) {
+                // if $entry->media()->first()->name is empty, assign an empty string to $entry->media
+                $entry->media = $entry->media()->first() ? $entry->media()->first()->name : '';
+            });
+            // parse the lastday: string in the duration field, delimited by '|'
+            
+            $case->consultable = $case->isConsultable();
+        }
+
         $data[self::PROJECT.'media'] = $project->media()->pluck('media.name')->toArray();
         $data['invites'] = $project->invited()->get();
 

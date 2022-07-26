@@ -433,30 +433,8 @@ export default {
       yesterday: moment().subtract(1, "days"),
       now: moment(),
       hours: [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15,
-        16,
-        17,
-        18,
-        19,
-        20,
-        21,
-        22,
-        23,
-        24,
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+        21, 22, 23, 24,
       ],
       minutes: ["00", 15, 30, 45],
       frequency: ["Every day", "Every two days", "Every three days"],
@@ -503,9 +481,8 @@ export default {
         if (cases.user.profile.last_notification_at !== null) {
           let d = moment(cases.user.profile.last_notification_at);
           cases.user.profile.last_notification_at = d;
-          cases.user.profile.last_notification_at_readable = moment(d).format(
-            "DD.MM.YYYY H:m:s"
-          );
+          cases.user.profile.last_notification_at_readable =
+            moment(d).format("DD.MM.YYYY H:m:s");
         }
       }
     });
@@ -595,9 +572,8 @@ export default {
         if (el.id === oneCase.id) {
           let d = moment(response.data.notified);
           oneCase.user.profile.last_notification_at = d;
-          oneCase.user.profile.last_notification_at_readable = moment(d).format(
-            "DD.MM.YYYY H:m:s"
-          );
+          oneCase.user.profile.last_notification_at_readable =
+            moment(d).format("DD.MM.YYYY H:m:s");
         }
       });
     },
