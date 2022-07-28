@@ -89,7 +89,7 @@ class ProjectController extends Controller
             
             $case->consultable = $case->isConsultable();
         }
-
+        
         $data[self::PROJECT.'media'] = $project->media()->pluck('media.name')->toArray();
         $data['invites'] = $project->invited()->get();
 

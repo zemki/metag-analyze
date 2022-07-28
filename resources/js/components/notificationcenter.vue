@@ -43,11 +43,11 @@
           v-show="activeTab === 1"
         >
           <div class="my-4" v-for="oneCase in arrayOfCases">
-            <h2 class="break-words text-2xl font-serif">
+            <h2 class="font-serif text-2xl break-words">
               {{ trans("Case Name: ")
               }}<span class="font-bold">{{ oneCase.name }}</span>
             </h2>
-            <h2 class="break-words my-2 text-2xl font-serif">
+            <h2 class="my-2 font-serif text-2xl break-words">
               {{ trans("Last day: ")
               }}<span class="font-bold">{{
                 oneCase.real_duration_readable
@@ -56,16 +56,16 @@
             <button
               v-if="admin"
               @click="cleanupNotification(oneCase)"
-              class="bg-transparent hover:bg-red-500 text-red-700 font-semibold hover:text-white py-1 px-2 border border-red-500 hover:border-transparent"
+              class="px-2 py-1 font-semibold text-red-700 bg-transparent border border-red-500 hover:bg-red-500 hover:text-white hover:border-transparent"
             >
               {{ trans("Forget Notification") }}
             </button>
-            <p class="break-words font-serif">
+            <p class="font-serif break-words">
               {{ trans("Send notification to user: ") }}
               <span class="font-bold">{{ oneCase.user.email }}</span>
             </p>
             <p
-              class="font-bold bg-red-500 p-1 text-white my-2"
+              class="p-1 my-2 font-bold text-white bg-red-500"
               v-if="oneCase.expired"
             >
               {{
@@ -76,7 +76,7 @@
               }}
             </p>
             <p
-              class="break-words font-bold bg-red-500 p-1 text-white my-2"
+              class="p-1 my-2 font-bold text-white break-words bg-red-500"
               v-if="oneCase.user.deviceID.length === 0"
             >
               {{ trans("No device registered, you can't send notifications.") }}
@@ -87,7 +87,7 @@
             >
               <label
                 for="name"
-                class="uppercase tracking-wide text-gray-700 text-base font-bold"
+                class="text-base font-bold tracking-wide text-gray-700 uppercase"
               >
                 {{ trans("Notification Title") }} *
               </label>
@@ -95,7 +95,7 @@
                 v-model="oneCase.title"
                 :maxlength="inputLength.title"
                 type="text"
-                class="mb-0 bg-white border border-gray-300 py-2 px-4 block w-full appearance-none leading-normal w-full mb-4"
+                class="block w-full px-4 py-2 mb-0 mb-4 leading-normal bg-white border border-gray-300 appearance-none"
                 name="name"
               />
               <span
@@ -112,14 +112,14 @@
               </span>
               <label
                 for="name"
-                class="uppercase tracking-wide text-gray-700 text-base font-bold"
+                class="text-base font-bold tracking-wide text-gray-700 uppercase"
               >
                 {{ trans("Notification Text") }} *
               </label>
               <textarea
                 :maxlength="inputLength.message"
                 v-model="oneCase.message"
-                class="block resize border w-full py-2 px-4 focus:border-blue-700"
+                class="block w-full px-4 py-2 border resize focus:border-blue-700"
               ></textarea>
               <span
                 style="margin-top: -20px"
@@ -136,7 +136,7 @@
               </span>
 
               <p
-                class="break-words font-bold"
+                class="font-bold break-words"
                 v-if="oneCase.user.deviceID.length !== 0"
               >
                 {{ oneCase.user.deviceID.length }}
@@ -144,7 +144,7 @@
               </p>
 
               <p
-                class="font-bold bg-red-500 p-1 text-white"
+                class="p-1 font-bold text-white bg-red-500"
                 v-if="
                   oneCase.user.profile &&
                   oneCase.user.profile.last_notification_at > yesterday
@@ -163,13 +163,13 @@
                   oneCase.user.profile.last_notification_at < yesterday
                 "
                 @click="sendNotification(oneCase)"
-                class="mt-2 bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-black py-2 px-4 border border-blue-500 hover:border-transparent"
+                class="px-4 py-2 mt-2 font-semibold text-blue-700 bg-transparent border border-blue-500 hover:bg-blue-500 hover:text-black hover:border-transparent"
               >
                 {{ trans("Send Notification") }}
               </button>
 
               <p
-                class="font-bold bg-red-500 p-1 text-white my-2"
+                class="p-1 my-2 font-bold text-white bg-red-500"
                 v-if="oneCase.planned_notifications.length !== 0"
               >
                 {{
@@ -182,37 +182,37 @@
               <div v-if="oneCase.planned_notifications.length === 0">
                 <label
                   for="notification frequency"
-                  class="block mt-6 tracking-wide text-gray-700 text-base font-bold"
+                  class="block mt-6 text-base font-bold tracking-wide text-gray-700"
                 >
                   {{ trans("Select Frequency and time") }} *
                 </label>
-                <div class="w-full flex">
+                <div class="flex w-full">
                   <select
                     v-model="oneCase.selectedFrequency"
-                    class="w-1/3 flex-none bg-white border border-gray-300 py-1 px-2 pr-4 leading-tight focus:bg-white focus:border-gray-500"
+                    class="flex-none w-1/3 px-2 py-1 pr-4 leading-tight bg-white border border-gray-300 focus:bg-white focus:border-gray-500"
                     id="grid-state"
                     name="notification frequency"
                   >
                     <option v-for="f in frequency" :value="f">{{ f }}</option>
                   </select>
                   <div
-                    class="py-2 px-4 mx-2 w-40 bg-white border border-solid border-gray-300"
+                    class="w-40 px-4 py-2 mx-2 bg-white border border-gray-300 border-solid"
                   >
                     <div class="flex-auto text-center">
                       <select
                         v-model="oneCase.selectedHour"
                         name="hours"
-                        class="bg-white text-xl appearance-none outline-none py-1 px-2 pr-4"
+                        class="px-2 py-1 pr-4 text-xl bg-white outline-none appearance-none"
                       >
                         <option v-for="hour in hours" :value="hour">
                           {{ hour }}
                         </option>
                       </select>
-                      <span class="text-xl mr-3">:</span>
+                      <span class="mr-3 text-xl">:</span>
                       <select
                         v-model="oneCase.selectedMinutes"
                         name="minutes"
-                        class="bg-white text-xl appearance-none outline-none py-1 px-2 pr-4"
+                        class="px-2 py-1 pr-4 text-xl bg-white outline-none appearance-none"
                       >
                         <option v-for="minute in minutes" :value="minute">
                           {{ minute }}
@@ -221,7 +221,7 @@
                     </div>
                   </div>
                   <button
-                    class="mt-2 bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-black py-2 px-4 border border-blue-500 hover:border-transparent"
+                    class="px-4 py-2 mt-2 font-semibold text-blue-700 bg-transparent border border-blue-500 hover:bg-blue-500 hover:text-black hover:border-transparent"
                     @click="planNotification(oneCase)"
                   >
                     {{ trans("Plan Notification") }}
@@ -230,22 +230,22 @@
               </div>
             </div>
             <div
-              class="border-b-2 mt-4 border-blue-800 border-solid w-full"
+              class="w-full mt-4 border-b-2 border-blue-800 border-solid"
             ></div>
           </div>
         </div>
         <div id="second" class="p-4" v-show="activeTab === 2">
-          <p class="break-words font-bold bg-yellow-500 p-1 text-black">
+          <p class="p-1 font-bold text-black break-words bg-yellow-500">
             {{
               trans("You can sort the Id - Case Name or the Sent At columns.")
             }}
           </p>
-          <table class="table-auto w-full border-solid bg-blue-100 border-2">
+          <table class="w-full bg-blue-100 border-2 border-solid table-auto">
             <thead>
-              <tr class="bg-blue-500 uppercase">
+              <tr class="uppercase bg-blue-500">
                 <th
                   @click="sort('id')"
-                  class="cursor-pointer border-b-2 border-black border-solid px-4 py-2 font-bold text-white align-middle w-64"
+                  class="w-64 px-4 py-2 font-bold text-white align-middle border-b-2 border-black border-solid cursor-pointer"
                 >
                   {{ trans("Id") }}
                   <span
@@ -268,7 +268,7 @@
                 </th>
                 <th
                   @click="sort('case.name')"
-                  class="cursor-pointer border-b-2 border-black border-solid px-2 py-2 font-bold text-white align-middle w-32"
+                  class="w-32 px-2 py-2 font-bold text-white align-middle border-b-2 border-black border-solid cursor-pointer"
                 >
                   {{ trans("Case") }}
                   <span
@@ -291,18 +291,18 @@
                   </span>
                 </th>
                 <th
-                  class="border-b-2 border-black border-solid px-4 py-2 font-bold text-white align-middle"
+                  class="px-4 py-2 font-bold text-white align-middle border-b-2 border-black border-solid"
                 >
                   {{ trans("Title") }}
                 </th>
                 <th
-                  class="border-b-2 border-black border-solid px-4 py-2 font-bold text-white align-middle"
+                  class="px-4 py-2 font-bold text-white align-middle border-b-2 border-black border-solid"
                 >
                   {{ trans("Message") }}
                 </th>
                 <th
                   @click="sort('created_at_readable')"
-                  class="cursor-pointer border-b-2 border-black border-solid px-4 py-2 font-bold text-white align-middle"
+                  class="px-4 py-2 font-bold text-white align-middle border-b-2 border-black border-solid cursor-pointer"
                 >
                   {{ trans("Sent At") }}
                   <span
@@ -328,19 +328,19 @@
             </thead>
             <tbody>
               <tr v-for="notification in sortedNotifications">
-                <td class="border pl-2 py-2 text-sm">
+                <td class="py-2 pl-2 text-sm border">
                   {{ notification["id"] }}
                 </td>
-                <td class="border px-4 py-2">
+                <td class="px-4 py-2 border">
                   {{ notification["case"]["name"] }}
                 </td>
-                <td class="border px-4 py-2 w-64">
+                <td class="w-64 px-4 py-2 border">
                   {{ notification["data"]["title"] }}
                 </td>
-                <td class="border px-4 py-2">
+                <td class="px-4 py-2 border">
                   {{ notification["data"]["message"] }}
                 </td>
-                <td class="border pr-2 py-2 w-64">
+                <td class="w-64 py-2 pr-2 border">
                   {{ notification["created_at_readable"] }}
                 </td>
               </tr>
@@ -348,36 +348,36 @@
           </table>
         </div>
         <div id="third" class="p-4" v-show="activeTab === 3">
-          <table class="table-auto w-full border-solid bg-blue-100 border-2">
+          <table class="w-full bg-blue-100 border-2 border-solid table-auto">
             <thead>
-              <tr class="bg-blue-500 uppercase">
+              <tr class="uppercase bg-blue-500">
                 <th
-                  class="border-b-2 border-black border-solid px-4 py-2 font-bold text-white align-middle w-64"
+                  class="w-64 px-4 py-2 font-bold text-white align-middle border-b-2 border-black border-solid"
                 >
                   {{ trans("Notification Id") }}
                 </th>
                 <th
-                  class="border-b-2 border-black border-solid px-4 py-2 font-bold text-white align-middle"
+                  class="px-4 py-2 font-bold text-white align-middle border-b-2 border-black border-solid"
                 >
                   {{ trans("Case") }}
                 </th>
                 <th
-                  class="border-b-2 border-black border-solid px-4 py-2 font-bold text-white align-middle"
+                  class="px-4 py-2 font-bold text-white align-middle border-b-2 border-black border-solid"
                 >
                   {{ trans("Title") }}
                 </th>
                 <th
-                  class="border-b-2 border-black border-solid px-4 py-2 font-bold text-white align-middle"
+                  class="px-4 py-2 font-bold text-white align-middle border-b-2 border-black border-solid"
                 >
                   {{ trans("Message") }}
                 </th>
                 <th
-                  class="border-b-2 border-black border-solid px-4 py-2 font-bold text-white align-middle"
+                  class="px-4 py-2 font-bold text-white align-middle border-b-2 border-black border-solid"
                 >
                   {{ trans("When to send") }}
                 </th>
                 <th
-                  class="border-b-2 border-black border-solid px-4 py-2 font-bold text-white align-middle"
+                  class="px-4 py-2 font-bold text-white align-middle border-b-2 border-black border-solid"
                 >
                   {{ trans("Actions") }}
                 </th>
@@ -385,25 +385,25 @@
             </thead>
             <tbody>
               <tr v-for="notification in plannednotifications">
-                <td class="border pl-2 py-2 text-sm">
+                <td class="py-2 pl-2 text-sm border">
                   {{ notification["id"] }}
                 </td>
-                <td class="border px-4 py-2">
+                <td class="px-4 py-2 border">
                   {{ notification["case"]["name"] }}
                 </td>
-                <td class="border px-4 py-2 w-64">
+                <td class="w-64 px-4 py-2 border">
                   {{ notification["data"]["title"] }}
                 </td>
-                <td class="border px-4 py-2">
+                <td class="px-4 py-2 border">
                   {{ notification["data"]["message"] }}
                 </td>
-                <td class="border pr-2 py-2 w-64">
+                <td class="w-64 py-2 pr-2 border">
                   {{ notification["data"]["planning"] }}
                 </td>
-                <td class="border pr-2 py-2 w-64">
+                <td class="w-64 py-2 pr-2 border">
                   <button
                     @click="deletePlanned(notification)"
-                    class="bg-transparent hover:bg-red-500 text-red-700 font-semibold hover:text-white py-1 px-2 border border-red-500 hover:border-transparent"
+                    class="px-2 py-1 font-semibold text-red-700 bg-transparent border border-red-500 hover:bg-red-500 hover:text-white hover:border-transparent"
                   >
                     {{ trans("Delete Planned Notification") }}
                   </button>

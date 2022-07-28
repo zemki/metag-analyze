@@ -16,6 +16,8 @@
     "autoprefixer": {}
   },
   "devDependencies": {
+    "@tailwindcss/forms": "^0.5.0",
+    "@vue/runtime-dom": "latest",
     "autoprefixer": "^10.4.2",
     "axios": "^0.21.4",
     "bootstrap": "^4.6.1",
@@ -39,8 +41,6 @@
     "tailwindcss": "^3.0.23",
     "vue": "^2.7.8",
     "vue-loader": "^15.9.7",
-    "@vue/runtime-dom": "latest",
-    "@tailwindcss/forms": "^0.5.0",
     "vue-template-compiler": "^2.6.14"
   },
   "dependencies": {
@@ -53,6 +53,7 @@
     "moment": "^2.25.3",
     "node-sass": "^4.14.0",
     "sass": "^1.49.4",
+    "stream-http": "^3.2.0",
     "vue-chartkick": "^0.5.3",
     "vuex": "^3.6.2"
   }

@@ -12,11 +12,14 @@
             <!-- Left buttons -->
             <div>
               <div
-                v-if="caseIsSet && cases.consultable"
+                v-if="caseIsSet && selectedCase.consultable"
                 class="relative z-0 inline-flex rounded-md shadow-sm sm:shadow-none sm:space-x-3"
               >
                 <span class="inline-flex sm:shadow-sm">
-                  <a :href="distinctPath()" v-if="cases.entries.length > 0">
+                  <a
+                    :href="distinctPath()"
+                    v-if="selectedCase.entries.length > 0"
+                  >
                     <button
                       type="button"
                       class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
@@ -164,7 +167,7 @@
                 -->
     <div
       class="flex-1 min-h-0 overflow-y-auto"
-      v-if="caseIsSet && cases.consultable"
+      v-if="caseIsSet && selectedCase.consultable"
     >
       <div class="pt-5 pb-6 bg-white shadow">
         <div
@@ -172,10 +175,12 @@
         >
           <div class="sm:w-0 sm:flex-1">
             <h1 id="message-heading" class="text-lg font-medium text-gray-900">
-              {{ cases.name }}
+              {{ selectedCase.name }}
             </h1>
             <p class="mt-1 text-sm text-gray-500 truncate">
-              {{ cases.user ? cases.user.email : "no user assigned" }}
+              {{
+                selectedCase.user ? selectedCase.user.email : "no user assigned"
+              }}
             </p>
           </div>
 
@@ -194,10 +199,10 @@
       <ul
         role="list"
         class="py-4 space-y-2 sm:px-6 sm:space-y-4 lg:px-8"
-        v-if="cases.consultable"
+        v-if="selectedCase.consultable"
       >
         <li
-          v-for="(entry, index) in cases.entries"
+          v-for="(entry, index) in selectedCase.entries"
           :key="index"
           class="px-4 py-6 bg-white shadow sm:rounded-lg sm:px-6"
         >
@@ -246,7 +251,7 @@
         </li>
       </ul>
     </div>
-    <div v-else-if="!cases.consultable" class="max-w-xl mx-auto">
+    <div v-else-if="!selectedCase.consultable" class="max-w-xl mx-auto">
       <h3 class="text-3xl font-extrabold text-gray-900 sm:tracking-tight">
         {{
           trans("Case is not consultable because the user is entering entries")
@@ -270,41 +275,67 @@ export default {
     return {
       caseIsSet: false,
       caseNotEnded: false,
+      casesIsSet: false,
     };
   },
   beforeDestroy() {
     this.caseIsSet = false;
+    this.casesIsSet = false;
   },
   computed: {
-    selectedCase() {
-      // check if cases contains the property name
-      if (this.cases && this.cases.name) {
-        this.cases.entries.forEach((entry) => {
-          console.log("editing entry");
-          console.log(entry);
-          entry.inputs = JSON.parse(entry.inputs);
-          this.$set(
-            entry,
-            "begin_readable",
-            moment(entry.begin).format("DD.MM.YYYY H:m:ss")
-          );
-          this.$set(
-            entry,
-            "end_readable",
-            moment(entry.end).format("DD.MM.YYYY H:m:ss")
-          );
-        });
-        this.caseIsSet = true;
-        return this.cases;
-      } else {
-        this.caseIsSet = false;
-        return null;
-      }
-      return this.cases;
+    selectedCase: {
+      // get and set the selected case
+      get() {
+        if (this.cases && this.cases.name) {
+          this.cases.entries.forEach((entry) => {
+            if (typeof entry.inputs !== "object") {
+              entry.inputs = JSON.parse(entry.inputs);
+            }
+            this.$set(
+              entry,
+              "begin_readable",
+              moment(entry.begin).format("DD.MM.YYYY H:m:ss")
+            );
+            this.$set(
+              entry,
+              "end_readable",
+              moment(entry.end).format("DD.MM.YYYY H:m:ss")
+            );
+          });
+          this.caseIsSet = true;
+
+          return this.cases;
+        }
+      },
+      set(newCase) {
+        console.log(newCase);
+        if (newCase && newCase.name) {
+          newCase.entries.forEach((entry) => {
+            entry.inputs = JSON.parse(entry.inputs);
+            this.$set(
+              entry,
+              "begin_readable",
+              moment(entry.begin).format("DD.MM.YYYY H:m:ss")
+            );
+            this.$set(
+              entry,
+              "end_readable",
+              moment(entry.end).format("DD.MM.YYYY H:m:ss")
+            );
+          });
+          this.caseIsSet = true;
+
+          return newCase;
+        }
+      },
     },
   },
   created() {},
   methods: {
+    forceRender(cases) {
+      this.selectedCase = cases;
+      this.$forceUpdate();
+    },
     distinctPath() {
       return this.cases.project.id + "/distinctcases/" + this.cases.id;
     },
