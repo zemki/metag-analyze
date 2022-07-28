@@ -350,6 +350,10 @@ window.app = new Vue({
     },
   },
   methods: {
+    updateSelectedCase(cases) {
+      this.selectedCase = cases;
+      this.$refs.selectedcase.forceRender(cases);
+    },
     newentrydateselected(edit = "") {
       if (edit === "") {
         this.newentry.data.end = new Date(

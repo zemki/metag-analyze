@@ -15,8 +15,7 @@
         <!-- Main area -->
         <main class="flex-1 min-w-0 xl:flex">
 
-            {{-- PASS THE CASE HERE - USE VUEJS --}}
-            <selected-case :cases="selectedCase"></selected-case>
+            <selected-case :cases="selectedCase" ref="selectedcase"></selected-case>
 
             <!-- Cases list-->
             <aside class="hidden xl:block xl:flex-shrink-0 xl:order-first">
@@ -36,7 +35,7 @@
                         <ul role="list" class="border-b border-gray-200 divide-y divide-gray-200">
                             @foreach($casesWithEntries as $case)
 
-                            <li @click="selectedCase = {{$case}}"
+                            <li @click="updateSelectedCase({{$case}})"
                                 class="relative px-6 py-5 bg-white hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-blue-600">
                                 <div class="flex justify-between space-x-3">
                                     <div class="flex-1 min-w-0">
