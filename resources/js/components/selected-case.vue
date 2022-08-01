@@ -234,6 +234,16 @@
             <h3>Inputs</h3>
             <div class="" v-for="(input, indexJ) in entry.inputs" :key="indexJ">
               <p class="font-bold">{{ indexJ }}</p>
+              <audio-player
+                v-if="indexJ == 'file'"
+                :caseid="cases.id"
+                class="w-96 sm:my-2 sm:px-2"
+                :file="entry.file_object"
+                loop="false"
+                autoplay="false"
+                :name="entry.file_path"
+                :date="entry.created_for_soundplayer"
+              ></audio-player>
               <p
                 v-if="Array.isArray(input)"
                 v-for="(value, indexK) in input"
@@ -291,6 +301,15 @@ export default {
             if (typeof entry.inputs !== "object") {
               entry.inputs = JSON.parse(entry.inputs);
             }
+
+            if (entry.inputs.file) {
+              this.$set(
+                entry,
+                "created_for_soundplayer",
+                moment(entry.file_object.created_at).format("DD.MM.YYYY H:m:ss")
+              );
+            }
+
             this.$set(
               entry,
               "begin_readable",
@@ -308,10 +327,17 @@ export default {
         }
       },
       set(newCase) {
-        console.log(newCase);
         if (newCase && newCase.name) {
           newCase.entries.forEach((entry) => {
             entry.inputs = JSON.parse(entry.inputs);
+            if (entry.inputs.file) {
+              this.$set(
+                entry,
+                "created_for_soundplayer",
+                moment(entry.file_object.created_at).format("DD.MM.YYYY H:m:ss")
+              );
+            }
+
             this.$set(
               entry,
               "begin_readable",
