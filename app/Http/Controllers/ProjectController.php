@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\AllCasesExport;
+use App\Files;
 use App\Mail\VerificationEmail;
 use App\Media;
 use App\Project;
@@ -88,7 +89,27 @@ class ProjectController extends Controller
             // parse the lastday: string in the duration field, delimited by '|'
             
             $case->consultable = $case->isConsultable();
+
+            // check the inputs in the entries of the case, if it contains the file property, resolve it to the file address
+            $case->entries->map(function ($entry) use ($case) {
+                if ($entry->inputs) {
+                    $entry->inputs = json_decode($entry->inputs, true);
+                    foreach ($entry->inputs as $key => $value) {
+                        if ($key == 'file') {
+                            $entry->file_object =  Files::find($value);
+
+                            $entry->file_object['audiofile'] = decrypt(file_get_contents($entry->file_object['path']));
+                            $entry->file_object['entry'] = $case->entries()->whereJsonContains('inputs->file', $entry->file_object['id'])->first();
+                            if (!empty($entry->file_object['entry'])) {
+                                $entry->file_object['entry']->media_id = Media::where('id', $entry->file_object['entry']->media_id)->first()->name;
+                            }
+                            $entry->file_path =  Files::find($value)->path;
+                        }
+                    }
+                }
+            });
         }
+
         
         $data[self::PROJECT.'media'] = $project->media()->pluck('media.name')->toArray();
         $data['invites'] = $project->invited()->get();
