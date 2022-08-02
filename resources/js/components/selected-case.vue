@@ -244,19 +244,24 @@
                 :name="entry.file_path"
                 :date="entry.created_for_soundplayer"
               ></audio-player>
-              <p
-                v-if="Array.isArray(input)"
-                v-for="(value, indexK) in input"
-                :key="indexK"
-                class="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-500"
-              >
-                {{ value }}
-              </p>
+              <div v-if="Array.isArray(input)">
+                <p
+                  v-for="(value, indexK) in input"
+                  :key="indexK"
+                  class="first:mr-0 mr-2 inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-500"
+                >
+                  {{ value }}
+                </p>
+              </div>
+              <div v-else>
+                <p
+                  v-if="!indexJ == 'file'"
+                  class="first:mr-0 mr-2 inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-500"
+                >
+                  {{ input }}
+                </p>
+              </div>
             </div>
-          </div>
-          <div v-else>
-            <h3>Inputs</h3>
-            {{ entry.inputs }}
           </div>
         </li>
       </ul>
