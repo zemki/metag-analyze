@@ -208,7 +208,7 @@
         >
           <div class="sm:flex sm:justify-between sm:items-baseline">
             <h3 class="text-base font-medium">
-              <span class="text-gray-600">Media: </span>
+              <span class="text-gray-500">Media: </span>
               <span class="text-gray-900">{{ entry.media }}</span>
             </h3>
             <p
@@ -231,7 +231,7 @@
               (Array.isArray(entry.inputs) || typeof entry.inputs === 'object')
             "
           >
-            <h3>Inputs</h3>
+            <h3 class="font-bold text-gray-500">Inputs</h3>
             <div class="" v-for="(input, indexJ) in entry.inputs" :key="indexJ">
               <p class="font-bold">{{ indexJ }}</p>
               <audio-player
