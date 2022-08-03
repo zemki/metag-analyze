@@ -3,8 +3,22 @@
 @section('content')
 
 <div class="flex flex-col h-full">
-
-    <div class="max-w-xl">
+    <div class="relative z-0 inline-flex mx-auto my-2 rounded-md">
+        <a href="{{url($project->path().'/cases/new')}}">
+            <button type="button"
+                class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">Create
+                Case</button>
+        </a>
+        <a href="{{url($project->path().'/notifications')}}">
+            <button type="button"
+                class="relative inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">Notification
+                Center</button>
+        </a>
+        <button type="button"
+            class="relative inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">Download
+            all data</button>
+    </div>
+    <div class="my-2">
         <h1 class="text-4xl font-extrabold text-gray-900 sm:text-5xl sm:tracking-tight lg:text-6xl">{{$project->name}}
         </h1>
         <p class="mt-5 text-xl text-gray-500">{{$project->description}}</p>
@@ -14,11 +28,8 @@
 
         <!-- Main area -->
         <main class="flex-1 min-w-0 xl:flex">
-
-            <selected-case :cases="selectedCase" ref="selectedcase"></selected-case>
-
             <!-- Cases list-->
-            <aside class="hidden xl:block xl:flex-shrink-0 xl:order-first">
+            <aside class="inline-block xl:block xl:flex-shrink-0 xl:order-first">
                 <div class="relative flex flex-col h-full bg-gray-100 border-r border-gray-200 w-96">
                     <div class="flex-shrink-0">
                         <div class="flex flex-col justify-center h-16 px-6 bg-white">
@@ -36,7 +47,7 @@
                             @foreach($casesWithEntries as $case)
 
                             <li @click="updateSelectedCase({{$case}})"
-                                class="relative px-6 py-5 bg-white hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-blue-600">
+                                class="relative px-6 py-5 bg-white even:bg-slate-50 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-blue-600">
                                 <div class="flex justify-between space-x-3">
                                     <div class="flex-1 min-w-0">
                                         <a href="#" class="block focus:outline-none">
@@ -48,14 +59,10 @@
                                         </a>
                                     </div>
                                     <time datetime="2021-01-27T16:35"
-                                        class="flex-shrink-0 text-sm text-gray-500 whitespace-nowrap">1d ago</time>
+                                        class="flex-shrink-0 text-sm text-gray-500 whitespace-nowrap">{{__('Started')}}:
+                                        {{($case->firstDay() ? date("d.m.Y", strtotime($case->firstDay())) : date("d.m.Y", strtotime($case->created_at)))}}</time>
                                 </div>
-                                <div class="mt-1">
-                                    <p class="text-sm text-gray-600 line-clamp-2">Doloremque dolorem maiores assumenda
-                                        dolorem facilis. Velit vel in a rerum natus facere. Enim rerum eaque qui
-                                        facilis. Numquam laudantium sed id dolores omnis in. Eos reiciendis deserunt
-                                        maiores et accusamus quod dolor.</p>
-                                </div>
+
                             </li>
                             @endforeach
 
@@ -63,8 +70,10 @@
                     </nav>
                 </div>
             </aside>
+            <selected-case :cases="selectedCase" ref="selectedcase"></selected-case>
         </main>
     </div>
+    <project-invites :invitedlist="{{$invites}}" :project="{{$project->id}}"></project-invites>
 </div>
 <!--Modal-->
 <div class="fixed top-0 left-0 flex items-center justify-center w-full h-auto opacity-0 pointer-events-none modal"
