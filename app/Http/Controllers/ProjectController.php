@@ -17,6 +17,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
+use Arr;
 
 class ProjectController extends Controller
 {
@@ -80,6 +81,19 @@ class ProjectController extends Controller
         $data[self::CASES] = $project->cases;
         $data['casesWithUsers'] = $project->cases()->with('user')->get();
         $data['casesWithEntries'] = $project->cases()->with('user', 'project', 'entries')->orderBy('created_at', 'desc')->get();
+        $data['notifications'] = [];
+        $data['plannedNotifications'] = [];
+        foreach ($data['casesWithUsers'] as $cases) {
+            $cases->notifications = $cases->notifications();
+            $cases->planned_notifications = $cases->plannedNotifications();
+            array_push($data['notifications'], $cases->notifications());
+            array_push($data['plannedNotifications'], $cases->plannedNotifications());
+
+            $cases->user->profile = $cases->user->profile;
+        }
+        $data['notifications'] = json_encode(Arr::flatten($data['notifications']));
+        $data['plannedNotifications'] = json_encode(Arr::flatten($data['plannedNotifications']));
+
         foreach ($data['casesWithEntries'] as $case) {
             $case->entries->map(function ($entry) {
                 // if $entry->media()->first()->name is empty, assign an empty string to $entry->media

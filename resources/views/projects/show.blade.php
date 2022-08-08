@@ -2,78 +2,125 @@
 
 @section('content')
 
+
 <div class="flex flex-col h-full">
-    <div class="relative z-0 inline-flex mx-auto my-2 rounded-md">
-        <a href="{{url($project->path().'/cases/new')}}">
+    <div>
+        <div class="my-2">
+            <h1 class="text-4xl font-extrabold text-gray-900 sm:text-5xl sm:tracking-tight lg:text-6xl">
+                {{$project->name}}
+            </h1>
+            <p class="mt-5 text-xl text-gray-500">{{$project->description}}</p>
+        </div>
+        <div class="relative z-0 inline-flex mx-auto my-2 rounded-md">
+            <a href="{{url($project->path().'/cases/new')}}">
+                <button type="button"
+                    class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">Create
+                    Case</button>
+            </a>
+            <a href="{{url($project->path().'/notifications')}}">
+                <button type="button"
+                    class="relative inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">Notification
+                    Center</button>
+            </a>
             <button type="button"
-                class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">Create
-                Case</button>
-        </a>
-        <a href="{{url($project->path().'/notifications')}}">
-            <button type="button"
-                class="relative inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">Notification
-                Center</button>
-        </a>
-        <button type="button"
-            class="relative inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">Download
-            all data</button>
-    </div>
-    <div class="my-2">
-        <h1 class="text-4xl font-extrabold text-gray-900 sm:text-5xl sm:tracking-tight lg:text-6xl">{{$project->name}}
-        </h1>
-        <p class="mt-5 text-xl text-gray-500">{{$project->description}}</p>
-    </div>
+                class="relative inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">Download
+                all data</button>
+        </div>
 
-    <div class="flex flex-1 min-h-0 overflow-hidden">
+        <div class="mb-6 border-b border-gray-200">
+            <nav class="flex -mb-px" aria-label="Tabs">
+                <a href="#" @click="selectedProjectPage = 0"
+                    :class="selectedProjectPage == 0? 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300' : 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'">
+                    {{__('Cases')}} </a>
 
-        <!-- Main area -->
-        <main class="flex-1 min-w-0 xl:flex">
-            <!-- Cases list-->
-            <aside class="inline-block xl:block xl:flex-shrink-0 xl:order-first">
-                <div class="relative flex flex-col h-full bg-gray-100 border-r border-gray-200 w-96">
-                    <div class="flex-shrink-0">
-                        <div class="flex flex-col justify-center h-16 px-6 bg-white">
-                            <div class="flex items-baseline space-x-3">
-                                <h2 class="text-lg font-medium text-gray-900">{{__('Cases')}}</h2>
-                                <p class="text-sm font-medium text-gray-500">{{$cases->count()}} {{__('Cases')}}</p>
-                            </div>
-                        </div>
-                        <div
-                            class="px-6 py-2 text-sm font-medium text-gray-500 border-t border-b border-gray-200 bg-gray-50">
-                            Sorted by date</div>
-                    </div>
-                    <nav aria-label="Cases list" class="flex-1 min-h-0 overflow-y-auto">
-                        <ul role="list" class="border-b border-gray-200 divide-y divide-gray-200">
-                            @foreach($casesWithEntries as $case)
+                <a href="#" @click="selectedProjectPage = 1"
+                    :class="selectedProjectPage == 1? 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300' : 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'">
+                    {{__('Inputs')}} </a>
 
-                            <li @click="updateSelectedCase({{$case}})"
-                                class="relative px-6 py-5 bg-white even:bg-slate-50 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-blue-600">
-                                <div class="flex justify-between space-x-3">
-                                    <div class="flex-1 min-w-0">
-                                        <a href="#" class="block focus:outline-none">
-                                            <span class="absolute inset-0" aria-hidden="true"></span>
-                                            <p class="text-sm font-medium text-gray-900 truncate">{{$case->name}}</p>
-                                            <p class="text-sm text-gray-500 truncate">
-                                                {{$case->user? $case->user->email : 'no user assigned'}}
-                                            </p>
-                                        </a>
+                <a href="#" @click="selectedProjectPage = 2"
+                    :class="selectedProjectPage == 2? 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300' : 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'"
+                    aria-current="page"> {{__('Invite Collaborator')}} </a>
+
+                <a href="#" @click="selectedProjectPage = 3"
+                    :class="selectedProjectPage == 3? 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300' : 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'">
+                    Users </a>
+            </nav>
+        </div>
+        <div v-if="selectedProjectPage == 0">
+            <div class="flex flex-1 min-h-0 overflow-hidden">
+
+                <!-- Main area -->
+                <main class="flex-1 min-w-0 xl:flex">
+                    <!-- Cases list-->
+                    <aside class="inline-block xl:block xl:flex-shrink-0 xl:order-first">
+                        <div class="relative flex flex-col h-full bg-gray-100 border-r border-gray-200 w-96" v-if="">
+                            <div class="flex-shrink-0">
+                                <div class="flex flex-col justify-center h-16 px-6 bg-white">
+                                    <div class="flex items-baseline space-x-3">
+                                        <h2 @click="projectPages.currentPage = 0"
+                                            :class="projectPages.currentPage == 0 ? 'cursor-pointer text-lg font-medium text-gray-900' : 'cursor-pointer text-lg font-medium text-gray-400'">
+                                            {{__('Cases')}}
+                                        </h2>
+                                        <h2 @click="projectPages.currentPage = 1"
+                                            :class="projectPages.currentPage == 1 ? 'cursor-pointer text-lg font-medium text-gray-900' : 'cursor-pointer text-lg font-medium text-gray-400'">
+                                            {{__('Notifications')}}
+                                        </h2>
+                                        <p class="text-sm font-medium text-gray-500">{{$cases->count()}} {{__('Cases')}}
+                                        </p>
                                     </div>
-                                    <time datetime="2021-01-27T16:35"
-                                        class="flex-shrink-0 text-sm text-gray-500 whitespace-nowrap">{{__('Started')}}:
-                                        {{($case->firstDay() ? date("d.m.Y", strtotime($case->firstDay())) : date("d.m.Y", strtotime($case->created_at)))}}</time>
                                 </div>
+                                <div v-if="projectPages.currentPage == 0"
+                                    class="px-6 py-2 text-sm font-medium text-gray-500 border-t border-b border-gray-200 bg-gray-50">
+                                    Sorted by date</div>
+                            </div>
+                            <nav v-if="projectPages.currentPage == 0" aria-label="Cases list"
+                                class="flex-1 min-h-0 overflow-y-auto">
 
-                            </li>
-                            @endforeach
+                                <ul role="list" class="border-b border-gray-200 divide-y divide-gray-200">
+                                    @foreach($casesWithEntries as $case)
 
-                        </ul>
-                    </nav>
-                </div>
-            </aside>
-            <selected-case :cases="selectedCase" ref="selectedcase"></selected-case>
-        </main>
+                                    <li @click="updateSelectedCase({{$case}})"
+                                        class="relative px-6 py-5 bg-white even:bg-slate-50 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-blue-600">
+                                        <div class="flex justify-between space-x-3">
+                                            <div class="flex-1 min-w-0">
+                                                <a href="#" class="block focus:outline-none">
+                                                    <span class="absolute inset-0" aria-hidden="true"></span>
+                                                    <p class="text-sm font-medium text-gray-900 truncate">
+                                                        {{$case->name}}
+                                                    </p>
+                                                    <p class="text-sm text-gray-500 truncate">
+                                                        {{$case->user? $case->user->email : 'no user assigned'}}
+                                                    </p>
+                                                </a>
+                                            </div>
+                                            <time datetime="2021-01-27T16:35"
+                                                class="flex-shrink-0 text-sm text-gray-500 whitespace-nowrap">{{__('Started')}}:
+                                                {{($case->firstDay() ? date("d.m.Y", strtotime($case->firstDay())) : date("d.m.Y", strtotime($case->created_at)))}}</time>
+                                        </div>
+
+                                    </li>
+                                    @endforeach
+
+                                </ul>
+                            </nav>
+                        </div>
+                    </aside>
+
+                    <notification-center v-if="projectPages.currentPage == 1" :cases="{{$casesWithUsers}}"
+                        :notifications="{{$notifications}}" :plannednotifications="{{$plannedNotifications}}"
+                        :admin="{{auth()->user()->isAdmin() ? "1" : "0"}}">
+                    </notification-center>
+                    <selected-case v-if="projectPages.currentPage == 0" :cases="selectedCase" ref="selectedcase">
+                    </selected-case>
+                </main>
+            </div>
+        </div>
+        <div v-if="selectedProjectPage == 2">
+            <project-invites class="mt-4" :invitedlist="{{$invites}}" :project="{{$project->id}}"></project-invites>
+        </div>
     </div>
-    <project-invites :invitedlist="{{$invites}}" :project="{{$project->id}}"></project-invites>
+
+
 </div>
 <!--Modal-->
 <div class="fixed top-0 left-0 flex items-center justify-center w-full h-auto opacity-0 pointer-events-none modal"
