@@ -22,7 +22,7 @@
                   >
                     <button
                       type="button"
-                      class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
+                      class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-900 bg-white rounded-l-md focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
                     >
                       <!-- Heroicon name: solid/reply -->
                       <svg
@@ -44,7 +44,7 @@
                   <a :href="groupedCasesPath()">
                     <button
                       type="button"
-                      class="relative items-center hidden px-4 py-2 -ml-px text-sm font-medium text-gray-900 bg-white border border-gray-300 sm:inline-flex hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
+                      class="relative items-center hidden px-4 py-2 -ml-px text-sm font-medium text-gray-900 bg-white sm:inline-flex focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
                     >
                       <!-- Heroicon name: solid/pencil -->
                       <svg
@@ -63,7 +63,7 @@
                   </a>
                   <button
                     type="button"
-                    class="relative items-center hidden px-4 py-2 -ml-px text-sm font-medium text-gray-900 bg-white border border-gray-300 sm:inline-flex rounded-r-md hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
+                    class="relative items-center hidden px-4 py-2 -ml-px text-sm font-medium text-gray-900 bg-white sm:inline-flex rounded-r-md focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
                   >
                     <!-- Heroicon name: solid/user-add -->
                     <svg
@@ -84,7 +84,10 @@
                 <span class="hidden space-x-3 lg:flex">
                   <button
                     type="button"
-                    class="relative items-center hidden px-4 py-2 -ml-px text-sm font-medium text-white bg-red-500 border rounded-md sm:inline-flex hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-red-600 focus:border-red-600"
+                    @click="
+                      confirmdeletecase(productionUrl + '/cases/' + cases.id)
+                    "
+                    class="relative items-center hidden px-4 py-2 -ml-px text-sm font-medium text-white bg-red-500 border rounded-md sm:inline-flex focus:z-10 focus:outline-none focus:ring-1 focus:ring-red-600 focus:border-red-600"
                   >
                     <!-- Heroicon name: solid/archive -->
                     <svg
@@ -103,32 +106,13 @@
                     </svg>
                     <span>Delete Case</span>
                   </button>
-                  <button
-                    type="button"
-                    class="relative items-center hidden px-4 py-2 -ml-px text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-md sm:inline-flex hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
-                  >
-                    <!-- Heroicon name: solid/folder-download -->
-                    <svg
-                      class="mr-2.5 h-5 w-5 text-gray-400"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      aria-hidden="true"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V8a2 2 0 00-2-2h-5L9 4H4zm7 5a1 1 0 10-2 0v1.586l-.293-.293a1 1 0 10-1.414 1.414l2 2 .002.002a.997.997 0 001.41 0l.002-.002 2-2a1 1 0 00-1.414-1.414l-.293.293V9z"
-                      />
-                    </svg>
-                    <span>Move</span>
-                  </button>
                 </span>
 
                 <div class="relative block -ml-px sm:shadow-sm lg:hidden">
                   <div>
                     <button
                       type="button"
-                      class="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600 sm:rounded-md sm:px-3"
+                      class="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-900 bg-white rounded-r-md focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600 sm:rounded-md sm:px-3"
                       id="menu-2-button"
                       aria-expanded="false"
                       aria-haspopup="true"
@@ -159,12 +143,6 @@
       </div>
       <!-- Message header -->
     </div>
-
-    <!-- 
-                change this in VUE to reflect the data from the case
-                we can check the status of a case by checking the label that is now "open"
-                
-                -->
     <div
       class="flex-1 min-h-0 overflow-y-auto"
       v-if="caseIsSet && selectedCase.consultable"
@@ -363,6 +341,39 @@ export default {
   },
   created() {},
   methods: {
+    confirmdeletecase(url) {
+      this.$buefy.dialog.confirm({
+        title: "Confirm Case deletion",
+        message:
+          '<strong class="p-2 text-yellow-400 bg-red-600">Do you want to delete this case and all the entries?</strong>',
+        cancelText: "No",
+        confirmText: "Yes DELETE",
+        hasIcon: true,
+        type: "is-danger",
+        onConfirm: () => this.deleteCase(url),
+      });
+    },
+    deleteCase(url) {
+      const self = this;
+      axios
+        .delete(url)
+        .then((response) => {
+          setTimeout(() => {
+            self.loading = false;
+            self.$buefy.snackbar.open("Case deleted");
+
+            window.location.reload();
+          }, 500);
+        })
+        .catch((error) => {
+          let message = "A problem occurred";
+          if (error.response.data.message) {
+            message = error.response.data.message;
+          }
+          self.loading = false;
+          self.$buefy.snackbar.open(message);
+        });
+    },
     forceRender(cases) {
       this.selectedCase = cases;
       this.$forceUpdate();

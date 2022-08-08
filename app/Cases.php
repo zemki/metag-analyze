@@ -2,6 +2,8 @@
 
 namespace App;
 
+use File;
+use App\Cases;
 use App\Helpers\Helper;
 use DB;
 use Illuminate\Database\Eloquent\Model;
@@ -63,6 +65,10 @@ class Cases extends Model
 
                 foreach ($case->plannedNotifications() as $notification) {
                     DB::delete('delete from notifications where id = ?', [$notification->id]);
+                }
+                foreach ($case->files as $file) {
+                    File::delete($file->path);
+                    $file->delete();
                 }
             }
         });

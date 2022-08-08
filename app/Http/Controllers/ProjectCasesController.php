@@ -24,7 +24,8 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 class ProjectCasesController extends Controller
 {
     protected const PROJECT = 'project';
-
+    protected const MESSAGE = 'message';
+    
     /**
      * @param Project $project
      * @param Cases   $case
@@ -215,16 +216,8 @@ class ProjectCasesController extends Controller
         } else {
             return response()->json(['message' => 'You can\'t delete this case'], 403);
         }
-        $data['breadcrumb'] = [url('/') => 'Projects', '#' => substr($project->name, 0, 20) . '...'];
-        //  $project->media = $project->media()->pluck('media.name')->toArray();
-        $data['data']['media'] = Media::all();
-        $data[self::PROJECT] = $project;
-        $data['cases'] = $project->cases;
-        $data['casesWithUsers'] = $project->cases()->with('user')->get();
-        $data[self::PROJECT . 'media'] = $project->media()->pluck('media.name')->toArray();
-        $data['invites'] = $project->invited()->get();
-        $data['message'] = "Case deleted";
-        return view('projects.show', $data);
+    
+        return response()->json([self::MESSAGE => 'Case Deleted.'], 200);
     }
 
     /**

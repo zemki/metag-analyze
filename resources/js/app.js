@@ -245,6 +245,7 @@ window.app = new Vue({
     },
   },
   data: {
+    selectedProjectPage: 0,
     selectedCase: {},
     mainNotification: true,
     lastPressedKey: "",
@@ -308,6 +309,9 @@ window.app = new Vue({
         media_id: "",
         inputs: {},
       },
+    },
+    projectPages: {
+      currentPage: 0,
     },
     registration: {
       password: null,
@@ -668,39 +672,6 @@ window.app = new Vue({
         this.newcase.duration.value = `startDay:${startingDateMessage}|${this.newcase.duration.value}`;
         this.newcase.duration.value += `|lastDay:${this.newcase.duration.message}`;
       }
-    },
-    confirmdeletecase(url) {
-      this.$buefy.dialog.confirm({
-        title: "Confirm Case deletion",
-        message:
-          '<strong class="bg-red-600 text-yellow-400 p-2">Do you want to delete this case and all the entries?</strong>',
-        cancelText: "No",
-        confirmText: "Yes DELETE",
-        hasIcon: true,
-        type: "is-danger",
-        onConfirm: () => this.deleteCase(url),
-      });
-    },
-    deleteCase(url) {
-      const self = this;
-      axios
-        .delete(url)
-        .then((response) => {
-          setTimeout(() => {
-            self.loading = false;
-            self.$buefy.snackbar.open("Case deleted");
-
-            window.location.reload();
-          }, 500);
-        })
-        .catch((error) => {
-          let message = "A problem occurred";
-          if (error.response.data.message) {
-            message = error.response.data.message;
-          }
-          self.loading = false;
-          self.$buefy.snackbar.open(message);
-        });
     },
     validateSubmitCaseForm() {
       this.newproject.response = "";
