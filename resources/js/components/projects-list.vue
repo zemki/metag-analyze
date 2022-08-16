@@ -81,18 +81,11 @@
                 {{ Project.name }}
               </h2>
             </div>
-            <span class="relative group flex items-center space-x-2.5">
-              <span
-                class="text-sm font-medium text-gray-500 truncate group-hover:text-gray-900"
-              >
-                here was the sorting lol
-              </span>
-            </span>
+
             <span
               class="mt-2 text-sm font-medium text-gray-500 truncate group-hover:text-gray-900"
             >
-              number of interviews
-              {{ trans("Interviews") }}</span
+              {{ Project.description }}</span
             >
 
             <p class="mb-2 text-sm font-bold break-words whitespace-normal">
@@ -118,11 +111,7 @@
               {{ trans("Invited By") }} {{ Project.owner }}
             </span>
           </div>
-          <div class="flex-col items-end space-y-3 flex-shrink-1 sm:flex">
-            <p class="flex max-w-sm space-x-2 text-sm text-gray-500">
-              {{ Project.description }}
-            </p>
-          </div>
+
           <div class="z-20 flex-col items-end space-y-3 flex-shrink-1 sm:flex">
             <a
               title="manage Project"
@@ -205,6 +194,21 @@ export default {
   },
   created() {},
   methods: {
+    deleteProject(project, url) {
+      const self = this;
+      window.axios
+        .delete(url, { project })
+        .then((response) => {
+          self.$buefy.snackbar.open(response.data.message);
+
+          setTimeout(() => {
+            window.location = window.location.href;
+          }, 700);
+        })
+        .catch((error, message) => {
+          self.$buefy.snackbar.open(error.response.data.message);
+        });
+    },
     confirmLeaveProject: function (userToDetach, study) {
       let confirmDelete = this.$buefy.dialog.confirm({
         title: this.trans("Confirm Leave"),
@@ -222,7 +226,7 @@ export default {
         .post(
           window.location.origin +
             self.productionUrl +
-            "/studies/invite/" +
+            "/projects/invite/" +
             userToDetach.id,
           {
             email: userToDetach.email,
@@ -244,7 +248,7 @@ export default {
     },
     confirmduplicate: function (id, name) {
       let self = this;
-      let confirmDelete = this.$buefy.dialog.confirm({
+      let confirmDuplicate = this.$buefy.dialog.confirm({
         title: self.trans("Confirm Duplicate"),
         message:
           self.trans('Do you want to duplicate the study "') + name + '" ?',
@@ -283,7 +287,7 @@ export default {
         title: "Confirm Delete",
         message:
           `<div class="p-2 text-center text-white bg-red-600">` +
-          self.trans("You are about to delete the study") +
+          self.trans("You are about to delete the project") +
           `<br><span class="uppercase">` +
           name +
           `</span><br>` +
@@ -292,30 +296,11 @@ export default {
           self.trans("Continue?") +
           `</span></div>`,
         cancelText: self.trans("Cancel"),
-        confirmText: self.trans("YES \n Delete Study"),
+        confirmText: self.trans("YES \n Delete Project"),
         hasIcon: true,
         type: "is-danger",
-        onConfirm: () => this.deletestudy(id),
+        onConfirm: () => this.deleteProject(id, name),
       });
-    },
-    deletestudy: function (id) {
-      this.loading = true;
-      this.message = "";
-      let self = this;
-      axios
-        .delete("studies/" + id, { data: id })
-        .then((response) => {
-          setTimeout(function () {
-            self.loading = false;
-            self.$buefy.snackbar.open(self.trans("Study deleted"));
-
-            window.location.reload();
-          }, 500);
-        })
-        .catch(function (error) {
-          self.loading = false;
-          self.$buefy.snackbar.open(error.response.data);
-        });
     },
   },
 };

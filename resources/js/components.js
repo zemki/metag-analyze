@@ -1,3 +1,5 @@
+import Gravatar from "vue-gravatar";
+
 Vue.component("edit-project", require("./components/editproject.vue").default);
 Vue.component(
   "consult-entries",
@@ -25,7 +27,7 @@ Vue.component(
 );
 
 Vue.component("audio-player", require("./components/audioplayer.vue").default);
-
+Vue.component("v-gravatar", Gravatar);
 Vue.component(
   "projects-list",
   require("./components/projects-list.vue").default

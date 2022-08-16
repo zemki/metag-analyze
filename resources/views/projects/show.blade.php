@@ -14,35 +14,35 @@
         <div class="relative z-0 inline-flex mx-auto my-2 rounded-md">
             <a href="{{url($project->path().'/cases/new')}}">
                 <button type="button"
-                    class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">Create
+                    class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">Create
                     Case</button>
             </a>
             <a href="{{url($project->path().'/notifications')}}">
                 <button type="button"
-                    class="relative inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">Notification
+                    class="relative inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">Notification
                     Center</button>
             </a>
             <button type="button"
-                class="relative inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">Download
+                class="relative inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">Download
                 all data</button>
         </div>
 
         <div class="mb-6 border-b border-gray-200">
             <nav class="flex -mb-px" aria-label="Tabs">
                 <a href="#" @click="selectedProjectPage = 0"
-                    :class="selectedProjectPage == 0? 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300' : 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'">
+                    :class="selectedProjectPage == 0? 'w-1/4 px-1 py-4 text-sm font-medium text-center text-black border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300' : 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'">
                     {{__('Cases')}} </a>
 
                 <a href="#" @click="selectedProjectPage = 1"
-                    :class="selectedProjectPage == 1? 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300' : 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'">
+                    :class="selectedProjectPage == 1? 'w-1/4 px-1 py-4 text-sm font-medium text-center text-black border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300' : 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'">
                     {{__('Inputs')}} </a>
 
                 <a href="#" @click="selectedProjectPage = 2"
-                    :class="selectedProjectPage == 2? 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300' : 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'"
+                    :class="selectedProjectPage == 2? 'w-1/4 px-1 py-4 text-sm font-medium text-center text-black border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300' : 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'"
                     aria-current="page"> {{__('Invite Collaborator')}} </a>
 
                 <a href="#" @click="selectedProjectPage = 3"
-                    :class="selectedProjectPage == 3? 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300' : 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'">
+                    :class="selectedProjectPage == 3? 'w-1/4 px-1 py-4 text-sm font-medium text-center text-black border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300' : 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'">
                     Users </a>
             </nav>
         </div>
@@ -115,9 +115,37 @@
                 </main>
             </div>
         </div>
+        <div v-if="selectedProjectPage == 1">
+            @if(!$project->isEditable())
+            <div class="p-4 mb-4 rounded-md bg-red-50">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <!-- Heroicon name: solid/x-circle -->
+                        <svg class="w-5 h-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                            fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-red-800">
+                            {{__('You created a case, your project is not editable')}}
+                        </h3>
+                    </div>
+                </div>
+            </div>
+
+            @endif
+
+            <edit-project :editable="{{$project->isEditable() ? 'true' : 'false'}}" :project="{{$project}}"
+                :projectmedia="{{json_encode($projectmedia)}}"></edit-project>
+
+        </div>
         <div v-if="selectedProjectPage == 2">
             <project-invites class="mt-4" :invitedlist="{{$invites}}" :project="{{$project->id}}"></project-invites>
         </div>
+
     </div>
 
 

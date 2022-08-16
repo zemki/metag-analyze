@@ -1,27 +1,11 @@
-@import 'reset';
-
-// Bootstrap
-@import 'typos';
 @import 'variables';
+@import 'bulma_custom';
 @import 'bulma';
-@import "~tailwindcss/base";
 
-@import "~tailwindcss/components";
-
-@import "~tailwindcss/utilities";
+@import '~tailwindcss/base';
+@import '~tailwindcss/components';
+@import '~tailwindcss/utilities';
 @import '../../node_modules/@mdi/font/scss/materialdesignicons.scss';
-
-
-.cards-projects {
-  background-color: $whitesmoke;
-  color: black;
-}
-
-a {
-  color: $text-blue;
-  cursor: pointer;
-  text-decoration: none !important;
-}
 
 // modal
 .modal {
@@ -30,17 +14,6 @@ a {
 body.modal-active {
   overflow-x: hidden;
   overflow-y: visible !important;
-}
-
-.inputcreatecase{
-  box-shadow: none;
-    outline: 0;
-    border-width: 0 0 2px;
-    border-color: $text-blue;
-}
-
-.inputcreatecase:focus{
-  border-color: $kofi5;
 }
 
 /**
@@ -54,31 +27,38 @@ Registration
 }
 
 .list-item-registration:before {
-  content: "";
-  width: 0%; height: 2px;
+  content: '';
+  width: 0%;
+  height: 2px;
   background: #2ecc71;
   position: absolute;
-  left: 0; top: 50%;
+  left: 0;
+  top: 50%;
   display: block;
-  transition: all .6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-
-.is_valid { color: rgba(136, 152, 170, 0.8); }
-.is_valid:before { width: 100%; }
+.is_valid {
+  color: rgba(136, 152, 170, 0.8);
+}
+.is_valid:before {
+  width: 100%;
+}
 
 .checkmark_container {
   border-radius: 50%;
   position: absolute;
-  top: -15px; right: -15px;
+  top: -15px;
+  right: -15px;
   background: #2ecc71;
-  width: 50px; height: 50px;
+  width: 50px;
+  height: 50px;
   visibility: hidden;
   opacity: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  transition: opacity .4s ease;
+  transition: opacity 0.4s ease;
 }
 
 .show_checkmark {
@@ -97,8 +77,12 @@ Registration
   stroke-dashoffset: 180;
 }
 
-.checked { animation: draw 0.5s ease forwards; }
+.checked {
+  animation: draw 0.5s ease forwards;
+}
 
 @keyframes draw {
-  to { stroke-dashoffset: 0; }
+  to {
+    stroke-dashoffset: 0;
+  }
 }
