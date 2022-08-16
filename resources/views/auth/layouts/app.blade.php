@@ -1,6 +1,6 @@
 @include('auth.layouts.header')
 
-<body class="font-sans">
+<body class="h-full">
     <div id="app">
 
         @yield('content')

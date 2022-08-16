@@ -4,7 +4,7 @@
 
 <script>
 import Highcharts from "highcharts";
-import HighchartsMore from "highcharts/highcharts-more"
+import HighchartsMore from "highcharts/highcharts-more";
 import { mapActions, mapState } from "vuex";
 HighchartsMore(Highcharts);
 export default {
@@ -20,7 +20,6 @@ export default {
       begin: 0,
       end: 0,
       extremes: null,
-
     };
   },
   computed: {
@@ -31,10 +30,10 @@ export default {
   },
   watch: {
     formatterStatus: function (newVal, oldVal) {
-			let self = this;
-			setTimeout(() => {
-				self.updateChart();
-			}, 50);
+      let self = this;
+      setTimeout(() => {
+        self.updateChart();
+      }, 50);
     },
     yAxisAttribute: function (newVal, oldVal) {
       let self = this;
@@ -43,7 +42,6 @@ export default {
       }, 50);
     },
     begin: function (newVal, oldVal) {
-
       let self = this;
       setTimeout(() => {
         if (self.begin && self.end) {
@@ -55,7 +53,6 @@ export default {
       }, 100);
     },
     end: function (newVal, oldVal) {
-
       let self = this;
       setTimeout(() => {
         if (self.begin && self.end) {
@@ -80,9 +77,7 @@ export default {
   },
   methods: {
     ...mapActions({ download: "downloadChart" }),
-    switchInputs: function () {
-      console.log("works?");
-    },
+    switchInputs: function () {},
     debouncedUpdateChart: function () {
       _.debounce(() => this.updateChart(), 100);
     },
@@ -104,7 +99,6 @@ export default {
         },
       });
 
-      console.log("test1")
       let self = this;
       // initialize chart on the element
 
@@ -144,8 +138,7 @@ export default {
           startOnTick: false,
           endOnTick: false,
           labels: {
-
-            formatter: null
+            formatter: null,
           },
         },
         plotOptions: {
@@ -197,7 +190,6 @@ export default {
         (category) => category.name
       );
 
-
       this.yAxisCategoryIds = this.categories.map((category) => category.id);
       this.allSeries = this.getColoredCategories().map((category) => {
         let series = {
@@ -220,7 +212,7 @@ export default {
             coloredAttributeAsArray[0] &&
             coloredAttributeAsArray[0].name === category.name
           ) {
-          	console.log("inside");
+            console.log("inside");
             if (!_.isEmpty(entry[this.yAxisAttribute])) {
               // the index of the y axis category
               let x = this.yAxisCategoryNames.indexOf(
@@ -325,71 +317,72 @@ export default {
           Math.ceil(this.end.getMinutes() / this.interval) * this.interval
         );
       }
-
-
     },
     download: function (type) {
       let container = document.getElementById("container");
-    let self = this;
-      this.chart.exportChart({
-        sourceWidth: this.chart.offsetWidth,
-        sourceHeight: this.chart.offsetHeight,
-        type: type,
-      },{
-        chart: {
-          type: "columnrange",
-          inverted: true,
-          zoomType: "y",
-          height: (9 / 16) * 100 + "%",
-          animation: false,
+      let self = this;
+      this.chart.exportChart(
+        {
+          sourceWidth: this.chart.offsetWidth,
+          sourceHeight: this.chart.offsetHeight,
+          type: type,
         },
+        {
+          chart: {
+            type: "columnrange",
+            inverted: true,
+            zoomType: "y",
+            height: (9 / 16) * 100 + "%",
+            animation: false,
+          },
 
-        credits: {
-          enabled: false,
-        },
-        title: null,
-        xAxis: {
-          labels: {
-            step: 10,
+          credits: {
+            enabled: false,
           },
-        },
-        yAxis: {
-          type: "datetime",
-          title: {
-            text: null,
+          title: null,
+          xAxis: {
+            labels: {
+              step: 10,
+            },
           },
-          opposite: true,
-          tickInterval: 24 * 60 * 60 * 1000,
-          minorTickInterval: 6 * 60 * 60 * 1000,
-          minorTickWidth: 1,
-          minorTickLength: 10,
-          minorGridLineWidth: 0,
-          lineWidth: 1,
-          startOnTick: false,
-          endOnTick: false,
-        },
-        plotOptions: {
-          columnrange: {
-            grouping: false,
-            allAreas: true,
-            crisp:true,
-            dataGrouping: false
+          yAxis: {
+            type: "datetime",
+            title: {
+              text: null,
+            },
+            opposite: true,
+            tickInterval: 24 * 60 * 60 * 1000,
+            minorTickInterval: 6 * 60 * 60 * 1000,
+            minorTickWidth: 1,
+            minorTickLength: 10,
+            minorGridLineWidth: 0,
+            lineWidth: 1,
+            startOnTick: false,
+            endOnTick: false,
           },
-          series: {
-            states: {
-              inactive: {
-                opacity: 1,
-              },
-              hover: {
-                opacity: 1,
+          plotOptions: {
+            columnrange: {
+              grouping: false,
+              allAreas: true,
+              crisp: true,
+              dataGrouping: false,
+            },
+            series: {
+              states: {
+                inactive: {
+                  opacity: 1,
+                },
+                hover: {
+                  opacity: 1,
+                },
               },
             },
           },
-        },
-        legend: {
-          itemWidth: 275,
-        },
-      });
+          legend: {
+            itemWidth: 275,
+          },
+        }
+      );
     },
   },
 };

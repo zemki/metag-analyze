@@ -245,7 +245,7 @@ window.app = new Vue({
     },
   },
   data: {
-    selectedProjectPage: 0,
+    selectedProjectPage: 1,
     selectedCase: {},
     mainNotification: true,
     lastPressedKey: "",
@@ -354,6 +354,18 @@ window.app = new Vue({
     },
   },
   methods: {
+    showdropdown: function (id) {
+      var self = this;
+
+      const closeListerner = (e) => {
+        if (self.catchOutsideClick(e, self.$refs.usermenu))
+          window.removeEventListener("click", closeListerner),
+            document.getElementById(id).classList.toggle("hidden");
+      };
+
+      window.addEventListener("click", closeListerner);
+      document.getElementById(id).classList.toggle("hidden");
+    },
     updateSelectedCase(cases) {
       this.selectedCase = cases;
       this.$refs.selectedcase.forceRender(cases);
@@ -867,33 +879,7 @@ window.app = new Vue({
           );
         });
     },
-    confirmDeleteProject(project, url) {
-      const confirmDelete = this.$buefy.dialog.confirm({
-        title: "Confirm Delete",
-        message:
-          '<strong class="bg-red-600 text-yellow-400 p-2">Are you sure you want to delete this project and all the data included with it?</strong>',
-        cancelText: "NO",
-        confirmText: "YES",
-        hasIcon: true,
-        type: "is-danger",
-        onConfirm: () => this.deleteProject(project, url),
-      });
-    },
-    deleteProject(project, url) {
-      const self = this;
-      window.axios
-        .delete(url, { project })
-        .then((response) => {
-          self.$buefy.snackbar.open(response.data.message);
 
-          setTimeout(() => {
-            window.location = window.location.href;
-          }, 700);
-        })
-        .catch((error, message) => {
-          self.$buefy.snackbar.open(error.response.data.message);
-        });
-    },
     switchMediaAndInputsOnGraph() {
       this.$store.commit("switchyAxisAttribute", false);
     },

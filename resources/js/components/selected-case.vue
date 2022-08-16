@@ -104,7 +104,7 @@
                         clip-rule="evenodd"
                       />
                     </svg>
-                    <span>Delete Case</span>
+                    <span>{{ trans("Delete Case") }}</span>
                   </button>
                 </span>
 
@@ -117,8 +117,6 @@
                       aria-expanded="false"
                       aria-haspopup="true"
                     >
-                      <span class="sr-only sm:hidden">More</span>
-                      <span class="hidden sm:inline">More</span>
                       <!-- Heroicon name: solid/chevron-down -->
                       <svg
                         class="w-5 h-5 text-gray-400 sm:ml-2 sm:-mr-1"
@@ -165,11 +163,12 @@
           <div
             class="flex items-center justify-between mt-4 sm:mt-0 sm:ml-6 sm:flex-shrink-0 sm:justify-start"
           >
-            <span
-              class="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-500"
+            <button
+              type="button"
+              class="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
-              Open
-            </span>
+              {{ trans("Edit") }}
+            </button>
           </div>
         </div>
       </div>
@@ -186,7 +185,7 @@
         >
           <div class="sm:flex sm:justify-between sm:items-baseline">
             <h3 class="text-base font-medium">
-              <span class="text-gray-500">Media: </span>
+              <span class="text-gray-500">{{ trans("Media") }}: </span>
               <span class="text-gray-900">{{ entry.media }}</span>
             </h3>
             <p
@@ -209,7 +208,7 @@
               (Array.isArray(entry.inputs) || typeof entry.inputs === 'object')
             "
           >
-            <h3 class="font-bold text-gray-500">Inputs</h3>
+            <h3 class="font-bold text-gray-500">{{ trans("Inputs") }}</h3>
             <div class="" v-for="(input, indexJ) in entry.inputs" :key="indexJ">
               <p class="font-bold">{{ indexJ }}</p>
               <audio-player

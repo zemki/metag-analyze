@@ -3,50 +3,30 @@ $navbar-link: #046cbe;
 $navbar-item-color: #046cbe;
 $navbar-item-font-weigth: 600;
 
-.title{
-	font-family:$family-header;
+.title {
+  font-family: $family-header;
 }
 
-.navbar-item{
-font-weight: $navbar-item-font-weigth;
+.navbar-item {
+  font-weight: $navbar-item-font-weigth;
 }
 
-.hometile{
-background-color:#e9e7e3;
-color: black;
-}
-
-a:hover {
-    color: #d92442;
-    outline: 0;
-    text-decoration: none !important;
-}
-
-.contrastbackground{
+.contrastbackground {
   background-color: #e9e7e3;
 }
 
-.hometile a{
-  text-decoration:none;
+h1 {
+  font-family: $family-header;
 }
 
-.hometile a:hover{
-	text-decoration:underline !important;
+.button.is-danger:hover {
+  color: #000000 !important;
 }
 
-h1{
-	font-family: $family-header;
+.upload .upload-draggable:hover.is-primary {
+  border-color: $primary !important;
 }
 
-
-.button.is-danger:hover{
-	color:#000000 !important;
-}
-
-.upload .upload-draggable:hover.is-primary{
-	border-color:$primary !important;
-}
-
-.has-background-dark{
-	background-color:#e9e7e3 !important;
+.has-background-dark {
+  background-color: #e9e7e3 !important;
 }
