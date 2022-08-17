@@ -4,15 +4,17 @@
     class="flex flex-col flex-1 h-full min-w-0 overflow-hidden xl:order-last"
   >
     <!-- Top section -->
-    <div class="flex-shrink-0 bg-white border-b border-gray-200">
+    <div
+      class="flex-shrink-0 bg-white border-b border-gray-200"
+      v-if="caseIsSet && selectedCase.consultable"
+    >
       <!-- Toolbar-->
-      <div class="flex flex-col justify-center h-16">
+      <div class="flex flex-col bg-blue-100">
         <div class="px-4 sm:px-6 lg:px-8">
           <div class="flex justify-between py-3">
             <!-- Left buttons -->
             <div>
               <div
-                v-if="caseIsSet && selectedCase.consultable"
                 class="relative z-0 inline-flex rounded-md shadow-sm sm:shadow-none sm:space-x-3"
               >
                 <span class="inline-flex sm:shadow-sm">
@@ -78,33 +80,6 @@
                       />
                     </svg>
                     <span>Check Files</span>
-                  </button>
-                </span>
-
-                <span class="hidden space-x-3 lg:flex">
-                  <button
-                    type="button"
-                    @click="
-                      confirmdeletecase(productionUrl + '/cases/' + cases.id)
-                    "
-                    class="relative items-center hidden px-4 py-2 -ml-px text-sm font-medium text-white bg-red-500 border rounded-md sm:inline-flex focus:z-10 focus:outline-none focus:ring-1 focus:ring-red-600 focus:border-red-600"
-                  >
-                    <!-- Heroicon name: solid/archive -->
-                    <svg
-                      class="mr-2.5 h-5 w-5 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      aria-hidden="true"
-                    >
-                      <path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z" />
-                      <path
-                        fill-rule="evenodd"
-                        d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"
-                        clip-rule="evenodd"
-                      />
-                    </svg>
-                    <span>{{ trans("Delete Case") }}</span>
                   </button>
                 </span>
 
@@ -340,39 +315,6 @@ export default {
   },
   created() {},
   methods: {
-    confirmdeletecase(url) {
-      this.$buefy.dialog.confirm({
-        title: "Confirm Case deletion",
-        message:
-          '<strong class="p-2 text-yellow-400 bg-red-600">Do you want to delete this case and all the entries?</strong>',
-        cancelText: "No",
-        confirmText: "Yes DELETE",
-        hasIcon: true,
-        type: "is-danger",
-        onConfirm: () => this.deleteCase(url),
-      });
-    },
-    deleteCase(url) {
-      const self = this;
-      axios
-        .delete(url)
-        .then((response) => {
-          setTimeout(() => {
-            self.loading = false;
-            self.$buefy.snackbar.open("Case deleted");
-
-            window.location.reload();
-          }, 500);
-        })
-        .catch((error) => {
-          let message = "A problem occurred";
-          if (error.response.data.message) {
-            message = error.response.data.message;
-          }
-          self.loading = false;
-          self.$buefy.snackbar.open(message);
-        });
-    },
     forceRender(cases) {
       this.selectedCase = cases;
       this.$forceUpdate();

@@ -245,7 +245,7 @@ window.app = new Vue({
     },
   },
   data: {
-    selectedProjectPage: 1,
+    selectedProjectPage: 0,
     selectedCase: {},
     mainNotification: true,
     lastPressedKey: "",
@@ -310,9 +310,6 @@ window.app = new Vue({
         inputs: {},
       },
     },
-    projectPages: {
-      currentPage: 0,
-    },
     registration: {
       password: null,
       password_length: 0,
@@ -354,6 +351,14 @@ window.app = new Vue({
     },
   },
   methods: {
+    catchOutsideClick(event, dropdown) {
+      // When user clicks menu — do nothing
+      if (dropdown == event.target) return false;
+
+      // When user clicks outside of the menu — close the menu
+      if (!dropdown.classList.contains("hidden") && dropdown != event.target)
+        return true;
+    },
     showdropdown: function (id) {
       var self = this;
 
@@ -410,6 +415,38 @@ window.app = new Vue({
           self.$buefy.snackbar.open(
             "There it was an error during the request - refresh page and try again"
           );
+        });
+    },
+    confirmdeletecase(url) {
+      this.$buefy.dialog.confirm({
+        title: "Confirm Case deletion",
+        message:
+          '<strong class="bg-red-600 text-yellow-400 p-2">Do you want to delete this case and all the entries?</strong>',
+        cancelText: "No",
+        confirmText: "Yes DELETE",
+        hasIcon: true,
+        type: "is-danger",
+        onConfirm: () => this.deleteCase(url),
+      });
+    },
+    deleteCase(url) {
+      const self = this;
+      axios
+        .delete(url)
+        .then((response) => {
+          setTimeout(() => {
+            self.loading = false;
+            self.$buefy.snackbar.open("Case deleted");
+            window.location.reload();
+          }, 500);
+        })
+        .catch((error) => {
+          let message = "A problem occurred";
+          if (error.response.data.message) {
+            message = error.response.data.message;
+          }
+          self.loading = false;
+          self.$buefy.snackbar.open(message);
         });
     },
     confirmdelete(case_id, entry_id, lastentry) {

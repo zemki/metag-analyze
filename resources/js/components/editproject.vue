@@ -148,8 +148,6 @@
                   projectData.inputs[index].type == 'one choice'
                 "
           class="mt-1"
-          v-for="(singleMedia, indexM) in projectData.media"
-          :key="indexM"
         >
                   <label class="">Answers</label>
                   <div

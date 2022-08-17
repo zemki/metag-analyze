@@ -34,6 +34,10 @@ Vue.component(
 );
 Vue.component("toast", require("./components/toast.vue").default);
 Vue.component(
+  "modal_edit_entry",
+  require("./components/modal_edit_entry.vue").default
+);
+Vue.component(
   "selected-case",
   require("./components/selected-case.vue").default
 );

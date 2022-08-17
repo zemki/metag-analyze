@@ -124,7 +124,12 @@
             <a
               v-if="Project.authiscreator"
               href="#"
-              @click="confirmdelete(Project.id, Project.name)"
+              @click="
+                confirmdelete(
+                  Project.id,
+                  productionUrl + '/projects/' + Project.id
+                )
+              "
               class="inline-flex items-center justify-center px-4 py-2 mt-3 text-sm font-medium text-white bg-red-500 border border-gray-300 rounded-md shadow-sm hover:bg-red-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:mt-0 sm:ml-3 xl:ml-0 xl:mt-3 xl:w-full"
               >{{ trans("Delete Project") }}</a
             >
@@ -141,18 +146,6 @@
               @click="confirmLeaveProject(loggedUser, Project.id)"
               class="inline-flex items-center justify-center px-4 py-2 mt-3 text-sm font-medium text-white bg-red-500 border border-gray-300 rounded-md shadow-sm hover:bg-red-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:mt-0 sm:ml-3 xl:ml-0 xl:mt-3 xl:w-full"
               >{{ trans("Leave Project") }}</a
-            >
-            <a
-              v-if="Project.authiscreator"
-              :aria-disabled="!Project.editable"
-              :href="productionUrl + '/projects/' + Project.id + '/edit'"
-              title="edit Project"
-              :class="
-                !Project.editable
-                  ? 'pointer-events-none select-none cursor-not-allowed opacity-50 inline-flex items-center justify-center px-4 py-2 mt-3 text-sm font-medium text-white bg-blue-500 border border-gray-300 rounded-md shadow-sm hover:bg-blue-700 hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 xl:ml-0 xl:mt-3 xl:w-full'
-                  : 'inline-flex items-center justify-center px-4 py-2 mt-3 text-sm font-medium hover:text-gray-200 text-white bg-blue-500 border border-gray-300 rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 xl:ml-0 xl:mt-3 xl:w-full'
-              "
-              >{{ trans("Edit Project") }}</a
             >
           </div>
         </div>
@@ -253,7 +246,7 @@ export default {
         message:
           self.trans('Do you want to duplicate the study "') + name + '" ?',
         cancelText: self.trans("Cancel"),
-        confirmText: self.trans("Yes Duplicate Study"),
+        confirmText: self.trans("Yes Duplicate Project"),
         hasIcon: true,
         type: "is-primary",
         onConfirm: () => this.duplicatestudy(id),
@@ -264,11 +257,11 @@ export default {
       this.message = "";
       let self = this;
       axios
-        .get("studies/" + id + "/duplicate")
+        .get("projects/" + id + "/duplicate")
         .then((response) => {
           setTimeout(function () {
             self.loading = false;
-            self.$buefy.snackbar.open(self.trans("Study duplicated"));
+            self.$buefy.snackbar.open(self.trans("Project duplicated"));
 
             window.location.reload();
           }, 500);
@@ -281,26 +274,34 @@ export default {
           );
         });
     },
-    confirmdelete: function (id, name) {
-      let self = this;
-      let confirmDelete = this.$buefy.dialog.confirm({
+    confirmdelete(project, url) {
+      const confirmDelete = this.$buefy.dialog.confirm({
         title: "Confirm Delete",
         message:
-          `<div class="p-2 text-center text-white bg-red-600">` +
-          self.trans("You are about to delete the project") +
-          `<br><span class="uppercase">` +
-          name +
-          `</span><br>` +
-          self.trans("and all its content?") +
-          `<br><span class="has-text-weight-bold">` +
-          self.trans("Continue?") +
-          `</span></div>`,
-        cancelText: self.trans("Cancel"),
-        confirmText: self.trans("YES \n Delete Project"),
+          '<strong class="p-2 text-yellow-400 bg-red-600">Are you sure you want to delete this project and all the data included with it?</strong>',
+        cancelText: "NO",
+        confirmText: "YES",
         hasIcon: true,
         type: "is-danger",
-        onConfirm: () => this.deleteProject(id, name),
+        onConfirm: () => this.deleteProject(project, url),
       });
+    },
+    deleteProject(project, url) {
+      const self = this;
+      // get the list of projects and update the view
+      window.axios
+        .delete(url, { project })
+        .then((response) => {
+          self.$buefy.snackbar.open(response.data.message);
+          console.log(response);
+          self.projects = JSON.stringify(response.data.projects);
+          setTimeout(() => {
+            window.location = window.location.href;
+          }, 700);
+        })
+        .catch((error, message) => {
+          self.$buefy.snackbar.open(error.response.data.message);
+        });
     },
   },
 };
