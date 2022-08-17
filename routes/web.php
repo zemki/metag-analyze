@@ -53,6 +53,8 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified', 'LoggedUser']],
     Route::get('/projects/{project}/export', 'ProjectController@export');
     Route::post('/projects/invite', 'ProjectController@inviteUser');
     Route::post('/projects/invite/{user}', 'ProjectController@removeFromProject');
+    Route::get('/projects/{project}/duplicate', 'ProjectController@duplicate');
+
 
     /**
      * Case Routes

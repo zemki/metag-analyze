@@ -96,9 +96,6 @@
             </div>
         </div>
         @else
-
-
-
         <projects-list projects="{{$projects->merge($invites)}}" user="{{auth()->user()}}"></projects-list>
         @endif
     </div>

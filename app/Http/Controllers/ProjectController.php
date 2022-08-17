@@ -164,8 +164,34 @@ class ProjectController extends Controller
         $project = auth()->user()->projects()->create($attributes);
         $this->syncMedia($media, $project, $mToSync);
 
+        // return all the users projects
         $data['projects'] = auth()->user()->projects()->get();
+        foreach ($data['projects'] as $key => $value) {
+            $data['projects'][$key]['authiscreator'] = auth()->user()->is($data['projects'][$key]->creator());
+            foreach ($data['projects'][$key]->cases as $cases) {
+                $data['projects'][$key]['entries'] += $cases->entries->count();
+            }
+
+            $data['projects'][$key]['casescount'] = $data['projects'][$key]->cases()->count();
+            
+ 
+            
+            $data['projects'][$key]['editable'] =  $data['projects'][$key]->isEditable();
+        }
+
         $data['invites'] = auth()->user()->invites()->get();
+        
+        foreach ($data['invites'] as $key => $value) {
+            $data['invites'][$key]['casescount'] = $data['invites'][$key]->cases()->count();
+            $data['invites'][$key]['authiscreator'] = false;
+            $data['invites'][$key]['editable'] =  false;
+            $data['invites'][$key]['owner'] =   $data['invites'][$key]->creator()->email;
+            foreach ($data['projects'][$key]->cases() as $cases) {
+                $data['projects'][$key]['entries'] += $cases->entries()->count();
+            }
+        }
+        $data['invited_projects'] =  auth()->user()->invites;
+
         $data[self::MESSAGE] = "project created!";
         $data = $this->checkNewsletter($data);
         return view('projects.index', $data);
@@ -212,6 +238,16 @@ class ProjectController extends Controller
         return response("Updated project successfully");
     }
 
+
+    public function duplicate(Project $project)
+    {
+        $copy = $project->replicate();
+        $copy->save();
+        $copy->media()->sync($project->media()->get());
+        
+        return response('Project duplicated', 200);
+    }
+
     public function destroy(Project $project, Request $request)
     {
         if ($project->created_by == auth()->user()->id) {
@@ -220,7 +256,34 @@ class ProjectController extends Controller
         } else {
             return response()->json([self::MESSAGE => 'You can\'t delete this project'], 401);
         }
-        return response()->json([self::MESSAGE => 'Project Deleted.'], 200);
+        $projects = auth()->user()->projects()->get();
+        foreach ($projects as $key => $value) {
+            $projects[$key]['authiscreator'] = auth()->user()->is($projects[$key]->creator());
+            foreach ($projects[$key]->cases as $cases) {
+                $projects[$key]['entries'] += $cases->entries->count();
+            }
+
+            $projects[$key]['casescount'] = $projects[$key]->cases()->count();
+            
+ 
+            
+            $projects[$key]['editable'] =  $projects[$key]->isEditable();
+        }
+
+        $data['invites'] = auth()->user()->invites()->get();
+        
+        foreach ($data['invites'] as $key => $value) {
+            $data['invites'][$key]['casescount'] = $data['invites'][$key]->cases()->count();
+            $data['invites'][$key]['authiscreator'] = false;
+            $data['invites'][$key]['editable'] =  false;
+            $data['invites'][$key]['owner'] =   $data['invites'][$key]->creator()->email;
+            foreach ($projects[$key]->cases() as $cases) {
+                $projects[$key]['entries'] += $cases->entries()->count();
+            }
+        }
+        $data['invited_projects'] =  auth()->user()->invites;
+
+        return response()->json([self::MESSAGE => 'Project Deleted.','projects' => $projects], 200);
     }
 
     /**
