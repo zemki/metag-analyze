@@ -5,6 +5,7 @@ module.exports = {
     "./resources/**/*.js",
     "./resources/js/components/**/*.vue",
     "./resources/**/*.vue",
+    "node_modules/vue-tailwind/dist/*.js",
   ],
   theme: {
     extend: {

@@ -160,19 +160,46 @@ class ProjectCasesController extends Controller
         if (auth()->user()->notOwnerNorInvited($project)) {
             abort(403);
         }
+        
+
         if (request('name') == "") {
-            return redirect($project->path() . '/cases/new')->with(['message' => __('Please fill all the required inputs.')]);
+            return redirect($project->path() . '/cases/new')->with(['message' => __('Please fill all the required inputs.'), 'message_type' => 'error'])->withInput();
         }
         request()->validate(
-            ['name' => 'required']
+            ['name' => 'required'],
+            ['email' => 'required'],
+            ['duration' => 'required']
         );
+        $message="";
         if (request('backendCase')) {
             $user = auth()->user();
             $case = $project->addCase(request('name'), 'value:0|days:0|lastDay:' . Carbon::now()->subDay());
         } else {
-            $email = request('email');
-            $case = $project->addCase(request('name'), request('duration'));
-            $user = User::createIfDoesNotExists(User::firstOrNew(['email' => $email]));
+            $emails = explode(',', request('email'));
+
+            $invalidEmails = [];
+
+            foreach ($emails as $email) {
+                if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    array_push($invalidEmails, $email);
+                }
+            }
+
+            if (count($invalidEmails) > 0) {
+                return redirect($project->path() . '/cases/new')->with(['message' => __('Not valid emails: ').implode(',', $invalidEmails), 'message_type' => 'error'])->withInput();
+            }
+
+            $emailInput = request('email');
+            
+            $emailArray = Helper::multiexplode(array(";", ","," "), $emailInput);
+            
+            foreach ($emailArray as $singleEmail) {
+                $user = User::createIfDoesNotExists(User::firstOrNew(['email' => $singleEmail]));
+                $case = $project->addCase(request('name'), request('duration'));
+                $case->addUser($user);
+                $message .= $user->email . ' has been invited. \n';
+            }
+
             foreach ($project->getInputs() as $object) {
                 $hasFileUpload = property_exists($object, 'type') && $object->type === 'audio recording';
                 if ($hasFileUpload) {
@@ -183,8 +210,8 @@ class ProjectCasesController extends Controller
                 }
             }
         }
-        $case->addUser($user);
-        return redirect($project->path())->with(['message' => $user->email . ' has been invited.']);
+        
+        return redirect($project->path())->with(['message' => $message,'message_type' => 'success']);
     }
 
     /**

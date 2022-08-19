@@ -4,6 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use stdClass;
+use DB;
 
 /**
  * App\Project
@@ -207,6 +208,11 @@ class Project extends Model
         return $this->HasMany(Cases::class);
     }
 
+    public function notBackendcases()
+    {
+        return $this->HasMany(Cases::class)->whereRaw(DB::raw("duration not like 'value:0%'"));
+    }
+
     public function media()
     {
         return $this->belongsToMany(Media::class, 'media_projects');
@@ -224,7 +230,7 @@ class Project extends Model
 
     public function addCase($name, $duration)
     {
-        return $this->cases()->firstOrCreate(['name' => $name, 'duration' => $duration]);
+        return $this->cases()->create(['name' => $name, 'duration' => $duration]);
     }
 
     public function invited()

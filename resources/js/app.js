@@ -13,6 +13,7 @@ import Vuex from "vuex";
 import store from "./store";
 import Vue from "vue";
 import _ from "lodash";
+import VueTailwind from "vue-tailwind";
 
 window.Vue = Vue;
 
@@ -31,6 +32,7 @@ window.Vue.config.devtools = true;
 Vue.config.debug = true;
 Vue.config.silent = false;
 Vue.use(Buefy);
+Vue.use(VueTailwind);
 
 Vue.prototype.trans = (key) =>
   _.isUndefined(window.trans[key]) ? key : window.trans[key];
@@ -246,6 +248,11 @@ window.app = new Vue({
   },
   data: {
     selectedProjectPage: 0,
+    disabledDates: [
+      function (date) {
+        return new Date(date) <= new Date();
+      },
+    ],
     selectedCase: {},
     mainNotification: true,
     lastPressedKey: "",
