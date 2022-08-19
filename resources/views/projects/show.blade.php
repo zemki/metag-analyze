@@ -61,21 +61,40 @@
                                 <li @click="updateSelectedCase({{$case}})"
                                     class="relative px-6 py-5 bg-white even:bg-slate-50 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-blue-600">
                                     <div class="flex justify-between space-x-3">
-                                        <div class="flex-1 min-w-0">
+                                        <div class="flex-1 w-1/2 min-w-0">
                                             <a href="#" class="block focus:outline-none">
                                                 <span class="absolute inset-0" aria-hidden="true"></span>
                                                 <p class="text-sm font-medium text-gray-900 truncate">
                                                     {{$case->name}}
                                                 </p>
-                                                <p class="text-sm text-gray-500 truncate">
+                                                <p class="w-64 text-sm text-gray-500 break-words">
                                                     {{$case->user? $case->user->email : 'no user assigned'}}
                                                 </p>
                                             </a>
                                         </div>
-                                        <div class="block">
+                                        <div class="block w-1/2">
                                             <time datetime="2021-01-27T16:35"
-                                                class="flex-shrink-0 text-sm text-gray-500 whitespace-nowrap">{{__('Started')}}:
-                                                {{($case->firstDay() ? date("d.m.Y", strtotime($case->firstDay())) : date("d.m.Y", strtotime($case->created_at)))}}</time>
+                                                class="block text-sm text-gray-500 whitespace-nowrap">
+
+                                                @if($case->firstDay() != null)
+                                                {{__('Started')}}:{{date("d.m.Y", strtotime($case->firstDay()))}}
+                                                @elseif($case->startDay() != null)
+                                                {{date("d.m.Y", strtotime($case->firstDay())) < new DateTime() ? __('Will start') : __('Started')}}
+                                                :{{date("d.m.Y", strtotime($case->startDay()))}}
+                                                @else
+                                                {{__('Created')}}:{{date("d.m.Y", strtotime($case->created_at))}}
+                                                @endif
+
+                                            </time>
+                                            <time datetime="2021-01-27T16:35"
+                                                class="block text-sm text-gray-500 whitespace-nowrap">
+                                                @if($case->isBackend())
+                                                {{__('No last day.')}}
+                                                @else
+                                                {{__('Last day')}}
+                                                :
+                                                {{ $case->lastDay() == "" ? __('Case not started by the user') : $case->lastDay() }}
+                                                @endif</time>
                                             <button type="button"
                                                 @click="confirmdeletecase(productionUrl + '/cases/' + {{$case->id}})"
                                                 class="relative items-center px-2.5 py-1.5 text-sm font-medium text-white bg-red-500 border rounded-md flex focus:z-10 focus:outline-none focus:ring-1 focus:ring-red-600 focus:border-red-600">

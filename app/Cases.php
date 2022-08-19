@@ -294,7 +294,12 @@ class Cases extends Model
      */
     #[Pure] public function firstDay(): string
     {
-        return Helper::get_string_between($this->duration, 'firstDay:', '|');
+        return Helper::get_string_between($this->duration, 'firstDay:', '|') ?? Helper::get_string_between($this->duration, 'startDay:', '|');
+    }
+
+    #[Pure] public function startDay(): string
+    {
+        return Helper::get_string_between($this->duration, 'startDay:', '|');
     }
 
     /**

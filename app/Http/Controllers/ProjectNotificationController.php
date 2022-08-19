@@ -18,7 +18,8 @@ class ProjectNotificationController extends Controller
         $data['breadcrumb'] = [url('/') => 'Projects', url($project->path()) => substr($project->name, 0, 20) . '...', '#' => 'Notification Center'];
         $data['cases'] = $project->cases;
         $data['project'] = $project;
-        $data['casesWithUsers'] = $project->cases()->with('user')->get();
+        $data['casesWithUsers'] = $project->notBackendcases()->with('user')->get();
+        
         $data['notifications'] = [];
         $data['plannedNotifications'] = [];
         foreach ($data['casesWithUsers'] as $cases) {
@@ -33,6 +34,24 @@ class ProjectNotificationController extends Controller
         $data['plannedNotifications'] = json_encode(Arr::flatten($data['plannedNotifications']));
         return view('notifications.show', $data);
     }
+
+    public function queryToSQL($query, $logQuery = true)
+    {
+        $addSlashes = str_replace('?', "'?'", $query->toSql());
+
+        $sql = str_replace('%', '#', $addSlashes);
+
+        $sql = str_replace('?', '%s', $sql);
+
+        $sql = vsprintf($sql, $query->getBindings());
+
+        $sql = str_replace('#', '%', $sql);
+
+
+
+        return $sql;
+    }
+
 
     /**
      * Store and/or send a notification

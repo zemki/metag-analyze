@@ -48,7 +48,9 @@ class Helper
         $string = ' ' . $string;
         $ini = strpos($string, $start);
 
-        if ($ini === 0 || $ini === false) return '';
+        if ($ini === 0 || $ini === false) {
+            return '';
+        }
 
         $ini += strlen($start);
         $len = strpos($string, $end, $ini) - $ini;
@@ -67,7 +69,7 @@ class Helper
     public static function in_array_recursive($needle, $haystack)
     {
         $iterator = new RecursiveIteratorIterator(new RecursiveArrayIterator($haystack));
-        foreach ($iterator AS $element) {
+        foreach ($iterator as $element) {
             if ($element === $needle) {
                 return true;
             }
@@ -96,4 +98,14 @@ class Helper
         return $arrayKeys;
     }
 
+    /**
+     * @param $array
+     * @return array
+     */
+    public static function multiexplode($delimiters, $string)
+    {
+        $ready = str_replace($delimiters, $delimiters[0], $string);
+        $launch = explode($delimiters[0], $ready);
+        return  $launch;
+    }
 }

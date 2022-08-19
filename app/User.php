@@ -150,7 +150,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public static function createIfDoesNotExists($user)
     {
         if (!$user->exists) {
-            $user->email = request('email');
+            $user->email = $user->email;
             $role = Role::where('name', '=', 'user')->first();
             $user->password = bcrypt(Helper::random_str(60));
             $user->password_token = bcrypt(Helper::random_str(60));
