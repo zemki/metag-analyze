@@ -86,10 +86,13 @@
 
         </div>
     </div>
-    <template v-if="!newcase.duration.starts_with_login">
-        <label for="comments" class="font-medium text-gray-700">{{__('Or it start this day:')}} *</label>
-        <t-datepicker v-model="newcase.duration.startdate" :disabled-dates="disabledDates" />
-    </template>
+    <div class="mt-1 sm:mt-0 sm:col-span-2" v-if="!newcase.duration.starts_with_login">
+        <label for="backenddate" class="font-medium text-gray-700">{{__('Or it start this day:')}} *</label>
+        <input datepicker type="date" v-model="newcase.duration.startdate"
+            class="block w-full max-w-lg border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 active:border-blue-500 sm:text-sm "
+            placeholder="{{__('Select date')}}" :min="moment().subtract(1,'day').format('YYYY-MM-DD')">
+    </div>
+
     {{-- <b-field :customclass="'uppercase tracking-wide text-gray-700 text-xs font-bold'"
         :label="trans('Or it start this day:')+' *'" v-if="!newcase.duration.starts_with_login">
         <b-datepicker :min-date="newcase.minDate" :placeholder="trans('Click to select...')" icon="calendar-today"
@@ -121,16 +124,82 @@
         </div>
     </div>
 
+    <div class="mt-6">
+        <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            <div class="pt-6">
+                <div class="flow-root px-6 pb-8 rounded-lg bg-gray-50">
+                    <div class="-mt-6">
+                        <div>
+                            <span class="inline-flex items-center justify-center p-3 bg-blue-500 rounded-md shadow-lg">
+                                <!-- Heroicon name: outline/cloud-upload -->
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                </svg>
+                            </span>
+                        </div>
+                        <h3 class="mt-8 text-lg font-medium tracking-tight text-gray-900">Users</h3>
+                        <p class="mt-5 text-base text-gray-500">
+                            {{__('An email will be sent to not registered users.')}}
+                        </p>
+                        <p class="mt-5 text-base text-gray-500">
+                            {{__('If the user is already registered, there is not communication and the user cna just login.')}}
+                        </p>
+                        <p class="mt-5 text-base text-gray-500">
+                            {{__('Please check beforehand if the user was already assigned to a case with the same email.')}}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-6">
+                <div class="flow-root px-6 pb-8 rounded-lg bg-gray-50">
+                    <div class="-mt-6">
+                        <div>
+                            <span class="inline-flex items-center justify-center p-3 bg-blue-500 rounded-md shadow-lg">
+                                <!-- Heroicon name: outline/lock-closed -->
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                </svg>
+                            </span>
+                        </div>
+                        <h3 class="mt-8 text-lg font-medium tracking-tight text-gray-900">{{__('Multiple Invites')}}
+                        </h3>
+                        <p class="mt-5 text-base text-gray-500">
+                            {{__('Use , or ; or space (comma, semicolon, empty space) to delimit the email and invite multiple people using the same case name')}}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-6">
+                <div class="flow-root px-6 pb-8 rounded-lg bg-gray-50">
+                    <div class="-mt-6">
+                        <div>
+                            <span class="inline-flex items-center justify-center p-3 bg-blue-500 rounded-md shadow-lg">
+                                <!-- Heroicon name: outline/refresh -->
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+                                </svg>
+                            </span>
+                        </div>
+                        <h3 class="mt-8 text-lg font-medium tracking-tight text-gray-900">{{__('Backend Cases')}}</h3>
+                        <p class="mt-5 text-base text-gray-500">
+                            {{__('Data for backend cases can only be entered via MeTag Analyze, they are not accessible from the MeTag mobile app. They don’t have a duration setting because they can be created, filled out and consulted at any time in the backend.')}}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
 
 
-    <p class="p-3 mt-3 font-bold text-black bg-yellow-500">
-        {{__('If the user is not registered, he/she will receive an email to set a password.')}}<br>
-        {{__('If the user was already registered, he/she will just need to log-in to see the new case.')}}
-        <br>
-        {{__('Please check beforehand if the user was already assigned to a case with the same email.')}}
-        <br>
-        {{__('Data for backend cases can only be entered via MeTag Analyze, they are not accessible from the MeTag mobile app. They don’t have a duration setting because they can be created, filled out and consulted at any time in the backend.')}}
-    </p>
 
     <div class="my-2 text-base">* {{__('required')}}</div>
 

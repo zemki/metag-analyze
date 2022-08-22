@@ -56,7 +56,6 @@
     "stream-http": "^3.2.0",
     "vue-chartkick": "^0.5.3",
     "vue-gravatar": "^1.4.1",
-    "vue-tailwind": "^2.5.1",
     "vuex": "^3.6.2"
   }
 }

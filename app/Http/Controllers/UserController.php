@@ -7,9 +7,11 @@ use App\Notifications\researcherNotificationToUser;
 use App\Project;
 use App\Role;
 use App\User;
+use App\Action;
 use DB;
 use Helper;
-use Illuminate\Contracts\View\Factory;
+use Carbon\Carbon;
+
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -52,8 +54,6 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-
-
         request()->validate(
             [self::EMAIL => 'required']
         );
@@ -81,14 +81,21 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     * @param int $id
-     * @return Response
+     /**
+     *
+     *
      */
     public function show()
     {
-        //
+        $data['actions'] = Action::join('users', 'users.id', 'actions.user_id')->where('users.id', '=', auth()->user()->id)->orderBy('actions.id', 'desc')->paginate(10);
+        
+        foreach ($data['actions'] as $action) {
+            $action->time = Carbon::parse($action['time'])->format('d.m.Y h:s:i');
+        }
+
+        $data['profile'] = auth()->user()->profile;
+
+        return view('user.profile', $data);
     }
 
     /**
@@ -109,7 +116,6 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
-
         $updateUser = User::where('id', $id)->first();
         $updateUser->email = $request->get(self::EMAIL);
         $updateUser->roles()->sync($request->get('roles'));
@@ -155,25 +161,19 @@ class UserController extends Controller
     public function addToNewsletter(Request $request)
     {
         $subscribe = $request->input('subscribed') ? config('enums.newsletter_status.SUBSCRIBED') : config('enums.newsletter_status.NOT SUBSCRIBED');
-        try
-        {
-            if(auth()->user()->profile()->exists())
-            {
+        try {
+            if (auth()->user()->profile()->exists()) {
                 auth()->user()->profile->newsletter = $subscribe;
                 auth()->user()->profile->save();
-            }else{
+            } else {
                 $profile = auth()->user()->addProfile(auth()->user());
                 $profile->newsletter = $subscribe;
                 $profile->save();
             }
             return response()->json(['message' => 'Your preference was saved!','r' => $subscribe], 200);
-
-        }catch (Exception $exception)
-        {
+        } catch (Exception $exception) {
             return response()->json(['message' => 'A problem occurred, contact the administrator.'], 500);
-
         }
-
     }
 
     /**
@@ -181,14 +181,13 @@ class UserController extends Controller
      */
     public function notifyDevice(Request $request)
     {
-        $user = User::where('id',$request->input('user')['id'])->first();
+        $user = User::where('id', $request->input('user')['id'])->first();
         $user->profile->last_notification_at = date("Y-m-d H:i:s");
         $user->profile->save();
 
 
         $user->notify((new researcherNotificationToUser(['title' => $request->input('title'), 'message' => $request->input('message'), 'case' => $request->input('cases')])));
         return response()->json(['message' => 'Notification Sent!','notified' => date("Y-m-d H:i:s")], 200);
-
     }
 
     /**
@@ -196,40 +195,31 @@ class UserController extends Controller
      */
     public function planNotification(Request $request): JsonResponse
     {
-        $user = User::where('id',$request->input('user')['id'])->first();
-     //   $user->profile->last_notification_at = date("Y-m-d H:i:s");
+        $user = User::where('id', $request->input('user')['id'])->first();
+        //   $user->profile->last_notification_at = date("Y-m-d H:i:s");
         $user->profile->save();
         $user->notify(new researcherNotificationToUser(['title' => $request->input('title'), 'message' => $request->input('message'), 'case' => $request->input('cases'), 'planning' => $request->input('planning')]));
         $notification = DB::table('notifications')->latest('created_at')->first();
         return response()->json(['message' => 'Notification Planned!','notification' =>$notification], 200);
-
     }
 
     public function deletePlannedNotification(Request $request)
     {
-
-      DB::table('notifications')->where('id', '=', $request->input('notification')['id'])->delete();
+        DB::table('notifications')->where('id', '=', $request->input('notification')['id'])->delete();
 
         return response()->json(['message' => 'Notification Deleted!'], 200);
     }
 
     public function cleanupNotifications(Request $request)
     {
-
-        if(!auth()->user()->isAdmin())
-        {
+        if (!auth()->user()->isAdmin()) {
             return response()->json(['message' => 'Don\'t even try!'], 200);
-
-        }else{
-            $user = User::where('id',$request->input('user')['id'])->first();
+        } else {
+            $user = User::where('id', $request->input('user')['id'])->first();
             $user->profile->last_notification_at = null;
             $user->profile->save();
-            $notification = DB::table('notifications')->where('notifiable_id',$request->input('user')['id'])->where('data->case',$request->input('cases')['id'])->where('data->planned',false)->latest('created_at')->limit(1)->delete();
+            $notification = DB::table('notifications')->where('notifiable_id', $request->input('user')['id'])->where('data->case', $request->input('cases')['id'])->where('data->planned', false)->latest('created_at')->limit(1)->delete();
             return response()->json(['message' => 'Deleted last notification!'], 200);
-
-
         }
-
-
     }
 }

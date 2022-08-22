@@ -1,6 +1,5 @@
 import Vue from "vue";
 import Gravatar from "vue-gravatar";
-import { TDatepicker } from "vue-tailwind/dist/components";
 
 Vue.component("edit-project", require("./components/editproject.vue").default);
 Vue.component(
@@ -43,5 +42,3 @@ Vue.component(
   "selected-case",
   require("./components/selected-case.vue").default
 );
-
-Vue.component("t-datepicker", TDatepicker);
