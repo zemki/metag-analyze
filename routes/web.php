@@ -30,7 +30,6 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'verified', 'haspowe
 
 
 Route::group(['middleware' => ['auth', 'authorised', 'verified', 'LoggedUser']], function () {
-
     /**
      * Backend Entry routes
      */
@@ -90,4 +89,5 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified', 'LoggedUser']],
     Route::post('/users/plannotification', 'UserController@planNotification');
     Route::post('/users/deletenotification', 'UserController@deletePlannedNotification');
     Route::post('/users/cleanuplastnotification', 'UserController@cleanupNotifications');
+    Route::get('/user/profile', 'UserController@show')->name('userprofile');
 });

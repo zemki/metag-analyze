@@ -97,7 +97,6 @@ class ProjectCasesController extends Controller
                     }
                     array_push($inputEntry['inputs'], (object)$tempEntryInputs);
                 } else {
-                    
                     # scale
                     $tempEntryInputs['id'] = $entry['id'];
                     $tempEntryInputs['name'] = $answer;
@@ -175,7 +174,8 @@ class ProjectCasesController extends Controller
             $user = auth()->user();
             $case = $project->addCase(request('name'), 'value:0|days:0|lastDay:' . Carbon::now()->subDay());
         } else {
-            $emails = explode(',', request('email'));
+            $emails = Helper::multiexplode(array(";", ","," "), request('email'));
+
 
             $invalidEmails = [];
 
@@ -197,7 +197,7 @@ class ProjectCasesController extends Controller
                 $user = User::createIfDoesNotExists(User::firstOrNew(['email' => $singleEmail]));
                 $case = $project->addCase(request('name'), request('duration'));
                 $case->addUser($user);
-                $message .= $user->email . ' has been invited. \n';
+                $message .= $user->email . " has been invited. \n";
             }
 
             foreach ($project->getInputs() as $object) {

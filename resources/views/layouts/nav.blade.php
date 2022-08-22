@@ -60,7 +60,8 @@
                                 @if(auth()->user()->isAdmin())
                                 <a title="User Profile"
                                     class="flex w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                    role="menuitem" tabindex="-1" id="user-menu-item-0" href="#">{{__('User
+                                    role="menuitem" tabindex="-1" id="user-menu-item-0"
+                                    href="{{ route('userprofile') }}">{{__('User
                   Profile')}}</a>
                                 @endif
                                 <form id="logout-form" action="{{ route('logout') }}" method="POST"

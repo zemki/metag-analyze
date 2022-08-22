@@ -32,8 +32,8 @@ window.Vue.config.devtools = true;
 Vue.config.debug = true;
 Vue.config.silent = false;
 Vue.use(Buefy);
-Vue.use(VueTailwind);
 
+Vue.use(moment);
 Vue.prototype.trans = (key) =>
   _.isUndefined(window.trans[key]) ? key : window.trans[key];
 
@@ -247,6 +247,7 @@ window.app = new Vue({
     },
   },
   data: {
+    moment: moment,
     selectedProjectPage: 0,
     disabledDates: [
       function (date) {
