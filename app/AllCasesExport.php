@@ -44,7 +44,7 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
                 $ifCaseHasAdditionalInputs = $project->inputs !== "[]";
                 if ($ifCaseHasAdditionalInputs) {
                     list($jsonInputs, $tempValuesArray) = $this->formatAssociativeNamesAccordingToHeadings($entry, $tempValuesArray);
-
+                    
                     //$tempValuesArray[self::ENTRY_ID] = $entry->id;
                     $tempValuesArray = $this->printValuesInArray($project, $jsonInputs, $tempValuesArray);
                 }
@@ -148,11 +148,11 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
      */
     private function formatMultipleAndOneChoiceValues(&$tempValuesArray, $input, array $index, $projectInputNames, $key, $numberOfAnswersByQuestion): void
     {
-        if (!is_array($input)) {
-            $input = [$input];
-        }
-
         if (!is_null($input)) {
+            if (!is_array($input)) {
+                $input = [$input];
+            }
+
             foreach ($input as $value) {
                 $index[array_search($value, $projectInputNames[$key])] = $value;
             }
