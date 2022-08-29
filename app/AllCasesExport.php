@@ -130,6 +130,7 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
 
             if ($questionIsMultipleOrOneChoice) {
                 if (is_string($input)) {
+                    dump($input);
                     ddd($key);
                 }
 
