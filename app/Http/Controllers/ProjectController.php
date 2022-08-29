@@ -154,7 +154,6 @@ class ProjectController extends Controller
             'name' => self::REQUIRED,
             'description' => self::REQUIRED,
             'created_by' => self::REQUIRED,
-            'is_locked' => self::NULLABLE,
             self::INPUTS => self::NULLABLE
         ]);
         $inputs = json_decode($attributes[self::INPUTS]);

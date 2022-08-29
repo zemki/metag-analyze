@@ -815,7 +815,9 @@ window.app = new Vue({
       }
 
       this.newproject.inputs[questionindex].numberofanswer =
-        this.newproject.inputs[questionindex].answers.length - 1;
+        this.newproject.inputs[questionindex].answers.filter(
+          (item) => item
+        ).length;
     },
     createUUID(length) {
       let dt = new Date().getTime();
