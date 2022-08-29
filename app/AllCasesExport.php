@@ -126,6 +126,10 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
             $index = [];
             $numberOfAnswersByQuestion = $project->getNumberOfAnswersByQuestion($key);
             $questionIsMultipleOrOneChoice = $numberOfAnswersByQuestion > 0;
+            if (is_string($input)) {
+                ddd($key);
+            }
+
             if ($questionIsMultipleOrOneChoice) {
                 $this->formatMultipleAndOneChoiceValues($tempValuesArray, $input, $index, $projectInputNames, $key, $numberOfAnswersByQuestion);
             } else {
@@ -148,10 +152,6 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
     private function formatMultipleAndOneChoiceValues(&$tempValuesArray, $input, array $index, $projectInputNames, $key, $numberOfAnswersByQuestion): void
     {
         if (!is_null($input)) {
-            if (is_string($input)) {
-                ddd($input);
-            }
-
             foreach ($input as $value) {
                 $index[array_search($value, $projectInputNames[$key])] = $value;
             }
