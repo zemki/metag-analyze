@@ -148,7 +148,9 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
     private function formatMultipleAndOneChoiceValues(&$tempValuesArray, $input, array $index, $projectInputNames, $key, $numberOfAnswersByQuestion): void
     {
         if (!is_null($input)) {
-            ddd($input);
+            if (is_string($input)) {
+                ddd($input);
+            }
 
             foreach ($input as $value) {
                 $index[array_search($value, $projectInputNames[$key])] = $value;
