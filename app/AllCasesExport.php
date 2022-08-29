@@ -36,17 +36,15 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
         }
         $allEntries = [];
         foreach ($project->cases as $case) {
-
             if (!$case->isConsultable()) {
                 continue;
             }
             foreach ($case->entries as $entry) {
-
                 $tempValuesArray = [];
                 $ifCaseHasAdditionalInputs = $project->inputs !== "[]";
                 if ($ifCaseHasAdditionalInputs) {
                     list($jsonInputs, $tempValuesArray) = $this->formatAssociativeNamesAccordingToHeadings($entry, $tempValuesArray);
-
+                    
                     //$tempValuesArray[self::ENTRY_ID] = $entry->id;
                     $tempValuesArray = $this->printValuesInArray($project, $jsonInputs, $tempValuesArray);
                 }
@@ -61,8 +59,6 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
 
                 array_push($allEntries, $tempValuesArray);
             }
-
-
         }
         return $allEntries;
     }
@@ -86,15 +82,12 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
         foreach ($this->headings() as $heading) {
             // print the question as many times as you have answer to question
             if (count(array_keys($this->headings(), $heading)) > 1) {
-
                 $tempValuesArray[$heading] = [];
                 foreach (array_keys($this->headings(), $heading) as $key) {
                     array_push($tempValuesArray[$heading], $this->headings()[$key]);
-
                 }
 
-                //$tempValuesArray = array_unique($tempValuesArray[$heading]);
-
+            //$tempValuesArray = array_unique($tempValuesArray[$heading]);
             } else {
                 $tempValuesArray[$heading] = "";
             }
@@ -133,6 +126,7 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
             $index = [];
             $numberOfAnswersByQuestion = $project->getNumberOfAnswersByQuestion($key);
             $questionIsMultipleOrOneChoice = $numberOfAnswersByQuestion > 0;
+
             if ($questionIsMultipleOrOneChoice) {
                 $this->formatMultipleAndOneChoiceValues($tempValuesArray, $input, $index, $projectInputNames, $key, $numberOfAnswersByQuestion);
             } else {
@@ -155,6 +149,9 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
     private function formatMultipleAndOneChoiceValues(&$tempValuesArray, $input, array $index, $projectInputNames, $key, $numberOfAnswersByQuestion): void
     {
         if (!is_null($input)) {
+            if (!is_array($input)) {
+                $input = [$input];
+            }
 
             foreach ($input as $value) {
                 $index[array_search($value, $projectInputNames[$key])] = $value;
@@ -169,7 +166,6 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
                 }
             }
         } else {
-
             // print empty value
             for ($i = 0; $i < $numberOfAnswersByQuestion; $i++) {
                 $tempValuesArray[$key][$i] = [];
