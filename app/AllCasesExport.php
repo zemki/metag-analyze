@@ -126,7 +126,7 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
             $index = [];
             $numberOfAnswersByQuestion = $project->getNumberOfAnswersByQuestion($key);
             $questionIsMultipleOrOneChoice = $numberOfAnswersByQuestion > 0;
-            if (!is_string($input)) {
+            if (is_array($input)) {
                 dump($input);
                 ddd($key);
             }
