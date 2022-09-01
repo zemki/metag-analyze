@@ -13,7 +13,6 @@ import Vuex from "vuex";
 import store from "./store";
 import Vue from "vue";
 import _ from "lodash";
-import VueTailwind from "vue-tailwind";
 
 window.Vue = Vue;
 
