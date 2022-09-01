@@ -62,35 +62,35 @@
           name="inputs"
         />
 
-                                            <div
-                                                    class="relative flex flex-row w-64 h-10 mt-1 bg-transparent rounded-lg">
-                                                <button
-                                                :disabled="!editable"
-                                                        class="w-20 h-full text-gray-600 bg-gray-300 rounded-l outline-none cursor-pointer hover:text-gray-700 hover:bg-gray-400"
-                                                        @click.prevent="(projectData.ninputs >= 1) ? projectData.ninputs-- : projectData.ninputs">
-                                                    <span
-                                                            class="m-auto text-2xl font-thin">−</span>
-                                                </button>
-                                                <input
-                                                        v-model.number="projectData.ninputs"
-                                                        class="flex items-center w-full font-semibold text-center text-gray-700 bg-white outline-none focus:outline-none text-md hover:text-black focus:text-black md:text-basecursor-default"
-                                                        max="3"
-                                                        min="0"
-                                                        steps="!"
-                                                        name="inputs"
-                                                        id="ninputs"
-                                                        type="number"
-                                                        :disabled="!editable"
-                                                        
-                                                        value="0"></input>
-                                                <button
-                                                :disabled="!editable"
-                                                        class="w-20 h-full text-gray-600 bg-gray-300 rounded-r cursor-pointer hover:text-gray-700 hover:bg-gray-400"
-                                                        @click.prevent="(projectData.ninputs <= 2) ? projectData.ninputs++ : projectData.ninputs">
-                                                    <span
-                                                            class="m-auto text-2xl font-thin">+</span>
-                                                </button>
-                                            </div>
+              <div
+                      class="relative flex flex-row w-64 h-10 mt-1 bg-transparent rounded-lg">
+                  <button
+                  :disabled="!editable"
+                          class="w-20 h-full text-gray-600 bg-gray-300 rounded-l outline-none cursor-pointer hover:text-gray-700 hover:bg-gray-400"
+                          @click.prevent="(projectData.ninputs >= 1) ? projectData.ninputs-- : projectData.ninputs">
+                      <span
+                              class="m-auto text-2xl font-thin">−</span>
+                  </button>
+                  <input
+                          v-model.number="projectData.ninputs"
+                          class="flex items-center w-full font-semibold text-center text-gray-700 bg-white outline-none focus:outline-none text-md hover:text-black focus:text-black md:text-basecursor-default"
+                          max="3"
+                          min="0"
+                          steps="!"
+                          name="inputs"
+                          id="ninputs"
+                          type="number"
+                          :disabled="!editable"
+                          
+                          value="0"></input>
+                  <button
+                  :disabled="!editable"
+                          class="w-20 h-full text-gray-600 bg-gray-300 rounded-r cursor-pointer hover:text-gray-700 hover:bg-gray-400"
+                          @click.prevent="(projectData.ninputs <= 2) ? projectData.ninputs++ : projectData.ninputs">
+                      <span
+                              class="m-auto text-2xl font-thin">+</span>
+                  </button>
+              </div>
 
         
 

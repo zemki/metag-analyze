@@ -74,7 +74,7 @@ class ProjectController extends Controller
         if (auth()->user()->notOwnerNorInvited($project) && !auth()->user()->isAdmin()) {
             abort(403);
         }
-        $data['breadcrumb'] = [url('/') => 'Projects', '#' => substr($project->name, 0, 20) . '...'];
+        $data['breadcrumb'] = [ url($project->path()) => strlen($project->name) > 20 ? substr($project->name, 0, 20) . '...' : $project->name];
         //  $project->media = $project->media()->pluck('media.name')->toArray();
         //$data['data']['media'] = Media::all();
         $data[self::PROJECT] = $project;
@@ -143,7 +143,7 @@ class ProjectController extends Controller
         if (auth()->user()->hasReachMaxNumberOfProjecs()) {
             abort(403, 'You reached the max number of projects');
         }
-        $data['breadcrumb'] = [url('/') => 'Projects', '#' => 'Create'];
+        $data['breadcrumb'] = [ '#' => 'Create a Project'];
         return view('projects.create', $data);
     }
 

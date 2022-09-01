@@ -141,8 +141,7 @@ class ProjectCasesController extends Controller
             abort(403);
         }
         $data['breadcrumb'] = [
-            url('/') => 'Projects',
-            url($project->path()) => $project->name,
+            url($project->path()) => strlen($project->name) > 20 ? substr($project->name, 0, 20) . '...' : $project->name,
             '#' => 'Create Case'
         ];
         $data['project'] = $project;

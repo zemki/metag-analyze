@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-
+@include('layouts.breadcrumb')
 
 <div class="flex flex-col h-full">
     <div>

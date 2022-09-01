@@ -6,7 +6,7 @@
     <!-- Top section -->
     <div
       class="flex-shrink-0 bg-white border-b border-gray-200"
-      v-if="caseIsSet && selectedCase.consultable"
+      v-if="showCase"
     >
       <!-- Toolbar-->
       <div class="flex flex-col bg-blue-100">
@@ -116,10 +116,7 @@
       </div>
       <!-- Message header -->
     </div>
-    <div
-      class="flex-1 min-h-0 overflow-y-auto"
-      v-if="caseIsSet && selectedCase.consultable"
-    >
+    <div class="flex-1 min-h-0 overflow-y-auto" v-if="showCase">
       <div class="pt-5 pb-6 bg-white shadow">
         <div
           class="px-4 sm:flex sm:justify-between sm:items-baseline sm:px-6 lg:px-8"
@@ -134,17 +131,6 @@
               }}
             </p>
           </div>
-
-          <div
-            class="flex items-center justify-between mt-4 sm:mt-0 sm:ml-6 sm:flex-shrink-0 sm:justify-start"
-          >
-            <button
-              type="button"
-              class="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              {{ trans("Edit") }}
-            </button>
-          </div>
         </div>
       </div>
       <!-- Entries section-->
@@ -158,6 +144,15 @@
           :key="index"
           class="px-4 py-6 bg-white shadow sm:rounded-lg sm:px-6"
         >
+          <div class="flex justify-end sm:mt-0 sm:flex-shrink-0">
+            <button
+              v-if="showCase || selectedCase.entries.length > 0"
+              type="button"
+              class="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              {{ trans("Edit") }}
+            </button>
+          </div>
           <div class="sm:flex sm:justify-between sm:items-baseline">
             <h3 class="text-base font-medium">
               <span class="text-gray-500">{{ trans("Media") }}: </span>
@@ -207,7 +202,7 @@
               </div>
               <div v-else>
                 <p
-                  v-if="!indexJ == 'file'"
+                  v-if="indexJ !== 'file'"
                   class="first:mr-0 mr-2 inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-500"
                 >
                   {{ input }}
@@ -250,6 +245,9 @@ export default {
     this.casesIsSet = false;
   },
   computed: {
+    showCase() {
+      return this.caseIsSet && this.selectedCase.consultable;
+    },
     selectedCase: {
       // get and set the selected case
       get() {
