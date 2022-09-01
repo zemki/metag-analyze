@@ -13,6 +13,20 @@
           }}
         </h2>
       </div>
+
+      <div class="flex-1 min-w-0">
+        <label for="invitee" class="sr-only">{{
+          trans("Type email and press Enter")
+        }}</label>
+        <input
+          type="email"
+          name="invited"
+          class="input"
+          v-model="toInvite"
+          autocomplete="off"
+          @keydown.enter.prevent="invite"
+        />
+      </div>
       <div class="px-4 py-6 sm:px-6">
         <ul role="list" class="space-y-8">
           <li v-for="(user, index) in invitedlist" :key="index">
@@ -38,19 +52,6 @@
             </div>
           </li>
         </ul>
-      </div>
-      <div class="flex-1 min-w-0">
-        <label for="invitee" class="sr-only">{{
-          trans("Type email and press Enter")
-        }}</label>
-        <input
-          type="email"
-          name="invited"
-          class="input"
-          v-model="toInvite"
-          autocomplete="off"
-          @keydown.enter.prevent="invite"
-        />
       </div>
     </div>
   </section>

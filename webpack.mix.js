@@ -37,7 +37,7 @@ module.exports = {
 mix
   .js("resources/js/app.js", "public/js")
   .vue()
-  .extract(["vue", "axios", "bootstrap", "jquery", "lodash", "popper.js"])
+  .extract(["vue", "axios", "jquery", "lodash"])
 
   .version();
 
