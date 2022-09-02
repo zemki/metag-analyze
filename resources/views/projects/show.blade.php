@@ -35,7 +35,7 @@
 
                 <a href="#" @click="selectedProjectPage = 1"
                     :class="selectedProjectPage == 1? 'w-1/4 px-1 py-4 text-sm font-medium text-center text-black border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300' : 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'">
-                    {{__('Inputs')}} </a>
+                    {{__('Edit Project')}} </a>
 
                 <a href="#" @click="selectedProjectPage = 2"
                     :class="selectedProjectPage == 2? 'w-1/4 px-1 py-4 text-sm font-medium text-center text-black border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300' : 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'"

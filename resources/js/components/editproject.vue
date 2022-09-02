@@ -2,9 +2,9 @@
   <div class="p-2 space-y-8 bg-top divide-y-0">
     <div class="space-y-8 divide-y-0">
       <div>
-        <h3 class="text-lg font-medium leading-6 text-gray-900">{{trans('Inputs')}}</h3>
+        <h3 class="text-lg font-medium leading-6 text-gray-900">{{trans('Edit Project')}}</h3>
         <p class="mt-1 text-sm text-gray-500">
-          {{ trans("You can edit your project inputs here.") }}
+          {{ trans("You can edit your project here.") }}
         </p>
       </div>
 
@@ -116,7 +116,7 @@
 
   <label id="listbox-label" class="block text-sm font-medium text-gray-700"> {{trans('Type')}} </label>
   <div class="relative mt-1">
-    <button @click="showDropdownInputs(index)" type="button" class="relative w-full py-2 pl-3 pr-10 text-left bg-white border border-gray-300 rounded-md shadow-sm cursor-default focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" aria-haspopup="listbox" >
+    <button @click="showDropdownInputs(index)" type="button" :class="(projectData.inputs[index].type !== '') ? 'relative w-full py-2 pl-3 pr-10 text-left bg-white border border-gray-300 rounded-md shadow-sm cursor-default focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm':'relative w-full py-4 pl-3 pr-10 text-left bg-white border border-gray-300 rounded-md shadow-sm cursor-default focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm'" aria-haspopup="listbox" >
       <span class="block truncate" > {{projectData.inputs[index].type}}  </span>
       <span class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
         <!-- Heroicon name: solid/selector -->
