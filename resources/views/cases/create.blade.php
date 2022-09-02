@@ -123,6 +123,38 @@
 
         </div>
     </div>
+    <div class="relative flex items-start my-2">
+        <div class="flex items-center h-5">
+            <input v-model="newcase.sendanywayemail" name="sendanywayemail" type="checkbox" name="backendCase"
+                class="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500">
+        </div>
+        <div class="ml-3 text-sm">
+            <label for="comments"
+                class="font-medium text-gray-700">{{__('If the user is already registered, send anyway an email to notify for a new case')}}</label>
+
+        </div>
+    </div>
+    <div class="relative block my-2" v-if="newcase.sendanywayemail">
+
+        <label for="user"
+            class="block text-sm font-medium text-gray-700">{{__("Subject, otherwise will send 'New Case on Metag'")}}
+        </label>
+        <div class="mt-1">
+            <input type="text" name="sendanywayemailsubject" id="sendanywayemailsubject" autocomplete="off"
+                class="block w-full px-4 py-2 leading-normal bg-white border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring">
+        </div>
+    </div>
+
+    <div class="relative block my-2" v-if="newcase.sendanywayemail">
+
+        <label for="sendanywayemailmessage"
+            class="block text-sm font-medium text-gray-700">{{__("Message, otherwise will send 'You have been added to a new case, please login in Metag to check it out.'")}}
+        </label>
+        <div class="mt-1">
+            <input type="text" name="sendanywayemailmessage" id="sendanywayemailmessage" autocomplete="off"
+                class="block w-full px-4 py-2 leading-normal bg-white border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring">
+        </div>
+    </div>
 
     <div class="mt-6">
         <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
@@ -144,7 +176,7 @@
                             {{__('An email will be sent to not registered users.')}}
                         </p>
                         <p class="mt-5 text-base text-gray-500">
-                            {{__('If the user is already registered, there is not communication and the user cna just login.')}}
+                            {{__('If the user is already registered, there is no communication and the user can just login.')}}
                         </p>
                         <p class="mt-5 text-base text-gray-500">
                             {{__('Please check beforehand if the user was already assigned to a case with the same email.')}}

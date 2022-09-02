@@ -81,7 +81,7 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified', 'LoggedUser']],
     /**
      * User Routes
      */
-    Route::post('/users', 'UserController@store')->name('users');
+    
     Route::post('/users/password/reset', 'Auth\ForgotPasswordController@SendsPasswordResetEmailFromCasesList');
     Route::post('/users/exist', 'UserController@userExists');
     Route::post('/users/subscribe', 'UserController@addToNewsletter');

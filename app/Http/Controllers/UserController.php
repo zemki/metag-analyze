@@ -54,31 +54,6 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        request()->validate(
-            [self::EMAIL => 'required']
-        );
-        $email = request(self::EMAIL);
-        $user = User::firstOrNew([self::EMAIL => $email]);
-        if (!$user->exists) {
-            $user->email = request(self::EMAIL);
-            $role = Role::where('id', '=', request('role'))->first();
-            $user->password = bcrypt(Helper::random_str(60));
-            $user->password_token = bcrypt(Helper::random_str(60));
-            $user->api_token = Helper::random_str(60);
-            $user->save();
-            $user->roles()->sync($role);
-            Mail::to($user->email)->send(new VerificationEmail($user, $request->emailtext ? $request->emailtext : config('utilities.emailDefaultText')));
-        }
-        if (request('assignToCase')) {
-            $project = Project::where('id', '=', request('project'))->firstOrFail();
-            $case = $project->addCase(request('caseName'), request('duration'));
-            $case->addUser($user);
-        }
-        if (!$user->exists) {
-            return redirect()->back()->with('message', $user->email . ' will receive an email to set the password.');
-        } else {
-            return redirect()->back()->with('message', $user->email . ' was invited to the case.');
-        }
     }
 
      /**

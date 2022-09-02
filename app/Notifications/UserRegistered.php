@@ -18,7 +18,6 @@ class UserRegistered extends Notification
      */
     public function __construct($details)
     {
-
         $this->email = $details['email'];
         $this->users =  User::all()->count();
     }
