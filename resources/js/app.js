@@ -794,29 +794,28 @@ window.app = new Vue({
         this.newproject.media.splice(index, 1);
       }
     },
-    handleAdditionalInputs(questionindex, answerindex, answer) {
-      const isLastElement =
-        answerindex + 1 ===
-        this.newproject.inputs[questionindex].answers.length;
-      const shiftKey = 16;
+    showDropdownInputs: function (index) {
+      var element = document.getElementById("type" + index);
 
-      if (lastPressedKey === shiftKey) return;
+      element.classList.toggle("hidden");
+      this.$forceUpdate();
+    },
+    handleAdditionalInputs(questionindex, answerindex, answer) {
+      let isLastElement =
+        answerindex + 1 == this.newproject.inputs[questionindex].answers.length;
+
       if (isLastElement) {
-        if (answer !== "") {
+        if (answer != "")
           this.newproject.inputs[questionindex].answers.push("");
-        }
       }
-      // this.newproject.inputs[questionindex].id = this.createUUID(16);
-      const tabKey = 9;
-      const middleElementRemoved = answerindex !== 0 && answer == "";
-      if (middleElementRemoved && lastPressedKey !== tabKey) {
+
+      let middleElementRemoved = answerindex != 0 && answer == "";
+      if (middleElementRemoved) {
         this.newproject.inputs[questionindex].answers.splice(answerindex, 1);
       }
 
       this.newproject.inputs[questionindex].numberofanswer =
-        this.newproject.inputs[questionindex].answers.filter(
-          (item) => item
-        ).length;
+        this.newproject.inputs[questionindex].answers.length - 1;
     },
     createUUID(length) {
       let dt = new Date().getTime();
