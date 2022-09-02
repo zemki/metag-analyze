@@ -274,12 +274,14 @@ window.app = new Vue({
         message: "",
         value: "",
       },
+
       minDate: new Date(),
       backendcase: false,
       inputLength: {
         name: 200,
       },
       response: "",
+      sendanywayemail: false,
     },
     newproject: {
       name: "",

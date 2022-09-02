@@ -20,6 +20,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Redirector;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use App\Notifications\notifyUserforNewCaseWhenAlreadyRegistered;
 
 class ProjectCasesController extends Controller
 {
@@ -193,7 +194,7 @@ class ProjectCasesController extends Controller
             $emailArray = Helper::multiexplode(array(";", ","," "), $emailInput);
             
             foreach ($emailArray as $singleEmail) {
-                $user = User::createIfDoesNotExists(User::firstOrNew(['email' => $singleEmail]));
+                $user = User::createIfDoesNotExists(User::firstOrNew(['email' => $singleEmail]), request('sendanywayemail'), request('sendanywayemailsubject'), request('sendanywayemailmessage'));
                 $case = $project->addCase(request('name'), request('duration'));
                 $case->addUser($user);
                 $message .= $user->email . " has been invited. \n";
@@ -208,6 +209,10 @@ class ProjectCasesController extends Controller
                     ])->save();
                 }
             }
+        }
+
+        if (request('sendanywayemail') == true) {
+            //send a email to remind the user is assigned to a new case
         }
         
         return redirect($project->path())->with(['message' => $message,'message_type' => 'success']);
