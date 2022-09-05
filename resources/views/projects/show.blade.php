@@ -109,7 +109,8 @@
                             </ul>
                         </nav>
                     </aside>
-                    <selected-case :cases="selectedCase" ref="selectedcase">
+
+                    <selected-case :projectinputs="{{$project->inputs}}" :cases="selectedCase" ref="selectedcase">
                     </selected-case>
                 </main>
             </div>

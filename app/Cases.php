@@ -132,7 +132,6 @@ class Cases extends Model
 
                     if ($project_input['name'] === $key) {
                         array_push($inputValues, [self::VALUE => $index, "type" => $project_input['type'], "name" => $key, "start" => $entry["begin"], "end" => $entry["end"]]);
-                        ray($inputValues);
                     }
                 }
             }
@@ -145,9 +144,6 @@ class Cases extends Model
         foreach ($availableInputs as $availableInput) {
             self::formatInputValues($data, $availableInput, $availableOptions, $inputValues);
             foreach ($inputValues as $inputValue) {
-                ray($inputValue['type']);
-                ray($availableInput);
-                ray($inputValue);
                 $inputIsUsedInEntries = $inputValue['type'] == $availableInput && $inputValue != null;
                 if ($inputIsUsedInEntries) {
                     if ($inputValue['type'] === "audio recording") {

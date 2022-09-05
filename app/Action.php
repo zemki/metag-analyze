@@ -38,7 +38,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Action extends Model
 {
-    Use SoftDeletes;
+    use SoftDeletes;
     /**
      * @var array
      */
