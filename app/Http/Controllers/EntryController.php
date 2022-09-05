@@ -13,10 +13,8 @@ use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Contracts\View\Factory;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\View\View;
-use Illuminate\Support\Facades\Log;
 
 class EntryController extends Controller
 {
@@ -65,7 +63,6 @@ class EntryController extends Controller
                 return response('You are not authorized!', 403);
             } else {
                 if (request()->has('audio') && !empty(request()->input('audio'))) {
-
                     // save file!
                     $filename = "";
                     Files::storeEntryFile(request()->input('audio'), 'audio', $case->project, $case, $entry, $filename);
@@ -82,6 +79,11 @@ class EntryController extends Controller
     }
 
 
+    /**
+     * @param Entry $entry
+     * @param Cases   $case
+     * @return ResponseFactory|Response
+     */
 
     public function update(Cases $case, Entry $entry)
     {
