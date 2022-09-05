@@ -12,6 +12,6 @@ class EntryPolicy
 
     public function update(User $user, Cases $cases)
     {
-        return $user->is($cases->user);
+        return ($case->isConsultable() && ($user->is($cases->project->created_by) || $user->is($c)) || $user->is($cases->user);
     }
 }

@@ -103,6 +103,7 @@ class ProjectController extends Controller
             // parse the lastday: string in the duration field, delimited by '|'
             
             $case->consultable = $case->isConsultable() && !$case->notYetStarted();
+            $case->backend = $case->isBackend();
 
             // check the inputs in the entries of the case, if it contains the file property, resolve it to the file address
             $case->entries->map(function ($entry) use ($case) {

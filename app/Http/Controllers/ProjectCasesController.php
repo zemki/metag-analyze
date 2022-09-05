@@ -173,6 +173,7 @@ class ProjectCasesController extends Controller
         if (request('backendCase')) {
             $user = auth()->user();
             $case = $project->addCase(request('name'), 'value:0|days:0|lastDay:' . Carbon::now()->subDay());
+            $message = __("backend case created.");
         } else {
             $emails = Helper::multiexplode(array(";", ","," "), request('email'));
 
