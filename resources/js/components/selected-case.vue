@@ -20,7 +20,9 @@
                 <span class="inline-flex sm:shadow-sm">
                   <a
                     :href="distinctPath()"
-                    v-if="selectedCase.entries.length > 0"
+                    v-if="
+                      selectedCase.entries.length > 0 || selectedCase.backend
+                    "
                   >
                     <button
                       type="button"

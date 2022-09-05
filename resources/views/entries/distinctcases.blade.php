@@ -136,9 +136,9 @@
             <th class="px-4 py-2">{{__('End')}}</th>
             <th class="px-6 py-2">{{__('Inputs')}}</th>
             <th class="px-3 py-2">{{__('Media')}}</th>
-            @if($case->isBackend())
+
             <th class="px-3 py-2">{{__('Actions')}}</th>
-            @endif
+
         </tr>
     </thead>
     <tbody>
@@ -169,7 +169,7 @@
             </td>
 
             <td class="px-3 py-2 border">{{$entry->media_id}}</td>
-            @if($case->isBackend())
+
             <td class="px-3 py-2 border">
 
                 <a href="#" @click="toggleEntryModal({{$entry}},{{$project->inputs}})"
@@ -187,7 +187,7 @@
                 </a>
 
             </td>
-            @endif
+
         </tr>
         @endforeach
     </tbody>
