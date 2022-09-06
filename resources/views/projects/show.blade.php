@@ -27,7 +27,7 @@
                 all data</button>
         </div>
 
-        <div class="mb-6 border-b border-gray-200">
+        <div class="border-b border-gray-200">
             <nav class="flex -mb-px" aria-label="Tabs">
                 <a href="#" @click="selectedProjectPage = 0"
                     :class="selectedProjectPage == 0? 'w-1/4 px-1 py-4 text-sm font-medium text-center text-black border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300' : 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'">
@@ -68,7 +68,12 @@
                                                     {{$case->name}}
                                                 </p>
                                                 <p class="w-64 text-sm text-gray-500 break-words">
-                                                    {{$case->user? $case->user->email : 'no user assigned'}}
+                                                    {{$case->user? $case->user->email : __('No user assigned')}}
+                                                </p>
+                                                </p>
+                                                <p
+                                                    class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-blue-100 text-blue-700">
+                                                    {{$case->isBackend() ? __('Backend') :''}}
                                                 </p>
                                             </a>
                                         </div>

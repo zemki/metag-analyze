@@ -47,6 +47,7 @@ class EntryController extends Controller
         ]);
 
         $isComingFromBackend = is_numeric($attributes[self::MEDIA_ID]);
+        
         if ($isComingFromBackend) {
             $attributes[self::INPUTS] = json_encode($attributes[self::INPUTS]);
         } else {
@@ -99,10 +100,16 @@ class EntryController extends Controller
             $attributes[self::MEDIA_ID] = Media::firstOrCreate(['name' => $attributes[self::MEDIA_ID]])->id;
         }
         $oldInputs = $entry->inputs;
+
         $attributes[self::INPUTS] = json_encode($attributes[self::INPUTS]);
-        
+        $oldEntry = $entry->replicate();
         $entry->update($attributes);
         $entry->save();
+        if ($case->isConsultable() && !array_key_exists('firstValue', json_decode($oldInputs, true))) {
+            $entry->update(['inputs->firstValue' => $oldEntry]);
+        }
+
+       
 
 
         if (request()->hasHeader('x-file-token') && request()->header('x-file-token') !== "0") {

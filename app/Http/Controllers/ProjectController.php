@@ -122,6 +122,10 @@ class ProjectController extends Controller
                         }
                     }
                 }
+                if (array_key_exists('firstValue', $entry->inputs)) {
+                    $temp = $entry->inputs['firstValue'];
+                    $entry->mediaforFirstValue = Media::where('id', '=', $temp['media_id'])->first() ?  Media::where('id', '=', $temp['media_id'])->first()->name : '';
+                }
             });
         }
 
