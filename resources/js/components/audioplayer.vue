@@ -9,11 +9,6 @@
     <div class="w-full px-1 my-1 overflow-hidden">
       <p class="text-base font-bold">{{ formattedName }}</p>
     </div>
-    <p
-      class="w-auto p-1 m-auto text-base text-center text-white bg-blue-500 rounded"
-    >
-      {{ file.entry ? file.entry.media_id : "" }}
-    </p>
 
     <div class="w-full px-1 mt-1 mb-2 overflow-hidden">
       <p class="text-xs">{{ date }}</p>
