@@ -307,18 +307,6 @@ window.app = new Vue({
         inputs: {},
       },
     },
-    editentry: {
-      id: 0,
-      case_id: 0,
-      inputs: {},
-      modal: false,
-      data: {
-        start: new Date(),
-        end: new Date(new Date().setMinutes(new Date().getMinutes() + 1)),
-        media_id: "",
-        inputs: {},
-      },
-    },
     registration: {
       password: null,
       password_length: 0,
@@ -383,21 +371,6 @@ window.app = new Vue({
     updateSelectedCase(cases) {
       this.selectedCase = cases;
       this.$refs.selectedcase.forceRender(cases);
-    },
-    newentrydateselected(edit = "") {
-      if (edit === "") {
-        this.newentry.data.end = new Date(
-          new Date(this.newentry.data.start).setMinutes(
-            new Date(this.newentry.data.start).getMinutes() + 5
-          )
-        );
-      } else {
-        this.editentry.data.end = new Date(
-          new Date(this.editentry.data.start).setMinutes(
-            new Date(this.editentry.data.start).getMinutes() + 5
-          )
-        );
-      }
     },
     iWantNewsletter(will) {
       const subscribed = will === "true";
