@@ -14,17 +14,19 @@
         <div class="relative z-0 inline-flex mx-auto my-2 rounded-md">
             <a href="{{url($project->path().'/cases/new')}}">
                 <button type="button"
-                    class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">Create
-                    Case</button>
+                    class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                    {{__('Create Case')}}</button>
             </a>
             <a href="{{url($project->path().'/notifications')}}">
                 <button type="button"
-                    class="relative inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">Notification
-                    Center</button>
+                    class="relative inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                    {{__('Notification Center')}}</button>
             </a>
-            <button type="button"
-                class="relative inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">Download
-                all data</button>
+            <a href="{{url($project->path().'/export')}}" title="{{__('from cases that are already closed.')}}">
+                <button type="button"
+                    class="relative inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                    {{__('Download all data')}}</button>
+            </a>
         </div>
 
         <div class="border-b border-gray-200">
@@ -100,6 +102,20 @@
                                                 :
                                                 {{ $case->lastDay() == "" ? __('Case not started by the user') : $case->lastDay() }}
                                                 @endif</time>
+
+
+
+                                            @if($case->isConsultable() && $case->entries()->count() > 0)
+                                            <a href="{{url('cases/'.$case->id.'/export')}}" target="_blank"><button
+                                                    type="button"
+                                                    @click="confirmdeletecase(productionUrl + '/cases/' + {{$case->id}})"
+                                                    class="relative items-center px-2.5 py-1.5 text-sm font-medium text-white bg-blue-500 border rounded-md flex focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600">
+                                                    <span>{{__('Download Case Data as xlsx')}}</span>
+                                                </button>
+
+                                            </a>
+
+                                            @endif
                                             <button type="button"
                                                 @click="confirmdeletecase(productionUrl + '/cases/' + {{$case->id}})"
                                                 class="relative items-center px-2.5 py-1.5 text-sm font-medium text-white bg-red-500 border rounded-md flex focus:z-10 focus:outline-none focus:ring-1 focus:ring-red-600 focus:border-red-600">

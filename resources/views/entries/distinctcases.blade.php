@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+@include('layouts.breadcrumb')
 <!--Modal-->
 <div class="fixed top-0 left-0 flex items-center justify-center w-full h-auto opacity-0 pointer-events-none modal"
     v-show="editentry.modal">
@@ -148,6 +149,7 @@
             <td class="px-4 py-2 border">{{date('d.m.Y H:i:s', strtotime($entry->end))}}</td>
             <td class="px-6 py-2 border">
                 @foreach($entry->inputs as $key => $input)
+
                 <div class="inline-block">
                     <div class="inline font-bold">
                         {{$key}}
@@ -158,7 +160,9 @@
                         {{$answer}}
                         @endforeach
                         @else
+                        @if($key !== 'firstValue')
                         {{$input}}
+                        @endif
                         @endif
 
                     </div>
