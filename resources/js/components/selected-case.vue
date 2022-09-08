@@ -25,7 +25,12 @@
           >
             <div>
               <div class="flex items-center justify-between pb-3">
-                <p class="text-2xl font-bold">{{ trans("Edit Entry") }}</p>
+                <p class="text-2xl font-bold" v-if="actuallysave">
+                  {{ trans("Add Entry") }}
+                </p>
+                <p class="text-2xl font-bold" v-else-if="!actuallysave">
+                  {{ trans("Edit Entry") }}
+                </p>
                 <div @click="toggleEntryModal()" class="z-50 cursor-pointer">
                   <svg
                     class="text-black fill-current"
@@ -270,13 +275,26 @@
               }}
             </p>
           </div>
+          <div
+            class="flex justify-end sm:mt-0 sm:flex-shrink-0"
+            v-if="selectedCase.backend"
+          >
+            <button
+              v-if="showCase"
+              type="button"
+              @click="toggleEntryModal()"
+              class="w-full justify-center inline-flex items-center px-2.5 py-1.5 border border-transparent font-medium text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              {{ trans("Add new entry") }}
+            </button>
+          </div>
         </div>
       </div>
       <div class="bg-white">
         <div class="px-4 text-center sm:flex">
           <div class="sm:w-0 sm:flex-1">
             <h2 id="message-heading" class="text-lg font-medium text-gray-900">
-              {{ trans("ENTRIES") }}
+              {{ trans("ENTRIES") }} - {{ selectedCase.entries.length }}
             </h2>
           </div>
         </div>
@@ -528,6 +546,7 @@ export default {
         case_id: 0,
         inputs: {},
         modal: false,
+        actuallysave: false,
         data: {
           start: new Date(),
           end: new Date(new Date().setMinutes(new Date().getMinutes() + 1)),
@@ -637,6 +656,44 @@ export default {
   },
   created() {},
   methods: {
+    entrySaveAndClose() {
+      if (this.MandatoryNewEntry()) {
+        this.$buefy.snackbar.open(this.trans("Check your mandatory entries."));
+        return;
+      }
+
+      const self = this;
+      window.axios
+        .post(
+          `${window.location.origin + this.productionUrl}/cases/${
+            this.editentry.case_id
+          }/entries`,
+          {
+            case_id: this.editentry.case_id,
+            inputs: this.editentry.data.inputs,
+            begin: moment(this.editentry.data.start).format(
+              "YYYY-MM-DD HH:mm:ss.SSSSSS"
+            ),
+            end: moment(this.editentry.data.end).format(
+              "YYYY-MM-DD HH:mm:ss.SSSSSS"
+            ),
+            media_id: this.editentry.data.media_id,
+          }
+        )
+        .then((response) => {
+          self.$buefy.snackbar.open(self.trans("Entry successfully sent."));
+        })
+        .catch((error) => {
+          self.$buefy.snackbar.open(
+            self.trans(
+              "There it was an error during the request - refresh page and try again"
+            )
+          );
+        });
+
+      this.toggleModal();
+      this.editentry.data = {};
+    },
     MandatoryNewEntry() {
       const self = this;
       return (
@@ -661,34 +718,40 @@ export default {
       }
 
       const self = this;
-      window.axios
-        .patch(
-          `${window.location.origin + this.productionUrl}/cases/${
-            this.editentry.case_id
-          }/entries/${this.editentry.id}`,
-          {
-            case_id: this.editentry.case_id,
-            inputs: this.editentry.data.inputs,
-            begin: moment(this.editentry.data.start).format(
-              "YYYY-MM-DD HH:mm:ss.SSSSSS"
-            ),
-            end: moment(this.editentry.data.end).format(
-              "YYYY-MM-DD HH:mm:ss.SSSSSS"
-            ),
-            media_id: this.editentry.data.media,
-          }
-        )
-        .then((response) => {
-          self.$buefy.snackbar.open(self.trans("Entry successfully updated."));
-          setTimeout(() => window.location.reload(), 500);
-        })
-        .catch((error) => {
-          self.$buefy.snackbar.open(
-            self.trans(
-              "There it was an error during the request - double check your data or contact the support."
-            )
-          );
-        });
+      if (actuallysave) {
+        this.entrySaveAndClose();
+      } else {
+        window.axios
+          .patch(
+            `${window.location.origin + this.productionUrl}/cases/${
+              this.editentry.case_id
+            }/entries/${this.editentry.id}`,
+            {
+              case_id: this.editentry.case_id,
+              inputs: this.editentry.data.inputs,
+              begin: moment(this.editentry.data.start).format(
+                "YYYY-MM-DD HH:mm:ss.SSSSSS"
+              ),
+              end: moment(this.editentry.data.end).format(
+                "YYYY-MM-DD HH:mm:ss.SSSSSS"
+              ),
+              media_id: this.editentry.data.media,
+            }
+          )
+          .then((response) => {
+            self.$buefy.snackbar.open(
+              self.trans("Entry successfully updated.")
+            );
+            setTimeout(() => window.location.reload(), 500);
+          })
+          .catch((error) => {
+            self.$buefy.snackbar.open(
+              self.trans(
+                "There it was an error during the request - double check your data or contact the support."
+              )
+            );
+          });
+      }
     },
     toggleEntryModal(
       entry = {
@@ -715,6 +778,9 @@ export default {
           .add(moment(entry.end).utcOffset(), "minutes")
           .toISOString()
           .replace("Z", "");
+      } else {
+        this.editentry.actuallysave = true;
+        this.editentry.inputs = this.projectinputs;
       }
       this.editentry.modal = !this.editentry.modal;
       const body = document.querySelector("body");
