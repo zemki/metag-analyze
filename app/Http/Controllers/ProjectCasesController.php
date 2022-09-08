@@ -262,7 +262,8 @@ class ProjectCasesController extends Controller
             abort(403, __('you can\'t see the data of this project.'));
         }
         $headings = $this->getProjectInputHeadings($case->project);
-        return (new CasesExport($case->id, $headings))->download('case ' . $case->name . '.xlsx');
+        
+        return (new CasesExport($case->id, $headings))->download('case.xlsx');
     }
 
     /**
@@ -352,9 +353,10 @@ class ProjectCasesController extends Controller
         }
         $data['breadcrumb'] = [
             url('/') => 'Metag',
-            url('/') => 'Projects',
+            
             $slug . $project->path() => $project->name,
-            $slug . $case->path() => substr($case->name, 0, 15) . '...'
+            $slug . $case->path() => strlen($case->name) > 20 ? substr($case->name, 0, 20) . '...' : $case->name,
+            '#' => 'Graph'
         ];
         return $data;
     }

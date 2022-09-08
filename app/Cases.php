@@ -125,6 +125,9 @@ class Cases extends Model
             $inputs = json_decode($entry[self::INPUTS], true);
             $project_inputs = json_decode($entry[self::PR_INPUTS], true);
             foreach ($inputs as $key => $index) {
+                if ($key == "firstValue") {
+                    continue;
+                }
                 foreach ($project_inputs as $project_input) {
                     if ($key === "file") {
                         $project_input['name'] = "file";

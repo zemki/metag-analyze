@@ -123,6 +123,10 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
             $projectInputNames[$name] = $project->getAnswersByQuestion($name);
         }
         foreach ($jsonInputs as $key => $input) {
+            if ($key === "firstValue") {
+                continue;
+            }
+
             $index = [];
             $numberOfAnswersByQuestion = $project->getNumberOfAnswersByQuestion($key);
             $questionIsMultipleOrOneChoice = $numberOfAnswersByQuestion > 0;

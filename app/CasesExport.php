@@ -52,18 +52,24 @@ class CasesExport implements FromCollection, WithMapping, WithHeadings
                     foreach (array_keys($this->headings(), $heading) as $key) {
                         array_push($tempValuesArray[$heading], $this->headings()[$key]);
                     }
-                    //$tempValuesArray = array_unique($tempValuesArray[$heading]);
+                //$tempValuesArray = array_unique($tempValuesArray[$heading]);
                 } else {
                     $tempValuesArray[$heading] = "";
                 }
             }
             $tempValuesArray["#"] = $entry->id;
             foreach ($jsonInputs as $key => $input) {
+                if ($key === "firstValue") {
+                    continue;
+                }
                 $index = [];
                 $numberOfAnswersByQuestion = $project->getNumberOfAnswersByQuestion($key);
                 if ($numberOfAnswersByQuestion > 0) {
-
                     if ($input != null) {
+                        if (!is_array($input)) {
+                            $input = [$input];
+                        }
+
                         foreach ($input as $value) {
                             $index[array_search($value, $projectInputNames[$key])] = $value;
                         }
@@ -89,6 +95,7 @@ class CasesExport implements FromCollection, WithMapping, WithHeadings
         $tempValuesArray["media"] = Media::where('id', $entry->media_id)->first()->name;
         $tempValuesArray["start"] = $entry->begin;
         $tempValuesArray["end"] = $entry->end;
+        
         return Arr::flatten($tempValuesArray);
     }
 
