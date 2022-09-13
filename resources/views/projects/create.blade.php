@@ -45,10 +45,12 @@
                 <div class="mt-1">
                     <textarea name="description" v-model="newproject.description" rows="3" id="description"
                         class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                        <span
-                                :class="newproject.inputLength.description <= newproject.description.length ? 'text-red-600 text-xs w-auto inline-flex float-right' : 'text-xs text-gray-500 w-auto inline-flex float-right'">aaaaa @{{newproject.inputLength.description - newproject.description.length}}
-                                / @{{newproject.inputLength.description}}</span>
+
               </textarea>
+                    <span
+                        :class="newproject.inputLength.description <= newproject.description.length ? 'text-red-600 text-xs w-auto inline-flex float-right' : 'text-xs text-gray-500 w-auto inline-flex float-right'">
+                        @{{newproject.inputLength.description - newproject.description.length}}
+                        / @{{newproject.inputLength.description}}</span>
                 </div>
             </div>
         </div>
@@ -179,7 +181,7 @@
         <input type="hidden" :value="JSON.stringify(newproject.inputs)" name="inputs">
 
         <button
-            class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-500 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">{{trans('Create Project')}}</button>
+            class="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">{{trans('Create Project')}}</button>
 
 
     </div>

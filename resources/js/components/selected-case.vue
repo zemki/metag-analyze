@@ -379,17 +379,24 @@
                 </p>
               </div>
             </div>
-            <div class="w-full mx-auto" v-if="entry.inputs.firstValue">
+            <div
+              class="w-full mx-auto border border-blue-100 border-solid"
+              v-if="entry.inputs.firstValue"
+            >
               <div class="overflow-hidden rounded">
                 <!-- accordion-tab  -->
                 <div class="outline-none group accordion-section" tabindex="1">
                   <div
-                    class="relative flex items-center justify-between px-4 py-3 pr-10 transition duration-500 bg-white cursor-pointer group ease"
+                    class="relative flex items-center justify-between px-4 py-3 pr-10 transition duration-500 bg-blue-100 cursor-pointer group ease"
                   >
                     <div
                       class="transition duration-500 group-focus:text-gray-800 ease"
                     >
-                      {{ trans("Show First entry submitted by user") }}
+                      {{
+                        trans(
+                          "Click to show first entry submitted by user on "
+                        ) + entry.created_at_readable
+                      }}
                     </div>
                     <div
                       class="absolute top-0 right-0 inline-flex items-center justify-center w-8 h-8 mt-2 mb-auto ml-auto mr-2 transition duration-500 transform ease group-focus:-rotate-180"
@@ -509,11 +516,35 @@
       </ul>
     </div>
     <div v-else-if="!selectedCase.consultable" class="max-w-xl mx-auto">
-      <h3 class="text-3xl font-extrabold text-gray-900 sm:tracking-tight">
-        {{
-          trans("Case is not consultable because the user is entering entries")
-        }}
-      </h3>
+      <div class="p-4 mt-2 rounded-md bg-blue-50">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <!-- Heroicon name: mini/information-circle -->
+            <svg
+              class="w-5 h-5 text-blue-400"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M19 10.5a8.5 8.5 0 11-17 0 8.5 8.5 0 0117 0zM8.25 9.75A.75.75 0 019 9h.253a1.75 1.75 0 011.709 2.13l-.46 2.066a.25.25 0 00.245.304H11a.75.75 0 010 1.5h-.253a1.75 1.75 0 01-1.709-2.13l.46-2.066a.25.25 0 00-.245-.304H9a.75.75 0 01-.75-.75zM10 7a1 1 0 100-2 1 1 0 000 2z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </div>
+          <div class="flex-1 ml-3 md:flex md:justify-between">
+            <p class="text-sm text-blue-700">
+              {{
+                trans(
+                  "Case is not consultable because the user is entering entries"
+                )
+              }}
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 </template>
@@ -566,6 +597,11 @@ export default {
       get() {
         if (this.cases && this.cases.name) {
           this.cases.entries.forEach((entry) => {
+            this.$set(
+              entry,
+              "created_at_readable",
+              moment(entry.created_at).format("DD.MM.YYYY H:m:ss")
+            );
             if (typeof entry.inputs !== "object") {
               entry.inputs = JSON.parse(entry.inputs);
             }
@@ -610,6 +646,11 @@ export default {
       set(newCase) {
         if (newCase && newCase.name) {
           newCase.entries.forEach((entry) => {
+            this.$set(
+              entry,
+              "created_at_readable",
+              moment(entry.created_at).format("DD.MM.YYYY H:m:ss")
+            );
             entry.inputs = JSON.parse(entry.inputs);
             if (entry.inputs.file) {
               this.$set(
@@ -714,7 +755,7 @@ export default {
       }
 
       const self = this;
-      if (actuallysave) {
+      if (this.editentry.actuallysave) {
         this.entrySaveAndClose();
       } else {
         window.axios

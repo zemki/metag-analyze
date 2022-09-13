@@ -9,7 +9,7 @@
             <h1 class="text-4xl font-extrabold text-gray-900 sm:text-5xl sm:tracking-tight lg:text-6xl">
                 {{$project->name}}
             </h1>
-            <p class="mt-5 text-xl text-gray-500">{{$project->description}}</p>
+            <p class="mt-5 text-xl text-gray-500 break-words">{{$project->description}}</p>
         </div>
         <div class="relative z-0 inline-flex mx-auto my-2 rounded-md">
             <a href="{{url($project->path().'/cases/new')}}">
@@ -65,7 +65,7 @@
                                     <div class="flex justify-between space-x-3">
                                         <div class="flex-1 w-1/2 min-w-0">
                                             <span class="absolute inset-0" aria-hidden="true"></span>
-                                            <p class="text-sm font-medium text-gray-900 truncate">
+                                            <p class="text-sm font-medium text-gray-900 word-break">
                                                 {{$case->name}}
                                             </p>
                                             <p class="w-64 text-sm text-gray-500 break-words">

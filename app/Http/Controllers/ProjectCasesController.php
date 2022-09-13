@@ -193,10 +193,23 @@ class ProjectCasesController extends Controller
             $emailInput = request('email');
             
             $emailArray = Helper::multiexplode(array(";", ","," "), $emailInput);
-            
+            $i=0;
             foreach ($emailArray as $singleEmail) {
+                $i++;
+                if (request('sequentialNumbers')) {
+                    $caseName = request('name'). " " . $i;
+                } else {
+                    $caseName = request('name');
+                }
+                
+
+                if ((str_contains(request('name'), '{email}'))) {
+                    $caseName = str_replace('{email}', $singleEmail, request('name'));
+                }
+
+
                 $user = User::createIfDoesNotExists(User::firstOrNew(['email' => $singleEmail]), request('sendanywayemail'), request('sendanywayemailsubject'), request('sendanywayemailmessage'));
-                $case = $project->addCase(request('name'), request('duration'));
+                $case = $project->addCase($caseName, request('duration'));
                 $case->addUser($user);
                 $message .= $user->email . " has been invited. \n";
             }

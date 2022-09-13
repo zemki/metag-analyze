@@ -253,6 +253,20 @@ window.app = new Vue({
         return new Date(date) <= new Date();
       },
     ],
+    editentry: {
+      id: 0,
+      case_id: 0,
+      inputs: {},
+      modal: false,
+      actuallysave: false,
+      data: {
+        start: new Date(),
+        end: new Date(new Date().setMinutes(new Date().getMinutes() + 1)),
+        media_id: "",
+        media: "",
+        inputs: {},
+      },
+    },
     selectedCase: {},
     mainNotification: true,
     lastPressedKey: "",
