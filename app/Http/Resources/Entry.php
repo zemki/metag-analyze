@@ -16,6 +16,9 @@ class Entry extends JsonResource
     public function toArray($request)
     {
         {
+            $inputs = json_decode($this->inputs, true);
+            unset($inputs["firstValue"]);
+
             return [
             'id' => $this->id,
             'begin' => $this->begin,

@@ -54,7 +54,7 @@
                 <!-- Main area -->
                 <main class="flex-1 min-w-0 xl:flex">
                     <!-- Cases list-->
-                    <aside class="inline-block xl:block xl:flex-shrink-0 xl:order-first">
+                    <aside class="inline-block w-1/2 xl:block xl:flex-shrink-0 xl:order-first">
                         <nav aria-label="Cases list" class="flex-1 min-h-0 overflow-y-auto">
 
                             <ul role="list" class="border-b border-gray-200 divide-y divide-gray-200">
@@ -64,20 +64,19 @@
                                     class="relative px-6 py-5 bg-white even:bg-slate-50 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-blue-600">
                                     <div class="flex justify-between space-x-3">
                                         <div class="flex-1 w-1/2 min-w-0">
-                                            <a href="#" class="block focus:outline-none">
-                                                <span class="absolute inset-0" aria-hidden="true"></span>
-                                                <p class="text-sm font-medium text-gray-900 truncate">
-                                                    {{$case->name}}
-                                                </p>
-                                                <p class="w-64 text-sm text-gray-500 break-words">
-                                                    {{$case->user? $case->user->email : __('No user assigned')}}
-                                                </p>
-                                                </p>
-                                                <p
-                                                    class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-blue-100 text-blue-700">
-                                                    {{$case->isBackend() ? __('Backend') :''}}
-                                                </p>
-                                            </a>
+                                            <span class="absolute inset-0" aria-hidden="true"></span>
+                                            <p class="text-sm font-medium text-gray-900 truncate">
+                                                {{$case->name}}
+                                            </p>
+                                            <p class="w-64 text-sm text-gray-500 break-words">
+                                                {{$case->user? $case->user->email : __('No user assigned')}}
+                                            </p>
+                                            </p>
+                                            <p
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-blue-100 text-blue-700">
+                                                {{$case->isBackend() ? __('Backend') :''}}
+                                            </p>
+
                                         </div>
                                         <div class="block w-1/2">
                                             <time datetime="2021-01-27T16:35"
@@ -131,7 +130,8 @@
                         </nav>
                     </aside>
 
-                    <selected-case :projectinputs="{{$project->inputs}}" :cases="selectedCase" ref="selectedcase">
+                    <selected-case class="w-1/2" :projectinputs="{{$project->inputs}}" :cases="selectedCase"
+                        ref="selectedcase">
                     </selected-case>
                 </main>
             </div>

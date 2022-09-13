@@ -1,13 +1,13 @@
 <template>
   <div>
     <div
-      class="pt-4 pb-4 pl-4 pr-6 border border-gray-200 sm:pl-6 lg:pl-8 xl:pl-6 xl:pt-6 xl:border-t-0"
+      class="pt-4 pb-4 pl-4 pr-2 border border-gray-200 sm:pl-6 lg:pl-8 xl:pl-6 xl:pt-6 xl:border-t-0"
     >
       <div class="flex items-start">
         <h1 class="flex-1 text-lg font-medium">
           {{ trans("Projects") }}
         </h1>
-        <div class="flex justify-center flex-1">
+        <div class="flex justify-end flex-1">
           <div
             v-if="invitesExists"
             class="relative flex items-center w-auto mr-4 align-center"
@@ -28,7 +28,7 @@
               >
             </div>
           </div>
-          <div class="w-2/3 px-2 lg:px-6">
+          <div class="w-2/3">
             <label for="search studies" class="sr-only">{{
               trans("Search Studies")
             }}</label>
@@ -69,12 +69,12 @@
       class="relative border border-gray-200 divide-y divide-gray-200"
     >
       <li
-        class="relative py-5 pl-4 pr-6 hover:bg-gray-50 sm:py-6 sm:pl-6 lg:pl-8 xl:pl-6"
+        class="relative py-5 pl-4 pr-2 hover:bg-gray-50 sm:py-6 sm:pl-6 lg:pl-8 xl:pl-6"
         v-for="(Project, index) in filteredList"
         :key="index"
       >
         <div class="flex items-center justify-between space-x-4">
-          <div class="min-w-0 space-y-3">
+          <div class="w-2/3 min-w-0 space-y-3">
             <div class="flex items-center space-x-3">
               <h2 class="text-xl font-medium">
                 <span class="absolute inset-0" aria-hidden="true"></span>
@@ -82,11 +82,11 @@
               </h2>
             </div>
 
-            <span
-              class="mt-2 text-sm font-medium text-gray-500 truncate group-hover:text-gray-900"
+            <div
+              class="w-full mt-2 text-sm font-medium text-gray-500 break-words group-hover:text-gray-900"
             >
-              {{ Project.description }}</span
-            >
+              {{ Project.description }}
+            </div>
 
             <p class="mb-2 text-sm font-bold break-words whitespace-normal">
               {{ trans("Info:") }}
@@ -112,7 +112,9 @@
             </span>
           </div>
 
-          <div class="z-20 flex-col items-end space-y-3 flex-shrink-1 sm:flex">
+          <div
+            class="z-20 flex-col items-end w-1/3 space-y-3 flex-shrink-1 sm:flex"
+          >
             <a
               title="manage Project"
               :href="productionUrl + '/projects/' + Project.id"

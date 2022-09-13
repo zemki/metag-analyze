@@ -130,10 +130,6 @@
                 </div>
 
                 <div class="sm:col-span-3" v-if="value.type === 'one choice'">
-                  <label
-                    for="country"
-                    class="block text-sm font-medium text-gray-700"
-                    >Country</label
                   >
                   <div class="mt-1">
                     <select
