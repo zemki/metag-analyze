@@ -237,6 +237,18 @@ class ProjectController extends Controller
             'is_locked' => 'nullable ',
             self::INPUTS => self::NULLABLE
         ]);
+        $decodedAttributes = json_decode($attributes[self::INPUTS], true);
+        foreach ($decodedAttributes as $input => $value) {
+            ray($input);
+            ray($value);
+            $decodedAttributes[$input]['answers'] = array_filter($decodedAttributes[$input]['answers'], fn ($v) => !is_null($v) && $v !== '');
+            ray($decodedAttributes);
+        }
+        ray($decodedAttributes);
+
+        $attributes[self::INPUTS] = json_encode($decodedAttributes);
+        ray($attributes[self::INPUTS]);
+        
         $project->update($attributes);
         $project->save();
         $this->syncMedia($media, $project, $mToSync);

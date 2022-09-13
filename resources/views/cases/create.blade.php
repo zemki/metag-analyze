@@ -119,10 +119,23 @@
                 class="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500">
         </div>
         <div class="ml-3 text-sm">
-            <label for="comments" class="font-medium text-gray-700">{{__('This is a backend case')}}</label>
+            <label for="backendCase" class="font-medium text-gray-700">{{__('This is a backend case')}}</label>
 
         </div>
     </div>
+
+    <div class="relative flex items-start my-2">
+        <div class="flex items-center h-5">
+            <input title="{{__('Append sequential numbers at the end of the case name.')}}" name="sequentialNumbers"
+                type="checkbox" class="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500">
+        </div>
+        <div class="ml-3 text-sm">
+            <label for="sequentialNumbers"
+                class="font-medium text-gray-700">{{__('Append sequential numbers at the end of the case')}}</label>
+
+        </div>
+    </div>
+
     <div class="relative flex items-start my-2">
         <div class="flex items-center h-5">
             <input v-model="newcase.sendanywayemail" name="sendanywayemail" type="checkbox" name="backendCase"
