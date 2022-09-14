@@ -54,11 +54,16 @@ class ProjectController extends Controller
             $data['invites'][$key]['authiscreator'] = false;
             $data['invites'][$key]['editable'] =  false;
             $data['invites'][$key]['owner'] =   $data['invites'][$key]->creator()->email;
-            foreach ($data['projects'][$key]->cases() as $cases) {
-                $data['projects'][$key]['entries'] += $cases->entries()->count();
+            
+            
+            if (count($data['projects']) > 0) {
+                foreach ($data['projects'][$key]->cases() as $cases) {
+                    $data['projects'][$key]['entries'] += $cases->entries()->count();
+                }
             }
         }
         $data['invited_projects'] =  auth()->user()->invites;
+        $data['projects'] = $data['projects']->merge($data['invites']);
         $data = $this->checkNewsletter($data);
 
         return view('projects.index', $data);
@@ -196,6 +201,7 @@ class ProjectController extends Controller
             }
         }
         $data['invited_projects'] =  auth()->user()->invites;
+        $data['projects'] = $data['projects']->merge($data['invites']);
 
         $data[self::MESSAGE] = "project created!";
         $data = $this->checkNewsletter($data);
@@ -294,11 +300,16 @@ class ProjectController extends Controller
             $data['invites'][$key]['authiscreator'] = false;
             $data['invites'][$key]['editable'] =  false;
             $data['invites'][$key]['owner'] =   $data['invites'][$key]->creator()->email;
-            foreach ($projects[$key]->cases() as $cases) {
-                $projects[$key]['entries'] += $cases->entries()->count();
+            
+            if (count($projects) > 0) {
+                foreach ($projects[$key]->cases() as $cases) {
+                    $projects[$key]['entries'] += $cases->entries()->count();
+                }
             }
         }
         $data['invited_projects'] =  auth()->user()->invites;
+        $projects = $projects->merge($data['invites']);
+
 
         return response()->json([self::MESSAGE => 'Project Deleted.','projects' => $projects], 200);
     }

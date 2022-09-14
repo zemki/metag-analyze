@@ -32,20 +32,18 @@
         <div class="border-b border-gray-200">
             <nav class="flex -mb-px" aria-label="Tabs">
                 <a href="#" @click="selectedProjectPage = 0"
-                    :class="selectedProjectPage == 0? 'w-1/4 px-1 py-4 text-sm font-medium text-center text-black border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300' : 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'">
+                    :class="selectedProjectPage == 0? 'w-1/3 px-1 py-4 text-sm font-medium text-center text-black border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300' : 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'">
                     {{__('Cases')}} </a>
 
                 <a href="#" @click="selectedProjectPage = 1"
-                    :class="selectedProjectPage == 1? 'w-1/4 px-1 py-4 text-sm font-medium text-center text-black border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300' : 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'">
+                    :class="selectedProjectPage == 1? 'w-1/3 px-1 py-4 text-sm font-medium text-center text-black border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300' : 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'">
                     {{__('Edit Project')}} </a>
-
+                @if(auth()->user()->is($project->creator()))
                 <a href="#" @click="selectedProjectPage = 2"
-                    :class="selectedProjectPage == 2? 'w-1/4 px-1 py-4 text-sm font-medium text-center text-black border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300' : 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'"
+                    :class="selectedProjectPage == 2? 'w-1/3 px-1 py-4 text-sm font-medium text-center text-black border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300' : 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'"
                     aria-current="page"> {{__('Invite Collaborator')}} </a>
+                @endif
 
-                <a href="#" @click="selectedProjectPage = 3"
-                    :class="selectedProjectPage == 3? 'w-1/4 px-1 py-4 text-sm font-medium text-center text-black border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300' : 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'">
-                    Users </a>
             </nav>
         </div>
         <div v-if="selectedProjectPage == 0">
@@ -57,11 +55,11 @@
                     <aside class="inline-block w-1/2 xl:block xl:flex-shrink-0 xl:order-first">
                         <nav aria-label="Cases list" class="flex-1 min-h-0 overflow-y-auto">
 
-                            <ul role="list" class="border-b border-gray-200 divide-y divide-gray-200">
+                            <ul role="list" class="border-b border-r-2 border-gray-200 divide-y divide-gray-200">
                                 @foreach($casesWithEntries as $case)
 
                                 <li @click="updateSelectedCase({{$case}})"
-                                    class="relative px-6 py-5 bg-white even:bg-slate-50 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-blue-600">
+                                    :class="selectedCase.id == {{$case->id}} ? 'relative px-6 py-5 bg-gray-300 ' : 'relative px-6 py-5 bg-white even:bg-slate-50 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-blue-600'">
                                     <div class="flex justify-between space-x-3">
                                         <div class="flex-1 w-1/2 min-w-0">
                                             <span class="absolute inset-0" aria-hidden="true"></span>

@@ -96,7 +96,7 @@
             </div>
         </div>
         @else
-        <projects-list projects="{{$projects->merge($invites)}}" user="{{auth()->user()}}"></projects-list>
+        <projects-list projects="{{$projects}}" user="{{auth()->user()}}"></projects-list>
         @endif
     </div>
 
