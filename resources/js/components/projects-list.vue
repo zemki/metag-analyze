@@ -189,21 +189,6 @@ export default {
   },
   created() {},
   methods: {
-    deleteProject(project, url) {
-      const self = this;
-      window.axios
-        .delete(url, { project })
-        .then((response) => {
-          self.$buefy.snackbar.open(response.data.message);
-
-          setTimeout(() => {
-            window.location = window.location.href;
-          }, 700);
-        })
-        .catch((error, message) => {
-          self.$buefy.snackbar.open(error.response.data.message);
-        });
-    },
     confirmLeaveProject: function (userToDetach, study) {
       let confirmDelete = this.$buefy.dialog.confirm({
         title: this.trans("Confirm Leave"),
