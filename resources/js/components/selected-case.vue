@@ -147,29 +147,18 @@
                   </div>
                 </div>
 
-                <div class="relative" v-if="value.type === 'scale'">
-                  <select
-                    v-model="editentry.data.inputs[value.name]"
-                    class="block w-full px-4 py-3 pr-8 leading-tight text-gray-700 bg-gray-200 border border-gray-200 appearance-none focus:outline-none focus:bg-white focus:border-gray-500"
-                  >
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                  </select>
-                  <div
-                    class="absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 pointer-events-none"
-                  >
-                    <svg
-                      class="w-4 h-4 fill-current"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
+                <div class="sm:col-span-3" v-if="value.type === 'scale'">
+                  <div class="mt-1">
+                    <select
+                      v-model="editentry.data.inputs[value.name]"
+                      class="block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     >
-                      <path
-                        d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
-                      />
-                    </svg>
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                      <option value="3">3</option>
+                      <option value="4">4</option>
+                      <option value="5">5</option>
+                    </select>
                   </div>
                 </div>
               </div>
