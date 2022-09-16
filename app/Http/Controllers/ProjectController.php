@@ -56,9 +56,9 @@ class ProjectController extends Controller
             $data['invites'][$key]['owner'] =   $data['invites'][$key]->creator()->email;
             
             
-            if (count($data['projects']) > 0) {
-                foreach ($data['projects'][$key]->cases() as $cases) {
-                    $data['projects'][$key]['entries'] += $cases->entries()->count();
+            if (count($data['invites']) > 0) {
+                foreach ($data['invites'][$key]->cases() as $cases) {
+                    $data['invites'][$key]['entries'] += $cases->entries()->count();
                 }
             }
         }
@@ -80,25 +80,10 @@ class ProjectController extends Controller
             abort(403);
         }
         $data['breadcrumb'] = [ url($project->path()) => strlen($project->name) > 20 ? substr($project->name, 0, 20) . '...' : $project->name];
-        //  $project->media = $project->media()->pluck('media.name')->toArray();
-        //$data['data']['media'] = Media::all();
         $data[self::PROJECT] = $project;
         $data[self::CASES] = $project->cases;
         $data['casesWithUsers'] = $project->cases()->with('user')->get();
         $data['casesWithEntries'] = $project->cases()->with('user', 'project', 'entries')->orderBy('created_at', 'desc')->get();
-        // $data['notifications'] = [];
-        // $data['plannedNotifications'] = [];
-        // foreach ($data['casesWithUsers'] as $cases) {
-        //     if (!$cases->isBackend()) {
-        //         $cases->notifications = $cases->notifications();
-        //         $cases->planned_notifications = $cases->plannedNotifications();
-        //         array_push($data['notifications'], $cases->notifications());
-        //         array_push($data['plannedNotifications'], $cases->plannedNotifications());
-        //         $cases->user->profile = $cases->user->profile;
-        //     }
-        // }
-        // $data['notifications'] = json_encode(Arr::flatten($data['notifications']));
-        // $data['plannedNotifications'] = json_encode(Arr::flatten($data['plannedNotifications']));
 
         foreach ($data['casesWithEntries'] as $case) {
             $case->entries->map(function ($entry) {
@@ -196,8 +181,8 @@ class ProjectController extends Controller
             $data['invites'][$key]['authiscreator'] = false;
             $data['invites'][$key]['editable'] =  false;
             $data['invites'][$key]['owner'] =   $data['invites'][$key]->creator()->email;
-            foreach ($data['projects'][$key]->cases() as $cases) {
-                $data['projects'][$key]['entries'] += $cases->entries()->count();
+            foreach ($data['invites'][$key]->cases() as $cases) {
+                $data['invites'][$key]['entries'] += $cases->entries()->count();
             }
         }
         $data['invited_projects'] =  auth()->user()->invites;
