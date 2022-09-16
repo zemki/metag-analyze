@@ -58,7 +58,7 @@
                   name="begin"
                   class="w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:shadow-outline"
                   v-model="editentry.data.start"
-                  @input="newentrydateselected('edit')"
+                  @input="editentrydateselected('edit')"
                 />
               </div>
               <div class="my-2">
@@ -96,7 +96,7 @@
               <div v-for="(value, index) in editentry.inputs" :key="index">
                 <label
                   v-if="value.type !== 'audio recording'"
-                  class="my-2 text-base font-bold tracking-wide text-gray-700 uppercase"
+                  class="pb-2 text-base font-bold tracking-wide text-gray-700 uppercase"
                   v-text="value.mandatory ? value.name + ' *' : value.name"
                 >
                 </label>
@@ -105,11 +105,11 @@
                   v-if="value.type === 'text'"
                   :name="'text' + value.name"
                   v-model="editentry.data.inputs[value.name]"
-                  class="block w-full px-4 py-2 leading-normal bg-white border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring"
+                  class="block w-full px-4 leading-normal bg-white border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring"
                 />
 
                 <div
-                  class="sm:col-span-3"
+                  class="pb-2 sm:col-span-3"
                   v-if="value.type === 'multiple choice'"
                 >
                   <div class="mt-1">
@@ -129,17 +129,24 @@
                   </div>
                 </div>
 
-                <div class="sm:col-span-3" v-if="value.type === 'one choice'">
-                  >
+                <div
+                  class="pb-2 sm:col-span-3"
+                  v-if="value.type === 'one choice'"
+                >
                   <div class="mt-1">
                     <select
                       v-model="editentry.data.inputs[value.name]"
+                      :value="Array.isArray(answer) ? answer[0] : answer"
                       class="block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     >
                       <option
                         v-for="(answer, indexA) in value.answers"
                         :key="indexA"
-                        :value="answer"
+                        :value="
+                          Array.isArray(editentry.data.inputs[value.name])
+                            ? [answer]
+                            : answer
+                        "
                       >
                         {{ answer }}
                       </option>
@@ -260,12 +267,12 @@
               }}
             </p>
           </div>
-          <div
-            class="flex justify-end sm:mt-0 sm:flex-shrink-0"
-            v-if="selectedCase.backend"
-          >
+          <div class="flex justify-end sm:mt-0 sm:flex-shrink-0">
+            <p class="flex w-full text-sm text-gray-500 word-break">
+              ID {{ selectedCase.id }}
+            </p>
             <button
-              v-if="showCase"
+              v-if="showCase && selectedCase.backend"
               type="button"
               @click="toggleEntryModal()"
               class="w-full justify-center inline-flex items-center px-2.5 py-1.5 border border-transparent font-medium text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -293,7 +300,7 @@
         <li
           v-for="(entry, index) in selectedCase.entries"
           :key="index"
-          class="px-2 py-4 bg-white sm:rounded-lg"
+          class="px-2 bg-white sm:rounded-lg"
         >
           <div class="flex justify-end w-full sm:mt-0 sm:flex-shrink-0">
             <button
@@ -499,6 +506,28 @@
                 </div>
                 <!-- accordion-tab -->
               </div>
+            </div>
+          </div>
+
+          <div class="relative">
+            <div class="absolute inset-0 flex items-center" aria-hidden="true">
+              <div class="w-full border-t border-gray-300"></div>
+            </div>
+            <div class="relative flex justify-center">
+              <span class="px-2 text-gray-500 bg-white">
+                <!-- Heroicon name: mini/plus -->
+                <svg
+                  class="w-5 h-5 text-gray-500"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z"
+                  />
+                </svg>
+              </span>
             </div>
           </div>
         </li>
@@ -815,11 +844,11 @@ export default {
       modal.classList.toggle("pointer-events-none");
       body.classList.toggle("modal-active");
     },
-    newentrydateselected(edit = "") {
+    editentrydateselected(edit = "") {
       if (edit === "") {
-        this.newentry.data.end = new Date(
-          new Date(this.newentry.data.start).setMinutes(
-            new Date(this.newentry.data.start).getMinutes() + 5
+        this.editentry.data.end = new Date(
+          new Date(this.editentry.data.start).setMinutes(
+            new Date(this.editentry.data.start).getMinutes() + 5
           )
         );
       } else {
