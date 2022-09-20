@@ -286,9 +286,9 @@ class ProjectController extends Controller
             $data['invites'][$key]['editable'] =  false;
             $data['invites'][$key]['owner'] =   $data['invites'][$key]->creator()->email;
             
-            if (count($projects) > 0) {
-                foreach ($projects[$key]->cases() as $cases) {
-                    $projects[$key]['entries'] += $cases->entries()->count();
+            if (count($data['invites'][$key]) > 0) {
+                foreach ($data['invites'][$key]->cases() as $cases) {
+                    $data['invites'][$key]['entries'] += $cases->entries()->count();
                 }
             }
         }
