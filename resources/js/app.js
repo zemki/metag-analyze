@@ -4,7 +4,7 @@
  * includes Vue and other libraries. It is a great starting point when
  * building robust, powerful web applications using Vue and Laravel.
  */
-
+import "alpinejs";
 import "./bootstrap";
 import Buefy from "buefy";
 import moment from "moment";
@@ -33,8 +33,14 @@ Vue.config.silent = false;
 Vue.use(Buefy);
 
 Vue.use(moment);
-Vue.prototype.trans = (key) =>
-  _.isUndefined(window.trans[key]) ? key : window.trans[key];
+Vue.prototype.trans = (key) => {
+  if (_.isUndefined(window.trans[key])) {
+    return key;
+  } else {
+    if (window.trans[key] === "") return key;
+    return window.trans[key];
+  }
+};
 
 Vue.mixin({
   data() {
