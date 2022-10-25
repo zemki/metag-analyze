@@ -26,9 +26,15 @@
     <script>
         window.trans = [];
         window.trans = <?php
-        $json_file = File::get(resource_path() . "/lang/" . App::getLocale() . '.json');
-        echo json_decode(json_encode($json_file, true));;
-        ?>;
+                    if(File::exists(resource_path() . "/lang/" . App::getLocale() . '.json'))
+                    {
+                        $json_file = File::get(resource_path() . "/lang/" . App::getLocale() . '.json');
+                        echo json_decode(json_encode($json_file, true));
+                    }
+                    else{
+                        echo "[]";
+                    }
+                    ?>;
     </script>
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
