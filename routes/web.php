@@ -14,6 +14,8 @@ use App\Http\Controllers\EntryController;
 
 Auth::routes(['verify' => true]);
 
+Route::lingua('translations');
+
 Route::get('/password/set', 'Auth\VerificationController@showresetpassword');
 Route::get('/setpassword', 'Auth\VerificationController@showresetpassword');
 Route::post('/password/new', 'Auth\VerificationController@newpassword');
