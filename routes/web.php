@@ -35,6 +35,11 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'verified', 'haspowe
 
 
 Route::group(['middleware' => ['auth', 'authorised', 'verified', 'LoggedUser']], function () {
+    Route::get('/verifyNewEmail', 'Auth\EmailChangeController@verify')->name('verifyNewEmail');
+    Route::post('/changeemail', 'Auth\EmailChangeController@change')->name('change');
+
+
+
     /**
      * Backend Entry routes
      */

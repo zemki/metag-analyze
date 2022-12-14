@@ -252,6 +252,11 @@ window.app = new Vue({
     },
   },
   data: {
+    newemail: {
+      valid_email: false,
+      email: "",
+      message: "",
+    },
     moment: moment,
     selectedProjectPage: 0,
     disabledDates: [
@@ -368,6 +373,55 @@ window.app = new Vue({
     },
   },
   methods: {
+    sendEmail() {
+      let self = this;
+      var re =
+        /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+      if (re.test(String(this.newemail.email).toLowerCase()))
+        this.newemail.valid_email = true;
+      else this.newemail.valid_email = false;
+
+      if (!this.newemail.valid_email) {
+        // add the class border-red-500 to the input with id newemail if it's not already there
+        if (
+          !document
+            .getElementById("newemail")
+            .classList.contains("border-red-500")
+        )
+          document.getElementById("newemail").classList.add("border-red-500");
+
+        return;
+      }
+      axios
+        .post("changeemail", { email: self.newemail.email })
+        .then((response) => {
+          // add the class border-red-500 to the input with id newemail if it's not already there
+          if (
+            document
+              .getElementById("newemail")
+              .classList.contains("border-red-500")
+          )
+            document
+              .getElementById("newemail")
+              .classList.remove("border-red-500");
+
+          self.newemail.message = response.data;
+          this.$forceUpdate();
+        })
+        .catch(function (error) {
+          self.newemail.message = error;
+        });
+    },
+    toggleModalChangeEmail() {
+      const body = document.querySelector("body");
+      const modal = document.querySelector(".modal");
+      modal.classList.toggle("opacity-0");
+      modal.classList.toggle("pointer-events-none");
+      body.classList.toggle("modal-active");
+
+      this.newemail.email = "";
+      this.newemail.message = "";
+    },
     catchOutsideClick(event, dropdown) {
       // When user clicks menu — do nothing
       if (dropdown == event.target) return false;
