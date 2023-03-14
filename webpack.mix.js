@@ -43,7 +43,7 @@ mix
 
 mix
   .sass("resources/sass/app.scss", "public/css", {
-    implementation: require("node-sass"),
+    implementation: require("sass"),
   })
   .options({
     processCssUrls: false,

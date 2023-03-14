@@ -5,6 +5,9 @@ namespace App\Providers;
 use Auth;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Laravel\Passport\Passport;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Cache\RateLimiting\Limit;
+
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -32,6 +35,7 @@ class AuthServiceProvider extends ServiceProvider
         Auth::viaRequest("api-token", function ($request) {
             return TokenGuard::findUser($request->api_user, $request->api_token);
         });
+
     }
 
     /**
