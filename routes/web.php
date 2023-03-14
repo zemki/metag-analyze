@@ -10,11 +10,9 @@
 |
 */
 
-use App\Http\Controllers\EntryController;
-
 Auth::routes(['verify' => true]);
 
-Route::lingua('translations');
+
 
 Route::get('/password/set', 'Auth\VerificationController@showresetpassword');
 Route::get('/setpassword', 'Auth\VerificationController@showresetpassword');
@@ -24,6 +22,8 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'verified', 'haspowe
     /**
      * Admin Routes
      */
+
+    Route::lingua('translations');
     Route::get('/', 'AdminController@index');
     Route::get('/users', 'AdminController@indexUsers');
     Route::get('/cases', 'AdminController@indexCases');

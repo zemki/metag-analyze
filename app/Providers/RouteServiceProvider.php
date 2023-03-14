@@ -5,6 +5,8 @@ namespace App\Providers;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Route;
 
+use Illuminate\Cache\RateLimiting\Limit;
+
 class RouteServiceProvider extends ServiceProvider
 {
     /**
@@ -58,5 +60,14 @@ class RouteServiceProvider extends ServiceProvider
         Route::middleware('web')
             ->namespace($this->namespace)
             ->group(base_path('routes/web.php'));
+    }
+
+    protected function configureRateLimiting()
+    {
+        $this->rateLimiter()->for('login', function ($request) {
+            return Limit::perMinutes(2, 1)->by($request->ip())->response(function () {
+                return response('Too many attempts. Try again after '.$this->rateLimiter()->availableIn, 429);
+            });
+        });
     }
 }

@@ -341,6 +341,7 @@ window.app = new Vue({
       contains_special_character: false,
       valid_password: false,
       email: "",
+      valid_email: true,
     },
     newuser: {
       role: 2,
@@ -718,6 +719,14 @@ window.app = new Vue({
       modal.classList.toggle("opacity-0");
       modal.classList.toggle("pointer-events-none");
       body.classList.toggle("modal-active");
+    },
+    checkEmail() {
+      let self = this;
+      var re =
+        /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+      if (re.test(String(this.registration.email).toLowerCase()))
+        this.registration.valid_email = true;
+      else this.registration.valid_email = false;
     },
     checkPassword() {
       this.registration.password_length = this.registration.password.length;

@@ -18,8 +18,8 @@
       <div class="-space-y-px rounded-md shadow-sm">
         <div>
           <label for="email-address" class="sr-only">{{ __('E-Mail Address') }}</label>
-          <input id="email-address" name="email" type="email" autocomplete="email" required
-            class="relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-none appearance-none focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+          <input id="email-address" name="email" type="email" autocomplete="email" required @input="checkEmail()" v-model="registration.email"
+            class="relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-none appearance-none focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" :class="{ 'border-rose-500': !registration.valid_email, 'border-2': !registration.valid_email }"
             placeholder="Email address">
         </div>
 
@@ -41,13 +41,13 @@
           <label for="password" class="sr-only">{{ __('Password') }}</label>
           <input id="password" type="password" v-model="registration.password" @input="checkPassword()" name="password"
             required autocomplete="new-password" required
-            class="{{ $errors->has('password') ? ' bg-red-100 text-white' : '' }} relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-none appearance-none rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+            class="{{ $errors->has('password') ? ' bg-red-100 text-black' : '' }} relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-none appearance-none rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
             placeholder="{{ __('Password') }}">
         </div>
         <div>
           <input id="password-confirm" type="password" autocomplete="new-password"
             placeholder="{{ __('Confirm Password') }}"
-            class="{{ $errors->has('password') ? ' bg-red-100 text-white' : '' }} relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-none appearance-none rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+            class="{{ $errors->has('password') ? ' bg-red-100 text-black' : '' }} relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-none appearance-none rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
             name="password_confirmation" required>
         </div>
         @if ($errors->has('email'))
@@ -80,8 +80,8 @@
               title="Privacy Policy">Privacy Policy</a>')!!}</p>
           <button type="submit"
             class="relative flex justify-center w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md group hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            :class="{'opacity-50 cursor-not-allowed opacity-75' : !this.registration.valid_password}"
-            :disabled="!this.registration.valid_password">
+            :class="{'opacity-50 cursor-not-allowed opacity-75' : !(this.registration.valid_password && this.registration.valid_email)}"
+            :disabled="!(this.registration.valid_password && this.registration.valid_email)">
             <span class="absolute inset-y-0 left-0 flex items-center pl-3">
               <!-- Heroicon name: solid/lock-closed -->
               <svg class="w-5 h-5 text-blue-500 group-hover:text-blue-400" xmlns="http://www.w3.org/2000/svg"
