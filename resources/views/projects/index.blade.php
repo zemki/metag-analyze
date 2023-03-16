@@ -14,7 +14,7 @@
                                     <img alt="{{__('Your Gravatar User Profile')}}" class="w-12 h-12 rounded-full"
                                         src="{{\Gravatar::get(Auth::user()->email)}}" alt="">
                                 </div>
-                                <div class="space-y-1">
+                                <div class="w-32 space-x-1 break-words">
                                     <div class="text-sm font-medium text-gray-900"><span
                                             class="sr-only">{{__('Your Email')}}</span>{{
                     Auth::user()->email }}</div>

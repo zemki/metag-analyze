@@ -54,12 +54,12 @@
                     <!-- Cases list-->
                     <aside class="inline-block w-1/2 xl:block xl:flex-shrink-0 xl:order-first">
                         <nav aria-label="Cases list" class="flex-1 min-h-0 overflow-y-auto">
-
+                            @if($casesWithEntries->count() > 0)
                             <ul role="list" class="border-b border-r-2 border-gray-200 divide-y divide-gray-200">
                                 @foreach($casesWithEntries as $case)
 
                                 <li @click="updateSelectedCase({{$case}})"
-                                    :class="selectedCase.id == {{$case->id}} ? 'relative px-6 py-5 bg-gray-300 ' : 'relative px-6 py-5 bg-white even:bg-slate-50 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-blue-600'">
+                                    :class="selectedCase.id == {{$case->id}} ? 'relative px-6 py-5 bg-gray-300 cursor-pointer' : 'relative px-6 py-5 bg-white even:bg-slate-50 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-blue-600 cursor-pointer'">
                                     <div class="flex justify-between space-x-3">
                                         <div class="flex-1 w-1/2 min-w-0">
                                             <span class="absolute inset-0" aria-hidden="true"></span>
@@ -125,6 +125,28 @@
                                 @endforeach
 
                             </ul>
+                            @else
+                            <div class="w-1/2 p-4 mt-4 rounded-md bg-blue-50">
+                                <div class="flex">
+                                    <div class="flex-shrink-0">
+                                        <svg class="w-5 h-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                            <path fill-rule="evenodd"
+                                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1 ml-3 md:flex md:justify-between">
+                                        <p class="text-sm text-blue-700">{{__("You don't have any case")}}</p>
+                                        <p class="mt-3 text-sm md:mt-0 md:ml-6">
+                                            <a href="{{url($project->path().'/cases/new')}}" class="font-medium text-blue-700 whitespace-nowrap hover:text-blue-600">
+                                                {{__('Create one')}}
+                                                <span aria-hidden="true"> &rarr;</span>
+                                            </a>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
                         </nav>
                     </aside>
 
