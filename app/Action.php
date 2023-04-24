@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \App\User|null $user
+ *
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Action newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Action newQuery()
  * @method static \Illuminate\Database\Query\Builder|\App\Action onlyTrashed()
@@ -34,11 +35,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Action whereUserId($value)
  * @method static \Illuminate\Database\Query\Builder|\App\Action withTrashed()
  * @method static \Illuminate\Database\Query\Builder|\App\Action withoutTrashed()
+ *
  * @mixin \Eloquent
  */
 class Action extends Model
 {
     use SoftDeletes;
+
     /**
      * @var array
      */

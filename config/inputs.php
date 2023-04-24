@@ -2,14 +2,13 @@
 
 return [
 
-    'available' =>
-        [
-            'text',
-            'multiple choice',
-            'one choice',
-            'scale',
-            'audio recording'
-        ],
+    'available' => [
+        'text',
+        'multiple choice',
+        'one choice',
+        'scale',
+        'audio recording',
+    ],
     'limit' => 10,
     'random' => 0,
     'example' => '[
@@ -23,6 +22,6 @@ return [
 			"type": "date",
 			"name": "When you bought it?"
 		}
-	]'
+	]',
 
 ];

@@ -10,8 +10,8 @@ class CheckGroup
 {
     /**
      * Handle an incoming request.
-     * @param Request $request
-     * @param Closure $next
+     *
+     * @param  Request  $request
      * @return mixed
      */
     public function handle($request, Closure $next)
@@ -19,6 +19,7 @@ class CheckGroup
         if (Auth::check() && Auth::user()->groups()->count() >= 1) {
             return $next($request);
         }
-        return redirect(route('new_group'))->with('message', "You must belong to a group to use Metag analyze.  If you think this is an error, contact the system admin.");
+
+        return redirect(route('new_group'))->with('message', 'You must belong to a group to use Metag analyze.  If you think this is an error, contact the system admin.');
     }
 }

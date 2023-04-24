@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -17,6 +18,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read int|null $entries_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Project[] $projects
  * @property-read int|null $projects_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Media newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Media newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Media query()
@@ -26,16 +28,20 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Media whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Media whereProperties($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Media whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class Media extends Model
 {
+    use HasFactory;
+
     protected $table = 'media';
+
     /**
      * @var array
      */
     protected $fillable = [
-        'name', 'description', 'properties'
+        'name', 'description', 'properties',
     ];
 
     public function path()

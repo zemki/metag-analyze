@@ -4,14 +4,11 @@ namespace App\Http\Controllers\Auth;
 
 use App\Helpers\Helper;
 use App\Http\Controllers\Controller;
-use App\Notifications\NotificationFromStaff;
-use App\Notifications\UserRegistered;
 use App\Role;
 use App\User;
 use Exception;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Validator;
 use Spatie\WebhookServer\WebhookCall;
 
@@ -28,14 +25,17 @@ class RegisterController extends Controller
     |
     */
     use RegistersUsers;
+
     /**
      * Where to redirect users after registration.
+     *
      * @var string
      */
     protected $redirectTo = '/';
 
     /**
      * Create a new controller instance.
+     *
      * @return void
      */
     public function __construct()
@@ -45,7 +45,7 @@ class RegisterController extends Controller
 
     /**
      * Get a validator for an incoming registration request.
-     * @param array $data
+     *
      * @return \Illuminate\Contracts\Validation\Validator
      */
     protected function validator(array $data)
@@ -58,8 +58,9 @@ class RegisterController extends Controller
 
     /**
      * Create a new user instance after a valid registration.
-     * @param array $data
+     *
      * @return User
+     *
      * @throws Exception
      */
     protected function create(array $data)
@@ -77,8 +78,7 @@ class RegisterController extends Controller
             $user->save();
             $user->roles()->sync($role);
 
-            if (!App::environment('local'))
-            {
+            if (! App::environment('local')) {
                 WebhookCall::create()
                     ->url(config('utilities.url_rc_registration'))
                     ->payload(['text' => 'User ' . $data['email'] . ' has registered on Metag Analyze. We have a total of ' . User::all()->count() . ' users!'])
@@ -89,5 +89,4 @@ class RegisterController extends Controller
             return $user;
         }
     }
-
 }

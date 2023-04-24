@@ -2,10 +2,10 @@
 
 namespace App;
 
-use File;
-use App\Cases;
 use App\Helpers\Helper;
 use DB;
+use File;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\DatabaseNotificationCollection;
 use JetBrains\PhpStorm\Pure;
@@ -24,6 +24,7 @@ use JetBrains\PhpStorm\Pure;
  * @property-read int|null                                              $entries_count
  * @property-read \App\Project                                          $project
  * @property-read \App\User|null                                        $user
+ *
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases query()
@@ -34,31 +35,46 @@ use JetBrains\PhpStorm\Pure;
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases whereProjectId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases whereUserId($value)
+ *
  * @mixin \Eloquent
+ *
  * @property string|null $file_token
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Files[] $files
  * @property-read int|null $files_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder|Cases whereFileToken($value)
  */
 class Cases extends Model
 {
-    protected const VALUE = "value";
-    protected const PR_INPUTS = "pr_inputs";
+    use HasFactory;
+
+    protected const VALUE = 'value';
+
+    protected const PR_INPUTS = 'pr_inputs';
+
     protected const ENTRIES = 'entries';
+
     protected const TITLE = 'title';
+
     protected const AVAILABLE = 'available';
+
     protected const INPUTS = 'inputs';
-    protected const MULTIPLE_CHOICE = "multiple choice";
-    protected const ONE_CHOICE = "one choice";
-    protected const SCALE = "scale";
+
+    protected const MULTIPLE_CHOICE = 'multiple choice';
+
+    protected const ONE_CHOICE = 'one choice';
+
+    protected const SCALE = 'scale';
+
     protected $table = 'cases';
+
     protected $guarded = [];
 
     public static function boot()
     {
         parent::boot();
         static::deleting(function ($case) {
-            if (!app()->runningInConsole() && $case->project->created_by === auth()->user()->id) {
+            if (! app()->runningInConsole() && $case->project->created_by === auth()->user()->id) {
                 foreach ($case->entries as $entry) {
                     $entry->delete();
                 }
@@ -74,10 +90,6 @@ class Cases extends Model
         });
     }
 
-    /**
-     * @param Cases $case
-     * @return array
-     */
     public static function getMediaValues(Cases $case): array
     {
         $mediaValues = [];
@@ -93,9 +105,10 @@ class Cases extends Model
             ->leftJoin('media', 'entries.media_id', '=', 'media.id')
             ->pluck('media.name')->unique()->toArray();
         foreach (array_map('array_values', $mediaEntries) as $media) {
-            array_push($mediaValues, [self::VALUE => $media[0], "start" => $media[1], "end" => $media[2]]);
+            array_push($mediaValues, [self::VALUE => $media[0], 'start' => $media[1], 'end' => $media[2]]);
         }
-        return array($mediaValues, $availableMedia);
+
+        return [$mediaValues, $availableMedia];
     }
 
     public function entries()
@@ -103,11 +116,6 @@ class Cases extends Model
         return $this->hasMany(Entry::class, 'case_id', 'id');
     }
 
-    /**
-     * @param Cases $case
-     * @param       $data
-     * @return array
-     */
     public static function getInputValues(Cases $case, &$data): array
     {
         $entries = $case->entries()
@@ -125,16 +133,16 @@ class Cases extends Model
             $inputs = json_decode($entry[self::INPUTS], true);
             $project_inputs = json_decode($entry[self::PR_INPUTS], true);
             foreach ($inputs as $key => $index) {
-                if ($key == "firstValue") {
+                if ($key == 'firstValue') {
                     continue;
                 }
                 foreach ($project_inputs as $project_input) {
-                    if ($key === "file") {
-                        $project_input['name'] = "file";
+                    if ($key === 'file') {
+                        $project_input['name'] = 'file';
                     }
 
                     if ($project_input['name'] === $key) {
-                        array_push($inputValues, [self::VALUE => $index, "type" => $project_input['type'], "name" => $key, "start" => $entry["begin"], "end" => $entry["end"]]);
+                        array_push($inputValues, [self::VALUE => $index, 'type' => $project_input['type'], 'name' => $key, 'start' => $entry['begin'], 'end' => $entry['end']]);
                     }
                 }
             }
@@ -149,26 +157,23 @@ class Cases extends Model
             foreach ($inputValues as $inputValue) {
                 $inputIsUsedInEntries = $inputValue['type'] == $availableInput && $inputValue != null;
                 if ($inputIsUsedInEntries) {
-                    if ($inputValue['type'] === "audio recording") {
-                        $inputValue['value'] = "File";
+                    if ($inputValue['type'] === 'audio recording') {
+                        $inputValue['value'] = 'File';
                     }
                     array_push($data['entries']['inputs'][$availableInput], $inputValue);
                 }
             }
         }
-        return array($availableInputs, $data);
+
+        return [$availableInputs, $data];
     }
 
     /**
      * Provide the available values for the default additional inputs
-     * @param       $data
-     * @param       $availableInput
-     * @param       $availableOptions
-     * @param array $inputValues
      */
     private static function formatInputValues(&$data, $availableInput, $availableOptions, array $inputValues): void
     {
-        $data[self::ENTRIES][self::INPUTS][$availableInput] = array();
+        $data[self::ENTRIES][self::INPUTS][$availableInput] = [];
         $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableInput;
         if ($availableInput === self::MULTIPLE_CHOICE) {
             $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableInput;
@@ -178,33 +183,32 @@ class Cases extends Model
             $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = $availableOptions[self::ONE_CHOICE]->answers;
             $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions[self::ONE_CHOICE]->name;
         } elseif ($availableInput === self::SCALE) {
-            $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = ["0", "1", "2", "3", "4", "5"];
+            $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = ['0', '1', '2', '3', '4', '5'];
             $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions[self::SCALE]->name;
-        } elseif ($availableInput === "text") {
+        } elseif ($availableInput === 'text') {
             $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = [];
-            $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions["text"]->name;
+            $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions['text']->name;
             // loop through the values you already have and make it part of the 'available'
             foreach ($inputValues as $inputValue) {
-                if ($inputValue['type'] === "text") {
+                if ($inputValue['type'] === 'text') {
                     array_push($data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE], $inputValue[self::VALUE]);
                 }
             }
-        } elseif ($availableInput === "audio recording") {
-            $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = ["File","No File"];
-            $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions["audio recording"]->name;
+        } elseif ($availableInput === 'audio recording') {
+            $data[self::ENTRIES][self::INPUTS][$availableInput][self::AVAILABLE] = ['File', 'No File'];
+            $data[self::ENTRIES][self::INPUTS][$availableInput][self::TITLE] = $availableOptions['audio recording']->name;
         }
     }
 
     /**
-     * @param int $datetime
-     * @param     $caseDuration
      * @return false|string
      */
     public static function calculateDuration(int $datetime, $caseDuration)
     {
-        $sub = substr($caseDuration, strpos($caseDuration, ":") + strlen(":"), strlen($caseDuration));
-        $realDuration = (int)substr($sub, 0, strpos($sub, "|"));
-        return date("d.m.Y", $datetime + $realDuration * 3600);
+        $sub = substr($caseDuration, strpos($caseDuration, ':') + strlen(':'), strlen($caseDuration));
+        $realDuration = (int) substr($sub, 0, strpos($sub, '|'));
+
+        return date('d.m.Y', $datetime + $realDuration * 3600);
     }
 
     public function project()
@@ -230,6 +234,7 @@ class Cases extends Model
     /**
      * assign a user to this case
      * this will be the user that fills the entries
+     *
      * @param $user user to assign to the case
      * @return User
      */
@@ -240,6 +245,7 @@ class Cases extends Model
         }
         $this->user()->associate($user);
         $this->save();
+
         return $user;
     }
 
@@ -250,27 +256,27 @@ class Cases extends Model
 
     /**
      * edit the case only if has no entries
-     * @return bool
      */
     public function isEditable(): bool
     {
-        return !$this->entries()->count() > 0;
+        return ! $this->entries()->count() > 0;
     }
 
     /**
      * Check whether right now is past the time of the last day
+     *
      * @return bool
      */
     public function isConsultable()
     {
         $timestampLastDay = strtotime($this->lastDay());
-        $now = strtotime(date("Y-m-d H:i:s"));
+        $now = strtotime(date('Y-m-d H:i:s'));
+
         return $timestampLastDay < $now;
     }
 
     /**
      * write the duration from the database value to a readable format
-     * @return string
      */
     public function lastDay(): string
     {
@@ -282,44 +288,38 @@ class Cases extends Model
      */
     public function notYetStarted()
     {
-        $now = strtotime(date("Y-m-d H:i:s"));
+        $now = strtotime(date('Y-m-d H:i:s'));
         $timestampFirstDay = strtotime($this->firstDay());
-        return $this->lastDay() == "" || ($now < $timestampFirstDay);
+
+        return $this->lastDay() == '' || ($now < $timestampFirstDay);
     }
 
     /**
      * write the duration from the database value to a readable format
-     * @return string
      */
-    #[Pure] public function firstDay(): string
-    {
+    #[Pure]
+ public function firstDay(): string
+ {
         return Helper::get_string_between($this->duration, 'firstDay:', '|') ?? Helper::get_string_between($this->duration, 'startDay:', '|');
     }
 
-    #[Pure] public function startDay(): string
-    {
+    #[Pure]
+ public function startDay(): string
+ {
         return Helper::get_string_between($this->duration, 'startDay:', '|');
     }
 
-    /**
-     * @return bool
-     */
-    #[Pure] public function isBackend(): bool
-    {
-        return (Helper::get_string_between($this->duration, 'value:', '|') == 0);
+    #[Pure]
+ public function isBackend(): bool
+ {
+        return Helper::get_string_between($this->duration, 'value:', '|') == 0;
     }
 
-    /**
-     * @return array|DatabaseNotificationCollection
-     */
     public function notifications(): array|DatabaseNotificationCollection
     {
         return $this->user->notifications->sortByDesc('created_at')->where('data.case', $this->id)->where('data.planning', false);
     }
 
-    /**
-     * @return array
-     */
     public function plannedNotifications(): array
     {
         return DB::select('SELECT *  FROM notifications WHERE data NOT LIKE ? and data LIKE ? and data LIKE ?', ['%"planning":false%', '%planning%', '%"case":' . $this->id . '%']);

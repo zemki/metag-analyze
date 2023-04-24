@@ -5,7 +5,6 @@ use Illuminate\Database\Schema\Blueprint;
 
 class CreateUsersTable extends Migration
 {
-
     public function up()
     {
         Schema::create('users', function (Blueprint $table) {
@@ -16,7 +15,6 @@ class CreateUsersTable extends Migration
             $table->string('password_token', 255)->nullable()->default(null);
             $table->string('api_token', 255)->nullable()->default(null);
             $table->string('last_login_date', 255)->nullable();
-
 
             $table->timestamps();
             $table->softDeletes();

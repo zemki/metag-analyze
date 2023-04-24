@@ -10,17 +10,21 @@ class DeleteUserCommand extends Command
 {
     /**
      * The name and signature of the console command.
+     *
      * @var string
      */
     protected $signature = 'user:delete';
+
     /**
      * The console command description.
+     *
      * @var string
      */
     protected $description = 'Delete a user from the database. He will not be able to log in anymore!';
 
     /**
      * Create a new command instance.
+     *
      * @return void
      */
     public function __construct()
@@ -30,6 +34,7 @@ class DeleteUserCommand extends Command
 
     /**
      * Execute the console command.
+     *
      * @return mixed
      */
     public function handle()
@@ -41,6 +46,7 @@ class DeleteUserCommand extends Command
                 $user = User::where('email', '=', $email)->firstOrFail();
             } catch (ModelNotFoundException $exception) {
                 $this->warn('user not found!');
+
                 return false;
             }
         } else {
@@ -49,6 +55,7 @@ class DeleteUserCommand extends Command
                 $user = User::where('id', '=', $id)->firstOrFail();
             } catch (ModelNotFoundException $exception) {
                 $this->warn('user not found!');
+
                 return false;
             }
         }

@@ -12,6 +12,7 @@ class UserTest extends TestCase
 
     /**
      * A basic feature test example.
+     *
      * @return void
      */
     public function testExample()
@@ -20,11 +21,11 @@ class UserTest extends TestCase
         $this->signIn();
         $user = [
             'email' => 'belli@uni-bremen.de',
-            'password' => bcrypt("1q2w3e4r5t")
+            'password' => bcrypt('1q2w3e4r5t'),
         ];
         $this->post('/users', $user);
         $user = [
-            'email' => 'belli@uni-bremen.de'
+            'email' => 'belli@uni-bremen.de',
         ];
         $this->assertDatabaseHas('users', $user);
     }

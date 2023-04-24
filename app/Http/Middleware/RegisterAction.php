@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Action;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,8 +11,8 @@ class RegisterAction
 {
     /**
      * Handle an incoming request.
-     * @param Request $request
-     * @param Closure $next
+     *
+     * @param  Request  $request
      * @return mixed
      */
     public function handle($request, Closure $next)
@@ -23,6 +22,7 @@ class RegisterAction
         $action['url'] = $request->fullUrl();
 // Get the currently authenticated user...
         DB::table('actions')->insert([$action]);
+
         return $next($request);
     }
 }

@@ -2,14 +2,15 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Facades\Tests\Setup\ProjectFactory;
 use App\CaseInput;
+use Facades\Tests\Setup\ProjectFactory;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\WithFaker;
+use Tests\TestCase;
+
 class ProjectTest extends TestCase
 {
-    use WithFaker, RefreshDatabase ;
+    use WithFaker, RefreshDatabase;
 
     /** @test    */
     public function a_user_can_create_a_project()
@@ -25,12 +26,12 @@ class ProjectTest extends TestCase
             'description' => $this->faker->name,
             'created_by' => auth()->user()->id,
             'is_locked' => 0,
-            'inputs' => "[]"
+            'inputs' => '[]',
         ];
 
        //$attributes = factory('App\Project')->raw();
 
-        $this->post('/projects',$attributes)->assertRedirect('/projects');
+        $this->post('/projects', $attributes)->assertRedirect('/projects');
 
         $this->assertDatabaseHas('projects', $attributes);
 
@@ -38,34 +39,36 @@ class ProjectTest extends TestCase
     }
 
     /** @test    */
-    public function a_project_needs_name(){
+    public function a_project_needs_name()
+    {
 
         $this->signIn();
         $attributes = factory('App\Project')->raw(['name' => '']);
-        $this->post('/projects',$attributes)->assertSessionHasErrors('name');
+        $this->post('/projects', $attributes)->assertSessionHasErrors('name');
     }
 
     /** @test    */
-    public function a_project_needs_owner(){
+    public function a_project_needs_owner()
+    {
 
         $this->signIn();
 
         $attributes = factory('App\Project')->raw(['created_by' => '']);
 
-        $this->post('/projects',$attributes)->assertSessionHasErrors('created_by');
+        $this->post('/projects', $attributes)->assertSessionHasErrors('created_by');
     }
 
     /** @test */
-    public function a_user_can_view_a_project(){
+    public function a_user_can_view_a_project()
+    {
 
         $this->withoutExceptionHandling();
         $project = ProjectFactory::createdBy($this->signIn())
-        ->create();
-
+            ->create();
 
         $this->actingAs(auth()->user())->get($project->path())
-        ->assertSee($project->name)
-        ->assertSee($project->description);
+            ->assertSee($project->name)
+            ->assertSee($project->description);
 
     }
 
@@ -99,7 +102,7 @@ class ProjectTest extends TestCase
         $this->get($project->path())->assertRedirect('login');
         $this->get('/projects')->assertRedirect('login');
         $this->get('/projects/create')->assertRedirect('login');
-        $this->get('/projects',$project->toArray())->assertRedirect('login');
+        $this->get('/projects', $project->toArray())->assertRedirect('login');
     }
 
     /** @test */
@@ -107,22 +110,20 @@ class ProjectTest extends TestCase
     {
 
         $user = $this->signIn();
-        $multiplec = "yes,no,magari";
+        $multiplec = 'yes,no,magari';
         $inputs = new Caseinput();
-        $inputs->multiplechoice("va?",$multiplec)->text("va?")->format();
+        $inputs->multiplechoice('va?', $multiplec)->text('va?')->format();
 
         $project = ProjectFactory::createdBy($user)
-        ->withInputs($inputs->content)
-        ->create();
+            ->withInputs($inputs->content)
+            ->create();
 
-        $project2 = factory(\App\Project::class)->make(['created_by'=> $user]);
+        $project2 = factory(\App\Project::class)->make(['created_by' => $user]);
 
-        $projectArray = ["name" =>  $project->name, "description" => $project2->description,"inputs" => 'no inputs'];
+        $projectArray = ['name' => $project->name, 'description' => $project2->description, 'inputs' => 'no inputs'];
 
-        $this->patch($project->path(),$projectArray);
-        $this->assertDatabaseHas('projects',['inputs' =>'no inputs']);
+        $this->patch($project->path(), $projectArray);
+        $this->assertDatabaseHas('projects', ['inputs' => 'no inputs']);
 
     }
-
-
 }

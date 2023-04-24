@@ -25,34 +25,36 @@ class ForgotPasswordController extends Controller
 
     /**
      * Create a new controller instance.
+     *
      * @return void
      */
     public function __construct()
     {
-        $this->middleware('guest')->except('SendsPasswordResetEmailFromCasesList');;
+        $this->middleware('guest')->except('SendsPasswordResetEmailFromCasesList');
     }
 
     /**
      * Send a reset link to the given user.
-     * @param Request $request
+     *
      * @return string
      */
     public function SendsPasswordResetEmailFromCasesList(Request $request)
     {
 
         $canAuthUserResetPassword = $this->canAuthUserResetPassword($request->email);
-        if (!$canAuthUserResetPassword) return "You don't have the permissions to send an email to this user.";
+        if (! $canAuthUserResetPassword) {
+        return "You don't have the permissions to send an email to this user.";
+        }
         $response = $this->broker()->sendResetLink(
             $this->credentials($request)
         );
         $this->sendResetLinkResponse($request, Password::RESET_LINK_SENT);
-        return "email successfully sent";
+
+        return 'email successfully sent';
     }
 
     /**
      * Check if you are in contact with that user.
-     * @param $email
-     * @return bool
      */
     private function canAuthUserResetPassword($email): bool
     {

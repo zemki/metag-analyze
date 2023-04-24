@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -19,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read \App\Cases $cases
  * @property-read \App\Media $media
  * @property-read \App\Project $project
+ *
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Entry newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Entry newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Entry query()
@@ -30,17 +32,23 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Entry whereInputs($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Entry whereMediaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Entry whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
+ *
  * @property-read mixed $inputs_graph
  */
 class Entry extends Model
 {
+    use HasFactory;
+
     protected $table = 'entries';
+
     protected $guarded = [];
 
     /**
      * Cases is intended to be CASE
      * but CASE is a reserved keyword in most programming languages
+     *
      * @return BelongsTo
      */
     public function cases()

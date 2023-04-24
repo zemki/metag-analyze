@@ -12,17 +12,21 @@ class InstallMetagCommand extends Command
 {
     /**
      * The name and signature of the console command.
+     *
      * @var string
      */
     protected $signature = 'metag:install';
+
     /**
      * The console command description.
+     *
      * @var string
      */
     protected $description = 'Install Metag application';
 
     /**
      * Create a new command instance.
+     *
      * @return void
      */
     public function __construct()
@@ -32,6 +36,7 @@ class InstallMetagCommand extends Command
 
     /**
      * Execute the console command.
+     *
      * @return mixed
      */
     public function handle()
@@ -44,7 +49,7 @@ class InstallMetagCommand extends Command
         $this->info(Artisan::output());
         $this->warn('You will now create your personal user with all access rights.');
         $stored = false;
-        while (!$stored) {
+        while (! $stored) {
 
             $email = $this->ask('Enter your email');
             $password = $this->ask('Enter your password - minimum 6 chars.');
@@ -58,12 +63,14 @@ class InstallMetagCommand extends Command
     public function storeUser($roleId, $email, $password, &$user)
     {
         $role = Role::where('id', $roleId)->first();
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $this->warn('Please enter a valid email.');
+
             return false;
         }
         if (strlen($password) < 6) {
             $this->warn('Please enter a valid password.');
+
             return false;
         }
         $user = new User();
@@ -72,6 +79,7 @@ class InstallMetagCommand extends Command
         $user->password_token = bcrypt(Helper::random_str(60));
         $user->save();
         $user->roles()->sync($role);
+
         return true;
     }
 }

@@ -11,17 +11,21 @@ class DeleteProjectCommand extends Command
 {
     /**
      * The name and signature of the console command.
+     *
      * @var string
      */
     protected $signature = 'project:delete';
+
     /**
      * The console command description.
+     *
      * @var string
      */
     protected $description = 'Force Delete a Project and all relative data.';
 
     /**
      * Create a new command instance.
+     *
      * @return void
      */
     public function __construct()
@@ -31,6 +35,7 @@ class DeleteProjectCommand extends Command
 
     /**
      * Execute the console command.
+     *
      * @return mixed
      */
     public function handle()
@@ -42,6 +47,7 @@ class DeleteProjectCommand extends Command
                 $project = Project::where('name', '=', $name)->firstOrFail();
             } catch (ModelNotFoundException $exception) {
                 $this->warn('project not found!');
+
                 return false;
             }
         } else {
@@ -50,6 +56,7 @@ class DeleteProjectCommand extends Command
                 $project = Project::where('id', '=', $id)->firstOrFail();
             } catch (ModelNotFoundException $exception) {
                 $this->warn('project not found!');
+
                 return false;
             }
         }
@@ -57,6 +64,6 @@ class DeleteProjectCommand extends Command
         Auth::loginUsingId($project->created_by()->id, true);
         $project->delete();
         Auth::logout();
-        $this->warn("PROJECT DELETED!");
+        $this->warn('PROJECT DELETED!');
     }
 }

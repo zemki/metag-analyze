@@ -3,7 +3,6 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -42,10 +41,9 @@ class notifyUserforNewCaseWhenAlreadyRegistered extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-                    
-                    ->subject(strlen($this->subject) > 0 ? $this->subject :'New Case on Metag')
-                    ->lineIf(strlen($this->message) == 0, "You have been added to a new case, please login in Metag to check it out.")
-                    ->lineIf(strlen($this->message) > 0, $this->message);
+            ->subject(strlen($this->subject) > 0 ? $this->subject : 'New Case on Metag')
+            ->lineIf(strlen($this->message) == 0, 'You have been added to a new case, please login in Metag to check it out.')
+            ->lineIf(strlen($this->message) > 0, $this->message);
     }
 
     /**

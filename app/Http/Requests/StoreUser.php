@@ -8,6 +8,7 @@ class StoreUser extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
+     *
      * @return bool
      */
     public function authorize()
@@ -17,6 +18,7 @@ class StoreUser extends FormRequest
 
     /**
      * Get the validation rules that apply to the request.
+     *
      * @return array
      */
     public function rules()
@@ -24,7 +26,7 @@ class StoreUser extends FormRequest
         return [
             'email' => 'required|email|unique:users',
             'username' => 'required|unique:users',
-            'roles' => 'required'
+            'roles' => 'required',
         ];
     }
 }

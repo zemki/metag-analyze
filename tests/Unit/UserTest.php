@@ -2,20 +2,19 @@
 
 namespace Tests\Unit;
 
-use Tests\TestCase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Database\Eloquent\Collection as Collection;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class UserTest extends TestCase
 {
-	use RefreshDatabase;
+    use RefreshDatabase;
 
     /** @test */
     public function a_user_has_projects()
     {
-    	$user = factory('App\User')->create();
+        $user = factory('App\User')->create();
 
-    	$this->assertInstanceOf(Collection::class, $user->projects);
+        $this->assertInstanceOf(Collection::class, $user->projects);
     }
 }

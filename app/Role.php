@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\User[] $users
  * @property-read int|null $users_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Role newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Role newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Role query()
@@ -22,19 +23,23 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Role whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Role whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Role whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class Role extends Model
 {
     /**
      * The attributes that are mass assignable.
+     *
      * @var array
      */
     protected $fillable = [
-        'name', 'description'
+        'name', 'description',
     ];
+
     /**
      * The attributes that should be hidden for arrays.
+     *
      * @var array
      */
     /**

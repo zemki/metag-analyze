@@ -5,9 +5,9 @@ namespace App\Http;
 use App\Http\Middleware\Admin;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\Authorised;
+use App\Http\Middleware\CheckAdminArea;
 use App\Http\Middleware\CheckForMaintenanceMode;
 use App\Http\Middleware\CheckGroup;
-use App\Http\Middleware\CheckAdminArea;
 use App\Http\Middleware\EncryptCookies;
 use App\Http\Middleware\LoggedUser;
 use App\Http\Middleware\RedirectIfAuthenticated;
@@ -36,6 +36,7 @@ class Kernel extends HttpKernel
     /**
      * The application's global HTTP middleware stack.
      * These middleware are run during every request to your application.
+     *
      * @var array
      */
     protected $middleware = [
@@ -45,8 +46,10 @@ class Kernel extends HttpKernel
         ConvertEmptyStringsToNull::class,
         TrustProxies::class,
     ];
+
     /**
      * The application's route middleware groups.
+     *
      * @var array
      */
     protected $middlewareGroups = [
@@ -64,9 +67,11 @@ class Kernel extends HttpKernel
             'bindings',
         ],
     ];
+
     /**
      * The application's route middleware.
      * These middleware may be assigned to groups or used individually.
+     *
      * @var array
      */
     protected $routeMiddleware = [
@@ -85,11 +90,13 @@ class Kernel extends HttpKernel
         'verified' => EnsureEmailIsVerified::class,
         'haspowers' => CheckAdminArea::class,
         'RefreshApiToken' => RefreshApiToken::class,
-        'LoggedUser' => LoggedUser::class
+        'LoggedUser' => LoggedUser::class,
     ];
+
     /**
      * The priority-sorted list of middleware.
      * This forces non-global middleware to always be in the given order.
+     *
      * @var array
      */
     protected $middlewarePriority = [

@@ -16,6 +16,7 @@ class RefreshApiToken
             'api_token' => hash('sha256', $token),
         ])->save();
         $response->token = $token;
+
         return $response;
     }
 }

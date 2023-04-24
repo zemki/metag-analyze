@@ -11,6 +11,7 @@ class AppServiceProvider extends ServiceProvider
 {
     /**
      * Bootstrap any application services.
+     *
      * @return void
      */
     public function boot()
@@ -19,19 +20,19 @@ class AppServiceProvider extends ServiceProvider
         if (App::environment('local')) {
             // The environment is local
             View::composer(['telescope::layout'], function ($view) {
-                $view->with('telescopeScriptVariables', ['path' => 'telescope', 'timezone' => config('app.timezone'), 'recording' => !cache('telescope:pause-recording')]);
+                $view->with('telescopeScriptVariables', ['path' => 'telescope', 'timezone' => config('app.timezone'), 'recording' => ! cache('telescope:pause-recording')]);
             });
-        }else{
+        } else {
             View::composer(['telescope::layout'], function ($view) {
-                $view->with('telescopeScriptVariables', ['path' => 'metag/telescope', 'timezone' => config('app.timezone'), 'recording' => !cache('telescope:pause-recording')]);
+                $view->with('telescopeScriptVariables', ['path' => 'metag/telescope', 'timezone' => config('app.timezone'), 'recording' => ! cache('telescope:pause-recording')]);
             });
         }
-
 
     }
 
     /**
      * Register any application services.
+     *
      * @return void
      */
     public function register()

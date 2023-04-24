@@ -1,10 +1,11 @@
 <?php
 
-use Laravel\Telescope\Watchers;
 use Laravel\Telescope\Http\Middleware\Authorize;
+use Laravel\Telescope\Watchers;
 
 return [
 
+    'key' => env('TELESCOPE_KEY', false),
     /*
     |--------------------------------------------------------------------------
     | Telescope Domain

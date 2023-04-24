@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 class CreateCommunicationPartnerProjectsTable extends Migration
 {
@@ -17,10 +17,10 @@ class CreateCommunicationPartnerProjectsTable extends Migration
             $table->bigIncrements('id');
             $table->integer('project_id')->unsigned()->nullable();
             $table->foreign('project_id')->references('id')
-            ->on('projects')->onDelete('cascade');
+                ->on('projects')->onDelete('cascade');
             $table->integer('communication_partner_id')->unsigned()->nullable();
             $table->foreign('communication_partner_id')->references('id')
-            ->on('communication_partners')->onDelete('cascade');
+                ->on('communication_partners')->onDelete('cascade');
             $table->timestamps();
         });
     }

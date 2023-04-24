@@ -2,7 +2,6 @@
 
 namespace App\Notifications;
 
-use App\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
@@ -22,8 +21,11 @@ class researcherNotificationToUser extends Notification implements ShouldQueue
     use Queueable;
 
     private mixed $title;
+
     private mixed $message;
+
     private mixed $cases;
+
     private mixed $planning = false;
 
     /**
@@ -47,16 +49,17 @@ class researcherNotificationToUser extends Notification implements ShouldQueue
      */
     public function via($notifiable)
     {
-        if($this->planning !== false) return ['database'];
-        else return [FcmChannel::class,'database'];
+        if ($this->planning !== false) {
+        return ['database'];
+        } else {
+        return [FcmChannel::class, 'database'];
+        }
 
     }
 
-
     public function toFcm($notifiable): FcmMessage
     {
-        if (!App::environment('local'))
-        {
+        if (! App::environment('local')) {
             WebhookCall::create()
                 ->url(config('utilities.url_rc_notifications'))
                 ->payload(['text' => 'Sent a Notification to ' . $this->cases['user']['email'] . ' for the case "' . $this->cases['name'] . '". Poor human being!'])
@@ -73,7 +76,7 @@ class researcherNotificationToUser extends Notification implements ShouldQueue
                 AndroidConfig::create()
                     ->setFcmOptions(AndroidFcmOptions::create()->setAnalyticsLabel('analytics_android'))
                     ->setNotification(AndroidNotification::create()->setColor('#0A0A0A')
-                    ->setSound('default'))
+                        ->setSound('default'))
             )->setApns(
                 ApnsConfig::create()
                     ->setFcmOptions(ApnsFcmOptions::create()->setAnalyticsLabel('analytics_ios'))->setPayload(['aps' => ['sound' => 'default']])
@@ -83,16 +86,15 @@ class researcherNotificationToUser extends Notification implements ShouldQueue
 
     /**
      * Get the array representation of the notification.
-     * @return array
      */
-    #[ArrayShape(['title' => "string", 'message' => "string", "case" => "mixed","planning" => "mixed"])] public function toArray(): array
-    {
+    #[ArrayShape(['title' => 'string', 'message' => 'string', 'case' => 'mixed', 'planning' => 'mixed'])]
+ public function toArray(): array
+ {
         return [
             'title' => $this->title,
             'message' => $this->message,
             'case' => $this->cases['id'],
-            'planning' => $this->planning
+            'planning' => $this->planning,
         ];
     }
-
 }

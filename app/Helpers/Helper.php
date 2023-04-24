@@ -1,4 +1,7 @@
-<?php // Code within app\Helpers\Helper.php
+<?php
+
+// Code within app\Helpers\Helper.php
+
 namespace App\Helpers;
 
 use Exception;
@@ -9,38 +12,39 @@ class Helper
 {
     /**
      * Generate random string with a given set of chars
-     * @param        $length
-     * @param string $keyspace
+     *
+     * @param  string  $keyspace
      * @return string
+     *
      * @throws Exception
      */
     public static function random_str($length, $keyspace = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!$%()=-*.,')
     {
         $pieces = [];
         $max = mb_strlen($keyspace, '8bit') - 1;
-        for ($i = 0; $i < $length; ++$i) {
-            $pieces [] = $keyspace[random_int(0, $max)];
+        for ($i = 0; $i < $length; $i++) {
+            $pieces[] = $keyspace[random_int(0, $max)];
         }
+
         return implode('', $pieces);
     }
 
     /**
      * return extension of base64 file
-     * @param String $uri base64 file uri
-     * @return String      image extension
+     *
+     * @param  string  $uri base64 file uri
+     * @return string      image extension
      */
     public static function extension($uri)
     {
         $img = explode(',', $uri);
         $ini = substr($img[0], 11);
         $type = explode(';', $ini);
+
         return $type[0];
     }
 
     /**
-     * @param $string
-     * @param $start
-     * @param $end
      * @return bool|string
      */
     public static function get_string_between($string, $start, $end)
@@ -57,13 +61,13 @@ class Helper
         if (strpos($string, $end, $ini) === false) {
             $len = strlen($string) - 1;
         }
+
         return substr($string, $ini, $len);
     }
 
     /**
      * Search for an element in array recursively
-     * @param $needle
-     * @param $haystack
+     *
      * @return bool
      */
     public static function in_array_recursive($needle, $haystack)
@@ -74,17 +78,16 @@ class Helper
                 return true;
             }
         }
+
         return false;
     }
 
     /**
-     * @param       $myArray
-     * @param       $MAXDEPTH
-     * @param int   $depth
-     * @param array $arrayKeys
+     * @param  int  $depth
+     * @param  array  $arrayKeys
      * @return array
      */
-    public static function array_keys_recursive($myArray, $arrayKeys = array(), $MAXDEPTH = INF, $depth = 0)
+    public static function array_keys_recursive($myArray, $arrayKeys = [], $MAXDEPTH = INF, $depth = 0)
     {
         if ($depth < $MAXDEPTH) {
             $depth++;
@@ -95,6 +98,7 @@ class Helper
                 }
             }
         }
+
         return $arrayKeys;
     }
 
@@ -106,6 +110,7 @@ class Helper
     {
         $ready = str_replace($delimiters, $delimiters[0], $string);
         $launch = explode($delimiters[0], $ready);
-        return  $launch;
+
+        return $launch;
     }
 }

@@ -10,7 +10,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Date;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
 class VerificationController extends Controller
@@ -26,14 +25,17 @@ class VerificationController extends Controller
     |
     */
     use VerifiesEmails;
+
     /**
      * Where to redirect users after verification.
+     *
      * @var string
      */
     protected $redirectTo = '/';
 
     /**
      * Create a new controller instance.
+     *
      * @return void
      */
     public function __construct()
@@ -44,49 +46,46 @@ class VerificationController extends Controller
     }
 
     /**
-     * @param Request $request
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
     public function showresetpassword(Request $request)
     {
 
-        if ($request->input('token') === '')
-        {
+        if ($request->input('token') === '') {
             return view('errors.resetpassword');
         }
         $user = User::where('password_token', '=', $request->input('token'))->first();
-        if (!$user)
-        {
+        if (! $user) {
             return view('errors.resetpassword');
         }
 
-
         $data['user'] = $user;
+
         return view('auth.passwords.verify', $data);
     }
 
     /**
-     * @param Request $request
      * @return Factory|RedirectResponse|Redirector|View
      */
     public function newpassword(Request $request)
     {
-        if ($request->input('token') === '')
-        {
+        if ($request->input('token') === '') {
             $data['error'] = 'wrong request, contact the administrator.';
             $data['user'] = '';
+
             return view('errors.resetpassword');
         }
         $user = User::where('password_token', '=', $request->input('token'))->first();
-        if (!$user)
-        {
+        if (! $user) {
             $data['error'] = 'Something went wrong, please contact the administrator.';
+
             return view('errors.resetpassword');
         }
         $user->password_token = null;
         $user->password = bcrypt($request->input('password'));
         $user->email_verified_at = Date::now();
         $user->save();
+
         return redirect('/');
     }
 }

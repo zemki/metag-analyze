@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use App\Mail\VerificationEmail;
-use App\Permission;
 use App\Role;
 use App\User;
 use Helper;
@@ -14,17 +13,21 @@ class CreateUserCommand extends Command
 {
     /**
      * The name and signature of the console command.
+     *
      * @var string
      */
     protected $signature = 'user:create';
+
     /**
      * The console command description.
+     *
      * @var string
      */
     protected $description = 'Create a user';
 
     /**
      * Create a new command instance.
+     *
      * @return void
      */
     public function __construct()
@@ -34,6 +37,7 @@ class CreateUserCommand extends Command
 
     /**
      * Execute the console command.
+     *
      * @return mixed
      */
     public function handle()
@@ -47,9 +51,11 @@ class CreateUserCommand extends Command
         if ($this->store(2, $email, $password, $user)) {
             Mail::to($email)->send(new VerificationEmail($user, config('utilities.emailDefaultText')));
             $this->info('User ' . $email . ' created');
+
             return true;
         }
         $this->info('There it was an error during user creation, please try again.');
+
         return false;
     }
 

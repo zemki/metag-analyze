@@ -12,11 +12,12 @@ use Illuminate\Validation\ValidationException;
 trait CustomThrottlesLogins
 {
     protected $decayMinutes = 5;
+
     protected $maxAttempts = 5;
+
     /**
      * Determine if the user has too many failed login attempts.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return bool
      */
     protected function hasTooManyLoginAttempts(Request $request)
@@ -30,7 +31,6 @@ trait CustomThrottlesLogins
     /**
      * Increment the login attempts for the user.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return void
      */
     protected function incrementLoginAttempts(Request $request)
@@ -44,7 +44,6 @@ trait CustomThrottlesLogins
     /**
      * Redirect the user after determining they are locked out.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Symfony\Component\HttpFoundation\Response
      *
      * @throws \Illuminate\Validation\ValidationException
@@ -66,7 +65,6 @@ trait CustomThrottlesLogins
     /**
      * Clear the login locks for the given user credentials.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return void
      */
     protected function clearLoginAttempts(Request $request)
@@ -77,7 +75,6 @@ trait CustomThrottlesLogins
     /**
      * Fire an event when a lockout occurs.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return void
      */
     protected function fireLockoutEvent(Request $request)
@@ -88,12 +85,11 @@ trait CustomThrottlesLogins
     /**
      * Get the throttle key for the given request.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return string
      */
     protected function throttleKey(Request $request)
     {
-        return Str::transliterate(Str::lower($request->input($this->username())).'|'.$request->ip());
+        return Str::transliterate(Str::lower($request->input($this->username())) . '|' . $request->ip());
     }
 
     /**
