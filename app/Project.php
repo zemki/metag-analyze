@@ -2,9 +2,9 @@
 
 namespace App;
 
-use Illuminate\Database\Eloquent\Model;
-use stdClass;
 use DB;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * App\Project
@@ -23,6 +23,7 @@ use DB;
  * @property-read int|null $invited_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Media[] $media
  * @property-read int|null $media_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Project newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Project newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Project query()
@@ -34,17 +35,22 @@ use DB;
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Project whereIsLocked($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Project whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Project whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
+ *
  * @property string|null $properties
+ *
  * @method static \Illuminate\Database\Eloquent\Builder|Project whereProperties($value)
  */
 class Project extends Model
 {
+    use HasFactory;
+
     /**
      * @var array
      */
     protected $fillable = [
-        'name', 'description', 'duration', 'created_by', 'is_locked', 'inputs'
+        'name', 'description', 'duration', 'created_by', 'is_locked', 'inputs',
     ];
 
     // this is a recommended way to declare event handlers
@@ -54,7 +60,7 @@ class Project extends Model
         static::deleting(function ($project) {
             $project->invited()->detach();
             // if the user created the project
-            if (!app()->runningInConsole() && $project->created_by === auth()->user()->id && $project->cases->count() > 0) {
+            if (! app()->runningInConsole() && $project->created_by === auth()->user()->id && $project->cases->count() > 0) {
                 foreach ($project->cases as $case) {
                     foreach ($case->entries as $entry) {
                         $entry->delete();
@@ -65,15 +71,11 @@ class Project extends Model
         });
     }
 
-    /**
-     * @param Project $project
-     * @return array
-     */
     public static function getProjectInputHeadings(Project $project): array
     {
         $headings = [];
         foreach (json_decode($project->inputs) as $input) {
-            $isMultipleOrOneChoice = property_exists($input, "numberofanswer") && $input->numberofanswer > 0;
+            $isMultipleOrOneChoice = property_exists($input, 'numberofanswer') && $input->numberofanswer > 0;
             if ($isMultipleOrOneChoice) {
                 for ($i = 0; $i < $input->numberofanswer; $i++) {
                     array_push($headings, $input->name);
@@ -82,9 +84,9 @@ class Project extends Model
                 array_push($headings, $input->name);
             }
         }
+
         return $headings;
     }
-
 
     public function getInputs()
     {
@@ -99,47 +101,46 @@ class Project extends Model
         $idForInputs = 1;
         foreach ($inputs as $input) {
             $tempObj = [];
-            if ($input->type === "scale") {
+            if ($input->type === 'scale') {
                 $tempArray = [];
-                for ($i = 1; $i < 6;$i++) {
+                for ($i = 1; $i < 6; $i++) {
                     $tempObj['id'] = $idForInputs;
                     $tempObj['name'] = $i;
                     $tempObj['color'] = config('colors.chartCategories')[$idForInputs];
                     $tempObj['type'] = 'scale';
-                    array_push($availableAnswers, (object)$tempObj);
+                    array_push($availableAnswers, (object) $tempObj);
                     $idForInputs++;
                 }
                 //   array_push($availableAnswers,(object)$tempArray);
             }
 
-            if ($input->type === "one choice" || $input->type === "multiple choice") {
+            if ($input->type === 'one choice' || $input->type === 'multiple choice') {
                 $tempArray = [];
                 foreach (array_filter($input->answers) as $key => $answer) {
                     $tempObj['id'] = $idForInputs;
                     $tempObj['name'] = $answer;
                     $tempObj['color'] = config('colors.chartCategories')[$idForInputs];
-                    array_push($availableAnswers, (object)$tempObj);
+                    array_push($availableAnswers, (object) $tempObj);
                     $idForInputs++;
                 }
             }
 
-            if ($input->type === "text") {
+            if ($input->type === 'text') {
                 $tempObj['id'] = $idForInputs;
                 $tempObj['name'] = $input->name;
                 $tempObj['type'] = 'text';
                 $tempObj['color'] = config('colors.chartCategories')[$idForInputs];
-                array_push($availableAnswers, (object)$tempObj);
+                array_push($availableAnswers, (object) $tempObj);
                 $idForInputs++;
             }
         }
-
 
         return $availableAnswers;
     }
 
     public function getSpecificInput($name)
     {
-        if ($this->inputs === "[]") {
+        if ($this->inputs === '[]') {
             return false;
         }
         $item = null;
@@ -149,6 +150,7 @@ class Project extends Model
                 break;
             }
         }
+
         return $item;
     }
 
@@ -157,19 +159,20 @@ class Project extends Model
      */
     public function getProjectInputNames()
     {
-        if ($this->inputs === "[]") {
+        if ($this->inputs === '[]') {
             return false;
         }
         $inputNames = [];
         foreach (json_decode($this->inputs) as $input) {
             array_push($inputNames, $input->name);
         }
+
         return $inputNames;
     }
 
     public function getNumberOfAnswersByQuestion($question)
     {
-        if ($this->inputs === "[]") {
+        if ($this->inputs === '[]') {
             return false;
         }
         $item = null;
@@ -179,12 +182,13 @@ class Project extends Model
                 break;
             }
         }
+
         return $item;
     }
 
     public function getAnswersByQuestion($question)
     {
-        if ($this->inputs === "[]") {
+        if ($this->inputs === '[]') {
             return false;
         }
         $item = null;
@@ -195,6 +199,7 @@ class Project extends Model
                 break;
             }
         }
+
         return $item;
     }
 
@@ -237,9 +242,10 @@ class Project extends Model
     {
         return $this->belongsToMany(User::class, 'user_projects');
     }
+
     /**
-    * @return User instance of the creator of the study.
-    */
+     * @return User instance of the creator of the study.
+     */
     public function creator()
     {
         return User::find($this->created_by);

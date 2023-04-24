@@ -2,11 +2,9 @@
 
 namespace App;
 
-use Carbon\Carbon;
 use File;
 use Helper;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Image;
 
@@ -18,6 +16,7 @@ use Image;
  * @property string $path
  * @property string $size
  * @property int|null $case_id
+ *
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Files newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Files newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Files query()
@@ -28,10 +27,13 @@ use Image;
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Files whereSize($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Files whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Files whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
+ *
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Cases|null $case
+ *
  * @method static \Illuminate\Database\Eloquent\Builder|Files whereCaseId($value)
  */
 class Files extends Model
@@ -40,6 +42,7 @@ class Files extends Model
      * @var string
      */
     protected $table = 'files_cases';
+
     /**
      * @var array
      */
@@ -55,15 +58,9 @@ class Files extends Model
         return Files::all()->sum('size');
     }
 
-    /**
-     * @param         $file
-     * @param Project $project
-     * @param Cases   $case
-     * @param         $name
-     */
     public static function storeEntryFile($file, $type, Project $project, Cases $case, Entry $entry, &$name): void
     {
-        $name = 'interview_' . $case->name . date("dmyhis");
+        $name = 'interview_' . $case->name . date('dmyhis');
         $projectPath = storage_path('app/project' . $project->id . '/files/');
         $extension = Helper::extension($file);
         $notEncryptedContent = $projectPath . $name . '.' . $extension;
@@ -76,33 +73,24 @@ class Files extends Model
         // open file a image resource
         //  Image::make($sorting['sortingscreenshot'])->save($notEncryptedContent);
 
-
-
         $arr = explode(',', $file, 2);
         self::SaveEncryptedFile($project, $name, $arr, $notEncryptedContent, $encryptedPath);
         self::SaveFileDbRecord($case->id, $name, $projectPath, $encryptedPath, $entry);
     }
 
-    /**
-     * @param         $file
-     * @param Project $project
-     *
-     * @param Cases   $case
-     * @param         $name
-     */
     public static function updateEntryFile($file, $type, Project $project, Cases $case, Entry $entry, &$name, $oldInputs): void
     {
         $oldInputs = json_decode($oldInputs);
 
         ray($oldInputs);
-        
+
         if (property_exists($oldInputs, 'file')) {
             $existingFile = Files::where('id', '=', $oldInputs->file)->first();
             File::delete($existingFile->path);
             $existingFile->delete();
         }
 
-        $name = 'interview_' . $case->name . date("dmyhis");
+        $name = 'interview_' . $case->name . date('dmyhis');
         $projectPath = storage_path('app/project' . $project->id . '/files/');
         $extension = Helper::extension($file);
         $notEncryptedContent = $projectPath . $name . '.' . $extension;
@@ -114,20 +102,11 @@ class Files extends Model
         // open file a image resource
         //  Image::make($sorting['sortingscreenshot'])->save($notEncryptedContent);
 
-
-
         $arr = explode(',', $file, 2);
         self::SaveEncryptedFile($project, $name, $arr, $notEncryptedContent, $encryptedPath);
         self::SaveFileDbRecord($case->id, $name, $projectPath, $encryptedPath, $entry);
     }
 
-    /**
-     * @param Project  $project
-     * @param        $name
-     * @param array  $arr
-     * @param string $notEncryptedContent
-     * @param        $encryptedPath
-     */
     private static function SaveEncryptedFile(Project $project, &$name, array $arr, string $notEncryptedContent, &$encryptedPath): void
     {
         $base64firstpart = $arr[0];
@@ -138,18 +117,11 @@ class Files extends Model
         File::delete($notEncryptedContent);
     }
 
-    /**
-     * @param        $caseid
-     * @param        $name
-
-     * @param string $projectPath
-     * @param string $encryptedPath
-     */
     private static function SaveFileDbRecord($caseid, &$name, string $projectPath, string $encryptedPath, Entry $entry): void
     {
         $file_interview = new Files();
         // write here if audio or image
-        $file_interview->type = "file_";
+        $file_interview->type = 'file_';
         $file_interview->path = $projectPath . $name . '.mfile';
         if (is_file(storage_path('app/' . $encryptedPath))) {
             $file_interview->size = File::size(storage_path('app/' . $encryptedPath));
@@ -160,7 +132,7 @@ class Files extends Model
         $file_interview->save();
         $entry->update(
             [
-            'inputs->file' => $file_interview->id
+                'inputs->file' => $file_interview->id,
             ],
         );
     }

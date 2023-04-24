@@ -2,10 +2,9 @@
 
 namespace App\Notifications;
 
-use Illuminate\Bus\Queueable;
-
-use Illuminate\Notifications\Notification;
 use App\User;
+use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Notification;
 
 class UserRegistered extends Notification
 {
@@ -19,16 +18,14 @@ class UserRegistered extends Notification
     public function __construct($details)
     {
         $this->email = $details['email'];
-        $this->users =  User::all()->count();
+        $this->users = User::all()->count();
     }
-
-
 
     public function toRocketChat(): RocketChatMessage
     {
         WebhookCall::create()
             ->url(config('utilities.url_rc_registration'))
-            ->payload(['text' => 'User '.$this->email.' has registered. We have a total of '.$this->users])
+            ->payload(['text' => 'User ' . $this->email . ' has registered. We have a total of ' . $this->users])
             ->useSecret(config('utilities.secret_rc_registration'))
             ->dispatch();
     }
@@ -43,7 +40,7 @@ class UserRegistered extends Notification
     {
         return [
             'email' => $this->email,
-            'users' => $this->users
+            'users' => $this->users,
         ];
     }
 }

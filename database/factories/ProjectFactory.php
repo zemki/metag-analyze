@@ -1,17 +1,31 @@
 <?php
 
-use Faker\Generator as Faker;
+namespace Database\Factories;
 
-$factory->define(App\Project::class, function (Faker $faker,$params) {
+use App\Project;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-	return [
-		'name' => $faker->name,
-		'description' => $faker->sentence,
-		'is_locked' => 0,
-		'created_by' => function() {
-			return (isset($params['user_id']) ? $params['user_id'] : factory(App\User::class)->create()->id);
-		},
-		'inputs' => (isset($params['inputs']) ? $params['inputs'] : '[]')
-	];
-});
+class ProjectFactory extends Factory
+{
+    protected $model = Project::class;
 
+    public function definition()
+    {
+        return [
+            'name' => $this->faker->name,
+            'description' => $this->faker->sentence,
+            'created_by' => $this->faker->numberBetween(1, 10),
+            'is_locked' => $this->faker->boolean,
+            'inputs' => $this->faker->sentence,
+        ];
+    }
+
+    public function forUser($user)
+    {
+        return $this->state(function (array $attributes) use ($user) {
+            return [
+                'created_by' => $user->id,
+            ];
+        });
+    }
+}

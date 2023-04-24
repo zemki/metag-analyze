@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Auth;
 
 /**
  * Class NoGuestForgotPasswordController.
- * @package App\Http\Controllers\Auth
  */
 class NoGuestForgotPasswordController extends ForgotPasswordController
 {

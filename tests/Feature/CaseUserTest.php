@@ -2,12 +2,9 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Project;
-use App\Cases;
-
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class CaseUserTest extends TestCase
 {
@@ -20,17 +17,17 @@ class CaseUserTest extends TestCase
 
         $project = auth()->user()->projects()->create(factory(Project::class)->raw());
 
-        $case = $project->addCase("test case","test duration");
+        $case = $project->addCase('test case', 'test duration');
 
         $user = [
             'email' => $this->faker->email,
-            'password' => "test"
+            'password' => 'test',
         ];
 
         $user = $case->addUser($user);
 
-        $this->assertDatabaseHas('cases',[
-            'user_id' => $user->id
+        $this->assertDatabaseHas('cases', [
+            'user_id' => $user->id,
         ]);
 
     }
@@ -42,18 +39,16 @@ class CaseUserTest extends TestCase
 
         $project = auth()->user()->projects()->create(factory(Project::class)->raw());
 
-        $this->create_multiple_cases_in_project($project,$user,10);
+        $this->create_multiple_cases_in_project($project, $user, 10);
 
-        $this->assertTrue(\App\Cases::where('user_id',$user->id)->get()->count() > 1);
+        $this->assertTrue(\App\Cases::where('user_id', $user->id)->get()->count() > 1);
     }
 
-
-    public function create_multiple_cases_in_project($project,$user,$numberofcases = 3)
+    public function create_multiple_cases_in_project($project, $user, $numberofcases = 3)
     {
-        for ($i=0; $i < $numberofcases; $i++) {
-           $case = $project->addCase($this->faker->name,"test duration");
+        for ($i = 0; $i < $numberofcases; $i++) {
+           $case = $project->addCase($this->faker->name, 'test duration');
            $u = $case->addUser($user);
        }
    }
-
 }

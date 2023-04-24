@@ -10,10 +10,12 @@ use Illuminate\Queue\SerializesModels;
 class VerificationEmail extends Mailable
 {
     use Queueable, SerializesModels;
+
     protected $user;
 
     /**
      * Create a new message instance.
+     *
      * @return void
      */
     public function __construct(User $user, $emailtext)
@@ -24,6 +26,7 @@ class VerificationEmail extends Mailable
 
     /**
      * Build the message.
+     *
      * @return $this
      */
     public function build()
@@ -32,6 +35,4 @@ class VerificationEmail extends Mailable
             ->markdown('email.setpassword')
             ->with(['user' => $this->user, 'text' => $this->emailtext]);
     }
-
-
 }

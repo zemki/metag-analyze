@@ -2,25 +2,21 @@
 
 namespace App;
 
-use App\Action;
-use App\Cases;
 use App\Mail\VerificationEmail;
-use App\Profile;
-use App\Project;
-use App\Role;
+use App\Notifications\notifyUserforNewCaseWhenAlreadyRegistered;
 use Helper;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Mail;
-use App\Notifications\notifyUserforNewCaseWhenAlreadyRegistered;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
-    use Notifiable, SoftDeletes;
+    use Notifiable, SoftDeletes, HasFactory;
 
     /**
      * The model's default values for attributes.
@@ -33,20 +29,25 @@ class User extends Authenticatable implements MustVerifyEmail
 
     /**
      * The attributes that should be cast to native types.
+     *
      * @var array
      */
     protected $casts = [
         'deviceID' => 'array',
     ];
+
     /**
      * The attributes that are mass assignable.
+     *
      * @var array
      */
     protected $fillable = [
-        'email', 'password', 'last_login_date', 'deviceID'
+        'email', 'password', 'last_login_date', 'deviceID',
     ];
+
     /**
      * The attributes that should be hidden for arrays.
+     *
      * @var array
      */
     protected $hidden = [
@@ -97,12 +98,11 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * @param $user
      * @return mixed
      */
-    public static function createIfDoesNotExists($user, $sendmessage = false, $subject="", $message = "")
+    public static function createIfDoesNotExists($user, $sendmessage = false, $subject = '', $message = '')
     {
-        if (!$user->exists) {
+        if (! $user->exists) {
             $user->email = $user->email;
             $role = Role::where('name', '=', 'user')->first();
             $user->password = bcrypt(Helper::random_str(60));
@@ -111,24 +111,24 @@ class User extends Authenticatable implements MustVerifyEmail
             $user->roles()->sync($role);
             Mail::to($user->email)->send(new VerificationEmail($user, config('utilities.emailDefaultText')));
         } elseif ($sendmessage) {
-            $user->notify(new notifyUserforNewCaseWhenAlreadyRegistered(['subject'=> $subject,'message'=>$message]));
+            $user->notify(new notifyUserforNewCaseWhenAlreadyRegistered(['subject' => $subject, 'message' => $message]));
         }
+
         return $user;
     }
 
     /**
-     * @param Request $request
+     * @param  Request  $request
      * save the device ID of the user by adding it into the device array.
      */
     public static function saveDeviceId(Request $request)
     {
         $currentDeviceId = auth()->user()->deviceID == null ? [] : auth()->user()->deviceID;
-        if ($request->has('deviceID') && $request->deviceID != '' && !in_array($request->deviceID, $currentDeviceId)) {
+        if ($request->has('deviceID') && $request->deviceID != '' && ! in_array($request->deviceID, $currentDeviceId)) {
             array_push($currentDeviceId, $request->deviceID);
         }
         auth()->user()->forceFill(['deviceID' => $currentDeviceId ?? ''])->save();
     }
-
 
     public function groups()
     {
@@ -153,7 +153,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function notOwnerNorInvited($project)
     {
-        return !auth()->user()->isAdmin() && (auth()->user()->isNot($project->created_by()) && !in_array($project->id, auth()->user()->invites()->pluck('project_id')->toArray()));
+        return ! auth()->user()->isAdmin() && (auth()->user()->isNot($project->created_by()) && ! in_array($project->id, auth()->user()->invites()->pluck('project_id')->toArray()));
     }
 
     public function isInvited($project)
@@ -166,8 +166,6 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsToMany(Project::class, 'user_projects');
     }
 
-
-
     public function case()
     {
         return $this->hasMany(Cases::class, 'user_id');
@@ -178,9 +176,6 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Action::class, 'user_id');
     }
 
-    /**
-     * @return bool
-     */
     public function isResearcher(): bool
     {
         return in_array('researcher', $this->roles()->pluck('roles.name')->toArray());
@@ -199,9 +194,6 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->case->entries()->groupBy('begin')->get();
     }
 
-    /**
-     * @return bool
-     */
     public function hasReachMaxNumberOfProjecs(): bool
     {
         return $this->projects()->count() >= config('utilities.maxNumberOfProjects');
@@ -217,36 +209,32 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(Profile::class);
     }
 
-    /**
-     *
-     */
     public function addProfile($user)
     {
         $profile = new Profile();
         $profile->user_id = $user->id;
         $profile->save();
+
         return $profile;
     }
 
     /**
-     * @param        $name
-     * @param        $url
-     * @param string $description
+     * @param  string  $description
      * @return Action
      * add action to the action table.
      */
-    public function addAction($name, $url, $description = "")
+    public function addAction($name, $url, $description = '')
     {
         $action = new Action();
         $action->name = $name;
         $action->description = $description;
         $action->url = $url;
         $action->user_id = auth()->user()->id;
-        $action->time = date("Y-m-d H:i:s");
+        $action->time = date('Y-m-d H:i:s');
         $action->save();
+
         return $action;
     }
-
 
     /**
      * Specifies the user's FCM tokens
@@ -262,16 +250,18 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->deviceID;
     }
-    
+
     /**
      * Check if the user has a certain or array of roles
+     *
      * @return bool
+     *
      * @var array
      */
     public function hasRole($roles)
     {
         if (is_array($roles)) {
-            return (count(array_intersect($roles, $this->roles()->distinct()->pluck('name')->toArray())) > 0);
+            return count(array_intersect($roles, $this->roles()->distinct()->pluck('name')->toArray())) > 0;
         } else {
             return in_array($roles, $this->roles()->distinct()->pluck('name')->toArray());
         }

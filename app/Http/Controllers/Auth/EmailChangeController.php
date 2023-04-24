@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\User;
 use App\Notifications\EmailChangeNotification;
+use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
@@ -38,7 +38,6 @@ class EmailChangeController extends Controller
         $this->middleware('signed')->only('verify');
     }
 
-
     public function show()
     {
         return view('auth.emails.changeemail');
@@ -47,49 +46,42 @@ class EmailChangeController extends Controller
     /**
      * Changes the user Email Address for a new one
      *
-     * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function change(Request $request)
     {
         $request->validate([
-            'email' => 'required|email|unique:users'
+            'email' => 'required|email|unique:users',
         ]);
 
         // Send the email to the user
         Notification::route('mail', $request->email)
             ->notify(new EmailChangeNotification(Auth::user()->id));
 
-        
-        return response(__("An email has been sent, please check your inbox. Link is valid for 60 minutes"), 200);
+        return response(__('An email has been sent, please check your inbox. Link is valid for 60 minutes'), 200);
     }
 
     /**
      * Verifies and completes the Email change
      *
-     * @param Request $request
-     * @param User $user
-     * @param string $email
+     * @param  string  $email
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\Response
      */
     public function verify(Request $request, User $user)
     {
         $request->validate([
-            'email' => 'required|email|unique:users'
+            'email' => 'required|email|unique:users',
         ]);
 
         $oldEmail = $user->first()->email;
 
-
         // Change the Email
         $user->first()->update([
-            'email' => $request->email
+            'email' => $request->email,
         ]);
 
         //log the action
-        $user->first()->addAction('Email change from '. $oldEmail.' to '.$user->email, 'from email link');
-
-        
+        $user->first()->addAction('Email change from ' . $oldEmail . ' to ' . $user->email, 'from email link');
 
         // And finally return the view telling the change has been done
         return response()->view('auth.emails.change-complete');

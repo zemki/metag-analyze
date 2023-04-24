@@ -17,18 +17,22 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
-use Arr;
 
 class ProjectController extends Controller
 {
     protected const UPDATESTRING = 'update';
-    protected const PROJECT = 'project';
-    protected const REQUIRED = 'required';
-    protected const NULLABLE = 'nullable';
-    protected const INPUTS = 'inputs';
-    protected const MESSAGE = 'message';
-    protected const CASES = 'cases';
 
+    protected const PROJECT = 'project';
+
+    protected const REQUIRED = 'required';
+
+    protected const NULLABLE = 'nullable';
+
+    protected const INPUTS = 'inputs';
+
+    protected const MESSAGE = 'message';
+
+    protected const CASES = 'cases';
 
     public function index()
     {
@@ -41,28 +45,25 @@ class ProjectController extends Controller
             }
 
             $data['projects'][$key]['casescount'] = $data['projects'][$key]->cases()->count();
-            
- 
-            
-            $data['projects'][$key]['editable'] =  $data['projects'][$key]->isEditable();
+
+            $data['projects'][$key]['editable'] = $data['projects'][$key]->isEditable();
         }
 
         $data['invites'] = auth()->user()->invites()->get();
-        
+
         foreach ($data['invites'] as $key => $value) {
             $data['invites'][$key]['casescount'] = $data['invites'][$key]->cases()->count();
             $data['invites'][$key]['authiscreator'] = false;
-            $data['invites'][$key]['editable'] =  false;
-            $data['invites'][$key]['owner'] =   $data['invites'][$key]->creator()->email;
-            
-            
+            $data['invites'][$key]['editable'] = false;
+            $data['invites'][$key]['owner'] = $data['invites'][$key]->creator()->email;
+
             if (count($data['invites']) > 0) {
                 foreach ($data['invites'][$key]->cases() as $cases) {
                     $data['invites'][$key]['entries'] += $cases->entries()->count();
                 }
             }
         }
-        $data['invited_projects'] =  auth()->user()->invites;
+        $data['invited_projects'] = auth()->user()->invites;
         $data['projects'] = $data['projects']->merge($data['invites']);
         $data = $this->checkNewsletter($data);
 
@@ -70,16 +71,16 @@ class ProjectController extends Controller
     }
 
     /**
-     * @param Project $project
      * @return Factory|View
+     *
      * @throws AuthorizationException
      */
     public function show(Project $project)
     {
-        if (auth()->user()->notOwnerNorInvited($project) && !auth()->user()->isAdmin()) {
+        if (auth()->user()->notOwnerNorInvited($project) && ! auth()->user()->isAdmin()) {
             abort(403);
         }
-        $data['breadcrumb'] = [ url($project->path()) => strlen($project->name) > 20 ? substr($project->name, 0, 20) . '...' : $project->name];
+        $data['breadcrumb'] = [url($project->path()) => strlen($project->name) > 20 ? substr($project->name, 0, 20) . '...' : $project->name];
         $data[self::PROJECT] = $project;
         $data[self::CASES] = $project->cases;
         $data['casesWithUsers'] = $project->cases()->with('user')->get();
@@ -91,8 +92,8 @@ class ProjectController extends Controller
                 $entry->media = $entry->media()->first() ? $entry->media()->first()->name : '';
             });
             // parse the lastday: string in the duration field, delimited by '|'
-            
-            $case->consultable = $case->isConsultable() && !$case->notYetStarted();
+
+            $case->consultable = $case->isConsultable() && ! $case->notYetStarted();
             $case->backend = $case->isBackend();
 
             // check the inputs in the entries of the case, if it contains the file property, resolve it to the file address
@@ -101,29 +102,25 @@ class ProjectController extends Controller
                     $entry->inputs = json_decode($entry->inputs, true);
                     foreach ($entry->inputs as $key => $value) {
                         if ($key == 'file') {
-                            $entry->file_object =  Files::find($value);
+                            $entry->file_object = Files::find($value);
 
                             $entry->file_object['audiofile'] = decrypt(file_get_contents($entry->file_object['path']));
                             $entry->file_object['entry'] = $case->entries()->whereJsonContains('inputs->file', $entry->file_object['id'])->first();
-                            if (!empty($entry->file_object['entry'])) {
+                            if (! empty($entry->file_object['entry'])) {
                                 $entry->file_object['entry']->media_id = Media::where('id', $entry->file_object['entry']->media_id)->first()->name;
                             }
-                            $entry->file_path =  Files::find($value)->path;
+                            $entry->file_path = Files::find($value)->path;
                         }
                     }
                 }
                 if (array_key_exists('firstValue', $entry->inputs)) {
                     $temp = $entry->inputs['firstValue'];
-                    $entry->mediaforFirstValue = Media::where('id', '=', $temp['media_id'])->first() ?  Media::where('id', '=', $temp['media_id'])->first()->name : '';
+                    $entry->mediaforFirstValue = Media::where('id', '=', $temp['media_id'])->first() ? Media::where('id', '=', $temp['media_id'])->first()->name : '';
                 }
             });
         }
 
-
-
-
-        
-        $data[self::PROJECT.'media'] = $project->media()->pluck('media.name')->toArray();
+        $data[self::PROJECT . 'media'] = $project->media()->pluck('media.name')->toArray();
         $data['invites'] = $project->invited()->get();
 
         return view('projects.show', $data);
@@ -131,6 +128,7 @@ class ProjectController extends Controller
 
     /**
      * Show Create form
+     *
      * @return View return view with the form to insert a new project
      */
     public function create(Request $request)
@@ -138,7 +136,8 @@ class ProjectController extends Controller
         if (auth()->user()->hasReachMaxNumberOfProjecs()) {
             abort(403, 'You reached the max number of projects');
         }
-        $data['breadcrumb'] = [ '#' => 'Create a Project'];
+        $data['breadcrumb'] = ['#' => 'Create a Project'];
+
         return view('projects.create', $data);
     }
 
@@ -149,7 +148,7 @@ class ProjectController extends Controller
             'name' => self::REQUIRED,
             'description' => self::REQUIRED,
             'created_by' => self::REQUIRED,
-            self::INPUTS => self::NULLABLE
+            self::INPUTS => self::NULLABLE,
         ]);
         $inputs = json_decode($attributes[self::INPUTS]);
         foreach ($inputs as $input) {
@@ -168,43 +167,37 @@ class ProjectController extends Controller
             }
 
             $data['projects'][$key]['casescount'] = $data['projects'][$key]->cases()->count();
-            
- 
-            
-            $data['projects'][$key]['editable'] =  $data['projects'][$key]->isEditable();
+
+            $data['projects'][$key]['editable'] = $data['projects'][$key]->isEditable();
         }
 
         $data['invites'] = auth()->user()->invites()->get();
-        
+
         foreach ($data['invites'] as $key => $value) {
             $data['invites'][$key]['casescount'] = $data['invites'][$key]->cases()->count();
             $data['invites'][$key]['authiscreator'] = false;
-            $data['invites'][$key]['editable'] =  false;
-            $data['invites'][$key]['owner'] =   $data['invites'][$key]->creator()->email;
+            $data['invites'][$key]['editable'] = false;
+            $data['invites'][$key]['owner'] = $data['invites'][$key]->creator()->email;
             foreach ($data['invites'][$key]->cases() as $cases) {
                 $data['invites'][$key]['entries'] += $cases->entries()->count();
             }
         }
-        $data['invited_projects'] =  auth()->user()->invites;
+        $data['invited_projects'] = auth()->user()->invites;
         $data['projects'] = $data['projects']->merge($data['invites']);
 
-        $data[self::MESSAGE] = "project created!";
+        $data[self::MESSAGE] = 'project created!';
         $data = $this->checkNewsletter($data);
+
         return view('projects.index', $data);
     }
 
-    /**
-     * @param $media
-     * @param $project
-     * @param $mToSync
-     */
     protected function syncMedia($media, $project, &$mToSync): void
     {
         if ($media) {
-            $mToSync = array();
+            $mToSync = [];
             foreach (array_filter($media) as $singleMedia) {
                 $media = Media::where(DB::raw('BINARY name'), $singleMedia)->first();
-                if (!$media) {
+                if (! $media) {
                     $media = new Media;
 
                     $media->name = $singleMedia;
@@ -226,33 +219,33 @@ class ProjectController extends Controller
             'description' => self::REQUIRED,
             'duration' => self::NULLABLE,
             'is_locked' => 'nullable ',
-            self::INPUTS => self::NULLABLE
+            self::INPUTS => self::NULLABLE,
         ]);
         $decodedAttributes = json_decode($attributes[self::INPUTS], true);
         foreach ($decodedAttributes as $input => $value) {
             ray($input);
             ray($value);
-            $decodedAttributes[$input]['answers'] = array_filter($decodedAttributes[$input]['answers'], fn ($v) => !is_null($v) && $v !== '');
+            $decodedAttributes[$input]['answers'] = array_filter($decodedAttributes[$input]['answers'], fn ($v) => ! is_null($v) && $v !== '');
             ray($decodedAttributes);
         }
         ray($decodedAttributes);
 
         $attributes[self::INPUTS] = json_encode($decodedAttributes);
         ray($attributes[self::INPUTS]);
-        
+
         $project->update($attributes);
         $project->save();
         $this->syncMedia($media, $project, $mToSync);
-        return response("Updated project successfully");
-    }
 
+        return response('Updated project successfully');
+    }
 
     public function duplicate(Project $project)
     {
         $copy = $project->replicate();
         $copy->save();
         $copy->media()->sync($project->media()->get());
-        
+
         return response('Project duplicated', 200);
     }
 
@@ -272,42 +265,38 @@ class ProjectController extends Controller
             }
 
             $projects[$key]['casescount'] = $projects[$key]->cases()->count();
-            
- 
-            
-            $projects[$key]['editable'] =  $projects[$key]->isEditable();
+
+            $projects[$key]['editable'] = $projects[$key]->isEditable();
         }
 
         $data['invites'] = auth()->user()->invites()->get();
-        
+
         foreach ($data['invites'] as $key => $value) {
             $data['invites'][$key]['casescount'] = $data['invites'][$key]->cases()->count();
             $data['invites'][$key]['authiscreator'] = false;
-            $data['invites'][$key]['editable'] =  false;
-            $data['invites'][$key]['owner'] =   $data['invites'][$key]->creator()->email;
-            
+            $data['invites'][$key]['editable'] = false;
+            $data['invites'][$key]['owner'] = $data['invites'][$key]->creator()->email;
+
             if (count($data['invites'][$key]) > 0) {
                 foreach ($data['invites'][$key]->cases() as $cases) {
                     $data['invites'][$key]['entries'] += $cases->entries()->count();
                 }
             }
         }
-        $data['invited_projects'] =  auth()->user()->invites;
+        $data['invited_projects'] = auth()->user()->invites;
         $projects = $projects->merge($data['invites']);
 
-
-        return response()->json([self::MESSAGE => 'Project Deleted.','projects' => $projects], 200);
+        return response()->json([self::MESSAGE => 'Project Deleted.', 'projects' => $projects], 200);
     }
 
     /**
-     * @param Request $request
      * @return JsonResponse
      */
     public function inviteUser(Request $request)
     {
         $project = Project::where('id', $request->input(self::PROJECT))->first();
         $user = User::where('email', '=', $request->email)->first();
-        if (!$user) {
+        if (! $user) {
             $user = new User();
             $user->email = $request->email;
             $user->password = Helper::random_str(60);
@@ -316,7 +305,7 @@ class ProjectController extends Controller
             Mail::to($user->email)->send(new VerificationEmail($user, $request->emailtext ? $request->emailtext : config('utilities.emailDefaultText')));
             $role = Role::where('name', '=', 'researcher')->first();
             $user->roles()->sync($role);
-        } elseif (!$user->hasVerifiedEmail()) {
+        } elseif (! $user->hasVerifiedEmail()) {
             $user->api_token = Helper::random_str(60);
             $user->password_token = Helper::random_str(60);
             $user->save();
@@ -325,6 +314,7 @@ class ProjectController extends Controller
             $user->roles()->sync($role);
         }
         $project->invited()->syncWithoutDetaching($user->id);
+
         return response()->json(['user' => $user, self::MESSAGE => 'user was invited!'], 200);
     }
 
@@ -337,6 +327,7 @@ class ProjectController extends Controller
         $user = User::where('email', '=', $request->email)->first();
         if ($user) {
             $user->invites()->detach($request->input(self::PROJECT));
+
             return response()->json([self::MESSAGE => 'user was removed from the project!'], 200);
         } else {
             return response()->json([self::MESSAGE => "The user doesn't exist!"], 403);
@@ -349,11 +340,11 @@ class ProjectController extends Controller
             abort(403, 'you can\'t see the data of this project.');
         }
         $headings = Project::getProjectInputHeadings($project);
+
         return (new AllCasesExport($project->id, $headings))->download('cases from ' . $project->name . ' project.xlsx');
     }
 
     /**
-     * @param $data
      * @return mixed
      */
     private function checkNewsletter($data)
@@ -364,6 +355,7 @@ class ProjectController extends Controller
             $profile = auth()->user()->addProfile(auth()->user());
             $data['newsletter'] = auth()->user()->profile->newsletter === config('enums.newsletter_status.NOT DECIDED');
         }
+
         return $data;
     }
 }

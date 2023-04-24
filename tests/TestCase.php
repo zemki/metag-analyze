@@ -7,36 +7,37 @@ use Illuminate\Foundation\Testing\WithFaker;
 
 abstract class TestCase extends BaseTestCase
 {
-	use CreatesApplication,WithFaker;
+    use CreatesApplication,WithFaker;
 
     /**
-     * @param null $user  Either give the user model or create a new one
-     * @param string $roleName Default:Admin
+     * @param  null  $user  Either give the user model or create a new one
+     * @param  string  $roleName Default:Admin
      * @return mixed the user model
      */
     protected function signIn($user = null, $roleName = 'admin')
-	{
-		$user = $user ?: factory('App\User')->create();
+    {
+        $user = $user ?: factory('App\User')->create();
 
-		$role =factory('App\Role')->create(['name' => $roleName]);
-		$user->roles()->sync($role);
+        $role = factory('App\Role')->create(['name' => $roleName]);
+        $user->roles()->sync($role);
 
-		$this->actingAs($user);
+        $this->actingAs($user);
 
-		return $user;
-	}
+        return $user;
+    }
 
-	protected function create_user(){
+    protected function create_user()
+    {
 
-		$user = [
-			'username' => $this->faker->name,
-			'email' => $this->faker->email,
-			'password' => "test"
-		];
-		 $this->post('/users',$user);
+        $user = [
+            'username' => $this->faker->name,
+            'email' => $this->faker->email,
+            'password' => 'test',
+        ];
+         $this->post('/users', $user);
 
-		 $user = \App\User::where('email',$user['email'])->first();
+         $user = \App\User::where('email', $user['email'])->first();
 
-		 return $user;
-	}
+         return $user;
+    }
 }

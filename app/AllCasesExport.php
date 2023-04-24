@@ -7,17 +7,17 @@ use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
-use Storage;
 
 class AllCasesExport implements FromCollection, WithMapping, WithHeadings
 {
     use Exportable;
-    protected const ENTRY_ID = "entry_id";
+
+    protected const ENTRY_ID = 'entry_id';
 
     /**
      * AllCasesExport constructor.
-     * @param       $id
-     * @param array $headings
+     *
+     * @param  array  $headings
      */
     public function __construct($id, $headings = [])
     {
@@ -26,8 +26,7 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
     }
 
     /**
-     * @return array
-     * @var  $project
+     * @var
      */
     public function map($project): array
     {
@@ -36,46 +35,39 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
         }
         $allEntries = [];
         foreach ($project->cases as $case) {
-            if (!$case->isConsultable()) {
+            if (! $case->isConsultable()) {
                 continue;
             }
             foreach ($case->entries as $entry) {
                 $tempValuesArray = [];
-                $ifCaseHasAdditionalInputs = $project->inputs !== "[]";
+                $ifCaseHasAdditionalInputs = $project->inputs !== '[]';
                 if ($ifCaseHasAdditionalInputs) {
-                    list($jsonInputs, $tempValuesArray) = $this->formatAssociativeNamesAccordingToHeadings($entry, $tempValuesArray);
-                    
+                    [$jsonInputs, $tempValuesArray] = $this->formatAssociativeNamesAccordingToHeadings($entry, $tempValuesArray);
+
                     //$tempValuesArray[self::ENTRY_ID] = $entry->id;
                     $tempValuesArray = $this->printValuesInArray($project, $jsonInputs, $tempValuesArray);
                 }
                 $tempValuesArray[self::ENTRY_ID] = $entry->id;
-                $tempValuesArray["media"] = Media::where('id', $entry->media_id)->first()->name;
-                $tempValuesArray["start"] = $entry->begin;
-                $tempValuesArray["end"] = $entry->end;
-                $tempValuesArray["user_id"] = $case->user_id;
-                $tempValuesArray["case_id"] = $case->id;
+                $tempValuesArray['media'] = Media::where('id', $entry->media_id)->first()->name;
+                $tempValuesArray['start'] = $entry->begin;
+                $tempValuesArray['end'] = $entry->end;
+                $tempValuesArray['user_id'] = $case->user_id;
+                $tempValuesArray['case_id'] = $case->id;
 
                 $tempValuesArray = Arr::flatten($tempValuesArray);
 
                 array_push($allEntries, $tempValuesArray);
             }
         }
+
         return $allEntries;
     }
 
-    /**
-     * @return bool
-     */
     private function invalidData(): bool
     {
         return false;
     }
 
-    /**
-     * @param       $entry
-     * @param array $tempValuesArray
-     * @return array
-     */
     private function formatAssociativeNamesAccordingToHeadings($entry, array $tempValuesArray): array
     {
         $jsonInputs = json_decode($entry->inputs);
@@ -89,11 +81,11 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
 
             //$tempValuesArray = array_unique($tempValuesArray[$heading]);
             } else {
-                $tempValuesArray[$heading] = "";
+                $tempValuesArray[$heading] = '';
             }
         }
 
-        return array($jsonInputs, $tempValuesArray);
+        return [$jsonInputs, $tempValuesArray];
     }
 
     public function headings(): array
@@ -102,18 +94,16 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
         foreach ($this->head as $column) {
             array_push($columnNames, $column);
         }
-        array_push($columnNames, "media");
-        array_push($columnNames, "start");
-        array_push($columnNames, "end");
-        array_push($columnNames, "user_id");
-        array_push($columnNames, "case_id");
+        array_push($columnNames, 'media');
+        array_push($columnNames, 'start');
+        array_push($columnNames, 'end');
+        array_push($columnNames, 'user_id');
+        array_push($columnNames, 'case_id');
+
         return $columnNames;
     }
 
     /**
-     * @param $project
-     * @param $jsonInputs
-     * @param $tempValuesArray
      * @return mixed
      */
     private function printValuesInArray($project, $jsonInputs, $tempValuesArray)
@@ -123,7 +113,7 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
             $projectInputNames[$name] = $project->getAnswersByQuestion($name);
         }
         foreach ($jsonInputs as $key => $input) {
-            if ($key === "firstValue") {
+            if ($key === 'firstValue') {
                 continue;
             }
 
@@ -138,22 +128,13 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
             }
         }
 
-
         return $tempValuesArray;
     }
 
-    /**
-     * @param       $tempValuesArray
-     * @param       $input
-     * @param array $index
-     * @param       $projectInputNames
-     * @param       $key
-     * @param       $numberOfAnswersByQuestion
-     */
     private function formatMultipleAndOneChoiceValues(&$tempValuesArray, $input, array $index, $projectInputNames, $key, $numberOfAnswersByQuestion): void
     {
-        if (!is_null($input)) {
-            if (!is_array($input)) {
+        if (! is_null($input)) {
+            if (! is_array($input)) {
                 $input = [$input];
             }
 
@@ -166,14 +147,14 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
                 if (array_key_exists($i, $index)) {
                     array_push($tempValuesArray[$key][$i], $index[$i]);
                 } else {
-                    array_push($tempValuesArray[$key][$i], "");
+                    array_push($tempValuesArray[$key][$i], '');
                 }
             }
         } else {
             // print empty value
             for ($i = 0; $i < $numberOfAnswersByQuestion; $i++) {
                 $tempValuesArray[$key][$i] = [];
-                array_push($tempValuesArray[$key][$i], "");
+                array_push($tempValuesArray[$key][$i], '');
             }
         }
     }

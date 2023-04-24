@@ -47,7 +47,7 @@ return [
         'url' => env('https://chat.zemki.uni-bremen.de'),
         'token' => env('pggPQhGehrPiRSb2S/3xJ2bPWfYk2pqBBhtGGkgb3Q2JMGvH4DKaPdTANSTdZCtfxk'),
         // Default channel (optional)
-       // 'channel' => env('ROCKETCHAT_CHANNEL'),
-    ]
+        // 'channel' => env('ROCKETCHAT_CHANNEL'),
+    ],
 
 ];

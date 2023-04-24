@@ -42,7 +42,7 @@ return [
     */
 
     'exclude' => [
-        'vendor'
+        'vendor',
     ],
     'ide' => 'phpstorm',
     'add' => [

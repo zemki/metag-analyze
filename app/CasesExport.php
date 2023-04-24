@@ -2,15 +2,11 @@
 
 namespace App;
 
-use App\Cases;
-use App\Entry;
-use App\Media;
 use Illuminate\Support\Arr;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
-use Storage;
 
 class CasesExport implements FromCollection, WithMapping, WithHeadings
 {
@@ -18,8 +14,8 @@ class CasesExport implements FromCollection, WithMapping, WithHeadings
 
     /**
      * CasesExport constructor.
-     * @param       $id
-     * @param array $headings
+     *
+     * @param  array  $headings
      */
     public function __construct($id, $headings = [])
     {
@@ -28,8 +24,7 @@ class CasesExport implements FromCollection, WithMapping, WithHeadings
     }
 
     /**
-     * @return array
-     * @var Interview $entry
+     * @var Interview
      */
     public function map($entry): array
     {
@@ -39,8 +34,8 @@ class CasesExport implements FromCollection, WithMapping, WithHeadings
         $case = Cases::where('id', $entry->case_id)->first();
         $project = $case->project;
         $tempValuesArray = [];
-        $tempValuesArray["#"] = $entry->id;
-        if ($project->inputs != "[]") {
+        $tempValuesArray['#'] = $entry->id;
+        if ($project->inputs != '[]') {
             foreach ($project->getProjectInputNames() as $name) {
                 $projectInputNames[$name] = $project->getAnswersByQuestion($name);
             }
@@ -54,19 +49,19 @@ class CasesExport implements FromCollection, WithMapping, WithHeadings
                     }
                 //$tempValuesArray = array_unique($tempValuesArray[$heading]);
                 } else {
-                    $tempValuesArray[$heading] = "";
+                    $tempValuesArray[$heading] = '';
                 }
             }
-            $tempValuesArray["#"] = $entry->id;
+            $tempValuesArray['#'] = $entry->id;
             foreach ($jsonInputs as $key => $input) {
-                if ($key === "firstValue") {
+                if ($key === 'firstValue') {
                     continue;
                 }
                 $index = [];
                 $numberOfAnswersByQuestion = $project->getNumberOfAnswersByQuestion($key);
                 if ($numberOfAnswersByQuestion > 0) {
                     if ($input != null) {
-                        if (!is_array($input)) {
+                        if (! is_array($input)) {
                             $input = [$input];
                         }
 
@@ -78,13 +73,13 @@ class CasesExport implements FromCollection, WithMapping, WithHeadings
                             if (array_key_exists($i, $index)) {
                                 array_push($tempValuesArray[$key][$i], $index[$i]);
                             } else {
-                                array_push($tempValuesArray[$key][$i], "");
+                                array_push($tempValuesArray[$key][$i], '');
                             }
                         }
                     } else {
                         for ($i = 0; $i < $numberOfAnswersByQuestion; $i++) {
                             $tempValuesArray[$key][$i] = [];
-                            array_push($tempValuesArray[$key][$i], "");
+                            array_push($tempValuesArray[$key][$i], '');
                         }
                     }
                 } else {
@@ -92,16 +87,13 @@ class CasesExport implements FromCollection, WithMapping, WithHeadings
                 }
             }
         }
-        $tempValuesArray["media"] = Media::where('id', $entry->media_id)->first()->name;
-        $tempValuesArray["start"] = $entry->begin;
-        $tempValuesArray["end"] = $entry->end;
-        
+        $tempValuesArray['media'] = Media::where('id', $entry->media_id)->first()->name;
+        $tempValuesArray['start'] = $entry->begin;
+        $tempValuesArray['end'] = $entry->end;
+
         return Arr::flatten($tempValuesArray);
     }
 
-    /**
-     * @return bool
-     */
     private function invalidData(): bool
     {
         return false;
@@ -109,13 +101,14 @@ class CasesExport implements FromCollection, WithMapping, WithHeadings
 
     public function headings(): array
     {
-        $columnNames = ["#"];
+        $columnNames = ['#'];
         foreach ($this->head as $column) {
             array_push($columnNames, $column);
         }
-        array_push($columnNames, "media");
-        array_push($columnNames, "start");
-        array_push($columnNames, "end");
+        array_push($columnNames, 'media');
+        array_push($columnNames, 'start');
+        array_push($columnNames, 'end');
+
         return $columnNames;
     }
 

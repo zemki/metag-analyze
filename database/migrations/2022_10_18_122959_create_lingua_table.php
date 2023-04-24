@@ -8,6 +8,7 @@ class CreateLinguaTable extends Migration
 {
     /**
      * Run the migrations.
+     *
      * @return void
      */
     public function up()
@@ -24,6 +25,7 @@ class CreateLinguaTable extends Migration
 
     /**
      * Reverse the migrations.
+     *
      * @return void
      */
     public function down()

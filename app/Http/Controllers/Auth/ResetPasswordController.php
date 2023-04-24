@@ -16,6 +16,7 @@ class ResetPasswordController extends Controller
 {
     /**
      * Get the password reset validation rules.
+     *
      * @return array
      */
     protected function rules()
@@ -25,7 +26,6 @@ class ResetPasswordController extends Controller
             'password' => 'required|confirmed|min:6',
         ];
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -38,14 +38,17 @@ class ResetPasswordController extends Controller
     |
     */
     use ResetsPasswords;
+
     /**
      * Where to redirect users after resetting their password.
+     *
      * @var string
      */
     protected $redirectTo = '/home';
 
     /**
      * Create a new controller instance.
+     *
      * @return void
      */
     public function __construct()
@@ -53,12 +56,11 @@ class ResetPasswordController extends Controller
         $this->middleware('guest');
     }
 
-
     /**
      * Display the password reset view for the given token.
      * If no token is present, display the link request form.
-     * @param Request     $request
-     * @param string|null $token
+     *
+     * @param  string|null  $token
      * @return Factory|View
      */
     public function showResetForm(Request $request, $token = null)
@@ -71,7 +73,7 @@ class ResetPasswordController extends Controller
 
     /**
      * Reset the given user's password.
-     * @param Request $request
+     *
      * @return Factory|View
      */
     public function reset(Request $request)
@@ -81,11 +83,9 @@ class ResetPasswordController extends Controller
         $tokenData = DB::table('password_resets')
             ->where('email', $request->email)->first();
 
-        if (!$tokenData)
-        {
+        if (! $tokenData) {
             return view('auth.passwords.email', ['message' => 'You don\'t have tokens!']);
-        } else if (!Hash::check($request->token, $tokenData->token))
-        {
+        } elseif (! Hash::check($request->token, $tokenData->token)) {
             return view('auth.passwords.email', ['message' => 'Token mismatch']);
         }
         //Delete the token
@@ -95,7 +95,7 @@ class ResetPasswordController extends Controller
         $this->setUserPassword($user, $request->password);
         $user->setRememberToken(Str::random(60));
         $user->save();
+
         return view('auth.login', ['message' => 'Password Reset Successfully done.']);
     }
-
 }

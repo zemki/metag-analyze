@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\User[] $users
  * @property-read int|null $users_count
+ *
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Group newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Group newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Group query()
@@ -24,6 +25,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Group whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Group whereOwnerId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Group whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class Group extends Model
@@ -32,7 +34,7 @@ class Group extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'is_active'
+        'name', 'is_active',
     ];
 
     public function projects()
