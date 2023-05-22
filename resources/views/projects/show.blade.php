@@ -32,18 +32,18 @@
         <div class="border-b border-gray-200">
             <nav class="flex -mb-px" aria-label="Tabs">
                 <a href="#" @click="selectedProjectPage = 0"
-                    :class="selectedProjectPage == 0? 'w-1/3 px-1 py-4 text-sm font-medium text-center text-black border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300' : 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'">
+                    :class="selectedProjectPage == 0? 'flex-grow px-1 py-4 text-sm font-medium text-center text-black border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300' : 'flex-grow px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'">
                     {{__('Cases')}} </a>
 
                 <a href="#" @click="selectedProjectPage = 1"
-                    :class="selectedProjectPage == 1? 'w-1/3 px-1 py-4 text-sm font-medium text-center text-black border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300' : 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'">
+                    :class="selectedProjectPage == 1? 'flex-grow px-1 py-4 text-sm font-medium text-center text-black border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300' : 'flex-grow px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'">
                     {{__('Edit Project')}} </a>
+
                 @if(auth()->user()->is($project->creator()))
                 <a href="#" @click="selectedProjectPage = 2"
-                    :class="selectedProjectPage == 2? 'w-1/3 px-1 py-4 text-sm font-medium text-center text-black border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300' : 'w-1/4 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'"
+                    :class="selectedProjectPage == 2? 'flex-grow px-1 py-4 text-sm font-medium text-center text-black border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300' : 'flex-grow px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'"
                     aria-current="page"> {{__('Invite Collaborator')}} </a>
                 @endif
-
             </nav>
         </div>
         <div v-if="selectedProjectPage == 0">
@@ -119,6 +119,12 @@
                                                 <span>{{ trans("Delete Case") }}</span>
                                             </button>
                                         </div>
+                                        <div class="flex-none">
+                                                <svg class="w-6 h-6 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                    stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                                </svg>
+                                            </div>
                                     </div>
 
                                 </li>
@@ -129,7 +135,8 @@
                             <div class="w-1/2 p-4 mt-4 rounded-md bg-blue-50">
                                 <div class="flex">
                                     <div class="flex-shrink-0">
-                                        <svg class="w-5 h-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <svg class="w-5 h-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor"
+                                            aria-hidden="true">
                                             <path fill-rule="evenodd"
                                                 d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z"
                                                 clip-rule="evenodd" />
@@ -138,7 +145,8 @@
                                     <div class="flex-1 ml-3 md:flex md:justify-between">
                                         <p class="text-sm text-blue-700">{{__("You don't have any case")}}</p>
                                         <p class="mt-3 text-sm md:mt-0 md:ml-6">
-                                            <a href="{{url($project->path().'/cases/new')}}" class="font-medium text-blue-700 whitespace-nowrap hover:text-blue-600">
+                                            <a href="{{url($project->path().'/cases/new')}}"
+                                                class="font-medium text-blue-700 whitespace-nowrap hover:text-blue-600">
                                                 {{__('Create one')}}
                                                 <span aria-hidden="true"> &rarr;</span>
                                             </a>

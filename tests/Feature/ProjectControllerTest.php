@@ -154,4 +154,28 @@ public function testCreateProjectWithCasesAndEntries()
     }
 
 }
+
+public function testDestroyProjectWithCasesAndEntries()
+{
+
+    $user = User::factory()->researcher()->create();
+    $project = Project::factory()->create(['created_by' => $user->id]);
+    $user->projects()->save($project);
+
+    // Create 5 cases
+    $cases = Cases::factory(5)->create(['project_id' => $project->id]);
+
+    // Create 100 entries for each case
+    foreach ($cases as $case) {
+        $entries = Entry::factory(100)->create(['case_id' => $case->id]);
+        $this->assertCount(100, $entries);
+    }
+
+    $this->actingAs($user);
+    $response = $this->delete(route('projects.destroy', $project));
+    $response->assertStatus(200);
+    $this->assertDatabaseMissing('projects', ['id' => $project->id]);
+
+
+}
 }
