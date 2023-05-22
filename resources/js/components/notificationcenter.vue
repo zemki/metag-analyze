@@ -41,7 +41,11 @@
       </nav>
     </div>
     <div v-if="activeTab == 0">
-      <div class="my-4" v-for="(oneCase, index) in arrayOfCases" :key="index">
+      <div
+        class="my-4 space-y-4"
+        v-for="(oneCase, index) in arrayOfCases"
+        :key="index"
+      >
         <h2 class="text-2xl break-words">
           {{ trans("Case Name: ")
           }}<span class="font-bold">{{ oneCase.name }}</span>
@@ -78,57 +82,60 @@
           {{ trans("No device registered, you can't send notifications.") }}
         </p>
         <div
-          class="block"
+          class="block space-y-4"
           v-if="!oneCase.expired && oneCase.user.deviceID.length !== 0"
         >
-          <label
-            for="name"
-            class="text-base font-bold tracking-wide text-gray-700 uppercase"
-          >
-            {{ trans("Notification Title") }} *
-          </label>
-          <input
-            v-model="oneCase.title"
-            :maxlength="inputLength.title"
-            type="text"
-            class="block w-full px-4 py-2 mb-0 mb-4 leading-normal bg-white border border-gray-300 appearance-none"
-            name="name"
-          />
-          <span
-            style="margin-top: -20px"
-            :class="
-              oneCase.title && inputLength.title <= oneCase.title.length
-                ? 'text-red-600 text-xs w-auto inline-flex float-right'
-                : 'text-xs text-gray-500 w-auto inline-flex float-right'
-            "
-            >{{
-              inputLength.title - (oneCase.title ? oneCase.title.length : 0)
-            }}/{{ inputLength.title }}
-          </span>
-          <label
-            for="name"
-            class="text-base font-bold tracking-wide text-gray-700 uppercase"
-          >
-            {{ trans("Notification Text") }} *
-          </label>
-          <textarea
-            :maxlength="inputLength.message"
-            v-model="oneCase.message"
-            class="block w-full px-4 py-2 border resize focus:border-blue-700"
-          ></textarea>
-          <span
-            style="margin-top: -20px"
-            :class="
-              oneCase.message && inputLength.message <= oneCase.message.length
-                ? 'text-red-600 text-xs w-auto inline-flex float-right'
-                : 'text-xs text-gray-500 w-auto inline-flex float-right'
-            "
-            >{{
-              inputLength.message -
-              (oneCase.message ? oneCase.message.length : 0)
-            }}/{{ inputLength.message }}
-          </span>
-
+          <div>
+            <label
+              for="name"
+              class="text-base font-bold tracking-wide text-gray-700 uppercase"
+            >
+              {{ trans("Notification Title") }} *
+            </label>
+            <input
+              v-model="oneCase.title"
+              :maxlength="inputLength.title"
+              type="text"
+              class="block w-full px-4 py-2 mb-0 mb-4 leading-normal bg-white border border-gray-300 appearance-none"
+              name="name"
+            />
+            <span
+              style="margin-top: -20px"
+              :class="
+                oneCase.title && inputLength.title <= oneCase.title.length
+                  ? 'text-red-600 text-xs w-auto inline-flex float-right'
+                  : 'text-xs text-gray-500 w-auto inline-flex float-right'
+              "
+              >{{
+                inputLength.title - (oneCase.title ? oneCase.title.length : 0)
+              }}/{{ inputLength.title }}
+            </span>
+          </div>
+          <div>
+            <label
+              for="name"
+              class="text-base font-bold tracking-wide text-gray-700 uppercase"
+            >
+              {{ trans("Notification Text") }} *
+            </label>
+            <textarea
+              :maxlength="inputLength.message"
+              v-model="oneCase.message"
+              class="block w-full px-4 py-2 border resize focus:border-blue-700"
+            ></textarea>
+            <span
+              style="margin-top: -20px"
+              :class="
+                oneCase.message && inputLength.message <= oneCase.message.length
+                  ? 'text-red-600 text-xs w-auto inline-flex float-right'
+                  : 'text-xs text-gray-500 w-auto inline-flex float-right'
+              "
+              >{{
+                inputLength.message -
+                (oneCase.message ? oneCase.message.length : 0)
+              }}/{{ inputLength.message }}
+            </span>
+          </div>
           <p
             class="font-bold break-words"
             v-if="oneCase.user.deviceID.length !== 0"
@@ -180,46 +187,46 @@
             >
               {{ trans("Select Frequency and time") }} *
             </label>
-            <div class="flex w-full">
+            <div
+              class="flex flex-col items-start w-full md:flex-row md:items-center md:space-x-2"
+            >
               <select
                 v-model="oneCase.selectedFrequency"
-                class="flex-none w-1/3 px-2 py-1 pr-4 leading-tight bg-white border border-gray-300 focus:bg-white focus:border-gray-500"
+                class="block w-full py-1 text-gray-900 border-0 rounded-md shadow-sm md:w-auto md:flex-grow md:flex-shrink ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 id="grid-state"
                 name="notification frequency"
               >
                 <option v-for="f in frequency" :value="f">{{ f }}</option>
               </select>
               <div
-                class="w-40 px-4 py-2 mx-2 bg-white border border-gray-300 border-solid"
+                class="flex flex-row items-center w-full space-x-2 md:mt-0 md:w-auto"
               >
-                <div class="flex-auto text-center">
-                  <select
-                    v-model="oneCase.selectedHour"
-                    name="hours"
-                    class="px-2 py-1 pr-4 text-xl bg-white outline-none appearance-none"
-                  >
-                    <option v-for="hour in hours" :value="hour">
-                      {{ hour }}
-                    </option>
-                  </select>
-                  <span class="mr-3 text-xl">:</span>
-                  <select
-                    v-model="oneCase.selectedMinutes"
-                    name="minutes"
-                    class="px-2 py-1 pr-4 text-xl bg-white outline-none appearance-none"
-                  >
-                    <option v-for="minute in minutes" :value="minute">
-                      {{ minute }}
-                    </option>
-                  </select>
-                </div>
+                <select
+                  v-model="oneCase.selectedHour"
+                  name="hours"
+                  class="w-full py-1 text-gray-900 border-0 rounded-md shadow-sm md:w-auto ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                >
+                  <option v-for="hour in hours" :value="hour">
+                    {{ hour }}
+                  </option>
+                </select>
+                <span class="text-xl md:text-base">:</span>
+                <select
+                  v-model="oneCase.selectedMinutes"
+                  name="minutes"
+                  class="w-full py-1 text-gray-900 border-0 rounded-md shadow-sm md:w-auto ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                >
+                  <option v-for="minute in minutes" :value="minute">
+                    {{ minute }}
+                  </option>
+                </select>
+                <button
+                  class="w-full px-2 py-1 text-sm font-semibold text-blue-700 bg-transparent border border-blue-500 md:mt-0 md:w-auto hover:bg-blue-500 hover:text-white hover:border-transparent"
+                  @click="planNotification(oneCase)"
+                >
+                  {{ trans("Plan Notification") }}
+                </button>
               </div>
-              <button
-                class="px-4 py-2 mt-2 font-semibold text-blue-700 bg-transparent border border-blue-500 hover:bg-blue-500 hover:text-black hover:border-transparent"
-                @click="planNotification(oneCase)"
-              >
-                {{ trans("Plan Notification") }}
-              </button>
             </div>
           </div>
         </div>
