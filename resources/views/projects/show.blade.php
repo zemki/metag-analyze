@@ -59,7 +59,7 @@
                                 @foreach($casesWithEntries as $case)
 
                                 <li @click="updateSelectedCase({{$case}})"
-                                    :class="selectedCase.id == {{$case->id}} ? 'relative px-6 py-5 bg-gray-300 cursor-pointer' : 'relative px-6 py-5 bg-white even:bg-slate-50 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-blue-600 cursor-pointer'">
+                                    :class="selectedCase.id == {{$case->id}} ? 'relative px-6 py-5 bg-gray-300 cursor-pointer' : 'relative px-6 py-5 bg-white even:bg-slate-50 hover:bg-gray-100 focus-within:ring-2 focus-within:ring-inset focus-within:ring-blue-600 cursor-pointer'">
                                     <div class="flex justify-between space-x-3">
                                         <div class="flex-1 w-1/2 min-w-0">
                                             <span class="absolute inset-0" aria-hidden="true"></span>
@@ -119,12 +119,13 @@
                                                 <span>{{ trans("Delete Case") }}</span>
                                             </button>
                                         </div>
-                                        <div class="flex-none">
-                                                <svg class="w-6 h-6 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                    stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                                </svg>
-                                            </div>
+                                        <div class="flex items-center flex-none">
+                                            <svg class="w-6 h-6 text-gray-400" xmlns="http://www.w3.org/2000/svg"
+                                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                            </svg>
+                                        </div>
                                     </div>
 
                                 </li>

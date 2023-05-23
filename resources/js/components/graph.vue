@@ -1,13 +1,13 @@
 <template>
-    <div :id="'chart' + graphid"></div>
+  <div :id="'chart' + graphid"></div>
 </template>
 
 <script>
-import Highcharts from 'highcharts';
+import Highcharts from "highcharts";
 
 export default {
-  props: ['info', 'title', 'availabledata'],
-  name: 'graph',
+  props: ["info", "title", "availabledata"],
+  name: "graph",
   created() {
     const self = this;
 
@@ -42,32 +42,32 @@ export default {
           enabled: false,
         },
         colors: [
-          '#058DC7',
-          '#50B432',
-          '#ED561B',
-          '#DDDF00',
-          '#24CBE5',
-          '#64E572',
-          '#FF9655',
-          '#FFF263',
-          '#6AF9C4',
+          "#058DC7",
+          "#50B432",
+          "#ED561B",
+          "#DDDF00",
+          "#24CBE5",
+          "#64E572",
+          "#FF9655",
+          "#FFF263",
+          "#6AF9C4",
         ],
         title: {
           style: {
-            color: '#000',
-            fontSize: '25px',
-            textTransform: 'uppercase',
+            color: "#000",
+            fontSize: "25px",
+            textTransform: "uppercase",
           },
         },
         subtitle: {
           style: {
-            color: '#666666',
+            color: "#666666",
             font: 'bold 12px "Trebuchet MS", Verdana, sans-serif',
           },
         },
         legend: {
           itemHoverStyle: {
-            color: 'gray',
+            color: "gray",
           },
         },
       };
@@ -75,70 +75,72 @@ export default {
       // Apply the theme
       Highcharts.setOptions(Highcharts.theme);
     },
-    preparedata() {
-      const self = this;
+    arraysEqual(a, b) {
+      if (a === b) return true;
+      if (a == null || b == null) return false;
+      if (a.length !== b.length) return false;
 
-      function arraysEqual(a, b) {
-        if (a === b) return true;
-        if (a == null || b == null) return false;
-        if (a.length !== b.length) return false;
-
-        // If you don't care about the order of the elements inside
-        // the array, you should sort both arrays here.
-        // Please note that calling sort on an array will modify that array.
-        // you might want to clone your array first.
-
-        for (let i = 0; i < a.length; ++i) {
-          if (a[i] !== b[i]) return false;
-        }
-        return true;
+      for (let i = 0; i < a.length; ++i) {
+        if (a[i] !== b[i]) return false;
       }
+      return true;
+    },
 
-      _.forEach(this.avdata, (o) => {
-        self.realdata.push({ name: o.toString().trim(), data: [] });
+    isScale() {
+      return this.arraysEqual(
+        Array.from(this.realdata, (x) => x.name),
+        ["0", "1", "2", "3", "4", "5"]
+      );
+    },
+
+    prepareDataValue(data, rl) {
+      if (
+        data.value == rl.name ||
+        (_.isArray(data.value) && data.value.includes(rl.name)) ||
+        this.isScale()
+      ) {
+        return data.value;
+      }
+      return "";
+    },
+
+    prepareStartEnd(data) {
+      var split = data.start
+        .substring(0, data.start.indexOf("."))
+        .split(/[^0-9]/);
+      split[1] -= 1;
+      let start = Date.UTC(...split);
+
+      split = data.end.substring(0, data.start.indexOf(".")).split(/[^0-9]/);
+      split[1] -= 1;
+      let end = Date.UTC(...split);
+
+      return { start, end };
+    },
+
+    preparedata() {
+      this.avdata.forEach((o) => {
+        this.realdata.push({ name: o.toString().trim(), data: [] });
       });
 
-      _.forEach(this.info, (data, key) => {
-        if (key === 'available' || key === 'title') return;
+      this.info.forEach((data, key) => {
+        if (key === "available" || key === "title") return;
 
-        _.forEach(self.realdata, (rl) => {
-          const isScale = arraysEqual(
-            Array.from(self.realdata, (x) => x.name),
-            ['0', '1', '2', '3', '4', '5'],
-          );
-          if (
-            data.value == rl.name
-            || (_.isArray(data.value) && data.value.includes(rl.name))
-            || isScale
-          ) {
-            var split = data.start
-              .substring(0, data.start.indexOf('.'))
-              .split(/[^0-9]/);
-            split[1] -= 1;
-            let start = Date.UTC(...split);
-
-            var split = data.end
-              .substring(0, data.start.indexOf('.'))
-              .split(/[^0-9]/);
-            split[1] -= 1;
-            let end = Date.UTC(...split);
-            let datavalue = data.value;
-            if (isScale && data.value != rl.name) {
-              datavalue = '';
-              start = '';
-              end = '';
-            }
+        this.realdata.forEach((rl) => {
+          let datavalue = this.prepareDataValue(data, rl);
+          if (datavalue !== "") {
+            let { start, end } = this.prepareStartEnd(data);
             rl.data.push({
               start,
               end,
-              name: datavalue != '' ? datavalue.toString().trim() : '',
+              name: datavalue.toString().trim(),
             });
           }
         });
       });
 
-      _.forEach(self.realdata, (d, i) => {
-        _.forEach(d.data, (data) => {
+      this.realdata.forEach((d, i) => {
+        d.data.forEach((data) => {
           data.y = i;
         });
       });
@@ -158,8 +160,8 @@ export default {
         subtitle: {
           text:
             document.ontouchstart === undefined
-              ? 'Click and drag in the plot area to zoom in'
-              : 'Pinch the chart to zoom in',
+              ? "Click and drag in the plot area to zoom in"
+              : "Pinch the chart to zoom in",
         },
         xAxis: {
           tickInterval: 1000 * 60 * 60 * 12, // Day,
@@ -175,14 +177,14 @@ export default {
           ],
         },
         chart: {
-          zoomType: 'x',
+          zoomType: "x",
           spacingRight: 10,
         },
         navigator: {
           enabled: true,
           liveRedraw: true,
           series: {
-            type: 'gantt',
+            type: "gantt",
           },
         },
         scrollbar: {
@@ -201,13 +203,13 @@ export default {
 
 <style scoped>
 [id^="chart"] {
-    width: 100%;
-    height: 100%;
-    overflow: visible !important;
-    margin: 30px auto;
+  width: 100%;
+  height: 100%;
+  overflow: visible !important;
+  margin: 30px auto;
 }
 
 .highcharts-root {
-    font-family: "Courier New", monospace;
+  font-family: "Courier New", monospace;
 }
 </style>
