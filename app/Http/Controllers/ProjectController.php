@@ -85,6 +85,9 @@ class ProjectController extends Controller
         $data[self::CASES] = $project->cases;
         $data['casesWithUsers'] = $project->cases()->with('user')->get();
         $data['casesWithEntries'] = $project->cases()->with('user', 'project', 'entries')->orderBy('created_at', 'desc')->get();
+        
+
+        
 
         foreach ($data['casesWithEntries'] as $case) {
             $case->entries->map(function ($entry) {
@@ -119,6 +122,7 @@ class ProjectController extends Controller
                 }
             });
         }
+        
 
         $data[self::PROJECT . 'media'] = $project->media()->pluck('media.name')->toArray();
         $data['invites'] = $project->invited()->get();

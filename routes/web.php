@@ -10,25 +10,15 @@
 |
 */
 
+use App\Http\Controllers\EntryController;
+
 Auth::routes(['verify' => true]);
 
 Route::get('/password/set', 'Auth\VerificationController@showresetpassword');
 Route::get('/setpassword', 'Auth\VerificationController@showresetpassword');
 Route::post('/password/new', 'Auth\VerificationController@newpassword');
 
-Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'verified', 'haspowers', 'LoggedUser']], static function () {
-    /**
-     * Admin Routes
-     */
-    Route::lingua('translations');
-    Route::get('/', 'AdminController@index');
-    Route::get('/users', 'AdminController@indexUsers');
-    Route::get('/cases', 'AdminController@indexCases');
-    Route::get('/users/new', 'UserController@create')->name('newadminusers');
-    Route::get('/deletedeviceid/{user}', 'AdminController@deletedeviceid')->name('deletedeviceid');
-    Route::get('/resetapitoken/{user}', 'AdminController@resetapitoken')->name('resetapitoken');
-    Route::get('/newsletter', 'AdminController@listForNewsletter');
-});
+
 
 Route::group(['middleware' => ['auth', 'authorised', 'verified', 'LoggedUser']], function () {
     Route::get('/verifyNewEmail', 'Auth\EmailChangeController@verify')->name('verifyNewEmail');

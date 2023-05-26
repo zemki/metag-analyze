@@ -5,7 +5,10 @@
   >
     <!--Modal-->
     <div
-      class="relative z-10"
+      :class="{
+        'opacity-0': !editentry.modal,
+        'pointer-events-none': !editentry.modal,
+      }"
       aria-labelledby="modal-title"
       role="dialog"
       aria-modal="true"
@@ -13,10 +16,10 @@
     >
       <div
         @click="toggleEntryModal()"
-        class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
+        class="fixed inset-0 z-30 transition-opacity bg-gray-500 bg-opacity-75"
       ></div>
 
-      <div class="fixed inset-0 z-10 overflow-y-auto">
+      <div class="fixed inset-0 z-10 z-50 overflow-y-auto">
         <div
           class="flex items-end justify-center min-h-full p-4 text-center sm:items-center sm:p-0"
         >
@@ -25,10 +28,13 @@
           >
             <div>
               <div class="flex items-center justify-between pb-3">
-                <p class="text-2xl font-bold" v-if="actuallysave">
+                <p class="text-2xl font-bold" v-if="editentry.actuallysave">
                   {{ trans("Add Entry") }}
                 </p>
-                <p class="text-2xl font-bold" v-else-if="!actuallysave">
+                <p
+                  class="text-2xl font-bold"
+                  v-else-if="!editentry.actuallysave"
+                >
                   {{ trans("Edit Entry") }}
                 </p>
                 <div @click="toggleEntryModal()" class="z-50 cursor-pointer">
@@ -207,7 +213,7 @@
         >
           <button
             type="button"
-            class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-900 bg-white hover:bg-blue-500 hover:text-white focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
+            class="relative z-0 inline-flex items-center px-4 py-2 text-sm font-medium text-gray-900 bg-white hover:bg-blue-500 hover:text-white focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
           >
             <svg
               class="mr-2.5 h-5 w-5 text-gray-400"
@@ -230,7 +236,7 @@
         <a :href="groupedCasesPath()">
           <button
             type="button"
-            class="relative inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-900 bg-white hover:bg-blue-500 hover:text-white focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
+            class="relative z-0 inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-900 bg-white hover:bg-blue-500 hover:text-white focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -577,7 +583,7 @@ export default {
       required: false,
     },
     projectinputs: {
-      type: String,
+      type: Array,
       required: true,
     },
   },
@@ -585,7 +591,7 @@ export default {
     return {
       caseIsSet: false,
       caseNotEnded: false,
-      casesIsSet: false,
+
       editentry: {
         id: 0,
         case_id: 0,
@@ -604,127 +610,78 @@ export default {
   },
   beforeDestroy() {
     this.caseIsSet = false;
-    this.casesIsSet = false;
   },
   computed: {
     showCase() {
       return this.caseIsSet && this.selectedCase.consultable;
     },
     selectedCase: {
-      // get and set the selected case
       get() {
         if (this.cases && this.cases.name) {
-          this.cases.entries.forEach((entry) => {
-            this.$set(
-              entry,
-              "created_at_readable",
-              moment(entry.created_at).format("DD.MM.YYYY H:m:ss")
-            );
-            if (typeof entry.inputs !== "object") {
-              entry.inputs = JSON.parse(entry.inputs);
-            }
-
-            if (entry.inputs.firstValue) {
-              entry.inputs.firstValue.begin_readable = moment(
-                entry.inputs.firstValue.begin
-              ).format("DD.MM.YYYY HH:mm");
-              entry.inputs.firstValue.end_readable = moment(
-                entry.inputs.firstValue.end
-              ).format("DD.MM.YYYY HH:mm");
-              if (typeof entry.inputs.firstValue.inputs !== "object") {
-                entry.inputs.firstValue.inputs = JSON.parse(
-                  entry.inputs.firstValue.inputs
-                );
-              }
-            }
-            if (entry.inputs.file) {
-              this.$set(
-                entry,
-                "created_for_soundplayer",
-                moment(entry.file_object.created_at).format("DD.MM.YYYY H:m:ss")
-              );
-            }
-
-            this.$set(
-              entry,
-              "begin_readable",
-              moment(entry.begin).format("DD.MM.YYYY H:m:ss")
-            );
-            this.$set(
-              entry,
-              "end_readable",
-              moment(entry.end).format("DD.MM.YYYY H:m:ss")
-            );
-          });
           this.caseIsSet = true;
-
-          return this.cases;
+          let processedCases = { ...this.cases };
+          processedCases.entries = this.processEntries(this.cases.entries);
+          return processedCases;
         }
       },
       set(newCase) {
         if (newCase && newCase.name) {
-          newCase.entries.forEach((entry) => {
-            this.$set(
-              entry,
-              "created_at_readable",
-              moment(entry.created_at).format("DD.MM.YYYY H:m:ss")
-            );
-            entry.inputs = JSON.parse(entry.inputs);
-            if (entry.inputs.file) {
-              this.$set(
-                entry,
-                "created_for_soundplayer",
-                moment(entry.file_object.created_at).format("DD.MM.YYYY H:m:ss")
-              );
-            }
-            if (entry.inputs.firstValue) {
-              entry.inputs.firstValue.begin_readable = moment(
-                entry.inputs.firstValue.begin
-              ).format("DD.MM.YYYY HH:mm");
-              entry.inputs.firstValue.end_readable = moment(
-                entry.inputs.firstValue.end
-              ).format("DD.MM.YYYY HH:mm");
-              if (typeof entry.inputs.firstValue.inputs !== "object") {
-                entry.inputs.firstValue.inputs = JSON.parse(
-                  entry.inputs.firstValue.inputs
-                );
-              }
-            }
-
-            this.$set(
-              entry,
-              "begin_readable",
-              moment(entry.begin).format("DD.MM.YYYY H:m:ss")
-            );
-            this.$set(
-              entry,
-              "end_readable",
-              moment(entry.end).format("DD.MM.YYYY H:m:ss")
-            );
-          });
+          let processedCase = { ...newCase };
+          processedCase.entries = this.processEntries(newCase.entries);
           this.caseIsSet = true;
-
-          return newCase;
+          return processedCase;
         }
       },
     },
   },
   created() {},
   methods: {
-    entrySaveAndClose() {
-      if (this.MandatoryNewEntry()) {
-        this.$buefy.snackbar.open(this.trans("Check your mandatory entries."));
-        return;
-      }
+    processEntries(entries) {
+      return entries.map((entry) => {
+        entry.created_at_readable = moment(entry.created_at).format(
+          "DD.MM.YYYY H:m:ss"
+        );
 
+        if (typeof entry.inputs !== "object") {
+          entry.inputs = JSON.parse(entry.inputs);
+        }
+
+        if (entry.inputs.firstValue) {
+          entry.inputs.firstValue.begin_readable = moment(
+            entry.inputs.firstValue.begin
+          ).format("DD.MM.YYYY HH:mm");
+          entry.inputs.firstValue.end_readable = moment(
+            entry.inputs.firstValue.end
+          ).format("DD.MM.YYYY HH:mm");
+
+          if (typeof entry.inputs.firstValue.inputs !== "object") {
+            entry.inputs.firstValue.inputs = JSON.parse(
+              entry.inputs.firstValue.inputs
+            );
+          }
+        }
+
+        if (entry.inputs.file) {
+          entry.created_for_soundplayer = moment(
+            entry.file_object.created_at
+          ).format("DD.MM.YYYY H:m:ss");
+        }
+
+        entry.begin_readable = moment(entry.begin).format("DD.MM.YYYY H:m:ss");
+        entry.end_readable = moment(entry.end).format("DD.MM.YYYY H:m:ss");
+
+        return entry;
+      });
+    },
+    entrySaveAndClose() {
       const self = this;
       window.axios
         .post(
           `${window.location.origin + this.productionUrl}/cases/${
-            this.editentry.case_id
+            this.cases.id
           }/entries`,
           {
-            case_id: this.editentry.case_id,
+            case_id: this.cases.id,
             inputs: this.editentry.data.inputs,
             begin: moment(this.editentry.data.start).format(
               "YYYY-MM-DD HH:mm:ss.SSSSSS"
@@ -732,11 +689,12 @@ export default {
             end: moment(this.editentry.data.end).format(
               "YYYY-MM-DD HH:mm:ss.SSSSSS"
             ),
-            media_id: this.editentry.data.media_id,
+            media_id: this.editentry.data.media,
           }
         )
         .then((response) => {
           self.$buefy.snackbar.open(self.trans("Entry successfully sent."));
+          setTimeout(() => window.location.reload(), 500);
         })
         .catch((error) => {
           self.$buefy.snackbar.open(
@@ -745,29 +703,26 @@ export default {
             )
           );
         });
-
-      this.toggleModal();
-      this.editentry.data = {};
     },
-    MandatoryNewEntry() {
-      const self = this;
-      return (
-        _.isEmpty(self.newentry.data.media_id) ||
-        self.newentry.data.start === "" ||
-        self.newentry.data.end === ""
-      );
-    },
-    MandatoryEditEntry() {
+    MandatoryEntry() {
       const self = this;
 
-      return (
-        self.editentry.data.media_id === "" ||
-        self.editentry.data.start === "" ||
-        self.editentry.data.end === ""
-      );
+      if (this.editentry.actuallysave) {
+        return (
+          self.editentry.data.media === "" ||
+          self.editentry.data.start === "" ||
+          self.editentry.data.end === ""
+        );
+      } else {
+        return (
+          self.editentry.data.media_id === "" ||
+          self.editentry.data.start === "" ||
+          self.editentry.data.end === ""
+        );
+      }
     },
     editEntryAndClose() {
-      if (this.MandatoryEditEntry()) {
+      if (this.MandatoryEntry()) {
         this.$buefy.snackbar.open(this.trans("Check your mandatory entries."));
         return;
       }
@@ -818,32 +773,30 @@ export default {
         end: null,
       }
     ) {
+      let self = this;
+
       if (entry.id !== null) {
-        this.editentry.id = entry.id;
-        this.editentry.case_id = entry.case_id;
-        this.editentry.inputs = this.projectinputs;
-        this.editentry.data.inputs = entry.inputs;
-        this.editentry.data.media_id = entry.media_id;
-        this.editentry.data.media = entry.media;
-        this.editentry.data.start = moment(entry.begin)
+        self.editentry.id = entry.id;
+        self.editentry.case_id = entry.case_id;
+        self.editentry.inputs = self.projectinputs;
+        self.editentry.data.inputs = entry.inputs;
+        self.editentry.data.media_id = entry.media_id;
+        self.editentry.data.media = entry.media;
+        self.editentry.data.start = moment(entry.begin)
           .add(moment(entry.begin).utcOffset(), "minutes")
           .toISOString()
           .replace("Z", "");
-        this.editentry.data.end = moment(entry.end)
+        self.editentry.data.end = moment(entry.end)
           .add(moment(entry.end).utcOffset(), "minutes")
           .toISOString()
           .replace("Z", "");
       } else {
-        this.editentry.actuallysave = true;
-        this.editentry.inputs = this.projectinputs;
+        self.editentry.actuallysave = true;
+        self.editentry.inputs = self.projectinputs;
       }
-      this.editentry.modal = !this.editentry.modal;
-      const body = document.querySelector("body");
-      const modal = document.querySelector(".modal");
-      modal.classList.toggle("opacity-0");
-      modal.classList.toggle("pointer-events-none");
-      body.classList.toggle("modal-active");
+      self.editentry.modal = !self.editentry.modal;
     },
+
     editentrydateselected(edit = "") {
       if (edit === "") {
         this.editentry.data.end = new Date(

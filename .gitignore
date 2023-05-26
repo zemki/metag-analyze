@@ -16,7 +16,6 @@ Homestead.yaml
 Homestead.json
 /.vagrant
 .idea/
-.idea/workspace.xml
 config/iosCertificates/pushcert.pem
 config/pushnotification.php
 composer.lock
@@ -29,13 +28,9 @@ public/js/*.js
 public/mix-manifest.json
 package.json
 
-
 *.css
 *.js
 
-
-.idea/workspace.xml
-.idea/*
 /resources/lang/
 yarn.lock
 /.prettierrc.json

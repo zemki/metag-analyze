@@ -13,8 +13,10 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Mail;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasName;
 
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable implements MustVerifyEmail, FilamentUser, HasName
 {
     use Notifiable, SoftDeletes, HasFactory;
 
@@ -53,6 +55,17 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $hidden = [
         'password', 'remember_token',
     ];
+
+    public function getFilamentName(): string
+    {
+        return $this->email;
+    }
+
+
+    public function canAccessFilament(): bool
+    {
+        return $this->email == "belli@uni-bremen.de" || $this->email == "fhohmann@uni-bremen.de";
+    }
 
     public static function boot()
     {
