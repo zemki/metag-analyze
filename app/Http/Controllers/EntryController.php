@@ -42,7 +42,13 @@ class EntryController extends Controller
      */
     public function store(Cases $case)
     {
-        $this->authorize('update', [Entry::class, $case]);
+        $this->authorize('store', [Entry::class, $case]);
+
+        // if request has "media" key, assign it to the key "media_id"
+        if (request()->has('media')) {
+            request()->merge([self::MEDIA_ID => request()->media]);
+        }
+        
         $attributes = request()->validate([
             self::BEGIN => self::REQUIRED,
             'end' => self::REQUIRED,
@@ -87,7 +93,7 @@ class EntryController extends Controller
      */
     public function update(Cases $case, Entry $entry)
     {
-        $this->authorize('update', [Entry::class, $case]);
+        $this->authorize('update', [Entry::class, $entry]);
         $attributes = request()->validate([
             self::BEGIN => self::REQUIRED,
             'end' => self::REQUIRED,
@@ -108,7 +114,8 @@ class EntryController extends Controller
             $entry->update(['inputs->firstValue' => $oldEntry]);
         }
 
-        if (request()->hasHeader('x-file-token') && request()->header('x-file-token') !== '0') {
+        if (request()->hasHeader('x-file-token') && request()->header('x-file-token') !== '0' && request()->header('x-file-token') !== '') {
+            
             $appToken = request()->header('x-file-token');
             $clientFileTokenIsSameWithServer = strcmp(Crypt::decryptString($case->file_token), $appToken) !== 0;
             $keepExistingAudioFile = request()->has('audio') && empty(request()->input('audio') && property_exists($oldInputs, 'file'));

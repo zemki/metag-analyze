@@ -19,6 +19,8 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Redirector;
+use Illuminate\Validation\ValidationException;
+use Request;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ProjectCasesController extends Controller
@@ -149,45 +151,17 @@ class ProjectCasesController extends Controller
         return view('cases.create', $data);
     }
 
-    /**
-     * @return RedirectResponse|Redirector
-     *
-     * @throws AuthorizationException
-     */
-    public function store(Project $project)
+  
+    private function createCases(Project $project)
     {
-        if (auth()->user()->notOwnerNorInvited($project)) {
-            abort(403);
-        }
-
-        if (request('name') == '') {
-            return redirect($project->path() . '/cases/new')->with(['message' => __('Please fill all the required inputs.'), 'message_type' => 'error'])->withInput();
-        }
-        request()->validate(
-            ['name' => 'required'],
-            ['email' => 'required'],
-            ['duration' => 'required']
-        );
         $message = '';
+
         if (request('backendCase')) {
             $user = auth()->user();
             $case = $project->addCase(request('name'), 'value:0|days:0|lastDay:' . Carbon::now()->subDay());
             $message = __('backend case created.');
+
         } else {
-            $emails = Helper::multiexplode([';', ',', ' '], request('email'));
-
-            $invalidEmails = [];
-
-            foreach ($emails as $email) {
-                if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                    array_push($invalidEmails, $email);
-                }
-            }
-
-            if (count($invalidEmails) > 0) {
-                return redirect($project->path() . '/cases/new')->with(['message' => __('Not valid emails: ') . implode(',', $invalidEmails), 'message_type' => 'error'])->withInput();
-            }
-
             $emailInput = request('email');
 
             $emailArray = Helper::multiexplode([';', ',', ' '], $emailInput);
@@ -219,20 +193,69 @@ class ProjectCasesController extends Controller
                     ])->save();
                 }
             }
+
         }
 
-        if (request('sendanywayemail') == true) {
-            //send a email to remind the user is assigned to a new case
-        }
-
-        return redirect($project->path())->with(['message' => $message, 'message_type' => 'success']);
+        return $message;
     }
 
+
+    private function validateRequest(Project $project, $email)
+    {
+        
+        if (auth()->user()->notOwnerNorInvited($project)) {
+            abort(403);
+        }
+
+        request()->validate(
+            ['name' => 'required'],
+            ['email' => 'required'],
+            ['duration' => 'required']
+        );
+        
+        $emails = Helper::multiexplode([';', ',', ' '], $email);
+
+        $invalidEmails = [];
+
+        foreach ($emails as $email) {
+            if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                array_push($invalidEmails, $email);
+            }
+        }
+
+
+        if (!request('backendCase') && count($invalidEmails) > 0) {
+            throw new \Exception(__('Not valid emails: ') . implode(',', $invalidEmails));
+
+            return redirect($project->path() . '/cases/new')
+                ->with(['message' => __('Not valid emails: ') . implode(',', $invalidEmails), 'message_type' => 'error'])
+                ->withInput();
+        }
+    }
+
+
+    public function store(Project $project)
+    {
+
+        try {
+            $this->validateRequest($project, request('email'));
+            $message = $this->createCases($project);
+            return redirect($project->path())->with(['message' => $message, 'message_type' => 'success']);
+        } catch (\Exception $e) {
+            return redirect($project->path() . '/cases/new')
+                ->with(['message' => $e->getMessage(), 'message_type' => 'error'])
+                ->withInput();
+        }
+
+  
+    }
+
+
     /**
-     * @return RedirectResponse|Redirector
-     *
-     * @throws AuthorizationException
-     */
+         * @return RedirectResponse|Redirector
+         *
+         * @throws AuthorizationException
+         */
     public function update(Project $project, Cases $case)
     {
         $this->authorize('update', $case->project);

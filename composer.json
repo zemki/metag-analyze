@@ -10,9 +10,10 @@
   "require": {
     "php": "8.2.*",
     "ext-json": "*",
-    "alessandrobelli/lingua": "^0.3.1",
+    "alessandrobelli/lingua": "@dev",
     "creativeorange/gravatar": "^1.0",
     "erusev/parsedown": "^1.7",
+    "filament/filament": "^2.0",
     "laravel-notification-channels/fcm": "~3.0",
     "laravel/framework": "^9.0",
     "laravel/telescope": "4.*",
@@ -24,9 +25,8 @@
     "spatie/laravel-webhook-server": "^3.0"
   },
   "require-dev": {
-    "barryvdh/laravel-debugbar": "^3.2",
-    "barryvdh/laravel-ide-helper": "^2.7",
-    "beyondcode/laravel-dump-server": "^1.0",
+    "barryvdh/laravel-debugbar": "^3.8.1",
+    "doctrine/dbal": "^3.6",
     "enlightn/laravel-security-checker": "^1.1",
     "fakerphp/faker": "^1.16",
     "laravel/pint": "^1.9",
@@ -55,6 +55,12 @@
       "database/factories"
     ]
   },
+  "repositories": [
+    {
+        "type": "path",
+        "url": "../Lingua"
+    }
+],
   "autoload-dev": {
     "psr-4": {
       "Tests\\": "tests/"
@@ -75,8 +81,8 @@
     ],
     "post-update-cmd": [
       "Illuminate\\Foundation\\ComposerScripts::postUpdate",
-      "@php artisan ide-helper:generate",
-      "@php artisan ide-helper:meta"
+      "@php artisan filament:upgrade"
+
     ]
   }
 }
