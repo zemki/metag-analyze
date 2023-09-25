@@ -37,3 +37,4 @@ yarn.lock
 metag-69e35-firebase-adminsdk-4fsv0-2ce8285b9f.json
 *.cache
 changes.txt
+.idea/metag_analyze.iml
