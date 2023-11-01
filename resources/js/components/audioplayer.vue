@@ -158,10 +158,11 @@
         <input v-model.lazy.number="volume" type="range" min="0" max="100"/>
       </div>
       <audio
+
           :loop="innerLoop"
           ref="audiofile"
           :src="file.audiofile"
-          preload="auto"
+          preload="metadata"
           style="display: none"
       ></audio>
     </div>
@@ -299,10 +300,14 @@ export default {
     },
     seek(e) {
       console.log("Seek method called");
-      console.log("Seekable ranges:", this.audio.seekable.start(0), this.audio.seekable.end(0));
-
       if (!this.playing || e.target.tagName === "SPAN") {
         console.log("Seek early exit");
+        return;
+      }
+
+      // Check if audio is seekable
+      if (this.audio.seekable.length === 0) {
+        console.log("Audio is not seekable yet");
         return;
       }
 
@@ -314,19 +319,15 @@ export default {
       console.log(`New time: ${newTime}`);
 
       // Check if the new time is within the seekable range
-      for (let i = 0; i < this.audio.seekable.length; i++) {
-        if (newTime >= this.audio.seekable.start(i) && newTime <= this.audio.seekable.end(i)) {
-          console.log("New time is in seekable range");
-
-          this.audio.pause(); // pause while seeking
-          this.audio.currentTime = newTime;
-          this.audio.play();  // resume playback
-          return;
-        }
+      if (newTime >= this.audio.seekable.start(0) && newTime <= this.audio.seekable.end(0)) {
+        console.log("New time is in seekable range");
+        this.audio.currentTime = newTime;
+        return;
       }
 
       console.log("New time is NOT in seekable range");
     },
+
 
     stop() {
       this.playing = false;
