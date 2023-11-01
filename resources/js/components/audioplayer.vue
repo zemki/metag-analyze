@@ -196,6 +196,7 @@ export default {
       )}.mp3`,
       lastDuration: -1,
       durationCheckCount: 0,
+      isDurationStable: false
     };
   },
   created() {
@@ -231,6 +232,9 @@ export default {
   },
   methods: {
     checkDuration() {
+      if (this.isDurationStable) {
+        return;  // Skip checking if duration is stable
+      }
       if (Math.abs(this.lastDuration - this.audio.duration) > 1) {
         // The duration has changed by more than 1 second since the last check
         this.lastDuration = this.audio.duration;
@@ -244,7 +248,7 @@ export default {
       if (this.durationCheckCount > 3) {
         // If the duration hasn't changed significantly for more than 3 updates,
         // we can assume it's stable and remove the event listener.
-        this.audio.removeEventListener("timeupdate", this.checkDuration);
+        this.isDurationStable = true;
       }
     },
     download() {
@@ -314,6 +318,11 @@ export default {
     },
     seek(e) {
       if (!this.playing || e.target.tagName === "SPAN") {
+        return;
+      }
+
+      // Ensure the duration is stable before seeking
+      if (!this.isDurationStable) {
         return;
       }
 
