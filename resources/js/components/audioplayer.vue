@@ -315,16 +315,12 @@ export default {
       for (let i = 0; i < this.audio.seekable.length; i++) {
         if (newTime >= this.audio.seekable.start(i) && newTime <= this.audio.seekable.end(i)) {
           console.log("New time is in seekable range");
-
           this.audio.pause(); // pause while seeking
           this.audio.currentTime = newTime;
           this.audio.play();  // resume playback
           return;
         }
       }
-      this.audio.pause(); // pause while seeking
-      this.audio.currentTime = newTime;
-      this.audio.play();  // resume playback
 
       console.log("New time is NOT in seekable range");
     },
