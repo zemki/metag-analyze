@@ -204,7 +204,7 @@ export default {
     this.audio = this.$el.querySelectorAll("audio")[0];
     console.log(this.audio);
     this.audio.addEventListener("timeupdate", this.update);
-    this.audio.addEventListener("durationchange", this.load); // Change this
+    this.audio.addEventListener("loadedmetadata", this.load); // Change this
     this.audio.addEventListener("pause", () => {
       this.playing = false;
     });
