@@ -77,7 +77,7 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
-        if (auth()->user()->notOwnerNorInvited($project) && ! auth()->user()->isAdmin()) {
+        if (auth()->user()->notOwnerNorInvited($project) && !auth()->user()->isAdmin()) {
             abort(403);
         }
         $data['breadcrumb'] = [url($project->path()) => strlen($project->name) > 20 ? substr($project->name, 0, 20) . '...' : $project->name];
@@ -85,9 +85,7 @@ class ProjectController extends Controller
         $data[self::CASES] = $project->cases;
         $data['casesWithUsers'] = $project->cases()->with('user')->get();
         $data['casesWithEntries'] = $project->cases()->with('user', 'project', 'entries')->orderBy('created_at', 'desc')->get();
-        
 
-        
 
         foreach ($data['casesWithEntries'] as $case) {
             $case->entries->map(function ($entry) {
@@ -96,7 +94,7 @@ class ProjectController extends Controller
             });
             // parse the lastday: string in the duration field, delimited by '|'
 
-            $case->consultable = $case->isConsultable() && ! $case->notYetStarted();
+            $case->consultable = $case->isConsultable() && !$case->notYetStarted();
             $case->backend = $case->isBackend();
 
             // check the inputs in the entries of the case, if it contains the file property, resolve it to the file address
@@ -107,22 +105,36 @@ class ProjectController extends Controller
                         if ($key == 'file') {
                             $entry->file_object = Files::find($value);
 
-                            $entry->file_object['audiofile'] = decrypt(file_get_contents($entry->file_object['path']));
-                            $entry->file_object['entry'] = $case->entries()->whereJsonContains('inputs->file', $entry->file_object['id'])->first();
-                            if (! empty($entry->file_object['entry'])) {
-                                $entry->file_object['entry']->media_id = Media::where('id', $entry->file_object['entry']->media_id)->first()->name;
+                            if ($entry->file_object) {
+                                try {
+                                    $entry->file_object['audiofile'] = decrypt(file_get_contents($entry->file_object['path']));
+                                } catch (\Exception $e) {
+                                    // Log the exception or handle it as you need
+                                    Log::error("Could not decrypt the file: {$e->getMessage()}");
+                                }
+
+                                $entry->file_object['entry'] = $case->entries()->whereJsonContains('inputs->file', $entry->file_object['id'])->first();
+
+                                if (!empty($entry->file_object['entry'])) {
+                                    $entry->file_object['entry']->media_id = optional(Media::where('id', $entry->file_object['entry']->media_id)->first())->name;
+                                }
+
+                                $entry->file_path = $entry->file_object->path;
+                            } else {
+                                // Handle the condition where file_object is not found
+                                Log::warning("File object not found for entry id: {$entry->id}");
                             }
-                            $entry->file_path = Files::find($value)->path;
                         }
                     }
                 }
+
                 if (array_key_exists('firstValue', $entry->inputs)) {
                     $temp = $entry->inputs['firstValue'];
                     $entry->mediaforFirstValue = Media::where('id', '=', $temp['media_id'])->first() ? Media::where('id', '=', $temp['media_id'])->first()->name : '';
                 }
             });
         }
-        
+
 
         $data[self::PROJECT . 'media'] = $project->media()->pluck('media.name')->toArray();
         $data['invites'] = $project->invited()->get();
@@ -201,7 +213,7 @@ class ProjectController extends Controller
             $mToSync = [];
             foreach (array_filter($media) as $singleMedia) {
                 $media = Media::where(DB::raw('BINARY name'), $singleMedia)->first();
-                if (! $media) {
+                if (!$media) {
                     $media = new Media;
 
                     $media->name = $singleMedia;
@@ -229,7 +241,7 @@ class ProjectController extends Controller
         foreach ($decodedAttributes as $input => $value) {
             ray($input);
             ray($value);
-            $decodedAttributes[$input]['answers'] = array_filter($decodedAttributes[$input]['answers'], fn ($v) => ! is_null($v) && $v !== '');
+            $decodedAttributes[$input]['answers'] = array_filter($decodedAttributes[$input]['answers'], fn($v) => !is_null($v) && $v !== '');
             ray($decodedAttributes);
         }
         ray($decodedAttributes);
@@ -300,7 +312,7 @@ class ProjectController extends Controller
     {
         $project = Project::where('id', $request->input(self::PROJECT))->first();
         $user = User::where('email', '=', $request->email)->first();
-        if (! $user) {
+        if (!$user) {
             $user = new User();
             $user->email = $request->email;
             $user->password = Helper::random_str(60);
@@ -309,7 +321,7 @@ class ProjectController extends Controller
             Mail::to($user->email)->send(new VerificationEmail($user, $request->emailtext ? $request->emailtext : config('utilities.emailDefaultText')));
             $role = Role::where('name', '=', 'researcher')->first();
             $user->roles()->sync($role);
-        } elseif (! $user->hasVerifiedEmail()) {
+        } elseif (!$user->hasVerifiedEmail()) {
             $user->api_token = Helper::random_str(60);
             $user->password_token = Helper::random_str(60);
             $user->save();
