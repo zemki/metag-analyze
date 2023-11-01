@@ -329,7 +329,7 @@ export default {
       console.log(`Seek position: ${seekPos}`);  // Debugging line
 
       this.audio.currentTime = parseInt(this.audio.duration * seekPos, 10);
-    }
+    },
 
     stop() {
       this.playing = false;
