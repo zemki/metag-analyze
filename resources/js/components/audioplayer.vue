@@ -207,14 +207,13 @@ export default {
     this.audio = this.$el.querySelectorAll("audio")[0];
     console.log(this.audio);
     this.audio.addEventListener("timeupdate", this.update);
-    this.audio.addEventListener("durationchange", this.load); // Change this
+    this.audio.addEventListener("durationchange", this.load);
     this.audio.addEventListener("pause", () => {
       this.playing = false;
     });
     this.audio.addEventListener("play", () => {
       this.playing = true;
     });
-    this.audio.addEventListener("timeupdate", this.checkDuration);
   },
   computed: {
     currentTime() {
@@ -231,26 +230,6 @@ export default {
     },
   },
   methods: {
-    checkDuration() {
-      if (this.isDurationStable) {
-        return;  // Skip checking if duration is stable
-      }
-      if (Math.abs(this.lastDuration - this.audio.duration) > 1) {
-        // The duration has changed by more than 1 second since the last check
-        this.lastDuration = this.audio.duration;
-        this.durationSeconds = parseInt(this.audio.duration, 10);
-        this.durationCheckCount = 0;
-      } else {
-        // The duration hasn't changed significantly
-        this.durationCheckCount += 1;
-      }
-
-      if (this.durationCheckCount > 3) {
-        // If the duration hasn't changed significantly for more than 3 updates,
-        // we can assume it's stable and remove the event listener.
-        this.isDurationStable = true;
-      }
-    },
     download() {
       this.stop();
       const a = document.createElement("a");
@@ -262,10 +241,12 @@ export default {
       a.click();
     },
     load() {
+
       if (isFinite(this.audio.duration)) {
         this.loaded = true;
         this.durationSeconds = parseInt(this.audio.duration, 10);
         console.log('Loaded', this.durationSeconds); // Add this
+        console.log(`Duration changed: ${this.audio.duration}`);
         return this.playing === this.autoPlay;
       }
     },
@@ -273,7 +254,7 @@ export default {
 
     update() {
       this.currentSeconds = parseInt(this.audio.currentTime, 10);
-      console.log('Update', this.currentSeconds);
+
     },
 
     confirmDeleteFile() {
@@ -334,14 +315,16 @@ export default {
       for (let i = 0; i < this.audio.seekable.length; i++) {
         if (newTime >= this.audio.seekable.start(i) && newTime <= this.audio.seekable.end(i)) {
           console.log("New time is in seekable range");
+          
+          this.audio.pause(); // pause while seeking
           this.audio.currentTime = newTime;
+          this.audio.play();  // resume playback
           return;
         }
       }
 
       console.log("New time is NOT in seekable range");
     },
-
 
     stop() {
       this.playing = false;
