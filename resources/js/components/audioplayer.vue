@@ -317,19 +317,31 @@ export default {
       this.volume = 0;
     },
     seek(e) {
-      console.log("Seek method called");  // Debugging line
+      console.log("Seek method called");
       if (!this.playing || e.target.tagName === "SPAN") {
-        console.log("Seek early exit");  // Debugging line
+        console.log("Seek early exit");
         return;
       }
 
       const el = e.target.getBoundingClientRect();
       const seekPos = (e.clientX - el.left) / el.width;
+      const newTime = this.audio.duration * seekPos;
 
-      console.log(`Seek position: ${seekPos}`);  // Debugging line
+      console.log(`Seek position: ${seekPos}`);
+      console.log(`New time: ${newTime}`);
 
-      this.audio.currentTime = parseInt(this.audio.duration * seekPos, 10);
+      // Check if the new time is within the seekable range
+      for (let i = 0; i < this.audio.seekable.length; i++) {
+        if (newTime >= this.audio.seekable.start(i) && newTime <= this.audio.seekable.end(i)) {
+          console.log("New time is in seekable range");
+          this.audio.currentTime = newTime;
+          return;
+        }
+      }
+
+      console.log("New time is NOT in seekable range");
     },
+
 
     stop() {
       this.playing = false;
