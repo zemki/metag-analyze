@@ -299,6 +299,8 @@ export default {
     },
     seek(e) {
       console.log("Seek method called");
+      console.log("Seekable ranges:", this.audio.seekable.start(0), this.audio.seekable.end(0));
+
       if (!this.playing || e.target.tagName === "SPAN") {
         console.log("Seek early exit");
         return;
@@ -315,7 +317,7 @@ export default {
       for (let i = 0; i < this.audio.seekable.length; i++) {
         if (newTime >= this.audio.seekable.start(i) && newTime <= this.audio.seekable.end(i)) {
           console.log("New time is in seekable range");
-          
+
           this.audio.pause(); // pause while seeking
           this.audio.currentTime = newTime;
           this.audio.play();  // resume playback
