@@ -169,11 +169,13 @@
 </template>
 
 <script>
-const convertTimeHHMMSS = (val) => {
-  const hhmmss = new Date(val * 1000).toISOString().substr(11, 8);
+import moment from "moment";
 
-  return hhmmss.indexOf("00:") === 0 ? hhmmss.substr(3) : hhmmss;
+
+const convertTimeHHMMSS = (val) => {
+  return moment.duration(val, "seconds").format("hh:mm:ss");
 };
+
 
 export default {
   props: ["file", "autoplay", "loop", "name", "date", "caseid"],
