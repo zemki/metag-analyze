@@ -171,181 +171,184 @@
 
 <script>
 const convertTimeHHMMSS = (val) => {
-  const hhmmss = new Date(val * 1000).toISOString().substr(11, 8);
-
-  return hhmmss.indexOf("00:") === 0 ? hhmmss.substr(3) : hhmmss;
-};
-
-export default {
-  props: ["file", "autoplay", "loop", "name", "date", "caseid"],
-  name: "audioPlayer",
-  data() {
-    return {
-      audio: undefined,
-      currentSeconds: 0,
-      durationSeconds: 0,
-      innerLoop: false,
-      loaded: false,
-      playing: false,
-      previousVolume: 35,
-      showVolume: true,
-      deleted: false,
-      volume: 100,
-      formattedName: `${this.name.substring(
-          this.name.lastIndexOf("/") + 1,
-          this.name.length
-      )}.mp3`,
-      lastDuration: -1,
-      durationCheckCount: 0,
-      isDurationStable: false
-    };
-  },
-  created() {
-    this.innerLoop = this.loop;
-  },
-  mounted() {
-    // eslint-disable-next-line prefer-destructuring
-    this.audio = this.$el.querySelectorAll("audio")[0];
-    console.log(this.audio);
-    this.audio.addEventListener("timeupdate", this.update);
-    this.audio.addEventListener("durationchange", this.load);
-    this.audio.addEventListener("pause", () => {
-      this.playing = false;
-    });
-    this.audio.addEventListener("play", () => {
-      this.playing = true;
-    });
-  },
-  computed: {
-    currentTime() {
-      return convertTimeHHMMSS(this.currentSeconds);
+  export default {
+    props: ["file", "autoplay", "loop", "name", "date", "caseid"],
+    name: "audioPlayer",
+    data() {
+      return {
+        audio: undefined,
+        currentSeconds: 0,
+        durationSeconds: 0,
+        innerLoop: false,
+        loaded: false,
+        playing: false,
+        previousVolume: 35,
+        showVolume: true,
+        deleted: false,
+        volume: 100,
+        formattedName: `${this.name.substring(
+            this.name.lastIndexOf("/") + 1,
+            this.name.length
+        )}.mp3`,
+        lastDuration: -1,
+        durationCheckCount: 0,
+        isDurationStable: false
+      };
     },
-    durationTime() {
-      return convertTimeHHMMSS(this.durationSeconds);
+    created() {
+      this.innerLoop = this.loop;
     },
-    percentComplete() {
-      return parseInt((this.currentSeconds / this.durationSeconds) * 100, 10);
-    },
-    muted() {
-      return this.volume / 100 === 0;
-    },
-  },
-  methods: {
-    download() {
-      this.stop();
-      const a = document.createElement("a");
-      a.href = this.file.audiofile;
-      a.download = `${this.name.substring(
-          this.name.lastIndexOf("/") + 1,
-          this.name.length
-      )}.mp3`;
-      a.click();
-    },
-    load() {
-
-      if (isFinite(this.audio.duration)) {
-        this.loaded = true;
-        this.durationSeconds = parseInt(this.audio.duration, 10);
-        console.log('Loaded', this.durationSeconds); // Add this
-        console.log(`Duration changed: ${this.audio.duration}`);
-        return this.playing === this.autoPlay;
-      }
-    },
-
-
-    update() {
-      this.currentSeconds = parseInt(this.audio.currentTime, 10);
-
-    },
-
-    confirmDeleteFile() {
-      this.$buefy.dialog.confirm({
-        title: "Confirm Delete",
-        message:
-            '<div class="p-2 text-center text-white bg-red-600">You re about to delete this File.<br><span class="has-text-weight-bold">Continue?</span></div>',
-        cancelText: "Cancel",
-        confirmText: "YES delete File",
-        hasIcon: true,
-        type: "is-danger",
-        onConfirm: () => this.deleteFile(),
+    mounted() {
+      // eslint-disable-next-line prefer-destructuring
+      this.audio = this.$el.querySelectorAll("audio")[0];
+      this.audio.addEventListener("timeupdate", this.update);
+      this.audio.addEventListener("durationchange", this.load);
+      this.audio.addEventListener("pause", () => {
+        this.playing = false;
       });
+      this.audio.addEventListener("play", () => {
+        this.playing = true;
+      });
+      console.log(this.audio);
+      this.audio.addEventListener("canplay", this.load);
+
     },
-    deleteFile() {
-      const self = this;
-      window.axios
-          .delete(
-              `${window.location.origin + self.productionUrl}/cases/${
-                  self.caseid
-              }/files/${self.file.id}`,
-              {file: self.file.id}
-          )
-          .then((response) => {
-            self.stop();
-            self.$buefy.snackbar.open(response.data.message);
-            self.deleted = true;
-          })
-          .catch((error) => {
-            self.$buefy.snackbar.open(
-                "There it was an error during the request - refresh page and try again"
-            );
-          });
+
+    computed: {
+      currentTime() {
+        return convertTimeHHMMSS(this.currentSeconds);
+      },
+      durationTime() {
+        return convertTimeHHMMSS(this.durationSeconds);
+      },
+      percentComplete() {
+        return parseInt((this.currentSeconds / this.durationSeconds) * 100, 10);
+      },
+      muted() {
+        return this.volume / 100 === 0;
+      },
     },
-    mute() {
-      if (this.muted) {
-        return this.volume === this.previousVolume;
+    methods: {
+      download() {
+        this.stop();
+        const a = document.createElement("a");
+        a.href = this.file.audiofile;
+        a.download = `${this.name.substring(
+            this.name.lastIndexOf("/") + 1,
+            this.name.length
+        )}.mp3`;
+        a.click();
+      },
+      load() {
+
+        if (isFinite(this.audio.duration)) {
+          this.loaded = true;
+          this.durationSeconds = parseInt(this.audio.duration, 10);
+          console.log('Loaded', this.durationSeconds); // Add this
+          console.log(`Duration changed: ${this.audio.duration}`);
+          return this.playing === this.autoPlay;
+        }
+      },
+
+
+      update() {
+        this.currentSeconds = parseInt(this.audio.currentTime, 10);
+
+      },
+
+      confirmDeleteFile() {
+        this.$buefy.dialog.confirm({
+          title: "Confirm Delete",
+          message:
+              '<div class="p-2 text-center text-white bg-red-600">You re about to delete this File.<br><span class="has-text-weight-bold">Continue?</span></div>',
+          cancelText: "Cancel",
+          confirmText: "YES delete File",
+          hasIcon: true,
+          type: "is-danger",
+          onConfirm: () => this.deleteFile(),
+        });
+      },
+      deleteFile() {
+        const self = this;
+        window.axios
+            .delete(
+                `${window.location.origin + self.productionUrl}/cases/${
+                    self.caseid
+                }/files/${self.file.id}`,
+                {file: self.file.id}
+            )
+            .then((response) => {
+              self.stop();
+              self.$buefy.snackbar.open(response.data.message);
+              self.deleted = true;
+            })
+            .catch((error) => {
+              self.$buefy.snackbar.open(
+                  "There it was an error during the request - refresh page and try again"
+              );
+            });
+      },
+      mute() {
+        if (this.muted) {
+          return this.volume === this.previousVolume;
+        }
+
+        this.previousVolume = this.volume;
+        this.volume = 0;
+      },
+      seek(e) {
+        console.log("Seek method called");
+        if (!this.playing || e.target.tagName === "SPAN") {
+          console.log("Seek early exit");
+          return;
+        }
+
+        // Check if audio is seekable
+        if (this.audio.seekable.length === 0) {
+          console.log("Audio is not seekable yet");
+          return;
+        }
+
+        const el = e.target.getBoundingClientRect();
+        const seekPos = (e.clientX - el.left) / el.width;
+        const newTime = this.audio.duration * seekPos;
+
+        console.log(`Seek position: ${seekPos}`);
+        console.log(`New time: ${newTime}`);
+
+        // Check if the new time is within the seekable range
+        if (newTime >= this.audio.seekable.start(0) && newTime <= this.audio.seekable.end(0)) {
+          console.log("New time is in seekable range");
+          this.audio.currentTime = newTime;
+          return;
+        }
+
+        console.log("New time is NOT in seekable range");
+      },
+
+
+      stop() {
+        this.playing = false;
+        this.audio.currentTime = 0;
       }
-
-      this.previousVolume = this.volume;
-      this.volume = 0;
     },
-    seek(e) {
-      console.log("Seek method called");
-      if (!this.playing || e.target.tagName === "SPAN") {
-        console.log("Seek early exit");
-        return;
-      }
-
-      // Check if audio is seekable
-      if (this.audio.seekable.length === 0) {
-        console.log("Audio is not seekable yet");
-        return;
-      }
-
-      const el = e.target.getBoundingClientRect();
-      const seekPos = (e.clientX - el.left) / el.width;
-      const newTime = this.audio.duration * seekPos;
-
-      console.log(`Seek position: ${seekPos}`);
-      console.log(`New time: ${newTime}`);
-
-      // Check if the new time is within the seekable range
-      if (newTime >= this.audio.seekable.start(0) && newTime <= this.audio.seekable.end(0)) {
-        console.log("New time is in seekable range");
-        this.audio.currentTime = newTime;
-        return;
-      }
-
-      console.log("New time is NOT in seekable range");
+    watch: {
+      playing(value) {
+        if (value) {
+          return this.audio.play();
+        }
+        this.audio.pause();
+      },
+      volume(value) {
+        this.showVolume = false;
+        this.audio.volume = this.volume / 100;
+      },
     },
+  };
 
+  const hhmmss = new Date(val * 1000).toISOString().substr(11, 8);
+  return hhmmss.indexOf("00:") === 0 ? hhmmss.substr(3) : hhmmss;
 
-    stop() {
-      this.playing = false;
-      this.audio.currentTime = 0;
-    }
-  },
-  watch: {
-    playing(value) {
-      if (value) {
-        return this.audio.play();
-      }
-      this.audio.pause();
-    },
-    volume(value) {
-      this.showVolume = false;
-      this.audio.volume = this.volume / 100;
-    },
-  },
 };
 </script>
 
