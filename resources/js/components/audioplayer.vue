@@ -204,7 +204,7 @@ export default {
     this.audio = this.$el.querySelectorAll("audio")[0];
     console.log(this.audio);
     this.audio.addEventListener("timeupdate", this.update);
-    this.audio.addEventListener("loadeddata", this.load); // Change this
+    this.audio.addEventListener("durationchange", this.load); // Change this
     this.audio.addEventListener("pause", () => {
       this.playing = false;
     });
@@ -238,11 +238,10 @@ export default {
       a.click();
     },
     load() {
-      if (this.audio.duration && !isNaN(this.audio.duration)) {
-        console.log(this.audio.duration);
+      if (isFinite(this.audio.duration)) {
         this.loaded = true;
         this.durationSeconds = parseInt(this.audio.duration, 10);
-        console.log('Loaded', this.durationSeconds);
+        console.log('Loaded', this.durationSeconds); // Add this
         return this.playing === this.autoPlay;
       }
     },
