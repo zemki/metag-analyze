@@ -203,7 +203,7 @@ export default {
     // eslint-disable-next-line prefer-destructuring
     this.audio = this.$el.querySelectorAll("audio")[0];
     this.audio.addEventListener("timeupdate", this.update);
-    this.audio.addEventListener("loadeddata", this.load);
+    this.audio.addEventListener("canplaythrough", this.load); // Change this
     this.audio.addEventListener("pause", () => {
       this.playing = false;
     });
@@ -237,15 +237,12 @@ export default {
       a.click();
     },
     load() {
-      if (this.audio.readyState >= 2) {
-        this.loaded = true;
-        this.durationSeconds = parseInt(this.audio.duration, 10);
-        console.log('Loaded', this.durationSeconds); // Add this
-        return this.playing === this.autoPlay;
-      }
-
-      throw new Error("Failed to load sound file.");
+      this.loaded = true;
+      this.durationSeconds = parseInt(this.audio.duration, 10);
+      console.log('Loaded', this.durationSeconds); // Add this
+      return this.playing === this.autoPlay;
     },
+
 
     update() {
       this.currentSeconds = parseInt(this.audio.currentTime, 10);
