@@ -317,20 +317,20 @@ export default {
       this.volume = 0;
     },
     seek(e) {
+      console.log("Seek method called");  // Debugging line
       if (!this.playing || e.target.tagName === "SPAN") {
-        return;
-      }
-
-      // Ensure the duration is stable before seeking
-      if (!this.isDurationStable) {
+        console.log("Seek early exit");  // Debugging line
         return;
       }
 
       const el = e.target.getBoundingClientRect();
       const seekPos = (e.clientX - el.left) / el.width;
 
+      console.log(`Seek position: ${seekPos}`);  // Debugging line
+
       this.audio.currentTime = parseInt(this.audio.duration * seekPos, 10);
-    },
+    }
+
     stop() {
       this.playing = false;
       this.audio.currentTime = 0;
