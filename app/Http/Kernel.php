@@ -5,6 +5,7 @@ namespace App\Http;
 use App\Http\Middleware\Admin;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\Authorised;
+use App\Http\Middleware\BlockIpMiddleware;
 use App\Http\Middleware\CheckAdminArea;
 use App\Http\Middleware\CheckForMaintenanceMode;
 use App\Http\Middleware\CheckGroup;
@@ -61,6 +62,7 @@ class Kernel extends HttpKernel
             ShareErrorsFromSession::class,
             VerifyCsrfToken::class,
             SubstituteBindings::class,
+            BlockIpMiddleware::class,
         ],
         'api' => [
             'throttle:60,1',
