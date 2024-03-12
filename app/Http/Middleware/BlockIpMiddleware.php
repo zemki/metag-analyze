@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 class BlockIpMiddleware
 {
-    public array $blockIps = ['45.93.9.139', '193.168.141.21'];
+    public array $blockIps = ['45.93.9.139', '193.168.141.21', '45.86.86.223'];
 
     /**
      * Handle an incoming request.
