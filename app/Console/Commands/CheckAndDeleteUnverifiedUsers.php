@@ -31,12 +31,17 @@ class CheckAndDeleteUnverifiedUsers extends Command
      */
     public function handle()
     {
-        $timeLimit = Carbon::now()->subHours(48);
 
-        $unverifiedUsers = User::whereNull('email_verified_at')
-            ->where('created_at', '<', $timeLimit)
-            ->get(['email', 'created_at']);
+        if ($this->confirm('Do you want to check and delete unverified users from last 48h? No will check the ones in the whole db')) {
+            $timeLimit = Carbon::now()->subHours(48);
 
+            $unverifiedUsers = User::whereNull('email_verified_at')
+                ->where('created_at', '<', $timeLimit)
+                ->get(['email', 'created_at']);
+
+        } else {
+            $unverifiedUsers = User::whereNull('email_verified_at')->get(['email', 'created_at']);
+        }
 
         $filePath = $this->generateCsv($unverifiedUsers);
 
@@ -45,9 +50,12 @@ class CheckAndDeleteUnverifiedUsers extends Command
             $this->deleteUsers($unverifiedUsers);
         }
 
-        //send the csv file to the admin
-        $this->info('Sending the report...');
-        Mail::to('belli@uni-bremen.de')->send(new UnverifiedUsersReport($filePath));
+        if ($this->confirm('You want to receive the csv file?', false)) {
+            Mail::to('belli@uni-bremen.de')->send(new UnverifiedUsersReport($filePath));
+
+            //send the csv file to the admin
+            $this->info('Sending the report...');
+        }
 
         //remove the csv file
         unlink($filePath);
