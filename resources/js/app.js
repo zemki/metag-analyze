@@ -13,6 +13,7 @@ import Vuex from "vuex";
 import store from "./store";
 import Vue from "vue";
 import _ from "lodash";
+import altcha from "altcha";
 
 window.Vue = Vue;
 

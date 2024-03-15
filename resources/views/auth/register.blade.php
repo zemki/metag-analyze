@@ -1,103 +1,89 @@
 @extends('auth.layouts.app')
 
 @section('content')
+    <div class="flex items-center justify-center min-h-screen bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+            <div>
+                <img class="mx-auto h-24 w-auto" src="{{ config('utilities.base64logo') }}" alt="Metag Analyze Logo">
+                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">{{ __('Register to Metag Analyze') }}</h2>
+                <p class="mt-2 text-center text-sm text-gray-600">
+                    Or
+                    <a href="{{ url('login') }}" class="font-medium text-blue-600 hover:text-blue-500"> Login </a>
+                </p>
+            </div>
+            <form class="mt-8 space-y-6" action="{{ route('register') }}" method="POST">
+                @csrf
+                <input type="hidden" name="remember" value="true">
+                <div class="rounded-md shadow-sm -space-y-px">
+                    <div>
+                        <label for="email-address" class="sr-only">{{ __('E-Mail Address') }}</label>
+                        <input id="email-address" name="email" type="email" autocomplete="email" required
+                               class="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                               placeholder="Email address">
+                    </div>
+                    <div class="pt-2">
+                        <label for="password" class="sr-only">{{ __('Password') }}</label>
+                        <input id="password" name="password" type="password" autocomplete="new-password" required
+                               class="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                               placeholder="{{ __('Password') }}">
+                    </div>
+                    <div class="pt-2">
+                        <altcha-widget id="altcha-widget" challengeurl="{{url('/altcha-challenge')}}"></altcha-widget>
+                        <input type="hidden" id="altoken" name="altoken">
+                    </div>
+                </div>
 
-<div class="flex items-center justify-center min-h-full px-4 py-12 sm:px-6 lg:px-8">
-  <div class="w-full max-w-md space-y-8">
-    <div>
-      <img class="w-auto h-24 mx-auto" src="{{config('utilities.base64logo')}}" alt="Metag Analyze Logo">
-      <h1 class="mt-6 text-3xl font-extrabold text-center text-gray-900">Register to Metag Analyze</h1>
-      <p class="mt-2 text-sm text-center text-gray-600">
-        Or
-        <a href="{{url('login')}}" class="font-medium text-blue-600 hover:text-blue-500"> Login </a>
-      </p>
+                @if ($errors->any())
+                    <div class="rounded-md bg-red-50 p-4 mt-5">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <!-- Icon container -->
+                                <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                                     fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd"
+                                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                          clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="text-sm font-medium text-red-800">
+                                    {{ __('Whoops! Something went wrong.') }}
+                                </h3>
+                                <ul class="mt-2 list-disc list-inside text-sm text-red-600">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                <div>
+                    <button type="submit"
+                            class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        {{ __('Register') }}
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-    <form class="mt-8 space-y-6" method="POST" action="{{ route('register') }}">
-      <input type="hidden" name="remember" value="true">
-      @csrf
-      <div class="-space-y-px rounded-md shadow-sm">
-        <div>
-          <label for="email-address" class="sr-only">{{ __('E-Mail Address') }}</label>
-          <input id="email-address" name="email" type="email" autocomplete="email" required @input="checkEmail()" v-model="registration.email"
-            class="relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-none appearance-none focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" :class="{ 'border-rose-500': !registration.valid_email, 'border-2': !registration.valid_email }"
-            placeholder="Email address">
-        </div>
-
-        <ul class="w-full my-2">
-          <li class="mb-2 text-sm font-bold break-words whitespace-normal list-item-registration"
-            :class="{ is_valid: registration.contains_six_characters }">{{__('6
-            Characters')}}
-          </li>
-          <li class="mb-2 text-sm font-bold break-words whitespace-normal list-item-registration"
-            :class="{ is_valid: registration.contains_number }">
-            {{__('Contains Number')}}
-          </li>
-          <li class="text-sm font-bold break-words whitespace-normal list-item-registration"
-            :class="{ is_valid: registration.contains_letters }">
-            {{__('Contains Letters')}}
-          </li>
-        </ul>
-        <div>
-          <label for="password" class="sr-only">{{ __('Password') }}</label>
-          <input id="password" type="password" v-model="registration.password" @input="checkPassword()" name="password"
-            required autocomplete="new-password" required
-            class="{{ $errors->has('password') ? ' bg-red-100 text-black' : '' }} relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-none appearance-none rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-            placeholder="{{ __('Password') }}">
-        </div>
-        <div>
-          <input id="password-confirm" type="password" autocomplete="new-password"
-            placeholder="{{ __('Confirm Password') }}"
-            class="{{ $errors->has('password') ? ' bg-red-100 text-black' : '' }} relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-none appearance-none rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-            name="password_confirmation" required>
-        </div>
-        @if ($errors->has('email'))
-        <div class="py-2 pl-2 my-2 text-white bg-red-500">
-          {{ $errors->first('email') }}
-        </div>
-        @endif
-
-        @if ($errors->has('password'))
-        <div class="py-2 pl-2 my-2 text-white bg-red-500">
-          {{ $errors->first('password') }}
-        </div>
-        @endif
-        <div class="relative flex items-start my-2">
-          <div class="flex items-center h-5">
-            <input checked aria-describedby="newsletter-subscription" name="newsletter" type="checkbox"
-              class="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500">
-          </div>
-          <div class="ml-3 text-sm">
-            <label for="comments" class="font-medium text-gray-700">{{__('Send me your newsletter!')}}</label>
-          </div>
-        </div>
-
-
-
-        <div>
-
-          <p class="block">{!!__('By registering you confirmed that you read the <a class="text-blue-500"
-              target="_blank" href="https://mesoftware.org/index.php/datenschutzerklaerung-metag/"
-              title="Privacy Policy">Privacy Policy</a>')!!}</p>
-          <button type="submit"
-            class="relative flex justify-center w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md group hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            :class="{'opacity-50 cursor-not-allowed opacity-75' : !(this.registration.valid_password && this.registration.valid_email)}"
-            :disabled="!(this.registration.valid_password && this.registration.valid_email)">
-            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
-              <!-- Heroicon name: solid/lock-closed -->
-              <svg class="w-5 h-5 text-blue-500 group-hover:text-blue-400" xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fill-rule="evenodd"
-                  d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                  clip-rule="evenodd" />
-              </svg>
-            </span>
-            {{__('Register')}}
-          </button>
-        </div>
-    </form>
-  </div>
-</div>
-
-
-
 @endsection
+@section('pagespecificscripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let altchaWidget = document.getElementById('altcha-widget');
+            let altokenInput = document.getElementById('altoken');
+
+            altchaWidget.addEventListener('statechange', function (ev) {
+                if (ev.detail.state === 'verified') {
+                    altokenInput.value = ev.detail.payload;
+
+                    // Perform your action here, e.g., update a hidden input or variable
+                }
+            });
+        });
+
+    </script>
+@endsection
+
