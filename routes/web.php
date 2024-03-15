@@ -16,7 +16,7 @@ Auth::routes(['verify' => true]);
 
 Route::group(['middleware' => ['throttle:3,10']], static function () {
     Route::get('/password/set', 'Auth\VerificationController@showresetpassword');
-    Route::get('/password/reset', 'Auth\ResetPasswordController@reset')->name('password.reset');
+    Route::get('/password/reset-form', 'Auth\ResetPasswordController@reset')->name('password.reset.form');
     Route::get('/setpassword', 'Auth\VerificationController@showresetpassword');
     Route::post('/password/new', 'Auth\VerificationController@newpassword');
     Route::get('email/verify', 'Auth\VerificationController@show')->name('verification.notice');

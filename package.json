@@ -45,6 +45,7 @@
   "dependencies": {
     "@mdi/font": "^3.9.97",
     "alpinejs": "^2.8.2",
+    "altcha": "^0.2.2",
     "buefy": "^0.8.16",
     "bulma": "^0.9.3",
     "dart-sass": "^1.25.0",

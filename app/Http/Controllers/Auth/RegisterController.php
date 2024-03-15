@@ -7,10 +7,10 @@ use App\Http\Controllers\Controller;
 use App\Role;
 use App\User;
 use Exception;
+use GrantHolle\Altcha\Rules\ValidAltcha;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Validator;
-use Spatie\WebhookServer\WebhookCall;
 
 class RegisterController extends Controller
 {
@@ -51,9 +51,14 @@ class RegisterController extends Controller
     protected function validator(array $data)
     {
         return Validator::make($data, [
-            'email' => ['string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'min:6', 'confirmed'],
-        ]);
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password' => 'required|string|min:6|regex:/^(?=.*[a-zA-Z])(?=.*[0-9]).+$/',
+            'altoken' => [new ValidAltcha()],
+        ],
+            [
+                // Custom error messages
+                'password.regex' => __('Be sure your password contains at least 1 letter and 1 number.'),
+            ]);
     }
 
     /**
