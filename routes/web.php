@@ -69,13 +69,7 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified', 'LoggedUser']],
     Route::get('/cases/{case}/files', 'FileCasesController@index');
     Route::delete('/cases/{case}/files/{file}', 'FileCasesController@destroy');
 
-    /**
-     * Media Routes
-     */
-    Route::get('/media', 'MediaController@index');
-    Route::post('/media', 'MediaController@store');
-    Route::get('/media/new', 'MediaController@create');
-    Route::get('/media/{project}', 'MediaController@show');
+
     /**
      * User Routes
      */
