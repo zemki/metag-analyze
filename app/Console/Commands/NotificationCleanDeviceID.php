@@ -50,22 +50,6 @@ class NotificationCleanDeviceID extends Command
                 $user->save();
             }
         }
-        if (! App::environment('local')) {
-
-            if ($usersCleaned > 0) {
-                WebhookCall::create()
-                    ->url(config('utilities.url_rc_registration'))
-                    ->payload(['text' => $usersCleaned . ' deviceID cleaned because users where in an expired case.'])
-                    ->useSecret(config('utilities.secret_rc_notifications'))
-                    ->dispatch();
-            } else {
-                WebhookCall::create()
-                    ->url(config('utilities.url_rc_registration'))
-                    ->payload(['text' => 'No deviceID cleaned.'])
-                    ->useSecret(config('utilities.secret_rc_notifications'))
-                    ->dispatch();
-            }
-        }
 
         return 0;
     }
