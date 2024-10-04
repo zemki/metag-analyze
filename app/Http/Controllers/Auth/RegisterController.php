@@ -83,14 +83,6 @@ class RegisterController extends Controller
             $user->save();
             $user->roles()->sync($role);
 
-            if (! App::environment('local')) {
-                WebhookCall::create()
-                    ->url(config('utilities.url_rc_registration'))
-                    ->payload(['text' => 'User ' . $data['email'] . ' has registered on Metag Analyze. We have a total of ' . User::all()->count() . ' users!'])
-                    ->useSecret(config('utilities.secret_rc_registration'))
-                    ->dispatch();
-            }
-
             return $user;
         }
     }
