@@ -329,8 +329,11 @@ export default {
 
     // Media Inputs Handling
     handleMediaInputs(index, mediaName) {
-      // Implement any specific logic when media input changes
-      // For example, validate the media URL
+
+      // Add a new media field if the last one is filled
+      if (mediaName && index === this.newProject.media.length - 1) {
+        this.newProject.media.push('');
+      }
     },
 
     // Increment Additional Inputs

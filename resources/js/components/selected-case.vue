@@ -66,6 +66,7 @@
             class="block w-full px-4 leading-normal bg-white border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring"
         />
         <div class="pb-2 sm:col-span-3" v-if="value.type === 'multiple choice'">
+
           <div class="mt-1">
             <select
                 multiple
@@ -83,16 +84,21 @@
           </div>
         </div>
         <div class="pb-2 sm:col-span-3" v-if="value.type === 'one choice'">
+
           <div class="mt-1">
+
             <select
-                v-model="editentry.data.inputs[value.name]"
+                v-model="editentry.data.inputs[value.name][0]"
                 class="block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             >
+
               <option
                   v-for="(answer, indexA) in value.answers"
                   :key="indexA"
                   :value="answer"
+
               >
+
                 {{ answer }}
               </option>
             </select>
@@ -272,7 +278,7 @@
                 {{ indexJ }}
               </p>
               <audio-player
-                  v-if="indexJ == 'file'"
+                  v-if="indexJ == 'file' && entry.file_object && entry.file_path"
                   :caseid="cases.id"
                   class="w-96 sm:my-2 sm:px-2"
                   :file="entry.file_object"
@@ -281,6 +287,9 @@
                   :name="entry.file_path"
                   :date="entry.created_for_soundplayer"
               ></audio-player>
+              <div v-else-if="indexJ == 'file'" class="text-gray-500 italic">
+                {{ trans('File was deleted') }}
+              </div>
               <div v-if="Array.isArray(input)">
                 <p
                     v-for="(value, indexK) in input"
@@ -395,17 +404,18 @@
                             {{ indexJ }}
                           </p>
                           <audio-player
-                              v-if="indexJ == 'file'"
+                              v-if="indexJ == 'file' && entry.inputs.firstValue && entry.inputs.firstValue.file_object"
                               :caseid="cases.id"
                               class="w-96 sm:my-2 sm:px-2"
                               :file="entry.inputs.firstValue.file_object"
                               loop="false"
                               autoplay="false"
                               :name="entry.inputs.firstValue.file_path"
-                              :date="
-                              entry.inputs.firstValue.created_for_soundplayer
-                            "
+                              :date="(entry.inputs.firstValue.created_for_soundplayer || '')"
                           ></audio-player>
+                          <div v-else-if="indexJ == 'file'" class="text-red-500 italic">
+                            {{ trans('File not available') }}
+                          </div>
                           <div v-if="Array.isArray(input)">
                             <p
                                 v-for="(value, indexK) in input"
@@ -572,15 +582,22 @@ export default {
     },
     processEntries(entries) {
       return entries.map((entry) => {
+        // Basic entry data
         entry.created_at_readable = moment(entry.created_at).format(
             "DD.MM.YYYY H:m:ss"
         );
 
+        // Handle inputs parsing
         if (typeof entry.inputs !== "object") {
-          entry.inputs = JSON.parse(entry.inputs);
+          try {
+            entry.inputs = JSON.parse(entry.inputs);
+          } catch (e) {
+            entry.inputs = {};
+          }
         }
 
-        if (entry.inputs.firstValue) {
+        // Handle firstValue
+        if (entry.inputs && entry.inputs.firstValue) {
           entry.inputs.firstValue.begin_readable = moment(
               entry.inputs.firstValue.begin
           ).format("DD.MM.YYYY HH:mm");
@@ -589,18 +606,25 @@ export default {
           ).format("DD.MM.YYYY HH:mm");
 
           if (typeof entry.inputs.firstValue.inputs !== "object") {
-            entry.inputs.firstValue.inputs = JSON.parse(
-                entry.inputs.firstValue.inputs
-            );
+            try {
+              entry.inputs.firstValue.inputs = JSON.parse(
+                  entry.inputs.firstValue.inputs
+              );
+            } catch (e) {
+              entry.inputs.firstValue.inputs = {};
+            }
           }
         }
 
-        if (entry.inputs.file) {
-          entry.created_for_soundplayer = moment(
-              entry.file_object.created_at
-          ).format("DD.MM.YYYY H:m:ss");
+        // Handle file data safely
+        if (entry.inputs && entry.inputs.file) {
+          // Only set created_for_soundplayer if file_object exists and has created_at
+          entry.created_for_soundplayer = entry.file_object && entry.file_object.created_at ?
+              moment(entry.file_object.created_at).format("DD.MM.YYYY H:m:ss") :
+              null;
         }
 
+        // Set basic timestamps
         entry.begin_readable = moment(entry.begin).format("DD.MM.YYYY H:m:ss");
         entry.end_readable = moment(entry.end).format("DD.MM.YYYY H:m:ss");
 
@@ -693,47 +717,50 @@ export default {
             });
       }
     },
-    toggleEntryModal(
-        entry = {
-          id: null,
-          case_id: null,
-          inputs: {},
-          data: {},
-          begin: null,
-          end: null,
-        }
-    ) {
+    toggleEntryModal(entry = {
+      id: null,
+      case_id: null,
+      inputs: {},
+      data: {},
+      begin: null,
+      end: null,
+    }) {
       let self = this;
 
       if (entry.id !== null) {
-        // Set editentry data if editing an existing entry
+        // Ensure inputs are properly parsed
+        const parsedInputs = typeof entry.inputs === 'string'
+            ? JSON.parse(entry.inputs)
+            : entry.inputs;
+
         self.editentry.id = entry.id;
         self.editentry.case_id = entry.case_id;
         self.editentry.inputs = self.projectinputs;
-        self.editentry.data.inputs = entry.inputs;
+        self.editentry.data.inputs = parsedInputs;
         self.editentry.data.media_id = entry.media_id;
         self.editentry.data.media = entry.media;
-        self.editentry.data.start = moment(entry.begin)
-            .add(moment(entry.begin).utcOffset(), "minutes")
-            .toISOString()
-            .replace("Z", "");
-        self.editentry.data.end = moment(entry.end)
-            .add(moment(entry.end).utcOffset(), "minutes")
-            .toISOString()
-            .replace("Z", "");
+
+        // Ensure dates are properly formatted
+        self.editentry.data.start = this.formatDateForInput(entry.begin);
+        self.editentry.data.end = this.formatDateForInput(entry.end);
       } else {
-        // If adding a new entry
         self.editentry.actuallysave = true;
         self.editentry.inputs = self.projectinputs;
+        self.editentry.data.inputs = {};
       }
 
-      // Toggle modal state
       self.editentry.modal = !self.editentry.modal;
 
-      // Clear values when modal is being closed
       if (!self.editentry.modal) {
         self.clearEditEntryData();
       }
+    },
+
+    formatDateForInput(date) {
+      return moment(date)
+          .add(moment(date).utcOffset(), "minutes")
+          .toISOString()
+          .slice(0, 16); // Format as YYYY-MM-DDTHH:mm
     },
 
     // Method to clear editentry data

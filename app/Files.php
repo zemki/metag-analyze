@@ -33,20 +33,13 @@ class Files extends Model
     public static function storeEntryFile($file, $type, Project $project, Cases $case, Entry $entry, &$name): void
     {
         $name = 'interview_' . $case->name . date('dmyhis');
+        $projectPath = storage_path('app/project' . $project->id . '/files/');
         $extension = Helper::extension($file);
-        $relativePath = 'project' . $project->id . '/files/' . $name . '.' . $extension;
-        $fullPath = storage_path('app/' . $relativePath);
-
-        // Make sure directory exists
-        if (! Storage::exists('project' . $project->id . '/files')) {
-            Storage::makeDirectory('project' . $project->id . '/files', 0775, true);
-        }
+        $notEncryptedContent = $projectPath . $name . '.' . $extension;
+        File::isDirectory($projectPath) or File::makeDirectory($projectPath, 0775, true, true);
         if ($type === 'audio') {
-            $content = base64_decode(substr(explode(',', $file, 2)[1], 0, -1));
-            Storage::put($relativePath, $content);
-
+            file_put_contents($notEncryptedContent, base64_decode(substr(explode(',', $file, 2)[1], 0, -1)));
         }
-
         $arr = explode(',', $file, 2);
         self::SaveEncryptedFile($project, $name, $arr, $notEncryptedContent, $encryptedPath);
         self::SaveFileDbRecord($case->id, $name, $projectPath, $encryptedPath, $entry);
@@ -54,65 +47,26 @@ class Files extends Model
 
     public static function updateEntryFile($file, $type, Project $project, Cases $case, Entry $entry, &$name, $oldInputs): void
     {
-        // Decode old inputs and clean up existing file if present
         $oldInputs = json_decode($oldInputs);
         if (property_exists($oldInputs, 'file')) {
             $existingFile = Files::where('id', '=', $oldInputs->file)->first();
-            if ($existingFile) {
-                // Delete the file using Storage facade
-                Storage::delete(str_replace(storage_path('app/'), '', $existingFile->path));
-                $existingFile->delete();
-            }
+            File::delete($existingFile->path);
+            $existingFile->delete();
         }
 
-        // Generate new file name
         $name = 'interview_' . $case->name . date('dmyhis');
+        $projectPath = storage_path('app/project' . $project->id . '/files/');
         $extension = Helper::extension($file);
-
-        // Define relative and full paths
-        $relativePath = 'project' . $project->id . '/files';
-        $tempFileName = $name . '.' . $extension;
-
-        // Ensure directory exists
-        if (! Storage::exists($relativePath)) {
-            Storage::makeDirectory($relativePath, 0775, true);
-        }
-
-        // Handle file based on type
+        $notEncryptedContent = $projectPath . $name . '.' . $extension;
+        File::isDirectory($projectPath) or File::makeDirectory($projectPath, 0775, true, true);
         if ($type === 'audio') {
-            $content = base64_decode(substr(explode(',', $file, 2)[1], 0, -1));
-
-            // Store temporary file
-            $tempFilePath = $relativePath . '/' . $tempFileName;
-            Storage::put($tempFilePath, $content);
-
-            // Full path needed for encryption process
-            $fullTempPath = storage_path('app/' . $tempFilePath);
-
-            // Process and encrypt the file
-            $arr = explode(',', $file, 2);
-            $encryptedPath = '';
-
-            self::SaveEncryptedFile(
-                $project,
-                $name,
-                $arr,
-                $fullTempPath,
-                $encryptedPath
-            );
-
-            // Save record to database
-            self::SaveFileDbRecord(
-                $case->id,
-                $name,
-                storage_path('app/' . $relativePath),
-                $encryptedPath,
-                $entry
-            );
-
-            // Clean up temporary file
-            Storage::delete($tempFilePath);
+            file_put_contents($notEncryptedContent, base64_decode(substr(explode(',', $file, 2)[1], 0, -1)));
+        } else {
         }
+
+        $arr = explode(',', $file, 2);
+        self::SaveEncryptedFile($project, $name, $arr, $notEncryptedContent, $encryptedPath);
+        self::SaveFileDbRecord($case->id, $name, $projectPath, $encryptedPath, $entry);
     }
 
     private static function SaveEncryptedFile(Project $project, &$name, array $arr, string $notEncryptedContent, &$encryptedPath): void
