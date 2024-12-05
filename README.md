@@ -1,7 +1,7 @@
 [![DOI](https://zenodo.org/badge/892718535.svg)](https://doi.org/10.5281/zenodo.14237974)
 
 <div align="center" style="display: flex; align-items: center; justify-content: center;">
-<img src="public/images/logo.png" alt="img Metag" width="100"/>    
+<img src="resources/images/logo.png" alt="img Metag" width="100"/>    
 <h2 style="margin-right: 10px;">Metag Analyze</h2>
 </div>
 
