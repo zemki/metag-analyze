@@ -28,24 +28,25 @@ class UserFactory extends Factory
             'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
             'remember_token' => Str::random(10),
             'email_verified_at' => now(),
+
         ];
     }
 
-   protected static function newFactory()
-   {
-       return UserFactory::new()->afterCreating(function (User $user, $faker) {
-           $role = $user->roles->first();
+    protected static function newFactory()
+    {
+        return UserFactory::new()->afterCreating(function (User $user, $faker) {
+            $role = $user->roles->first();
 
-           if ($role) {
-               $user->roles()->sync([$role->id]);
-           }
-       });
-   }
+            if ($role) {
+                $user->roles()->sync([$role->id]);
+            }
+        });
+    }
 
     public function researcher()
     {
         return $this->afterCreating(function (User $user) {
-            $role_id = Role::where('name', 'researcher')->firstOrFail()->id;
+            $role_id = Role::where('name', 'researcher')->firstOrCreate(['name' => 'researcher', 'description' => 'researcher'])->id;
             $user->roles()->sync([$role_id]);
         });
     }

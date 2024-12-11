@@ -15,21 +15,21 @@ class ProjectCaseUserEntrySeeder extends Seeder
 
         $projectCount = (int) $this->command->ask('How many projects do you need ?', 1);
         if ($projectCount > 0) {
-        $casesCount = (int) $this->command->ask('How many cases do you need ? You\'ll be asked how many entries for each case.', 1);
+            $casesCount = (int) $this->command->ask('How many cases do you need ? You\'ll be asked how many entries for each case.', 1);
 
-        $alessandrobelli = User::where('email', '=', 'belli@uni-bremen.de')->first();
+            $admin = User::find(1); // Assuming the admin user is the first user in the users table
 
-        // Create the Users
-        $projects = factory(App\Project::class, $projectCount)->create(['created_by' => $alessandrobelli->id]);
-        foreach ($projects as $p) {
-            $cases = factory(App\Cases::class, $casesCount)->create(['project_id' => $p->id, 'user_id' => $alessandrobelli->id]);
+            // Create the Users
+            $projects = \App\Project::factory()->count($projectCount)->create(['created_by' => $admin->id]);
+            foreach ($projects as $p) {
+                $cases = \App\Cases::factory()->count($casesCount)->create(['project_id' => $p->id, 'user_id' => $admin->id]);
 
-            $c = $alessandrobelli->latestCase;
-            $entriesCount = (int) $this->command->ask('How many entries for this case do you need ?', 1);
-            $p->media()->sync(\App\Media::inRandomOrder()->limit(10)->get());
-            factory(App\Entry::class, $entriesCount)->create(['case_id' => $c->id]);
+                $c = $admin->latestCase;
+                $entriesCount = (int) $this->command->ask('How many entries for this case do you need ?', 1);
+                $p->media()->sync(\App\Media::inRandomOrder()->limit(10)->get());
+                \App\Entry::factory()->count($entriesCount)->create(['case_id' => $c->id]);
 
-        }
+            }
         }
         $this->command->info('Everything Created!');
     }

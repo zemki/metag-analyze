@@ -259,16 +259,20 @@ export default {
     },
 
     confirmDeleteFile() {
-      this.$buefy.dialog.confirm({
-        title: "Confirm Delete",
-        message:
-            '<div class="p-2 text-center text-white bg-red-600">You re about to delete this File.<br><span class="has-text-weight-bold">Continue?</span></div>',
-        cancelText: "Cancel",
-        confirmText: "YES delete File",
-        hasIcon: true,
-        type: "is-danger",
-        onConfirm: () => this.deleteFile(),
-      });
+      this.$root.dialog.show = true;
+      this.$root.dialog.title = "Confirm Delete";
+      this.$root.dialog.message = '<div class="p-2 text-center text-white bg-red-600">You are about to delete this File.<br><span class="font-bold">Continue?</span></div>';
+      this.$root.dialog.confirmText = "YES delete File";
+      this.$root.dialog.onConfirm = () => {
+        this.deleteFile();
+        this.$root.dialog.show = false;
+      };
+      this.$root.dialog.onCancel = () => {
+        this.$root.dialog.show = false;
+      };
+    },
+    showSnackbar(message) {
+      this.$root.showSnackbarMessage(message);
     },
     deleteFile() {
       const self = this;
@@ -281,11 +285,11 @@ export default {
           )
           .then((response) => {
             self.stop();
-            self.$buefy.snackbar.open(response.data.message);
+            self.showSnackbar(response.data.message);
             self.deleted = true;
           })
           .catch((error) => {
-            self.$buefy.snackbar.open(
+            self.showSnackbar(
                 "There it was an error during the request - refresh page and try again"
             );
           });
@@ -307,9 +311,6 @@ export default {
       const el = e.target.getBoundingClientRect();
       const seekPos = (e.clientX - el.left) / el.width;
       const newTime = this.audio.duration * seekPos;
-
-      console.log(`Seek position: ${seekPos}`);
-      console.log(`New time: ${newTime}`);
 
       // Check if the new time is within the seekable range
       for (let i = 0; i < this.audio.seekable.length; i++) {

@@ -1,0 +1,40 @@
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: MeTag Analyze
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Alessandro
+    family-names: Belli
+    email: belli@uni-bremen.de
+    affiliation: 'ZeMKI, University of Bremen'
+    orcid: 'https://orcid.org/0000-0002-7292-8321'
+  - given-names: Florian
+    family-names: Hohmann
+    email: fhohmann@uni-bremen.de
+    affiliation: 'ZeMKI, University of Bremen'
+    orcid: 'https://orcid.org/0000-0003-2637-0600'
+  - given-names: Andreas
+    family-names: Hepp
+    affiliation: 'ZeMKI, University of Bremen'
+    email: ahepp@uni-bremen.de
+    orcid: 'https://orcid.org/0000-0001-7292-4147'
+repository-code: 'https://github.com/zemki/metag-analyze'
+url: 'https://mesoftware.org/metag'
+abstract: >-
+  MeTag Analyze is a browser-based platform that allows you to create research projects and collect and analyze diary data in detail. Through the accompanying MeTag App, available for iOS and Android, participants can digitally document their media use via smartphone once a corresponding project has been created in MeTag Analyze.
+keywords:
+  - qualitative data
+  - quali
+  - data analysis
+  - qualitative analysis
+  - qualitative research
+  - media diary
+  - media diaries
+  - media research
+  - ZeMKI
+  - University of Bremen
+license: AGPL-3.0

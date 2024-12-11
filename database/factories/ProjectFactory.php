@@ -16,7 +16,7 @@ class ProjectFactory extends Factory
             'description' => $this->faker->sentence,
             'created_by' => $this->faker->numberBetween(1, 10),
             'is_locked' => $this->faker->boolean,
-            'inputs' => $this->faker->sentence,
+            'inputs' => json_encode([]),
         ];
     }
 

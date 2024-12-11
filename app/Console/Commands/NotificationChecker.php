@@ -2,13 +2,11 @@
 
 namespace App\Console\Commands;
 
-use App;
 use App\Cases;
 use App\Notifications\researcherNotificationToUser;
 use DB;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
-use Spatie\WebhookServer\WebhookCall;
 
 class NotificationChecker extends Command
 {
@@ -84,27 +82,9 @@ class NotificationChecker extends Command
         }
 
         if (count($notifications) === 0) {
-        $this->warn('0 planned notifications in the database');
+            $this->warn('0 planned notifications in the database');
         } else {
-        $this->info($notificationSent . ' notification(s) sent.');
-        }
-
-        if (config('utilities.notificationcommandtochat') === 1) {
-            WebhookCall::create()
-                ->url(config('utilities.url_rc_notifications'))
-                ->payload(['text' => 'Command executed and  ' . $notificationSent . ' Notifications sent. "'])
-                ->useSecret(config('utilities.secret_rc_notifications'))
-                ->dispatch();
-        }
-
-        if ($notificationCheckedButNotSent > 0) {
-             if (! App::environment('local')) {
-            WebhookCall::create()
-                ->url(config('utilities.url_rc_notifications'))
-                ->payload(['text' => 'Command executed and  ' . $notificationCheckedButNotSent . ' Notifications checked but not sent because time was not passed.'])
-                ->useSecret(config('utilities.secret_rc_notifications'))
-                ->dispatch();
-        }
+            $this->info($notificationSent . ' notification(s) sent.');
         }
 
         return 0;
@@ -113,7 +93,7 @@ class NotificationChecker extends Command
     /**
      * @param  object|Builder|Cases|null  $case
      */
-    private function sendNotification(Cases|null $case, mixed $notification, int &$notificationSent): void
+    private function sendNotification(?Cases $case, mixed $notification, int &$notificationSent): void
     {
         $user = $case->user;
         $user->profile->last_notification_at = date('Y-m-d H:i:s');

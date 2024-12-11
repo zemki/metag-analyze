@@ -19,8 +19,6 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Redirector;
-use Illuminate\Validation\ValidationException;
-use Request;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ProjectCasesController extends Controller
@@ -151,7 +149,6 @@ class ProjectCasesController extends Controller
         return view('cases.create', $data);
     }
 
-  
     private function createCases(Project $project)
     {
         $message = '';
@@ -162,6 +159,7 @@ class ProjectCasesController extends Controller
             $message = __('backend case created.');
 
         } else {
+
             $emailInput = request('email');
 
             $emailArray = Helper::multiexplode([';', ',', ' '], $emailInput);
@@ -199,20 +197,22 @@ class ProjectCasesController extends Controller
         return $message;
     }
 
-
     private function validateRequest(Project $project, $email)
     {
-        
+
         if (auth()->user()->notOwnerNorInvited($project)) {
             abort(403);
         }
 
-        request()->validate(
-            ['name' => 'required'],
-            ['email' => 'required'],
-            ['duration' => 'required']
-        );
-        
+        if (request('backendCase')) {
+            return;
+        }
+        request()->validate([
+            'name' => 'required',
+            'email' => 'required',
+            'duration' => 'required',
+        ]);
+
         $emails = Helper::multiexplode([';', ',', ' '], $email);
 
         $invalidEmails = [];
@@ -223,39 +223,36 @@ class ProjectCasesController extends Controller
             }
         }
 
+        if (! request('backendCase') && count($invalidEmails) > 0) {
 
-        if (!request('backendCase') && count($invalidEmails) > 0) {
             throw new \Exception(__('Not valid emails: ') . implode(',', $invalidEmails));
-
-            return redirect($project->path() . '/cases/new')
-                ->with(['message' => __('Not valid emails: ') . implode(',', $invalidEmails), 'message_type' => 'error'])
-                ->withInput();
         }
     }
-
 
     public function store(Project $project)
     {
 
         try {
+
             $this->validateRequest($project, request('email'));
+
             $message = $this->createCases($project);
+
             return redirect($project->path())->with(['message' => $message, 'message_type' => 'success']);
         } catch (\Exception $e) {
+
             return redirect($project->path() . '/cases/new')
-                ->with(['message' => $e->getMessage(), 'message_type' => 'error'])
+                ->withErrors(['message' => $e->getMessage()])
                 ->withInput();
         }
 
-  
     }
 
-
     /**
-         * @return RedirectResponse|Redirector
-         *
-         * @throws AuthorizationException
-         */
+     * @return RedirectResponse|Redirector
+     *
+     * @throws AuthorizationException
+     */
     public function update(Project $project, Cases $case)
     {
         $this->authorize('update', $case->project);

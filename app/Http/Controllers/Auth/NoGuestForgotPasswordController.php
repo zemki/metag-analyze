@@ -13,6 +13,6 @@ class NoGuestForgotPasswordController extends ForgotPasswordController
     public function __construct()
     {
         //Let authenticated users use this controller.
-//        $this->middleware('guest');
+        //        $this->middleware('guest');
     }
 }

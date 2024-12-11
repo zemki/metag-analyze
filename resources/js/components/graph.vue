@@ -3,188 +3,137 @@
 </template>
 
 <script>
-import Highcharts from "highcharts";
+import Highcharts from 'highcharts';
+import HighchartsGantt from 'highcharts/modules/gantt';
+import { v4 as uuidv4 } from 'uuid';
+
+HighchartsGantt(Highcharts);
 
 export default {
-  props: ["info", "title", "availabledata"],
-  name: "graph",
-  created() {
-    const self = this;
-
-    this.avdata = this.reindex_array_keys(this.availabledata);
-
-    this.preparedata();
-    setTimeout(() => {
-      self.setChartTheme();
-      self.drawChart();
-      self.$forceUpdate();
-    }, 250);
-  },
+  name: 'Graph',
+  props: ['info', 'title', 'availabledata'],
   data() {
     return {
       avdata: [],
       realdata: [],
-      graphid: Math.floor(Math.random() * 100 + 1),
+      graphid: uuidv4(),
+      infoData: [],
     };
   },
+  mounted() {
+    // Process availabledata
+    if (Array.isArray(this.availabledata)) {
+      this.avdata = this.availabledata;
+    } else if (typeof this.availabledata === 'object') {
+      this.avdata = Object.values(this.availabledata);
+    } else {
+      this.avdata = [];
+    }
+
+    this.avdata = this.avdata.map((item) => item.toString().trim());
+
+    // Process info
+    if (Array.isArray(this.info)) {
+      this.infoData = this.info;
+    } else if (typeof this.info === 'object') {
+      this.infoData = Object.values(this.info);
+    } else {
+      this.infoData = [];
+    }
+
+    this.prepareData();
+    this.setChartTheme();
+    this.drawChart();
+  },
   methods: {
-    reindex_array_keys(array) {
-      const temp = [];
-      let start = 0;
-      for (const i in array) {
-        temp[start++] = array[i];
-      }
-      return temp;
-    },
     setChartTheme() {
       Highcharts.theme = {
         credits: {
           enabled: false,
         },
         colors: [
-          "#058DC7",
-          "#50B432",
-          "#ED561B",
-          "#DDDF00",
-          "#24CBE5",
-          "#64E572",
-          "#FF9655",
-          "#FFF263",
-          "#6AF9C4",
+          '#058DC7',
+          '#50B432',
+          '#ED561B',
+          '#DDDF00',
+          '#24CBE5',
+          '#64E572',
+          '#FF9655',
+          '#FFF263',
+          '#6AF9C4',
         ],
         title: {
           style: {
-            color: "#000",
-            fontSize: "25px",
-            textTransform: "uppercase",
+            color: '#000',
+            fontSize: '25px',
+            textTransform: 'uppercase',
           },
         },
         subtitle: {
           style: {
-            color: "#666666",
+            color: '#666666',
             font: 'bold 12px "Trebuchet MS", Verdana, sans-serif',
           },
         },
         legend: {
           itemHoverStyle: {
-            color: "gray",
+            color: 'gray',
           },
         },
       };
 
-      // Apply the theme
       Highcharts.setOptions(Highcharts.theme);
     },
-    arraysEqual(a, b) {
-      if (a === b) return true;
-      if (a == null || b == null) return false;
-      if (a.length !== b.length) return false;
+    prepareData() {
+      const categoryMap = this.avdata.reduce((acc, category, index) => {
+        acc[category] = index;
+        return acc;
+      }, {});
 
-      for (let i = 0; i < a.length; ++i) {
-        if (a[i] !== b[i]) return false;
-      }
-      return true;
-    },
+      this.realdata = [];
 
-    isScale() {
-      return this.arraysEqual(
-        Array.from(this.realdata, (x) => x.name),
-        ["0", "1", "2", "3", "4", "5"]
-      );
-    },
+      this.infoData.forEach((data) => {
+        if (!data.value) {
+          return;
+        }
+        const value = data.value.toString().trim();
+        const categoryIndex = categoryMap[value];
 
-    prepareDataValue(data, rl) {
-      if (
-        data.value == rl.name ||
-        (_.isArray(data.value) && data.value.includes(rl.name)) ||
-        this.isScale()
-      ) {
-        return data.value;
-      }
-      return "";
-    },
+        if (categoryIndex !== undefined) {
+          const start = Date.parse(data.start);
+          const end = Date.parse(data.end);
 
-    prepareStartEnd(data) {
-      var split = data.start
-        .substring(0, data.start.indexOf("."))
-        .split(/[^0-9]/);
-      split[1] -= 1;
-      let start = Date.UTC(...split);
-
-      split = data.end.substring(0, data.start.indexOf(".")).split(/[^0-9]/);
-      split[1] -= 1;
-      let end = Date.UTC(...split);
-
-      return { start, end };
-    },
-
-    preparedata() {
-      this.avdata.forEach((o) => {
-        this.realdata.push({ name: o.toString().trim(), data: [] });
-      });
-
-      this.info.forEach((data, key) => {
-        if (key === "available" || key === "title") return;
-
-        this.realdata.forEach((rl) => {
-          let datavalue = this.prepareDataValue(data, rl);
-          if (datavalue !== "") {
-            let { start, end } = this.prepareStartEnd(data);
-            rl.data.push({
-              start,
-              end,
-              name: datavalue.toString().trim(),
-            });
-          }
-        });
-      });
-
-      this.realdata.forEach((d, i) => {
-        d.data.forEach((data) => {
-          data.y = i;
-        });
+          this.realdata.push({
+            start,
+            end,
+            y: categoryIndex,
+            name: value,
+          });
+        }
       });
     },
     drawChart() {
-      const self = this;
-      Highcharts.ganttChart(`chart${self.graphid}`, {
-        plotOptions: {
-          column: {
-            grouping: false,
-            shadow: false,
-          },
+      Highcharts.ganttChart(`chart${this.graphid}`, {
+        chart: {
+          zoomType: 'x',
+          spacingRight: 10,
         },
         title: {
-          text: self.title,
-        },
-        subtitle: {
-          text:
-            document.ontouchstart === undefined
-              ? "Click and drag in the plot area to zoom in"
-              : "Pinch the chart to zoom in",
+          text: this.title,
         },
         xAxis: {
-          tickInterval: 1000 * 60 * 60 * 12, // Day,
+          tickInterval: 1000 * 60 * 60 * 12,
         },
         yAxis: {
-          categories: self.avdata,
-          breaks: [
-            {
-              breakSize: 0.1,
-              from: 0,
-              to: 0,
-            },
-          ],
-        },
-        chart: {
-          zoomType: "x",
-          spacingRight: 10,
+          categories: this.avdata,
+          reversed: true,
+          title: null,
         },
         navigator: {
           enabled: true,
           liveRedraw: true,
           series: {
-            type: "gantt",
+            type: 'gantt',
           },
         },
         scrollbar: {
@@ -194,7 +143,10 @@ export default {
           enabled: true,
           selected: 0,
         },
-        series: self.realdata,
+        series: [{
+          name: this.title,
+          data: this.realdata,
+        }],
       });
     },
   },
@@ -202,14 +154,14 @@ export default {
 </script>
 
 <style scoped>
-[id^="chart"] {
+[id^='chart'] {
   width: 100%;
-  height: 100%;
+  height: 500px;
   overflow: visible !important;
   margin: 30px auto;
 }
 
 .highcharts-root {
-  font-family: "Courier New", monospace;
+  font-family: 'Courier New', monospace;
 }
 </style>

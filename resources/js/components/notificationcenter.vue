@@ -1,481 +1,254 @@
 <template>
-  <div class="flex flex-col h-full">
-    <div class="border-b border-gray-200">
-      <nav class="flex -mb-px" aria-label="Tabs">
-        <a
-          href="#"
-          @click="activeTab = 0"
-          :class="
-            activeTab == 0
-              ? 'w-1/3 px-1 py-4 text-sm font-medium text-center text-black border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300'
-              : 'w-1/3 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'
-          "
+  <div class="flex flex-col h-full bg-gray-50">
+    <!-- Navigation Tabs -->
+    <div class="bg-white shadow">
+      <nav class="flex space-x-1 p-2" aria-label="Tabs">
+        <button
+            v-for="(tab, index) in [
+            'Send Notification',
+            'List of sent Notifications',
+            'List of planned Notifications'
+          ]"
+            :key="index"
+            @click="activeTab = index"
+            :class="[
+            'flex-1 px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-150',
+            activeTab === index
+              ? 'bg-blue-500 text-white shadow-md'
+              : 'text-gray-600 hover:bg-blue-50'
+          ]"
         >
-          {{ trans("Send Notification") }}
-        </a>
-
-        <a
-          href="#"
-          @click="activeTab = 1"
-          :class="
-            activeTab == 1
-              ? 'w-1/3 px-1 py-4 text-sm font-medium text-center text-black border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300'
-              : 'w-1/3 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'
-          "
-        >
-          {{ trans("List of sent Notifications") }}
-        </a>
-
-        <a
-          href="#"
-          @click="activeTab = 2"
-          :class="
-            activeTab == 2
-              ? 'w-1/3 px-1 py-4 text-sm font-medium text-center text-black border-b-2 border-blue-500 border-solid hover:text-gray-700 hover:border-gray-300'
-              : 'w-1/3 px-1 py-4 text-sm font-medium text-center text-gray-500 border-b-2 border-transparent border-solid hover:text-gray-700 hover:border-gray-300'
-          "
-          aria-current="page"
-        >
-          {{ trans("List of planned Notifications") }}
-        </a>
+          {{ trans(tab) }}
+        </button>
       </nav>
     </div>
-    <div v-if="activeTab == 0">
+
+    <!-- Send Notification Tab -->
+    <div v-if="activeTab == 0" class="p-6 space-y-6">
       <div
-        class="my-4 space-y-4"
-        v-for="(oneCase, index) in arrayOfCases"
-        :key="index"
+          v-for="(oneCase, index) in arrayOfCases"
+          :key="index"
+          class="bg-white rounded-lg shadow-sm p-6 space-y-4 border border-gray-200"
       >
-        <h2 class="text-2xl break-words">
-          {{ trans("Case Name: ")
-          }}<span class="font-bold">{{ oneCase.name }}</span>
-        </h2>
-        <h2 class="my-2 text-2xl break-words">
-          {{ trans("Last day: ")
-          }}<span class="font-bold">{{ oneCase.real_duration_readable }}</span>
-        </h2>
-        <button
-          v-if="admin"
-          @click="cleanupNotification(oneCase)"
-          class="px-2 py-1 font-semibold text-red-700 bg-transparent border border-red-500 hover:bg-red-500 hover:text-white hover:border-transparent"
-        >
-          {{ trans("Forget Notification") }}
-        </button>
-        <p class="break-words">
-          {{ trans("Send notification to user: ") }}
-          <span class="font-bold">{{ oneCase.user.email }}</span>
-        </p>
-        <p
-          class="p-1 my-2 font-bold text-white bg-red-500"
-          v-if="oneCase.expired"
-        >
-          {{
-            trans(
-              "This case is over, it ended  " + oneCase.real_duration_readable
-            )
-          }}
-        </p>
-        <p
-          class="p-1 my-2 font-bold text-white break-words bg-red-500"
-          v-if="oneCase.user.deviceID.length === 0"
+        <!-- Case Header -->
+        <div class="border-b border-gray-200 pb-4">
+          <h2 class="text-2xl font-bold text-gray-900">
+            {{ oneCase.name }}
+          </h2>
+          <p class="text-sm text-gray-500 mt-1">
+            {{ trans("Last day: ") }}
+            <span class="font-medium">{{ oneCase.real_duration_readable }}</span>
+          </p>
+        </div>
+
+        <!-- Admin Actions -->
+        <div v-if="admin" class="flex justify-end">
+          <button
+              @click="cleanupNotification(oneCase)"
+              class="inline-flex items-center px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-md hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+          >
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+            {{ trans("Forget Notification") }}
+          </button>
+        </div>
+
+        <!-- User Info -->
+        <div class="bg-blue-50 rounded-md p-4">
+          <p class="text-blue-700">
+            {{ trans("Send notification to user: ") }}
+            <span class="font-semibold">{{ oneCase.user.email }}</span>
+          </p>
+        </div>
+
+        <!-- Warning Messages -->
+        <div v-if="oneCase.expired" class="bg-red-50 text-red-700 p-4 rounded-md font-medium">
+          {{ trans("This case is over, it ended " + oneCase.real_duration_readable) }}
+        </div>
+
+        <div
+            v-if="oneCase.user.deviceID.length === 0"
+            class="bg-red-50 text-red-700 p-4 rounded-md font-medium"
         >
           {{ trans("No device registered, you can't send notifications.") }}
-        </p>
+        </div>
+
+        <!-- Notification Form -->
         <div
-          class="block space-y-4"
-          v-if="!oneCase.expired && oneCase.user.deviceID.length !== 0"
+            v-if="!oneCase.expired && oneCase.user.deviceID.length !== 0"
+            class="space-y-4"
         >
+          <!-- Title Input -->
           <div>
-            <label
-              for="name"
-              class="text-base font-bold tracking-wide text-gray-700 uppercase"
-            >
+            <label class="block text-sm font-medium text-gray-700 mb-1">
               {{ trans("Notification Title") }} *
             </label>
             <input
-              v-model="oneCase.title"
-              :maxlength="inputLength.title"
-              type="text"
-              class="block w-full px-4 py-2 mb-0 mb-4 leading-normal bg-white border border-gray-300 appearance-none"
-              name="name"
+                v-model="oneCase.title"
+                :maxlength="inputLength.title"
+                type="text"
+                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             />
-            <span
-              style="margin-top: -20px"
-              :class="
-                oneCase.title && inputLength.title <= oneCase.title.length
-                  ? 'text-red-600 text-xs w-auto inline-flex float-right'
-                  : 'text-xs text-gray-500 w-auto inline-flex float-right'
-              "
-              >{{
-                inputLength.title - (oneCase.title ? oneCase.title.length : 0)
-              }}/{{ inputLength.title }}
-            </span>
+            <p class="mt-1 text-sm text-gray-500 text-right">
+              {{ inputLength.title - (oneCase.title ? oneCase.title.length : 0) }}/{{ inputLength.title }}
+            </p>
           </div>
+
+          <!-- Message Input -->
           <div>
-            <label
-              for="name"
-              class="text-base font-bold tracking-wide text-gray-700 uppercase"
-            >
+            <label class="block text-sm font-medium text-gray-700 mb-1">
               {{ trans("Notification Text") }} *
             </label>
             <textarea
-              :maxlength="inputLength.message"
-              v-model="oneCase.message"
-              class="block w-full px-4 py-2 border resize focus:border-blue-700"
+                v-model="oneCase.message"
+                :maxlength="inputLength.message"
+                rows="4"
+                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             ></textarea>
-            <span
-              style="margin-top: -20px"
-              :class="
-                oneCase.message && inputLength.message <= oneCase.message.length
-                  ? 'text-red-600 text-xs w-auto inline-flex float-right'
-                  : 'text-xs text-gray-500 w-auto inline-flex float-right'
-              "
-              >{{
-                inputLength.message -
-                (oneCase.message ? oneCase.message.length : 0)
-              }}/{{ inputLength.message }}
-            </span>
+            <p class="mt-1 text-sm text-gray-500 text-right">
+              {{ inputLength.message - (oneCase.message ? oneCase.message.length : 0) }}/{{ inputLength.message }}
+            </p>
           </div>
-          <p
-            class="font-bold break-words"
-            v-if="oneCase.user.deviceID.length !== 0"
-          >
-            {{ oneCase.user.deviceID.length }}
-            {{ trans(" registered device(s)") }}.
-          </p>
 
-          <p
-            class="p-1 font-bold text-white bg-red-500"
-            v-if="
-              oneCase.user.profile &&
-              oneCase.user.profile.last_notification_at > yesterday
-            "
-          >
-            {{
-              trans(
-                "Notification already sent in the last 24h - " +
-                  oneCase.user.profile.last_notification_at_readable
-              )
-            }}
-          </p>
-          <button
-            v-if="
-              oneCase.user.profile &&
-              oneCase.user.profile.last_notification_at < yesterday
-            "
-            @click="sendNotification(oneCase)"
-            class="px-4 py-2 mt-2 font-semibold text-blue-700 bg-transparent border border-blue-500 hover:bg-blue-500 hover:text-black hover:border-transparent"
-          >
-            {{ trans("Send Notification") }}
-          </button>
+          <!-- Device Info -->
+          <div v-if="oneCase.user.deviceID.length !== 0" class="text-sm text-gray-600">
+            {{ oneCase.user.deviceID.length }} {{ trans(" registered device(s)") }}
+          </div>
 
-          <p
-            class="p-1 my-2 font-bold text-white bg-red-500"
-            v-if="oneCase.planned_notifications.length !== 0"
-          >
-            {{
-              trans(
-                "Notification already planned, check third tab to delete it."
-              )
-            }}
-          </p>
+          <!-- Send/Plan Notification -->
+          <div class="space-y-4">
+            <div v-if="oneCase.user.profile && oneCase.user.profile.last_notification_at > yesterday"
+                 class="bg-yellow-50 text-yellow-700 p-4 rounded-md">
+              {{
+                trans("Notification already sent in the last 24h - " + oneCase.user.profile.last_notification_at_readable)
+              }}
+            </div>
 
-          <div v-if="oneCase.planned_notifications.length === 0">
-            <label
-              for="notification frequency"
-              class="block mt-6 text-base font-bold tracking-wide text-gray-700"
+            <button
+                v-if="oneCase.user.profile && oneCase.user.profile.last_notification_at < yesterday"
+                @click="sendNotification(oneCase)"
+                class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
-              {{ trans("Select Frequency and time") }} *
-            </label>
-            <div
-              class="flex flex-col items-start w-full md:flex-row md:items-center md:space-x-2"
-            >
-              <select
-                v-model="oneCase.selectedFrequency"
-                class="block w-full py-1 text-gray-900 border-0 rounded-md shadow-sm md:w-auto md:flex-grow md:flex-shrink ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                id="grid-state"
-                name="notification frequency"
-              >
-                <option v-for="f in frequency" :value="f">{{ f }}</option>
-              </select>
-              <div
-                class="flex flex-row items-center w-full space-x-2 md:mt-0 md:w-auto"
-              >
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+              </svg>
+              {{ trans("Send Notification") }}
+            </button>
+
+            <!-- Planning Section -->
+            <div v-if="oneCase.planned_notifications.length === 0" class="space-y-4">
+              <label class="block text-sm font-medium text-gray-700">
+                {{ trans("Select Frequency and time") }} *
+              </label>
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <select
-                  v-model="oneCase.selectedHour"
-                  name="hours"
-                  class="w-full py-1 text-gray-900 border-0 rounded-md shadow-sm md:w-auto ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    v-model="oneCase.selectedFrequency"
+                    class="col-span-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 >
-                  <option v-for="hour in hours" :value="hour">
-                    {{ hour }}
-                  </option>
+                  <option v-for="f in frequency" :value="f">{{ f }}</option>
                 </select>
-                <span class="text-xl md:text-base">:</span>
-                <select
-                  v-model="oneCase.selectedMinutes"
-                  name="minutes"
-                  class="w-full py-1 text-gray-900 border-0 rounded-md shadow-sm md:w-auto ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                >
-                  <option v-for="minute in minutes" :value="minute">
-                    {{ minute }}
-                  </option>
-                </select>
-                <button
-                  class="w-full px-2 py-1 text-sm font-semibold text-blue-700 bg-transparent border border-blue-500 md:mt-0 md:w-auto hover:bg-blue-500 hover:text-white hover:border-transparent"
-                  @click="planNotification(oneCase)"
-                >
-                  {{ trans("Plan Notification") }}
-                </button>
+                <div class="flex space-x-2 col-span-2">
+                  <select
+                      v-model="oneCase.selectedHour"
+                      class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  >
+                    <option v-for="hour in hours" :value="hour">{{ hour }}</option>
+                  </select>
+                  <span class="text-xl self-center">:</span>
+                  <select
+                      v-model="oneCase.selectedMinutes"
+                      class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  >
+                    <option v-for="minute in minutes" :value="minute">{{ minute }}</option>
+                  </select>
+                </div>
               </div>
+              <button
+                  @click="planNotification(oneCase)"
+                  class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                {{ trans("Plan Notification") }}
+              </button>
             </div>
           </div>
         </div>
-        <div class="w-full mt-4 border-b-2 border-blue-800 border-solid"></div>
       </div>
     </div>
-    <div v-if="activeTab == 1">
-      <p class="p-1 font-bold text-black break-words bg-yellow-500">
-        {{ trans("You can sort the Id - Case Name or the Sent At columns.") }}
-      </p>
-      <table class="w-full bg-blue-100 border-2 border-solid table-auto">
-        <thead>
-          <tr class="uppercase bg-blue-500">
-            <th
-              @click="sort('id')"
-              class="w-64 px-4 py-2 font-bold text-white align-middle border-b-2 border-black border-solid cursor-pointer"
-            >
-              {{ trans("Id") }}
-              <span
-                class="mx-2 text-sm"
-                v-if="
-                  this.currentSort === 'id' && this.currentSortDir === 'asc'
-                "
-              >
-                Asc
-              </span>
-              <span
-                class="mx-2 text-sm"
-                v-if="
-                  this.currentSort === 'id' && this.currentSortDir === 'desc'
-                "
-              >
-                Desc
-              </span>
-            </th>
-            <th
-              @click="sort('case.name')"
-              class="w-32 px-2 py-2 font-bold text-white align-middle border-b-2 border-black border-solid cursor-pointer"
-            >
-              {{ trans("Case") }}
-              <span
-                class="mx-2 text-sm"
-                v-if="
-                  this.currentSort === 'case.name' &&
-                  this.currentSortDir === 'asc'
-                "
-              >
-                Asc
-              </span>
-              <span
-                class="mx-2 text-sm"
-                v-if="
-                  this.currentSort === 'case.name' &&
-                  this.currentSortDir === 'desc'
-                "
-              >
-                Desc
-              </span>
-            </th>
-            <th
-              class="px-4 py-2 font-bold text-white align-middle border-b-2 border-black border-solid"
-            >
-              {{ trans("Title") }}
-            </th>
-            <th
-              class="px-4 py-2 font-bold text-white align-middle border-b-2 border-black border-solid"
-            >
-              {{ trans("Message") }}
-            </th>
-            <th
-              @click="sort('created_at_readable')"
-              class="px-4 py-2 font-bold text-white align-middle border-b-2 border-black border-solid cursor-pointer"
-            >
-              {{ trans("Sent At") }}
-              <span
-                class="mx-2"
-                v-if="
-                  this.currentSort === 'created_at_readable' &&
-                  this.currentSortDir === 'asc'
-                "
-              >
-                Asc
-              </span>
-              <span
-                class="mx-2"
-                v-if="
-                  this.currentSort === 'created_at_readable' &&
-                  this.currentSortDir === 'desc'
-                "
-              >
-                Desc
-              </span>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="notification in sortedNotifications">
-            <td class="py-2 pl-2 text-sm border">
-              {{ notification["id"] }}
-            </td>
-            <td class="px-4 py-2 border">
-              {{ notification["case"]["name"] }}
-            </td>
-            <td class="w-64 px-4 py-2 border">
-              {{ notification["data"]["title"] }}
-            </td>
-            <td class="px-4 py-2 border">
-              {{ notification["data"]["message"] }}
-            </td>
-            <td class="w-64 py-2 pr-2 border">
-              {{ notification["created_at_readable"] }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
+
+    <!-- Notifications List Tabs -->
+    <div v-if="activeTab == 1 || activeTab == 2" class="p-6">
+      <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-blue-500">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                {{ trans(activeTab == 1 ? "Id" : "Notification Id") }}
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                {{ trans("Case") }}
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                {{ trans("Title") }}
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                {{ trans("Message") }}
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                {{ trans(activeTab == 1 ? "Sent At" : "When to send") }}
+              </th>
+              <th v-if="activeTab == 2" scope="col"
+                  class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                {{ trans("Actions") }}
+              </th>
+            </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+            <tr v-for="notification in activeTab == 1 ? sortedNotifications : plannednotifications"
+                class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ notification["id"] }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                {{ notification["case"]["name"] }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                {{ activeTab == 1 ? notification["data"]["title"] : notification.data.title }}
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-900">
+                {{ activeTab == 1 ? notification["data"]["message"] : notification.data.message }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ activeTab == 1 ? notification["created_at_readable"] : notification.data.planning }}
+              </td>
+              <td v-if="activeTab == 2" class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <button
+                    @click="deletePlanned(notification)"
+                    class="text-red-600 hover:text-red-800 inline-flex items-center"
+                >
+                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                  </svg>
+                  {{ trans("Delete") }}
+                </button>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
-    <div id="third" class="p-4" v-show="activeTab === 3">
-      <table class="w-full bg-blue-100 border-2 border-solid table-auto">
-        <thead>
-          <tr class="uppercase bg-blue-500">
-            <th
-              class="w-64 px-4 py-2 font-bold text-white align-middle border-b-2 border-black border-solid"
-            >
-              {{ trans("Notification Id") }}
-            </th>
-            <th
-              class="px-4 py-2 font-bold text-white align-middle border-b-2 border-black border-solid"
-            >
-              {{ trans("Case") }}
-            </th>
-            <th
-              class="px-4 py-2 font-bold text-white align-middle border-b-2 border-black border-solid"
-            >
-              {{ trans("Title") }}
-            </th>
-            <th
-              class="px-4 py-2 font-bold text-white align-middle border-b-2 border-black border-solid"
-            >
-              {{ trans("Message") }}
-            </th>
-            <th
-              class="px-4 py-2 font-bold text-white align-middle border-b-2 border-black border-solid"
-            >
-              {{ trans("When to send") }}
-            </th>
-            <th
-              class="px-4 py-2 font-bold text-white align-middle border-b-2 border-black border-solid"
-            >
-              {{ trans("Actions") }}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="notification in plannednotifications">
-            <td class="py-2 pl-2 text-sm border">
-              {{ notification["id"] }}
-            </td>
-            <td class="px-4 py-2 border">
-              {{ notification["case"]["name"] }}
-            </td>
-            <td class="w-64 px-4 py-2 border">
-              {{ notification["data"]["title"] }}
-            </td>
-            <td class="px-4 py-2 border">
-              {{ notification["data"]["message"] }}
-            </td>
-            <td class="w-64 py-2 pr-2 border">
-              {{ notification["data"]["planning"] }}
-            </td>
-            <td class="w-64 py-2 pr-2 border">
-              <button
-                @click="deletePlanned(notification)"
-                class="px-2 py-1 font-semibold text-red-700 bg-transparent border border-red-500 hover:bg-red-500 hover:text-white hover:border-transparent"
-              >
-                {{ trans("Delete Planned Notification") }}
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <div v-if="activeTab == 2">
-      <table class="w-full bg-blue-100 border-2 border-solid table-auto">
-        <thead>
-          <tr class="uppercase bg-blue-500">
-            <th
-              class="w-64 px-4 py-2 font-bold text-white align-middle border-b-2 border-black border-solid"
-            >
-              {{ trans("Notification Id") }}
-            </th>
-            <th
-              class="px-4 py-2 font-bold text-white align-middle border-b-2 border-black border-solid"
-            >
-              {{ trans("Case") }}
-            </th>
-            <th
-              class="px-4 py-2 font-bold text-white align-middle border-b-2 border-black border-solid"
-            >
-              {{ trans("Title") }}
-            </th>
-            <th
-              class="px-4 py-2 font-bold text-white align-middle border-b-2 border-black border-solid"
-            >
-              {{ trans("Message") }}
-            </th>
-            <th
-              class="px-4 py-2 font-bold text-white align-middle border-b-2 border-black border-solid"
-            >
-              {{ trans("When to send") }}
-            </th>
-            <th
-              class="px-4 py-2 font-bold text-white align-middle border-b-2 border-black border-solid"
-            >
-              {{ trans("Actions") }}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="notification in plannednotifications">
-            <td class="py-2 pl-2 text-sm border">
-              {{ notification["id"] }}
-            </td>
-            <td class="px-4 py-2 border">
-              {{ notification["case"]["name"] }}
-            </td>
-            <td class="w-64 px-4 py-2 border">
-              {{ notification["data"]["title"] }}
-            </td>
-            <td class="px-4 py-2 border">
-              {{ notification["data"]["message"] }}
-            </td>
-            <td class="w-64 py-2 pr-2 border">
-              {{ notification["data"]["planning"] }}
-            </td>
-            <td class="w-64 py-2 pr-2 border">
-              <button
-                @click="deletePlanned(notification)"
-                class="px-2 py-1 font-semibold text-red-700 bg-transparent border border-red-500 hover:bg-red-500 hover:text-white hover:border-transparent"
-              >
-                {{ trans("Delete Planned Notification") }}
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+
   </div>
 </template>
-
 <script>
 import moment from "moment";
 
@@ -497,6 +270,7 @@ export default {
       ],
       minutes: ["00", 15, 30, 45],
       frequency: ["Every day", "Every two days", "Every three days"],
+
     };
   },
   mounted() {
@@ -590,6 +364,9 @@ export default {
     },
   },
   methods: {
+    showSnackbar(message) {
+      this.$root.showSnackbarMessage(message.message);
+    },
     sort: function (s) {
       if (s === this.currentSort) {
         this.currentSortDir = this.currentSortDir === "asc" ? "desc" : "asc";
@@ -605,12 +382,10 @@ export default {
         .then((response) => {
           if (response.message) this.response = response.message;
           else {
-            this.$buefy.snackbar.open(response.data);
+            this.showSnackbar(response.data);
           }
 
           if (response.status === 200) {
-            // delete notification from planned
-
             this.plannednotifications = _.filter(
               this.plannednotifications,
               function (o) {
@@ -620,9 +395,9 @@ export default {
           }
         })
         .catch((error) => {
-          if (error.message) this.$buefy.snackbar.open(error.message);
+          if (error.message) this.showSnackbar(error.message);
           else {
-            this.$buefy.snackbar.open(error.response.data);
+            this.showSnackbar(error.response.data);
           }
         });
     },
@@ -638,7 +413,7 @@ export default {
     },
     sendNotification(oneCase) {
       if (!this.validData(oneCase)) {
-        this.$buefy.snackbar.open(this.trans("Your data are not valid."));
+        this.showSnackbar(this.trans("Your data are not valid."));
       } else {
         let data = {
           user: oneCase.user,
@@ -651,21 +426,21 @@ export default {
           .then((response) => {
             if (response.message) this.response = response.message;
             else {
-              this.$buefy.snackbar.open(response.data);
+              this.showSnackbar(response.data);
             }
             this.setAsNotificationSent(oneCase, response);
           })
           .catch((error) => {
-            if (error.message) this.$buefy.snackbar.open(error.message);
+            if (error.message) this.showSnackbar(error.message);
             else {
-              this.$buefy.snackbar.open(error.response.data);
+              this.showSnackbar(error.response.data);
             }
           });
       }
     },
     planNotification(oneCase) {
       if (!this.validPlanning(oneCase)) {
-        this.$buefy.snackbar.open(this.trans("Your data are not valid."));
+        this.showSnackbar(this.trans("Your data are not valid."));
       } else {
         let data = {
           user: oneCase.user,
@@ -685,7 +460,7 @@ export default {
           .then((response) => {
             if (response.message) this.response = response.message;
             else {
-              this.$buefy.snackbar.open(response.data);
+              this.showSnackbar(response.data);
             }
             if (response.status === 200) {
               let newNotification = response.data.notification;
@@ -697,9 +472,9 @@ export default {
             }
           })
           .catch((error) => {
-            if (error.message) this.$buefy.snackbar.open(error.message);
+            if (error.message) this.showSnackbar(error.message);
             else {
-              this.$buefy.snackbar.open(error.response.data);
+              this.showSnackbar(error.response.data);
             }
           });
       }
@@ -728,13 +503,13 @@ export default {
         .then((response) => {
           if (response.message) this.response = response.message;
           else {
-            this.$buefy.snackbar.open(response.data);
+            this.showSnackbar(response.data);
           }
         })
         .catch((error) => {
-          if (error.message) this.$buefy.snackbar.open(error.message);
+          if (error.message) this.showSnackbar(error.message);
           else {
-            this.$buefy.snackbar.open(error.response.data);
+            this.showSnackbar(error.response.data);
           }
         });
     },

@@ -15,7 +15,7 @@ class CreateMediaTable extends Migration
     {
         Schema::create('media', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('name', 200)->unique();
+            $table->string('name', 200);
             $table->string('description', 250)->nullable();
 
             // json column about color in graph

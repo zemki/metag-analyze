@@ -2,19 +2,13 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\CasesResource\Pages;
-use App\Filament\Resources\CasesResource\RelationManagers;
 use App\Cases;
+use App\Filament\Resources\CasesResource\Pages;
 use App\User;
-use Filament\Forms;
 use Filament\Resources\Form;
 use Filament\Resources\Resource;
 use Filament\Resources\Table;
 use Filament\Tables;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\ViewColumn;
 
 class CasesResource extends Resource
 {
@@ -30,22 +24,20 @@ class CasesResource extends Resource
             ]);
     }
 
-
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                
+
                 Tables\Columns\TextColumn::make('user_id')->grow(false)->formatStateUsing(function ($state) {
                     $user = User::find($state);
                     $user_name = $user ? $user->email : '';
+
                     return $user_name;
                 })->searchable(),
                 Tables\Columns\TextColumn::make('name')->sortable(),
                 Tables\Columns\TextColumn::make('duration')->sortable(),
-                    Tables\Columns\TextColumn::make('entries_count')->counts('entries')->sortable(),
-
-
+                Tables\Columns\TextColumn::make('entries_count')->counts('entries')->sortable(),
 
                 //
             ])
@@ -53,20 +45,20 @@ class CasesResource extends Resource
                 //
             ])
             ->actions([
-              
+
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
             ]);
     }
-    
+
     public static function getRelations(): array
     {
         return [
             //
         ];
     }
-    
+
     public static function getPages(): array
     {
         return [

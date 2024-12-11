@@ -2,46 +2,9 @@
 
 namespace App;
 
-use DB;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * App\Project
- *
- * @property int $id
- * @property string $name
- * @property string $description
- * @property string|null $inputs
- * @property int $created_by
- * @property int $is_locked
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Cases[] $cases
- * @property-read int|null $cases_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\User[] $invited
- * @property-read int|null $invited_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Media[] $media
- * @property-read int|null $media_count
- *
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Project newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Project newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Project query()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Project whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Project whereCreatedBy($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Project whereDescription($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Project whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Project whereInputs($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Project whereIsLocked($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Project whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Project whereUpdatedAt($value)
- *
- * @mixin \Eloquent
- *
- * @property string|null $properties
- *
- * @method static \Illuminate\Database\Eloquent\Builder|Project whereProperties($value)
- */
 class Project extends Model
 {
     use HasFactory;
@@ -60,7 +23,7 @@ class Project extends Model
         static::deleting(function ($project) {
             $project->invited()->detach();
             // if the user created the project
-            if (! app()->runningInConsole() && $project->created_by === auth()->user()->id && $project->cases->count() > 0) {
+            if ($project->created_by === auth()->user()->id && $project->cases->count() > 0) {
                 foreach ($project->cases as $case) {
                     foreach ($case->entries as $entry) {
                         $entry->delete();
@@ -88,11 +51,17 @@ class Project extends Model
         return $headings;
     }
 
+    /**
+     * @return mixed
+     */
     public function getInputs()
     {
         return json_decode($this->inputs);
     }
 
+    /**
+     * @return array
+     */
     public function getAnswersInputs()
     {
         $inputs = json_decode($this->inputs);
@@ -138,6 +107,9 @@ class Project extends Model
         return $availableAnswers;
     }
 
+    /**
+     * @return false|mixed|null
+     */
     public function getSpecificInput($name)
     {
         if ($this->inputs === '[]') {
@@ -170,6 +142,9 @@ class Project extends Model
         return $inputNames;
     }
 
+    /**
+     * @return false|null
+     */
     public function getNumberOfAnswersByQuestion($question)
     {
         if ($this->inputs === '[]') {
@@ -186,6 +161,9 @@ class Project extends Model
         return $item;
     }
 
+    /**
+     * @return false|null
+     */
     public function getAnswersByQuestion($question)
     {
         if ($this->inputs === '[]') {
@@ -203,41 +181,65 @@ class Project extends Model
         return $item;
     }
 
+    /**
+     * @return bool
+     */
     public function isEditable()
     {
         return $this->cases()->count() === 0;
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function cases()
     {
         return $this->HasMany(Cases::class);
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function notBackendcases()
     {
-        return $this->HasMany(Cases::class)->whereRaw(DB::raw("duration not like 'value:0%'"));
+        return $this->HasMany(Cases::class)->where('duration', 'not like', 'value:0%');
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
     public function media()
     {
         return $this->belongsToMany(Media::class, 'media_projects');
     }
 
+    /**
+     * @return string
+     */
     public function path()
     {
         return "/projects/{$this->id}";
     }
 
+    /**
+     * @return Model|\Illuminate\Database\Eloquent\Relations\BelongsTo|object|null
+     */
     public function created_by()
     {
         return $this->belongsTo(User::class, 'created_by')->first();
     }
 
+    /**
+     * @return Cases|Model
+     */
     public function addCase($name, $duration)
     {
         return $this->cases()->create(['name' => $name, 'duration' => $duration]);
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
     public function invited()
     {
         return $this->belongsToMany(User::class, 'user_projects');

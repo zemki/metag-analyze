@@ -32,8 +32,8 @@ class Helper
     /**
      * return extension of base64 file
      *
-     * @param  string  $uri base64 file uri
-     * @return string      image extension
+     * @param  string  $uri  base64 file uri
+     * @return string image extension
      */
     public static function extension($uri)
     {
@@ -103,7 +103,7 @@ class Helper
     }
 
     /**
-     * @param $array
+     * @param  $array
      * @return array
      */
     public static function multiexplode($delimiters, $string)

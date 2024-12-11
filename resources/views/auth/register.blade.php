@@ -18,12 +18,14 @@
                     <div>
                         <label for="email-address" class="sr-only">{{ __('E-Mail Address') }}</label>
                         <input id="email-address" name="email" type="email" autocomplete="email" required
+                               value="{{ old('email') }}"
                                class="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                                placeholder="Email address">
                     </div>
                     <div class="pt-2">
                         <label for="password" class="sr-only">{{ __('Password') }}</label>
                         <input id="password" name="password" type="password" autocomplete="new-password" required
+
                                class="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                                placeholder="{{ __('Password') }}">
                     </div>
@@ -79,7 +81,6 @@
                 if (ev.detail.state === 'verified') {
                     altokenInput.value = ev.detail.payload;
 
-                    // Perform your action here, e.g., update a hidden input or variable
                 }
             });
         });

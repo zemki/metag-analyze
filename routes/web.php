@@ -23,8 +23,6 @@ Route::group(['middleware' => ['throttle:3,10']], static function () {
     Route::post('email/resend', 'Auth\VerificationController@resend')->name('verification.resend');
 });
 
-
-
 Route::group(['middleware' => ['auth', 'authorised', 'verified', 'LoggedUser']], function () {
     Route::get('/verifyNewEmail', 'Auth\EmailChangeController@verify')->name('verifyNewEmail');
     Route::post('/changeemail', 'Auth\EmailChangeController@change')->name('change');
@@ -60,7 +58,6 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified', 'LoggedUser']],
     Route::get('/projects/{project}/notifications', 'ProjectNotificationController@show');
     Route::get('/projects/{project}/cases/new', 'ProjectCasesController@create');
     Route::post('/projects/{project}/cases', 'ProjectCasesController@store');
-    //Route::get('/projects/{project}/cases/{case}', 'ProjectCasesController@show');
     Route::get('/projects/{project}/distinctcases/{case}', 'ProjectCasesController@distinctshow');
     Route::get('/projects/{project}/groupedcases/{case}', 'ProjectCasesController@groupedshow');
     Route::get('/cases/{case}/export', 'ProjectCasesController@export');
@@ -69,16 +66,13 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified', 'LoggedUser']],
     Route::get('/cases/{case}/files', 'FileCasesController@index');
     Route::delete('/cases/{case}/files/{file}', 'FileCasesController@destroy');
 
-
     /**
      * User Routes
      */
     Route::post('/users/password/reset', 'Auth\ForgotPasswordController@SendsPasswordResetEmailFromCasesList');
-    Route::post('/users/exist', 'UserController@userExists');
     Route::post('/users/subscribe', 'UserController@addToNewsletter');
     Route::post('/users/notify', 'UserController@notifyDevice');
     Route::post('/users/plannotification', 'UserController@planNotification');
     Route::post('/users/deletenotification', 'UserController@deletePlannedNotification');
     Route::post('/users/cleanuplastnotification', 'UserController@cleanupNotifications');
-    Route::get('/user/profile', 'UserController@show')->name('userprofile');
 });

@@ -24,7 +24,7 @@ class notifyUserforNewCaseWhenAlreadyRegistered extends Notification
     /**
      * Get the notification's delivery channels.
      *
-     * @param mixed $notifiable
+     * @param  mixed  $notifiable
      * @return array
      */
     public function via($notifiable)
@@ -35,15 +35,15 @@ class notifyUserforNewCaseWhenAlreadyRegistered extends Notification
     /**
      * Get the mail representation of the notification.
      *
-     * @param mixed $notifiable
+     * @param  mixed  $notifiable
      * @return \Illuminate\Notifications\Messages\MailMessage
      */
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->from('noreply@mesoftware.org', 'MeTag Analyze')
-            ->subject(strlen($this->subject) > 0 ? $this->subject : 'New Case on Metag')
-            ->lineIf(strlen($this->message) == 0, 'You have been added to a new case, please login in Metag to check it out.')
+            ->from('noreply@' . strtolower(str_replace(' ', '', env('APP_NAME'))) . '.org', env('APP_NAME'))
+            ->subject(strlen($this->subject) > 0 ? $this->subject : 'New Case on ' . env('APP_NAME'))
+            ->lineIf(strlen($this->message) == 0, 'You have been added to a new case, please login in ' . env('APP_NAME') . ' to check it out.')
             ->lineIf(strlen($this->message) > 0, $this->message);
 
     }
@@ -51,7 +51,7 @@ class notifyUserforNewCaseWhenAlreadyRegistered extends Notification
     /**
      * Get the array representation of the notification.
      *
-     * @param mixed $notifiable
+     * @param  mixed  $notifiable
      * @return array
      */
     public function toArray($notifiable)

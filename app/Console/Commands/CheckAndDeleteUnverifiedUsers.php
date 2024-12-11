@@ -51,7 +51,7 @@ class CheckAndDeleteUnverifiedUsers extends Command
         }
 
         if ($this->confirm('You want to receive the csv file?', false)) {
-            Mail::to('belli@uni-bremen.de')->send(new UnverifiedUsersReport($filePath));
+            Mail::to(config('utilities.adminemails'))->send(new UnverifiedUsersReport($filePath));
 
             //send the csv file to the admin
             $this->info('Sending the report...');

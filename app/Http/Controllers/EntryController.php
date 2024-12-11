@@ -48,7 +48,7 @@ class EntryController extends Controller
         if (request()->has('media')) {
             request()->merge([self::MEDIA_ID => request()->media]);
         }
-        
+
         $attributes = request()->validate([
             self::BEGIN => self::REQUIRED,
             'end' => self::REQUIRED,
@@ -115,7 +115,7 @@ class EntryController extends Controller
         }
 
         if (request()->hasHeader('x-file-token') && request()->header('x-file-token') !== '0' && request()->header('x-file-token') !== '') {
-            
+
             $appToken = request()->header('x-file-token');
             $clientFileTokenIsSameWithServer = strcmp(Crypt::decryptString($case->file_token), $appToken) !== 0;
             $keepExistingAudioFile = request()->has('audio') && empty(request()->input('audio') && property_exists($oldInputs, 'file'));

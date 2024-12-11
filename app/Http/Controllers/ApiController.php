@@ -36,7 +36,7 @@ class ApiController extends Controller
     public function returnUser($id)
     {
         if ($id === 0) {
-            $user = new User();
+            $user = new User;
 
             return response($user, 200);
         }
@@ -68,57 +68,89 @@ class ApiController extends Controller
      *
      * @return JsonResponse
      */
+    /**
+     * Handles Login Request
+     *
+     * @return JsonResponse
+     */
     public function login(Request $request)
     {
         $credentials = [
             self::EMAIL => $request->email,
             self::PASSWORD => $request->password,
         ];
+
         if (auth()->attempt($credentials)) {
-            $token = Helper::random_str(60, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
-            auth()->user()->forceFill([
-                'api_token' => hash('sha256', $token),
+            $user = auth()->user();
+
+            // Reset any failed login attempts and lockout
+            $user->forceFill([
+                'failed_login_attempts' => 0,
+                'lockout_until' => null,
             ])->save();
-            $userHasACase = auth()->user()->latestCase;
+
+            // Generate token with expiration
+            $token = Helper::random_str(60, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
+            $user->forceFill([
+                'api_token' => hash('sha256', $token),
+                'token_expires_at' => now()->addDays(config('auth.token_expiration_days', 30)),
+            ])->save();
+
+            $userHasACase = $user->latestCase;
+
             if (! $userHasACase) {
-                $response = 'No cases';
-
-                return response()->json(['case' => $response], 499);
-            } else {
-                if ($userHasACase->isBackend()) {
-                    $response = 'No cases';
-
-                    return response()->json(['case' => $response], 499);
-                }
-                if (! auth()->user()->profile()->exists()) {
-                    $profile = auth()->user()->addProfile(auth()->user());
-                }
-                User::saveDeviceId($request);
-                $lastDayPos = strpos($userHasACase->duration, 'lastDay:');
-                $startDay = Helper::get_string_between($userHasACase->duration, 'startDay:', '|');
-                $duration = $lastDayPos ? substr($userHasACase->duration, $lastDayPos + strlen('lastDay:'), strlen($userHasACase->duration) - 1) : Cases::calculateDuration($request->datetime, $userHasACase->duration);
-                $userHasACase->duration .= $lastDayPos ? '' : '|lastDay:' . $duration;
-                $userHasACase->save();
-                $inputs = $this->formatLoginResponse($userHasACase);
-                $notStarted = (strtotime(date('d.m.Y')) < strtotime($startDay));
-
-                return response()->json([
-                    self::INPUTS => $inputs[self::INPUTS],
-                    'case' => $userHasACase->makeHidden('file_token'),
-                    self::TOKEN => $token,
-                    'file_token' => $userHasACase->file_token ? Crypt::decryptString($userHasACase->file_token) : '',
-                    'duration' => $duration,
-                    self::CUSTOMINPUTS => $inputs[self::INPUTS][self::CUSTOMINPUTS],
-                    self::NOTSTARTED => $notStarted,
-                ], 200);
+                return response()->json(['case' => 'No cases'], 499);
             }
+
+            if ($userHasACase->isBackend()) {
+                return response()->json(['case' => 'No cases'], 499);
+            }
+
+            if (! $user->profile()->exists()) {
+                $user->addProfile($user);
+            }
+
+            User::saveDeviceId($request);
+            $lastDayPos = strpos($userHasACase->duration, 'lastDay:');
+            $startDay = Helper::get_string_between($userHasACase->duration, 'startDay:', '|');
+
+            $duration = $lastDayPos
+                ? substr($userHasACase->duration, $lastDayPos + strlen('lastDay:'), strlen($userHasACase->duration) - 1)
+                : Cases::calculateDuration($request->datetime, $userHasACase->duration);
+
+            $userHasACase->duration .= $lastDayPos ? '' : '|lastDay:' . $duration;
+            $userHasACase->save();
+
+            $inputs = $this->formatLoginResponse($userHasACase);
+            $notStarted = (strtotime(date('d.m.Y')) < strtotime($startDay));
+
+            return response()->json([
+                self::INPUTS => $inputs[self::INPUTS],
+                'case' => $userHasACase->makeHidden('file_token'),
+                self::TOKEN => $token,
+                'file_token' => $userHasACase->file_token ? Crypt::decryptString($userHasACase->file_token) : null,
+                'duration' => $duration,
+                self::CUSTOMINPUTS => $inputs[self::INPUTS][self::CUSTOMINPUTS],
+                self::NOTSTARTED => $notStarted,
+            ], 200);
+
         } else {
+            // Track failed login attempts
+            if ($user = User::where('email', $request->email)->first()) {
+                $user->increment('failed_login_attempts');
+
+                if ($user->failed_login_attempts >= config('auth.max_login_attempts', 5)) {
+                    $user->lockout_until = now()->addMinutes(30);
+                    $user->save();
+                }
+            }
+
             return response()->json(['error' => 'invalid credentials'], 401);
         }
     }
 
     /**
-     * @param $inputs
+     * @param  $inputs
      * @return mixed
      */
     protected function formatLoginResponse($response)
