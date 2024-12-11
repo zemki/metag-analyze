@@ -369,7 +369,6 @@ class ProjectCasesController extends Controller
             url('/') => 'Metag',
 
             $slug . $project->path() => $project->name,
-            $slug . $case->path() => strlen($case->name) > 20 ? substr($case->name, 0, 20) . '...' : $case->name,
             '#' => 'Graph',
         ];
 
