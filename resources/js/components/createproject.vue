@@ -80,7 +80,7 @@
               @keydown.enter.prevent
               @keydown.tab.prevent
               class="block w-64 p-2 border-b-2 border-blue-500 rounded-md shadow-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              placeholder="Enter media URL"
+              placeholder="Enter media"
             />
           </div>
         </div>
