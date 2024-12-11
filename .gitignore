@@ -30,7 +30,6 @@ public/mix-manifest.json
 package.json
 
 *.css
-*.js
 
 /resources/lang/
 yarn.lock
