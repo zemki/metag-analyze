@@ -13,8 +13,6 @@ export default defineConfig({
             input: [
                 "resources/js/app.js",
                 "resources/sass/app.scss",
-                "resources/sass/app_dompdf.scss",
-                "resources/sass/app_lingua.scss",
             ], refresh: true
         }),
         vue(),
