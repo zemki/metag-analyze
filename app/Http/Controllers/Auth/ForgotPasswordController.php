@@ -43,7 +43,7 @@ class ForgotPasswordController extends Controller
 
         $canAuthUserResetPassword = $this->canAuthUserResetPassword($request->email);
         if (! $canAuthUserResetPassword) {
-        return "You don't have the permissions to send an email to this user.";
+            return "You don't have the permissions to send an email to this user.";
         }
         $response = $this->broker()->sendResetLink(
             $this->credentials($request)

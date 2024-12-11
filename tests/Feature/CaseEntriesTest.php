@@ -14,11 +14,9 @@ class CaseEntriesTest extends TestCase
      */
     public function user_can_delete_entries()
     {
-        $this->withoutExceptionHandling();
+        $this->actingAs($this->user);
 
-        $this->signIn();
-
-        $project = auth()->user()->projects()->create(factory(Project::class)->raw());
+        $project = auth()->user()->projects()->create(Project::factory()->raw());
 
         $case = $project->addCase('test case', 'test duration');
 

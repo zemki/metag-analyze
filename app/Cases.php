@@ -11,62 +11,33 @@ use Illuminate\Notifications\DatabaseNotificationCollection;
 use JetBrains\PhpStorm\Pure;
 
 /**
- * App\Cases
- *
- * @property int                                                        $id
- * @property string                                                     $name
- * @property string                                                     $duration
- * @property int                                                        $project_id
- * @property int|null                                                   $user_id
- * @property \Illuminate\Support\Carbon|null                            $created_at
- * @property \Illuminate\Support\Carbon|null                            $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Entry[] $entries
- * @property-read int|null                                              $entries_count
- * @property-read \App\Project                                          $project
- * @property-read \App\User|null                                        $user
- *
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases query()
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases whereDuration($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases whereProjectId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\App\Cases whereUserId($value)
- *
- * @mixin \Eloquent
- *
- * @property string|null $file_token
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Files[] $files
- * @property-read int|null $files_count
- *
- * @method static \Illuminate\Database\Eloquent\Builder|Cases whereFileToken($value)
+ * Case, is a reserved keyword in most programming languages, that's why we use Cases
  */
 class Cases extends Model
 {
     use HasFactory;
 
-    protected const VALUE = 'value';
+    protected const string VALUE = 'value';
 
-    protected const PR_INPUTS = 'pr_inputs';
+    protected const string PR_INPUTS = 'pr_inputs';
 
-    protected const ENTRIES = 'entries';
+    protected const string ENTRIES = 'entries';
 
-    protected const TITLE = 'title';
+    protected const string TITLE = 'title';
 
-    protected const AVAILABLE = 'available';
+    protected const string AVAILABLE = 'available';
 
-    protected const INPUTS = 'inputs';
+    protected const string INPUTS = 'inputs';
 
-    protected const MULTIPLE_CHOICE = 'multiple choice';
+    protected const string MULTIPLE_CHOICE = 'multiple choice';
 
-    protected const ONE_CHOICE = 'one choice';
+    protected const string ONE_CHOICE = 'one choice';
 
-    protected const SCALE = 'scale';
+    protected const string SCALE = 'scale';
 
     protected $table = 'cases';
+
+    protected $appends = ['entries_count'];
 
     protected $guarded = [];
 
@@ -74,14 +45,16 @@ class Cases extends Model
     {
         parent::boot();
         static::deleting(function ($case) {
-            if (! app()->runningInConsole() && $case->project->created_by === auth()->user()->id) {
+            $owner = $case->project->created_by === auth()->user()->id;
+            if ($owner) {
                 foreach ($case->entries as $entry) {
                     $entry->delete();
                 }
 
                 foreach ($case->plannedNotifications() as $notification) {
-                    DB::delete('delete from notifications where id = ?', [$notification->id]);
+                    $notification->delete();
                 }
+
                 foreach ($case->files as $file) {
                     File::delete($file->path);
                     $file->delete();
@@ -201,6 +174,8 @@ class Cases extends Model
     }
 
     /**
+     * calcilate the duration of the case
+     *
      * @return false|string
      */
     public static function calculateDuration(int $datetime, $caseDuration)
@@ -211,21 +186,37 @@ class Cases extends Model
         return date('d.m.Y', $datetime + $realDuration * 3600);
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function project()
     {
         return $this->belongsTo(Project::class);
     }
 
+    /**
+     * @return string
+     */
     public function path()
     {
         return "/cases/{$this->id}";
     }
 
+    /**
+     * show grouped entries graph path
+     *
+     * @return string
+     */
     public function groupedEntriesPath()
     {
         return "/groupedcases/{$this->id}";
     }
 
+    /**
+     * show distinct entries graph path
+     *
+     * @return string
+     */
     public function distinctpath()
     {
         return "/distinctcases/{$this->id}";
@@ -235,7 +226,7 @@ class Cases extends Model
      * assign a user to this case
      * this will be the user that fills the entries
      *
-     * @param $user user to assign to the case
+     * @param  $user  user to assign to the case
      * @return User
      */
     public function addUser($user)
@@ -249,6 +240,9 @@ class Cases extends Model
         return $user;
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
@@ -295,23 +289,29 @@ class Cases extends Model
     }
 
     /**
-     * write the duration from the database value to a readable format
+     * Get the first day of the case, when the user started by login the app
      */
     #[Pure]
- public function firstDay(): string
- {
+    public function firstDay(): string
+    {
         return Helper::get_string_between($this->duration, 'firstDay:', '|') ?? Helper::get_string_between($this->duration, 'startDay:', '|');
     }
 
+    /**
+     * Get the start day of the case, when the day is manually set
+     */
     #[Pure]
- public function startDay(): string
- {
+    public function startDay(): string
+    {
         return Helper::get_string_between($this->duration, 'startDay:', '|');
     }
 
+    /**
+     * A backend case is a case where you can fill entries only in the backend
+     */
     #[Pure]
- public function isBackend(): bool
- {
+    public function isBackend(): bool
+    {
         return Helper::get_string_between($this->duration, 'value:', '|') == 0;
     }
 
@@ -320,9 +320,14 @@ class Cases extends Model
         return $this->user->notifications->sortByDesc('created_at')->where('data.case', $this->id)->where('data.planning', false);
     }
 
-    public function plannedNotifications(): array
+    public function plannedNotifications()
     {
-        return DB::select('SELECT *  FROM notifications WHERE data NOT LIKE ? and data LIKE ? and data LIKE ?', ['%"planning":false%', '%planning%', '%"case":' . $this->id . '%']);
+        //return DB::select('SELECT *  FROM notifications WHERE data NOT LIKE ? and data LIKE ? and data LIKE ?', ['%"planning":false%', '%planning%', '%"case":' . $this->id . '%']);
+
+        return Notification::whereJsonDoesntContain('data->planning', false)
+            ->where('data->case', $this->id)
+            ->get();
+
     }
 
     /**
@@ -331,5 +336,15 @@ class Cases extends Model
     public function files()
     {
         return $this->hasMany(Files::class, 'case_id');
+    }
+
+    /**
+     * Accessor for entries_count, which is the count of entries
+     *
+     * @return int
+     */
+    public function getEntriesCountAttribute()
+    {
+        return $this->entries()->count();
     }
 }

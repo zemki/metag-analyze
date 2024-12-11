@@ -8,7 +8,7 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 
-class AllCasesExport implements FromCollection, WithMapping, WithHeadings
+class AllCasesExport implements FromCollection, WithHeadings, WithMapping
 {
     use Exportable;
 
@@ -25,9 +25,6 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
         $this->head = $headings;
     }
 
-    /**
-     * @var
-     */
     public function map($project): array
     {
         if ($this->invalidData($project)) {
@@ -70,16 +67,13 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
 
     private function formatAssociativeNamesAccordingToHeadings($entry, array $tempValuesArray): array
     {
-        $jsonInputs = json_decode($entry->inputs);
-        foreach ($this->headings() as $heading) {
+        $jsonInputs = json_decode($entry->inputs, true);
+        $headings = $this->headings();
+        foreach ($headings as $heading) {
             // print the question as many times as you have answer to question
-            if (count(array_keys($this->headings(), $heading)) > 1) {
-                $tempValuesArray[$heading] = [];
-                foreach (array_keys($this->headings(), $heading) as $key) {
-                    array_push($tempValuesArray[$heading], $this->headings()[$key]);
-                }
-
-            //$tempValuesArray = array_unique($tempValuesArray[$heading]);
+            $headingKeys = array_keys($headings, $heading);
+            if (count($headingKeys) > 1) {
+                $tempValuesArray[$heading] = array_map(fn ($key) => $headings[$key], $headingKeys);
             } else {
                 $tempValuesArray[$heading] = '';
             }
@@ -88,6 +82,9 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
         return [$jsonInputs, $tempValuesArray];
     }
 
+    /**
+     * @return string[]
+     */
     public function headings(): array
     {
         $columnNames = [self::ENTRY_ID];
@@ -104,6 +101,8 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
     }
 
     /**
+     * This function prints the values in the correct column
+     *
      * @return mixed
      */
     private function printValuesInArray($project, $jsonInputs, $tempValuesArray)
@@ -131,34 +130,43 @@ class AllCasesExport implements FromCollection, WithMapping, WithHeadings
         return $tempValuesArray;
     }
 
+    /**
+     * This function formats the values of multiple and one choice questions
+     */
     private function formatMultipleAndOneChoiceValues(&$tempValuesArray, $input, array $index, $projectInputNames, $key, $numberOfAnswersByQuestion): void
     {
-        if (! is_null($input)) {
-            if (! is_array($input)) {
-                $input = [$input];
-            }
-
-            foreach ($input as $value) {
-                $index[array_search($value, $projectInputNames[$key])] = $value;
-            }
-            // print values in the same column in multiple choice or one choice answers
-            for ($i = 0; $i < $numberOfAnswersByQuestion; $i++) {
-                $tempValuesArray[$key][$i] = [];
-                if (array_key_exists($i, $index)) {
-                    array_push($tempValuesArray[$key][$i], $index[$i]);
-                } else {
-                    array_push($tempValuesArray[$key][$i], '');
-                }
-            }
-        } else {
+        if (is_null($input)) {
             // print empty value
             for ($i = 0; $i < $numberOfAnswersByQuestion; $i++) {
-                $tempValuesArray[$key][$i] = [];
+                $tempValuesArray[$key][$i] = [''];
+            }
+
+            return;
+        }
+
+        if (! is_array($input)) {
+            $input = [$input];
+        }
+
+        foreach ($input as $value) {
+            $index[array_search($value, $projectInputNames[$key])] = $value;
+        }
+
+        // print values in the same column in multiple choice or one choice answers
+        for ($i = 0; $i < $numberOfAnswersByQuestion; $i++) {
+            $tempValuesArray[$key][$i] = [];
+            if (array_key_exists($i, $index)) {
+                array_push($tempValuesArray[$key][$i], $index[$i]);
+            } else {
                 array_push($tempValuesArray[$key][$i], '');
             }
         }
+
     }
 
+    /**
+     * @return Project[]|\Illuminate\Support\Collection|\LaravelIdea\Helper\App\_IH_Project_C
+     */
     public function collection()
     {
         return Project::where('id', $this->id)->get();

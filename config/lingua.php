@@ -2,7 +2,7 @@
 
 return
     [
-        'admin' => ['belli@uni-bremen.de', 'fhohmann@uni-bremen.de'],
+        'admin' => explode(',', env('ADMINS', '')),
         'translator' => [],
         'regex' => [
             'all' => 'all',

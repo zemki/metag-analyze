@@ -5,7 +5,6 @@ namespace App\Notifications;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\App;
 use JetBrains\PhpStorm\ArrayShape;
 use NotificationChannels\Fcm\FcmChannel;
 use NotificationChannels\Fcm\FcmMessage;
@@ -14,7 +13,6 @@ use NotificationChannels\Fcm\Resources\AndroidFcmOptions;
 use NotificationChannels\Fcm\Resources\AndroidNotification;
 use NotificationChannels\Fcm\Resources\ApnsConfig;
 use NotificationChannels\Fcm\Resources\ApnsFcmOptions;
-use Spatie\WebhookServer\WebhookCall;
 
 class researcherNotificationToUser extends Notification implements ShouldQueue
 {
@@ -50,22 +48,15 @@ class researcherNotificationToUser extends Notification implements ShouldQueue
     public function via($notifiable)
     {
         if ($this->planning !== false) {
-        return ['database'];
+            return ['database'];
         } else {
-        return [FcmChannel::class, 'database'];
+            return [FcmChannel::class, 'database'];
         }
 
     }
 
     public function toFcm($notifiable): FcmMessage
     {
-        if (! App::environment('local')) {
-            WebhookCall::create()
-                ->url(config('utilities.url_rc_notifications'))
-                ->payload(['text' => 'Sent a Notification to ' . $this->cases['user']['email'] . ' for the case "' . $this->cases['name'] . '". Poor human being!'])
-                ->useSecret(config('utilities.secret_rc_notifications'))
-                ->dispatch();
-        }
 
         return FcmMessage::create()
             ->setNotification(\NotificationChannels\Fcm\Resources\Notification::create()
@@ -81,15 +72,15 @@ class researcherNotificationToUser extends Notification implements ShouldQueue
                 ApnsConfig::create()
                     ->setFcmOptions(ApnsFcmOptions::create()->setAnalyticsLabel('analytics_ios'))->setPayload(['aps' => ['sound' => 'default']])
             );
-                //->setImage('https://www.uni-bremen.de/typo3conf/ext/package/Resources/Public/Images/Platzhalterbild_UniBremen.jpg'));
+
     }
 
     /**
      * Get the array representation of the notification.
      */
     #[ArrayShape(['title' => 'string', 'message' => 'string', 'case' => 'mixed', 'planning' => 'mixed'])]
- public function toArray(): array
- {
+    public function toArray(): array
+    {
         return [
             'title' => $this->title,
             'message' => $this->message,

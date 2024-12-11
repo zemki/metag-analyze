@@ -8,7 +8,7 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 
-class CasesExport implements FromCollection, WithMapping, WithHeadings
+class CasesExport implements FromCollection, WithHeadings, WithMapping
 {
     use Exportable;
 
@@ -47,7 +47,6 @@ class CasesExport implements FromCollection, WithMapping, WithHeadings
                     foreach (array_keys($this->headings(), $heading) as $key) {
                         array_push($tempValuesArray[$heading], $this->headings()[$key]);
                     }
-                //$tempValuesArray = array_unique($tempValuesArray[$heading]);
                 } else {
                     $tempValuesArray[$heading] = '';
                 }

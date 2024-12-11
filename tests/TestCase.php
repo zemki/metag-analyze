@@ -2,28 +2,44 @@
 
 namespace Tests;
 
+use App\Cases;
+use App\Project;
+use App\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Foundation\Testing\WithFaker;
 
 abstract class TestCase extends BaseTestCase
 {
-    use CreatesApplication,WithFaker;
+    use CreatesApplication,RefreshDatabase,WithFaker;
 
-    /**
-     * @param  null  $user  Either give the user model or create a new one
-     * @param  string  $roleName Default:Admin
-     * @return mixed the user model
-     */
-    protected function signIn($user = null, $roleName = 'admin')
+    public User $user;
+
+    public Project $project;
+
+    public Cases $case;
+
+    public function setUp(): void
     {
-        $user = $user ?: factory('App\User')->create();
+        parent::setUp();
 
-        $role = factory('App\Role')->create(['name' => $roleName]);
-        $user->roles()->sync($role);
+        // Create test user with a case
+        $this->user = User::factory()->researcher()->create([
+            'email' => 'test@example.com',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
+        ]);
 
-        $this->actingAs($user);
+        $this->project = Project::factory()->create([
+            'created_by' => $this->user->id,
+            'inputs' => '[]',
+        ]);
 
-        return $user;
+        $this->case = Cases::factory()->create([
+            'project_id' => $this->project->id,
+            'user_id' => $this->user->id,
+            'duration' => 'value:24|days:1',
+        ]);
     }
 
     protected function create_user()
@@ -34,10 +50,10 @@ abstract class TestCase extends BaseTestCase
             'email' => $this->faker->email,
             'password' => 'test',
         ];
-         $this->post('/users', $user);
+        $this->post('/users', $user);
 
-         $user = \App\User::where('email', $user['email'])->first();
+        $user = \App\User::where('email', $user['email'])->first();
 
-         return $user;
+        return $user;
     }
 }

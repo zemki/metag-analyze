@@ -76,9 +76,9 @@ class AdminController extends Controller
         $user->api_token = '';
         $user->save();
         if ($user->api_token == null) {
-        return response()->json(['message' => 'Api Token deleted!'], 200);
+            return response()->json(['message' => 'Api Token deleted!'], 200);
         } else {
-        return response()->json(['message' => 'That didn\'t work, check log!'], 500);
+            return response()->json(['message' => 'That didn\'t work, check log!'], 500);
         }
 
     }

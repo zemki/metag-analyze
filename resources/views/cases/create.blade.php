@@ -20,26 +20,6 @@
         </div>
     </div>
 
-
-
-    {!! $errors->first('name','<div class="p-4 rounded-md bg-red-50">
-        <div class="flex w-64 mx-auto ">
-            <div class="flex-shrink-0">
-                <!-- Heroicon name: solid/times-circle -->
-                <svg class="w-5 h-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                    fill="currentColor" aria-hidden="true">
-                    <path fill-rule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414-1.414L4 10l3.293 3.293a1 1 0 101.414-1.414L8 10l-1.293-1.293z"
-                        clip-rule="evenodd" />
-                </svg>
-            </div>
-            <div class="flex-shrink-0 ml-3">
-                <p class="text-sm font-medium text-red-800">:message
-                </p>
-            </div>
-        </div>
-    </div>') !!}
-
     <div class="flex full">
         <div class="w-1/3">
             <label for="duration" class="block text-sm font-medium text-gray-700">{{__('Duration')}} *</label>
@@ -92,13 +72,6 @@
             class="block w-full max-w-lg border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 active:border-blue-500 sm:text-sm "
             placeholder="{{__('Select date')}}" :min="moment().subtract(1,'day').format('YYYY-MM-DD')">
     </div>
-
-    {{-- <b-field :customclass="'uppercase tracking-wide text-gray-700 text-xs font-bold'"
-        :label="trans('Or it start this day:')+' *'" v-if="!newcase.duration.starts_with_login">
-        <b-datepicker :min-date="newcase.minDate" :placeholder="trans('Click to select...')" icon="calendar-today"
-            name="startdate" v-model="newcase.duration.startdate">
-        </b-datepicker>
-    </b-field> --}}
     <input type="hidden" :value="newcase.duration.value" name="duration">
     <div class="relative block my-2">
 

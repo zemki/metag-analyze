@@ -14,7 +14,7 @@ class AddCaseFileKeyToCases extends Migration
     public function up()
     {
         Schema::table('cases', function (Blueprint $table) {
-          $table->text('file_token')->nullable()->default(null);
+            $table->text('file_token')->nullable()->default(null);
         });
     }
 
