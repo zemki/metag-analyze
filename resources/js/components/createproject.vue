@@ -312,10 +312,10 @@ export default {
       };
 
       // Submit the form via Axios
-      axios.post('/projects', formData)
+      axios.post(this.productionUrl+'/projects', formData)
         .then(response => {
           // Handle successful response
-          window.location.href = '/projects';
+          window.location.href = this.productionUrl+'/projects';
         })
         .catch(error => {
           // Handle errors
