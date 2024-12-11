@@ -2,12 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Action;
 use App\Notifications\researcherNotificationToUser;
 use App\Project;
-use App\Role;
 use App\User;
-use Carbon\Carbon;
 use DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -43,28 +40,6 @@ class UserController extends Controller
         $data['projects'] = Project::all();
 
         return view('admin.createUser', $data);
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @return Response
-     */
-    public function store(Request $request)
-    {
-    }
-
-    public function show()
-    {
-        $data['actions'] = Action::join('users', 'users.id', 'actions.user_id')->where('users.id', '=', auth()->user()->id)->orderBy('actions.id', 'desc')->paginate(10);
-
-        foreach ($data['actions'] as $action) {
-            $action->time = Carbon::parse($action['time'])->format('d.m.Y h:s:i');
-        }
-
-        $data['profile'] = auth()->user()->profile;
-
-        return view('user.profile', $data);
     }
 
     /**
@@ -111,8 +86,6 @@ class UserController extends Controller
 
     /**
      * @return JsonResponse
-     *
-     * @todo consider adding filter by role, same email AND role user.
      */
     public function userExists(Request $request)
     {
@@ -178,7 +151,7 @@ class UserController extends Controller
     public function cleanupNotifications(Request $request)
     {
         if (! auth()->user()->isAdmin()) {
-            return response()->json(['message' => 'Don\'t even try!'], 200);
+            return response()->json(['message' => 'Unauthorized access.'], 403);
         } else {
             $user = User::where('id', $request->input('user')['id'])->first();
             $user->profile->last_notification_at = null;

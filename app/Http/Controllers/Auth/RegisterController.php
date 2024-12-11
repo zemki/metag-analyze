@@ -9,7 +9,6 @@ use App\User;
 use Exception;
 use GrantHolle\Altcha\Rules\ValidAltcha;
 use Illuminate\Foundation\Auth\RegistersUsers;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Validator;
 
 class RegisterController extends Controller
@@ -53,7 +52,7 @@ class RegisterController extends Controller
         return Validator::make($data, [
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => 'required|string|min:6|regex:/^(?=.*[a-zA-Z])(?=.*[0-9]).+$/',
-            'altoken' => [new ValidAltcha()],
+            'altoken' => [new ValidAltcha],
         ],
             [
                 // Custom error messages
@@ -76,7 +75,7 @@ class RegisterController extends Controller
             return $this->showRegistrationForm();
         } else {
             $role = Role::where('name', 'researcher')->first();
-            $user = new User();
+            $user = new User;
             $user->email = $data['email'];
             $user->password = bcrypt($data['password']);
             $user->password_token = bcrypt(Helper::random_str(60));

@@ -5,7 +5,9 @@ namespace Database\Factories;
 use App\Cases;
 use App\Project;
 use App\User;
+use Helper;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Crypt;
 
 class CasesFactory extends Factory
 {
@@ -30,7 +32,7 @@ class CasesFactory extends Factory
             'user_id' => User::factory(),
             'created_at' => $this->faker->dateTimeThisYear,
             'updated_at' => $this->faker->dateTimeThisYear,
-            'file_token' => $this->faker->sha1,
+            'file_token' => Crypt::encryptString(Helper::random_str(60)),
         ];
 
     }

@@ -24,6 +24,7 @@ whether or not your feature is likely to be used by other users of the project.
 
 ## Procedure
 
+
 Before filing an issue:
 
 - Attempt to replicate the problem, to ensure that it wasn't a coincidental incident.

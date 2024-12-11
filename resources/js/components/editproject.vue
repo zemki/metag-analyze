@@ -1,356 +1,451 @@
 <template>
-  <div class="p-2 space-y-8 bg-top divide-y-0">
-    <div class="space-y-8 divide-y-0">
-      <div>
-        <h3 class="text-lg font-medium leading-6 text-gray-900">{{trans('Edit Project')}}</h3>
-        <p class="mt-1 text-sm text-gray-500">
-          {{ trans("You can edit your project here.") }}
-        </p>
+  <div class="p-8 space-y-8 bg-white rounded-lg shadow-lg">
+    <!-- Header -->
+    <div class="pb-6 border-b border-gray-200">
+      <h3 class="text-2xl font-bold text-gray-900">{{ trans('Edit Project') }}</h3>
+      <p class="mt-2 text-sm text-gray-600">{{ trans('You can edit your project details here.') }}</p>
+    </div>
+
+    <!-- Project Name -->
+    <div class="space-y-2">
+      <label for="name" class="block text-sm font-medium text-gray-700">{{ trans('Project Name') }} *</label>
+      <input
+          type="text"
+          :disabled="!editable"
+          id="name"
+          v-model="projectData.name"
+          class="block w-full px-4 py-3 rounded-md shadow-sm transition duration-150"
+          :class="[
+          editable
+            ? 'border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200'
+            : 'bg-gray-50 border-gray-200',
+          {'border-red-500': projectData.name.trim() === '' && editable}
+        ]"
+          placeholder="Enter project name"
+      />
+      <p v-if="projectData.name.trim() === '' && editable" class="text-sm text-red-600">
+        {{ trans('Project name is required') }}
+      </p>
+    </div>
+
+    <!-- Project Description -->
+    <div class="space-y-2">
+      <label for="description" class="block text-sm font-medium text-gray-700">{{ trans('Description') }} *</label>
+      <textarea
+          :disabled="!editable"
+          id="description"
+          v-model="projectData.description"
+          rows="4"
+          class="block w-full px-4 py-3 rounded-md shadow-sm transition duration-150"
+          :class="[
+          editable
+            ? 'border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200'
+            : 'bg-gray-50 border-gray-200',
+          {'border-red-500': projectData.description.trim() === '' && editable}
+        ]"
+          placeholder="Enter project description"
+      ></textarea>
+      <p v-if="projectData.description.trim() === '' && editable" class="text-sm text-red-600">
+        {{ trans('Project description is required') }}
+      </p>
+    </div>
+
+    <!-- Media Section -->
+    <div class="space-y-4">
+      <div class="flex items-center justify-between">
+        <label class="block text-sm font-medium text-gray-700">{{ trans('Media') }}</label>
       </div>
 
-        
-        <div>
-  <label for="name" class="block text-sm font-medium text-gray-700">{{trans('Name')}}</label>
-  <div class="mt-1">
-    <input type="name" :disabled="!editable" name="name" id="name" class="block w-full p-2 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" v-model="projectData.name">
-  </div>
-</div>
-<div>
-  <label for="description" class="block text-sm font-medium text-gray-700">{{trans('Description')}}</label>
-  <div class="mt-1" >
-    <textarea :disabled="!editable"
-              name="description"
-              v-model="projectData.description" 
-              rows="3" 
-              id="description" 
-              class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-              </textarea>
-              </div>
-  </div>
-      </div>
-      <div>
-        <label for="media" class="block text-sm font-medium text-gray-700"
-          >{{trans('Media')}}</label
-        >
-        <div
-          class="mt-1"
-          v-for="(singleMedia, index) in projectData.media"
-          :key="index"
-        >
+      <div class="space-y-3">
+        <!-- Media Inputs -->
+        <div v-for="(media, index) in projectData.media" :key="index"
+             class="flex items-center space-x-2">
           <input
-            type="text"
-            name="media[]"
-            id="media"
-            :disabled="!editable"
-            v-model="projectData.media[index]"
-            @keyup="handleMediaInputs(index, singleMedia.name)"
-            autocomplete="off"
-            @keydown.enter.prevent
-            @keydown.tab.prevent
-            class="block w-64 p-2 border-b-2 border-blue-500 rounded-md shadow-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              type="text"
+              v-model="projectData.media[index]"
+              :disabled="!editable"
+              class="flex-1 px-4 py-3 rounded-md shadow-sm transition duration-150"
+              :class="editable ? 'border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200' : 'bg-gray-50 border-gray-200'"
+              placeholder="Enter media"
           />
+          <button
+              v-if="editable && projectData.media.length > 1"
+              @click="removeMedia(index)"
+              class="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors duration-150"
+              aria-label="Remove Media"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Add Media Button -->
+        <button
+            v-if="editable"
+            @click="addMedia"
+            class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-500 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors duration-150"
+        >
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          {{ trans('Add Media') }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Inputs Section -->
+    <div class="space-y-4">
+      <div class="flex items-center justify-between">
+        <label class="block text-sm font-medium text-gray-700">{{ trans('Number of Inputs') }} (0-3)</label>
+        <div class="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
+          <button
+              :disabled="!editable || projectData.inputs.length <= 0"
+              @click="decrementInputs"
+              class="w-8 h-8 flex items-center justify-center rounded-md transition-colors duration-150"
+              :class="editable && projectData.inputs.length > 0
+              ? 'bg-blue-500 text-white hover:bg-blue-600'
+              : 'bg-gray-200 text-gray-400'"
+          >
+            &minus;
+          </button>
+          <span class="w-8 text-center font-medium">{{ projectData.inputs.length }}</span>
+          <button
+              :disabled="!editable || projectData.inputs.length >= 3"
+              @click="incrementInputs"
+              class="w-8 h-8 flex items-center justify-center rounded-md transition-colors duration-150"
+              :class="editable && projectData.inputs.length < 3
+              ? 'bg-blue-500 text-white hover:bg-blue-600'
+              : 'bg-gray-200 text-gray-400'"
+          >
+            &plus;
+          </button>
         </div>
       </div>
 
-
-          <label for="inputs" class="block text-sm font-medium text-gray-700">{{trans('Inputs')}} - {{trans('Number of additional inputs')}}</label>
-
-
-        <input
-          type="hidden"
-          :value="JSON.stringify(projectData.inputs)"
-          name="inputs"
-        />
-
-              <div
-                      class="relative flex flex-row w-64 h-10 mt-1 bg-transparent rounded-lg">
-                  <button
-                  :disabled="!editable"
-                          class="w-20 h-full text-gray-600 bg-gray-300 rounded-l outline-none cursor-pointer hover:text-gray-700 hover:bg-gray-400"
-                          @click.prevent="(projectData.ninputs >= 1) ? projectData.ninputs-- : projectData.ninputs">
-                      <span
-                              class="m-auto text-2xl font-thin">−</span>
-                  </button>
-                  <input
-                          v-model.number="projectData.ninputs"
-                          class="flex items-center w-full font-semibold text-center text-gray-700 bg-white outline-none focus:outline-none text-md hover:text-black focus:text-black md:text-basecursor-default"
-                          max="3"
-                          min="0"
-                          steps="!"
-                          name="inputs"
-                          id="ninputs"
-                          type="number"
-                          :disabled="!editable"
-                          
-                          value="0"></input>
-                  <button
-                  :disabled="!editable"
-                          class="w-20 h-full text-gray-600 bg-gray-300 rounded-r cursor-pointer hover:text-gray-700 hover:bg-gray-400"
-                          @click.prevent="(projectData.ninputs <= 2) ? projectData.ninputs++ : projectData.ninputs">
-                      <span
-                              class="m-auto text-2xl font-thin">+</span>
-                  </button>
-              </div>
-
-        
-
-          <div
-            class=""
-            v-for="(t, index) in projectData.inputs"
-            :key="index"
-          >
+      <!-- Dynamic Inputs -->
+      <div v-for="(input, index) in projectData.inputs" :key="index"
+           class="p-6 border border-gray-200 rounded-lg space-y-4 bg-gray-50">
+        <div class="space-y-4">
           <div>
-  <label class="block text-sm font-medium text-gray-700">{{trans('Input Name')}}</label>
-  <div class="">
-    <input v-model="projectData.inputs[index].name" type="text" class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" :disabled="!editable">
-  </div>
-</div>
-  <div class="relative flex items-start my-2">
-    <div class="flex items-center h-5">
-      <input v-model="projectData.inputs[index].mandatory" :disabled="!editable" checked="checked" type="checkbox" class="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500">
-    </div>
-    <div class="ml-3 text-sm">
-      <label for="comments" class="font-medium text-gray-700">{{trans('Mandatory')}}</label>
-    </div>
-  </div>
-
-  <label id="listbox-label" class="block text-sm font-medium text-gray-700"> {{trans('Type')}} </label>
-  <div class="relative mt-1">
-    <button @click="showDropdownInputs(index)" type="button" :class="(projectData.inputs[index].type !== '') ? 'relative w-full py-2 pl-3 pr-10 text-left bg-white border border-gray-300 rounded-md shadow-sm cursor-default focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm':'relative w-full py-4 pl-3 pr-10 text-left bg-white border border-gray-300 rounded-md shadow-sm cursor-default focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm'" aria-haspopup="listbox" >
-      <span class="block truncate" > {{projectData.inputs[index].type}}  </span>
-      <span class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-        <!-- Heroicon name: solid/selector -->
-        <svg class="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-          <path fill-rule="evenodd" d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
-        </svg>
-      </span>
-    </button>
-    <ul :id="'type'+index" class="absolute z-10 hidden w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-60 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm" tabindex="-1" role="listbox" aria-labelledby="listbox-label">
-      <li :class="(type == projectData.inputs[index].type) ? 'relative py-2 pl-3 bg-blue-500 text-white cursor-default select-none pr-9' : 'relative py-2 pl-3 text-gray-900 cursor-default select-none pr-9'" id="listbox-option-0" role="option"  v-for="(type,indexT) in projectData.config.available" :key="indexT" @click="projectData.inputs[index].type = type;showDropdownInputs(index)" >
-        <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
-        <span class="block font-normal truncate" >{{type}} </span>
-
-        <span class="absolute inset-y-0 right-0 flex items-center pr-4 text-white" v-if="type == projectData.inputs[index].type">
-          <!-- Heroicon name: solid/check -->
-          <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-          </svg>
-        </span>
-      </li>
-
-    </ul>
-  </div>
-
-
-<div
-   v-if="
-                  projectData.inputs[index].type == 'multiple choice' ||
-                  projectData.inputs[index].type == 'one choice'
-                "
-          class="mt-1"
-        >
-                  <label class="">Answers</label>
-                  <div
-                    class="mt-2"
-                    v-for="(m, answerindex) in projectData.inputs[index]
-                      .answers"
-                      :key="answerindex"
-                  >
-          <input
-            type="text"
-                      v-model="projectData.inputs[index].answers[answerindex]"
-                      @keyup="handleAdditionalInputs(index, answerindex, m)"
-                      autocomplete="off"
-                      @keydown.enter.prevent
-                      @keydown.tab.prevent
-                      :disabled="!editable"
-           
-            class="block w-64 p-2 border-b-2 border-blue-500 rounded-md shadow-none first:mt-0 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          />
-      </div>
-
-
-            </div>
-            <div class="relative mt-4 mb-2">
-  <div class="absolute inset-0 flex items-center" aria-hidden="true">
-    <div class="w-full border-t border-gray-500 border-solid"></div>
-  </div>
-  <div class="relative flex justify-center">
-    <span class="px-2 text-gray-500 bg-white">
-      <svg class="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-        <path fill="#6B7280" fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-      </svg>
-    </span>
-  </div>
-</div>
+            <label class="block text-sm font-medium text-gray-700">{{ trans('Input Name') }} *</label>
+            <input
+                type="text"
+                v-model="input.name"
+                :disabled="!editable"
+                class="mt-1 block w-full px-4 py-3 rounded-md shadow-sm transition duration-150"
+                :class="[
+                editable
+                  ? 'border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200'
+                  : 'bg-gray-100 border-gray-200',
+                {'border-red-500': input.name.trim() === '' && editable}
+              ]"
+                placeholder="Enter input name"
+            />
+          </div>
+          <div class="flex items-center">
+            <input
+                type="checkbox"
+                :id="'mandatory-' + index"
+                v-model="input.mandatory"
+                :disabled="!editable"
+                class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
+            />
+            <label :for="'mandatory-' + index" class="ml-2 block text-sm text-gray-700">
+              {{ trans('Required field for users') }}
+            </label>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">{{ trans('Type') }} *</label>
+            <select
+                v-model="input.type"
+                :disabled="!editable"
+                class="mt-1 block w-full px-4 py-3 rounded-md shadow-sm transition duration-150"
+                :class="[
+                editable
+                  ? 'border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200'
+                  : 'bg-gray-100 border-gray-200',
+                {'border-red-500': input.type.trim() === '' && editable}
+              ]"
+            >
+              <option disabled value="">{{ trans('Select Type') }}</option>
+              <option v-for="type in config.available" :key="type" :value="type">{{ type }}</option>
+            </select>
           </div>
 
-          
-          <button type="button" @click.preventdefault="save" :disabled="!editable" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-500 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">{{trans('Edit Project')}}</button>
-     <div                 v-if="response != ''"  class="p-4 mb-4 rounded-md bg-red-50">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <!-- Heroicon name: solid/x-circle -->
-                        <svg class="w-5 h-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                            fill="currentColor" aria-hidden="true">
-                            <path fill-rule="evenodd"
-                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                                clip-rule="evenodd" />
-                        </svg>
-                    </div>
-                    <div class="ml-3">
-                        <h3 class="text-sm font-medium text-red-800"  v-html="response">
-                            
-                        </h3>
-                    </div>
-                </div>
+          <!-- Answers for choice types -->
+          <div v-if="isChoiceType(input.type)" class="space-y-3">
+            <label class="block text-sm font-medium text-gray-700">{{ trans('Answers') }}</label>
+            <div v-for="(answer, aIndex) in input.answers" :key="aIndex"
+                 class="flex items-center space-x-2">
+              <input
+                  type="text"
+                  v-model="input.answers[aIndex]"
+                  @keyup="handleAdditionalInputs(index, aIndex, answer)"
+                  :disabled="!editable"
+                  class="flex-1 px-4 py-3 rounded-md shadow-sm transition duration-150"
+                  :class="editable ? 'border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200' : 'bg-gray-100 border-gray-200'"
+                  placeholder="Enter answer"
+              />
+              <button
+                  v-if="editable && input.answers.length > 1"
+                  @click="removeAnswer(index, aIndex)"
+                  class="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors duration-150"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
             </div>
-
+            <button
+                v-if="editable"
+                @click="addAnswer(index)"
+                class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-500 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors duration-150"
+            >
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              {{ trans('Add Answer') }}
+            </button>
+          </div>
+        </div>
       </div>
-    
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
+      <button
+          @click="toggleEditMode"
+          class="px-6 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors duration-150"
+      >
+        {{ editable ? trans('Cancel') : trans('Edit Project') }}
+      </button>
+      <button
+          @click="save"
+          :disabled="!editable || isLoading"
+          class="inline-flex items-center px-6 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
+      >
+        <svg v-if="isLoading" class="w-5 h-5 mr-2 animate-spin" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+          <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        {{ trans('Save Changes') }}
+      </button>
+    </div>
+  </div>
 </template>
 
 <script>
 export default {
-  props: ["project", "data", "editable", "projectmedia"],
-  computed: {
-    formattedinputstring: function () {
-      return JSON.stringify(this.projectData.inputs);
+  name: 'EditProject',
+
+  props: {
+    editable: {
+      type: Boolean,
+      default: false
     },
-  },
-  watch: {
-    "projectData.ninputs": function (newVal, oldVal) {
-      if (!this.firstLoading) {
-        if (newVal < 0 || oldVal < 0) {
-          newVal = 0;
-          oldVal = 0;
-        }
-
-        let direction = newVal - oldVal;
-
-        if (direction > 0) {
-          let inputtemplate = {
-            name: "",
-            type: "",
-            numberofanswer: 0,
-            mandatory: true,
-            answers: [""],
-          };
-
-          for (var i = 0; i < direction; i++) {
-            this.projectData.inputs.push(inputtemplate);
-          }
-        } else if (newVal == 0) {
-          // special case
-          this.projectData.inputs = [];
-        } else {
-          // decrease
-          for (var i = 0; i < Math.abs(direction); i++) {
-            this.projectData.inputs.pop();
-          }
-        }
-      } else {
-      }
+    project: {
+      type: Object,
+      required: true
     },
+    config: {
+      type: Object,
+      required: true
+    },
+    projectmedia: {
+      type: Array,
+      default: () => []
+    }
   },
+
   data() {
     return {
-      showCustomSelect: [false,false,false],
+      isLoading: false,
       response: "",
-      firstLoading: true,
       projectData: {
-        
         name: "",
-        ninputs: 0,
+        description: "",
         inputs: [],
-        config: window.inputs,
-        response: "",
-        media: "",
+        media: [],
       },
     };
   },
-  created() {
-    this.fillInputs();
+
+  watch: {
+    project: {
+      immediate: true,
+      handler() {
+        this.initializeProjectData();
+      },
+    },
   },
+
   methods: {
-    showDropdownInputs: function (index) {
-      if(this.editable){
-       var element = document.getElementById("type"+index);
-        
-        element.classList.toggle("hidden");
-      this.$forceUpdate();
+    initializeProjectData() {
+      // Basic project info
+      this.projectData.name = this.project.name || '';
+      this.projectData.description = this.project.description || '';
+
+      // Initialize inputs
+      try {
+        const inputsData = JSON.parse(this.project.inputs || '[]');
+        this.projectData.inputs = Array.isArray(inputsData) ? inputsData.map(input => ({
+          name: input.name || '',
+          type: input.type || '',
+          mandatory: input.mandatory !== undefined ? input.mandatory : true,
+          answers: Array.isArray(input.answers) && input.answers.length > 0 ?
+              input.answers.filter(answer => answer.trim() !== '') :
+              ['']
+        })) : [];
+      } catch (error) {
+        console.error('Error parsing inputs:', error);
+        this.projectData.inputs = [];
       }
-       
+
+      // Initialize media
+      this.projectData.media = Array.isArray(this.projectmedia) && this.projectmedia.length > 0 ?
+          [...this.projectmedia] :
+          [''];  // Start with one empty media input
     },
-    fillInputs: function () {
-      this.projectData.inputs = JSON.parse(this.project.inputs);
-      this.projectData.ninputs = JSON.parse(this.project.inputs, true).length;
 
-      this.projectData.name = this.project.name;
-      this.projectData.description = this.project.description;
-      this.projectData.media = this.projectmedia;
-      this.projectData.media.push("");
-      let self = this;
-
-      setTimeout(function () {
-        self.firstLoading = false;
-      }, 1000);
-    },
-    save: function () {
-      let submitObject = {};
-      _.merge(
-        submitObject,
-        { id: this.project.id },
-        { name: this.projectData.name },
-        { description: this.projectData.description },
-        { inputs: this.formattedinputstring },
-        { media: this.projectData.media }
-      );
-
-      window.axios
-        .patch("../projects/" + submitObject.id, submitObject)
-        .then((response) => {
-          if (response.message) this.response = response.message;
-          else {
-            this.$buefy.snackbar.open(response.data);
-          }
-
-          setTimeout(location.reload(true), 2000);
-        })
-        .catch((error) => {
-          console.log(error);
-          if (error.message) this.$buefy.snackbar.open(error.message);
-          else {
-            this.$buefy.snackbar.open(error.response.data);
-          }
+    // Input Management
+    incrementInputs() {
+      if (this.projectData.inputs.length < 3) {
+        this.projectData.inputs.push({
+          name: "",
+          type: "",
+          mandatory: true,
+          answers: [""]
         });
-    },
-    handleMediaInputs(index, mediaName) {
-      let isLastElement = index + 1 == this.projectData.media.length;
-      if (isLastElement) {
-        if (mediaName != "") this.projectData.media.push("");
       }
-      if (index != 0 && mediaName == "")
+    },
+
+    decrementInputs() {
+      if (this.projectData.inputs.length > 0) {
+        this.projectData.inputs.pop();
+      }
+    },
+
+
+    addMedia() {
+      const lastMedia = this.projectData.media[this.projectData.media.length - 1];
+      if (lastMedia.trim() !== '') {
+        this.projectData.media.push('');
+      } else {
+        let self = this;
+        this.showSnackbarMessage(self.trans('Please fill out the last media field before adding a new one.'));
+      }
+    },
+
+    handleMediaInputs(index, media) {
+      if (media.trim() === '' && index !== this.projectData.media.length - 1) {
         this.projectData.media.splice(index, 1);
+      }
     },
-    handleAdditionalInputs(questionindex, answerindex, answer) {
-      let isLastElement =
-        answerindex + 1 ==
-        this.projectData.inputs[questionindex].answers.length;
 
-      if (isLastElement) {
-        if (answer != "")
-          this.projectData.inputs[questionindex].answers.push("");
+    removeMedia(index) {
+      if (this.projectData.media.length > 1) {
+        this.projectData.media.splice(index, 1);
+      }
+    },
+
+    // Answer Management
+    handleAdditionalInputs(questionIndex, answerIndex, answer) {
+      const answers = this.projectData.inputs[questionIndex].answers;
+      const isLast = answerIndex === answers.length - 1;
+      const isEmpty = answer.trim() === "";
+
+      if (isLast && !isEmpty) {
+        answers.push("");
+      } else if (!isLast && isEmpty) {
+        answers.splice(answerIndex, 1);
+      }
+    },
+
+    addAnswer(index) {
+      const answers = this.projectData.inputs[index].answers;
+      const lastAnswer = answers[answers.length - 1];
+
+      if (lastAnswer.trim() !== '') {
+        answers.push("");
+      } else {
+        this.showSnackbarMessage(this.trans('Please fill out the last answer before adding a new one.'));
+      }
+    },
+
+    removeAnswer(questionIndex, answerIndex) {
+      const answers = this.projectData.inputs[questionIndex].answers;
+      if (answers.length > 1) {
+        answers.splice(answerIndex, 1);
+      }
+    },
+
+    // Utility Methods
+    isChoiceType(type) {
+      return ['multiple choice', 'one choice'].includes(type);
+    },
+
+    showSnackbarMessage(message) {
+      this.$root.showSnackbarMessage(message);
+    },
+
+    // Edit Mode Management
+    toggleEditMode() {
+      if (this.editable) {
+        this.initializeProjectData();
+        this.response = "";
+      }
+      this.$emit('update:editable', !this.editable);
+    },
+
+    // Save Project
+    validateProjectData() {
+      if (!this.projectData.name.trim()) return false;
+      if (!this.projectData.description.trim()) return false;
+
+      for (const input of this.projectData.inputs) {
+        if (!input.name.trim() || !input.type) return false;
+        if (this.isChoiceType(input.type) &&
+            (!input.answers.length || !input.answers.some(a => a.trim()))) {
+          return false;
+        }
       }
 
-      let middleElementRemoved = answerindex != 0 && answer == "";
-      if (middleElementRemoved) {
-        this.projectData.inputs[questionindex].answers.splice(answerindex, 1);
+      return true;
+    },
+
+    async save() {
+      if (!this.validateProjectData()) {
+        this.showSnackbarMessage(this.trans('Please fill in all required fields.'));
+        return;
       }
 
-      this.projectData.inputs[questionindex].numberofanswer =
-        this.projectData.inputs[questionindex].answers.length - 1;
-    },
-  },
+      this.isLoading = true;
+
+      try {
+        const submitData = {
+          id: this.project.id,
+          name: this.projectData.name.trim(),
+          description: this.projectData.description.trim(),
+          inputs: this.projectData.inputs.map(input => ({
+            ...input,
+            answers: input.answers.filter(a => a.trim() !== '')
+          })),
+          media: this.projectData.media.filter(media => media.trim() !== ""),
+        };
+
+        const response = await axios.patch(`/projects/${submitData.id}`, submitData);
+        this.showSnackbarMessage(response.data.message || this.trans('Project updated successfully.'));
+
+      } catch (error) {
+        this.response = error.response?.data?.message || this.trans('An error occurred while saving.');
+        this.showSnackbarMessage(this.response);
+
+      } finally {
+        this.isLoading = false;
+      }
+    }
+  }
 };
 </script>

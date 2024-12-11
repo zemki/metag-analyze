@@ -11,33 +11,20 @@
     <title>{{ config('app.name', 'Metag') }}</title>
 
     <!-- Scripts -->
-    <script src="{{ asset('js/manifest.js') }}"></script>
-    <script src="{{ asset('js/vendor.js') }}"></script>
-    <script src="{{ asset('js/app.js') }}" defer></script>
+    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 
-    <script type="text/javascript">
-        window.inputs = <?php echo json_encode(config('inputs')); ?>;
-    </script>
-
-
-    <!-- Fonts -->
-    <link rel="dns-prefetch" href="//fonts.gstatic.com">
-    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
     <script>
         window.trans = [];
         window.trans = <?php
-                    if(File::exists(resource_path() . "/lang/" . App::getLocale() . '.json'))
-                    {
-                        $json_file = File::get(resource_path() . "/lang/" . App::getLocale() . '.json');
-                        echo json_decode(json_encode($json_file, true));
-                    }
-                    else{
-                        echo "[]";
-                    }
-                    ?>;
+                       if (File::exists(resource_path() . "/lang/" . App::getLocale() . '.json')) {
+                           $json_file = File::get(resource_path() . "/lang/" . App::getLocale() . '.json');
+                           echo json_decode(json_encode($json_file, true));
+                       } else {
+                           echo "[]";
+                       }
+                       ?>;
     </script>
-    <!-- Styles -->
-    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+
     <style>
         @yield('pagespecificcss')
     </style>

@@ -68,6 +68,7 @@ class CreateUserCommand extends Command
         $user->password_token = bcrypt(Helper::random_str(60));
         $user->save();
         $user->roles()->sync($role);
+
         // Mail::to($user->email)->send(new VerificationEmail($user, config('utilities.emailDefaultText')));
         return true;
     }

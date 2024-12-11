@@ -4,6 +4,8 @@ namespace App;
 
 use App\Mail\VerificationEmail;
 use App\Notifications\notifyUserforNewCaseWhenAlreadyRegistered;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasName;
 use Helper;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,13 +14,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Mail;
-use Filament\Models\Contracts\FilamentUser;
-use Filament\Models\Contracts\HasName;
 
-class User extends Authenticatable implements MustVerifyEmail, FilamentUser, HasName
+class User extends Authenticatable implements FilamentUser, HasName, MustVerifyEmail
 {
-    use Notifiable, SoftDeletes, HasFactory;
+    use HasFactory, Notifiable, SoftDeletes;
 
     /**
      * The model's default values for attributes.
@@ -61,10 +62,9 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
         return $this->email;
     }
 
-
     public function canAccessFilament(): bool
     {
-        return $this->email == "belli@uni-bremen.de" || $this->email == "fhohmann@uni-bremen.de";
+        return in_array($this->email, config('utilities.adminemails'));
     }
 
     public static function boot()
@@ -118,8 +118,8 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
         if (! $user->exists) {
             $user->email = $user->email;
             $role = Role::where('name', '=', 'user')->first();
-            $user->password = bcrypt(Helper::random_str(60));
-            $user->password_token = bcrypt(Helper::random_str(60));
+            $user->password = Crypt::encryptString(Helper::random_str(30));
+            $user->password_token = Crypt::encryptString(Helper::random_str(30));
             $user->save();
             $user->roles()->sync($role);
             Mail::to($user->email)->send(new VerificationEmail($user, config('utilities.emailDefaultText')));
@@ -132,7 +132,7 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
 
     /**
      * @param  Request  $request
-     * save the device ID of the user by adding it into the device array.
+     *                            save the device ID of the user by adding it into the device array.
      */
     public static function saveDeviceId(Request $request)
     {
@@ -164,26 +164,41 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
         return $this->belongsToMany('App\Role', 'user_roles')->withTimestamps();
     }
 
+    /**
+     * @return bool
+     */
     public function notOwnerNorInvited($project)
     {
         return ! auth()->user()->isAdmin() && (auth()->user()->isNot($project->created_by()) && ! in_array($project->id, auth()->user()->invites()->pluck('project_id')->toArray()));
     }
 
+    /**
+     * @return bool
+     */
     public function isInvited($project)
     {
         return in_array($project->id, auth()->user()->invites()->pluck('project_id')->toArray());
     }
 
+    /**
+     * @return BelongsToMany
+     */
     public function invites()
     {
         return $this->belongsToMany(Project::class, 'user_projects');
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function case()
     {
         return $this->hasMany(Cases::class, 'user_id');
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function actions()
     {
         return $this->hasMany(Action::class, 'user_id');
@@ -194,6 +209,9 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
         return in_array('researcher', $this->roles()->pluck('roles.name')->toArray());
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
     public function latestCase()
     {
         return $this->hasOne(Cases::class)->latest();
@@ -212,16 +230,25 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
         return $this->projects()->count() >= config('utilities.maxNumberOfProjects');
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function projects()
     {
         return $this->hasMany(Project::class, 'created_by');
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
     public function profile()
     {
         return $this->hasOne(Profile::class);
     }
 
+    /**
+     * @return Profile
+     */
     public function addProfile($user)
     {
         $profile = new Profile();
@@ -234,7 +261,7 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
     /**
      * @param  string  $description
      * @return Action
-     * add action to the action table.
+     *                add action to the action table.
      */
     public function addAction($name, $url, $description = '')
     {

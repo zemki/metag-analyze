@@ -36,55 +36,51 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
         });
     }
 
-       /**
-        * Prevent sensitive request details from being logged by Telescope.
-        *
-        * @return void
-        */
-       protected function hideSensitiveRequestDetails()
-       {
-           if ($this->app->environment('local')) {
-               return;
-           }
+    /**
+     * Prevent sensitive request details from being logged by Telescope.
+     *
+     * @return void
+     */
+    protected function hideSensitiveRequestDetails()
+    {
+        if ($this->app->environment('local')) {
+            return;
+        }
 
-           Telescope::hideRequestParameters(['_token']);
+        Telescope::hideRequestParameters(['_token']);
 
-           Telescope::hideRequestHeaders([
-               'cookie',
-               'x-csrf-token',
-               'x-xsrf-token',
-           ]);
-       }
+        Telescope::hideRequestHeaders([
+            'cookie',
+            'x-csrf-token',
+            'x-xsrf-token',
+        ]);
+    }
 
-       /**
-        * Register the Telescope gate.
-        *
-        * This gate determines who can access Telescope in non-local environments.
-        *
-        * @return void
-        */
-       protected function gate()
-       {
-           Gate::define('viewTelescope', function ($user) {
-               return in_array($user->email, [
-                   'belli@uni-bremen.de',
-                   'fhohmann@uni-bremen.de',
-                   'alessandrobelli90@gmail.com',
-               ]);
-           });
-       }
+    /**
+     * Register the Telescope gate.
+     *
+     * This gate determines who can access Telescope in non-local environments.
+     *
+     * @return void
+     */
+    protected function gate()
+    {
+        Gate::define('viewTelescope', function ($user) {
+            return in_array($user->email, config('utilities.adminemails'));
+        });
+    }
 
-       /**
-        * Configure the Telescope authorization services.
-        *
-        * @return void
-        */
-       protected function authorization()
-       {
-           $this->gate();
+    /**
+     * Configure the Telescope authorization services.
+     *
+     * @return void
+     */
+    protected function authorization()
+    {
+        $this->gate();
 
-           Telescope::auth(function ($request) {
-               return Gate::check('viewTelescope', [$request->user()]);
-           });
-       }
+        Telescope::auth(function ($request) {
+            return Gate::check('viewTelescope', [$request->user()]);
+        });
+    }
 }

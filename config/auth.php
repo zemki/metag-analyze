@@ -106,4 +106,35 @@ return [
         'expire' => 525600,
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | API Token Settings
+    |--------------------------------------------------------------------------
+    */
+
+    // Token expiration time in minutes (24 hours default)
+    'token_expiration' => env('API_TOKEN_EXPIRATION', 2880),
+
+    // Maximum failed login attempts before lockout
+    'max_login_attempts' => env('MAX_LOGIN_ATTEMPTS', 5),
+
+    // Lockout duration in minutes
+    'lockout_duration' => env('LOGIN_LOCKOUT_DURATION', 10),
+
+    // Token cache duration in minutes
+    'token_cache_duration' => env('TOKEN_CACHE_DURATION', 1440),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Rate Limiting Settings
+    |--------------------------------------------------------------------------
+    */
+
+    // Login attempts per minute
+    'login_rate_limit' => env('LOGIN_RATE_LIMIT', '7,1'),
+
+    // Token creation rate limit
+    'token_creation_rate_limit' => env('TOKEN_CREATION_RATE_LIMIT', '7,1'),
+    'token_expiration_days' => env('API_TOKEN_EXPIRATION_DAYS', 30),
+
 ];

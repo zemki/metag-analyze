@@ -2,10 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App;
 use App\User;
 use Illuminate\Console\Command;
-use Spatie\WebhookServer\WebhookCall;
 
 class NotificationCleanDeviceID extends Command
 {
@@ -44,7 +42,7 @@ class NotificationCleanDeviceID extends Command
         foreach (User::all() as $user) {
             if ($user->latestCase && $user->latestCase->isConsultable()) {
                 if ($user->deviceID != []) {
-                $usersCleaned++;
+                    $usersCleaned++;
                 }
                 $user->deviceID = [];
                 $user->save();
