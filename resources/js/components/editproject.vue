@@ -435,7 +435,7 @@ export default {
           media: this.projectData.media.filter(media => media.trim() !== ""),
         };
 
-        const response = await axios.patch(`/projects/${submitData.id}`, submitData);
+        const response = await axios.patch(this.productionUrl+`/projects/${submitData.id}`, submitData);
         this.showSnackbarMessage(response.data.message || this.trans('Project updated successfully.'));
 
       } catch (error) {
