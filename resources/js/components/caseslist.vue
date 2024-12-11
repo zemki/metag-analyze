@@ -52,8 +52,9 @@
                 </span>
               </p>
             </div>
-            <div class="flex space-x-2">
-              <a v-if="caseItem.is_consultable && caseItem.entries.length > 0" :href="`/cases/${caseItem.id}/export`"
+            <div class="flex flex-col space-y-2">
+              <a v-if="caseItem.is_consultable && caseItem.entries.length > 0"
+                 :href="this.productionUrl+`/cases/${caseItem.id}/export`"
                  target="_blank">
                 <button type="button" class="px-3 py-1 text-sm text-white bg-blue-500 rounded hover:bg-blue-600">
                   {{ trans('Download Case Data as xlsx') }}
@@ -62,7 +63,6 @@
               <button
                   type="button"
                   @click="confirmdeletecase(`../cases/${caseItem.id}`)"
-
                   class="px-3 py-1 text-sm text-white bg-red-500 rounded hover:bg-red-600"
               >
                 {{ trans('Delete Case') }}

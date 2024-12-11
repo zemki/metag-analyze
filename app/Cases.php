@@ -328,7 +328,6 @@ class Cases extends Model
             ->where('data->case', $this->id)
             ->get();
 
-
     }
 
     /**
