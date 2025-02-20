@@ -62,7 +62,7 @@
             <div v-if="selectedProjectPage == 0" class="flex h-full">
                 <cases-list :cases="{{ $casesWithEntries }}" :url-to-create-case="'{{$project->path()}}'"
                             @select-case="handleSelectedCase"
-                            ></cases-list>
+                ></cases-list>
                 <!-- Selected Case Details -->
                 <main class="flex-1">
                     <selected-case
@@ -107,7 +107,6 @@
         </div>
     </div>
 
-    <!-- Replace your existing modal code with the Modal component -->
     <Modal
             :title="trans('Add Entry')"
             :visible.sync="newentry.modal"
