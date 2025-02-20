@@ -78,7 +78,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
         </svg>
         <p class="mt-2 text-lg font-semibold text-blue-700">{{ trans("You don't have any case") }}</p>
-        <a :href="urlToCreateCase+'/cases/new'" class="mt-1 text-blue-500 underline hover:text-blue-600">
+        <a :href="productionUrl+urlToCreateCase+'/cases/new'" class="mt-1 text-blue-500 underline hover:text-blue-600">
           {{ trans('Create one') }} &rarr;
         </a>
       </div>

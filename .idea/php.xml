@@ -217,6 +217,10 @@
       <path value="$PROJECT_DIR$/vendor/laravel/prompts" />
       <path value="$PROJECT_DIR$/vendor/alessandrobelli/lingua" />
       <path value="$PROJECT_DIR$/vendor/grantholle/laravel-altcha" />
+      <path value="$PROJECT_DIR$/vendor/beste/in-memory-cache" />
+      <path value="$PROJECT_DIR$/vendor/pestphp/pest-plugin-laravel" />
+      <path value="$PROJECT_DIR$/vendor/pestphp/pest" />
+      <path value="$PROJECT_DIR$/vendor/pestphp/pest-plugin" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.3" />
