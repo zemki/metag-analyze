@@ -45,6 +45,7 @@ export default {
             default: false,
         },
     },
+    emits: ['confirm', 'cancel', 'update:visible'],
     methods: {
         confirm() {
             this.$emit('confirm');
@@ -62,7 +63,7 @@ export default {
 .fade-enter-active, .fade-leave-active {
     transition: opacity 0.3s ease;
 }
-.fade-enter, .fade-leave-to {
+.fade-enter-from, .fade-leave-to {
     opacity: 0;
 }
 </style>

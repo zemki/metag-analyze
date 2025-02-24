@@ -5,12 +5,29 @@
 <script>
 import Highcharts from 'highcharts';
 import HighchartsMore from 'highcharts/highcharts-more';
-import { mapActions, mapState } from 'vuex';
+import { mapState, useStore } from 'vuex';
 HighchartsMore(Highcharts);
 
 export default {
-  name: 'medtaggraph',
-  props: ['media', 'inputs', 'entries', 'yColumn'],
+  name: 'MedtagGraph',
+  props: {
+    media: {
+      type: Array,
+      default: () => []
+    },
+    inputs: {
+      type: Array,
+      default: () => []
+    },
+    entries: {
+      type: Array,
+      default: () => []
+    },
+    yColumn: {
+      type: String,
+      default: ''
+    }
+  },
   data() {
     return {
       categories: [],
@@ -50,9 +67,16 @@ export default {
       this.updateChart();
     });
   },
+  unmounted() {
+    if (this.chart) {
+      this.chart.destroy();
+    }
+  },
   methods: {
-    ...mapActions({ download: 'downloadChart' }),
-    switchInputs() {},
+    switchInputs() {
+      const store = useStore();
+      store.commit("switchyAxisAttribute");
+    },
     getYAxisCategories() {
       return { media: this.media, inputs: this.inputs }[this.yAxisAttribute];
     },
