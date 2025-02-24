@@ -36,7 +36,8 @@
           v-for="(option, index) in options"
           :key="index"
           @click="selectOption(option)"
-          class="relative py-2 pl-3 text-gray-900 cursor-pointer select-none pr-9 hover:bg-blue-100"
+          :class="['relative py-2 pl-3 text-gray-900 cursor-pointer select-none pr-9 hover:bg-blue-100', 
+                   selectedOption && selectedOption.id === option.id ? 'bg-blue-50' : '']"
         >
           <div class="flex items-center">
             <span class="ml-3 block truncate">{{ option.name }}</span>
@@ -54,15 +55,16 @@ export default {
       type: Array,
       required: true,
     },
-    value: {
+    modelValue: {
       type: Object,
       default: null,
     },
   },
+  emits: ['update:modelValue'],
   data() {
     return {
       isOpen: false,
-      selectedOption: this.value,
+      selectedOption: this.modelValue,
     };
   },
   methods: {
@@ -72,11 +74,11 @@ export default {
     selectOption(option) {
       this.selectedOption = option;
       this.isOpen = false;
-      this.$emit('input', option);
+      this.$emit('update:modelValue', option);
     },
   },
   watch: {
-    value(newValue) {
+    modelValue(newValue) {
       this.selectedOption = newValue;
     },
   },

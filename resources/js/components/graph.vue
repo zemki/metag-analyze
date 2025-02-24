@@ -11,13 +11,27 @@ HighchartsGantt(Highcharts);
 
 export default {
   name: 'Graph',
-  props: ['info', 'title', 'availabledata'],
+  props: {
+    info: {
+      type: [Array, Object],
+      default: () => []
+    },
+    title: {
+      type: String,
+      default: 'Chart'
+    },
+    availabledata: {
+      type: [Array, Object],
+      default: () => []
+    }
+  },
   data() {
     return {
       avdata: [],
       realdata: [],
       graphid: uuidv4(),
       infoData: [],
+      chart: null
     };
   },
   mounted() {
@@ -113,7 +127,7 @@ export default {
       });
     },
     drawChart() {
-      Highcharts.ganttChart(`chart${this.graphid}`, {
+      this.chart = Highcharts.ganttChart(`chart${this.graphid}`, {
         chart: {
           zoomType: 'x',
           spacingRight: 10,
@@ -149,7 +163,20 @@ export default {
         }],
       });
     },
+    download(type) {
+      if (this.chart) {
+        this.chart.exportChart({
+          type: type.split('/')[1] || 'png'
+        });
+      }
+    }
   },
+  beforeUnmount() {
+    // Clean up the chart when component is destroyed
+    if (this.chart) {
+      this.chart.destroy();
+    }
+  }
 };
 </script>
 

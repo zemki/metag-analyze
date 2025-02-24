@@ -4,65 +4,37 @@
  * includes Vue and other libraries. It is a great starting point when
  * building robust, powerful web applications using Vue and Laravel.
  */
-import "alpinejs";
+import { createApp } from 'vue';
+import Alpine from 'alpinejs';
 import "./bootstrap";
-import "./components";
+import { components } from "./components";
 import moment from "moment";
 import HighchartsMore from "highcharts/highcharts-more";
-import Vuex from "vuex";
 import store from "./store";
-import Vue from "vue";
-// Removed Lodash import
-// import _ from "lodash";
 import 'altcha';
 import Highcharts from "highcharts";
 import exporting from "highcharts/modules/exporting";
 import gantt from "highcharts/modules/gantt";
 
+// Initialize Alpine.js
+window.Alpine = Alpine;
+Alpine.start();
 
-window.Vue = Vue;
-
-window.Vue.use(Vuex);
-
-// Load module after Highcharts is loaded
-
+// Load Highcharts modules
 exporting(Highcharts);
 gantt(Highcharts);
-
 HighchartsMore(Highcharts);
 
-if (import.meta.env.VITE_ENV_MODE === "production") {
-    window.Vue.config.devtools = false;
-    window.Vue.config.debug = false;
-    window.Vue.config.silent = true;
-} else {
-    window.Vue.config.devtools = true;
-    window.Vue.config.debug = true;
-    window.Vue.config.silent = false;
-}
-
-
-Vue.use(moment);
-Vue.prototype.trans = (key) => {
-    if (typeof window.trans[key] === 'undefined') {
-        return key;
-    } else {
-        if (window.trans[key] === "") return key;
-        return window.trans[key];
-    }
-};
-
-Vue.mixin({
-    data() {
+// Create the Vue application
+const app = createApp({
+    setup() {
+        // Define productionUrl as a global property
+        const productionUrl = import.meta.env.VITE_ENV_MODE === "production" ? "/metag" : "";
+        
         return {
-            productionUrl: import.meta.env.VITE_ENV_MODE === "production" ? "/metag" : "",
+            productionUrl
         };
     },
-});
-
-window.app = new Vue({
-    el: "#app",
-    store,
     computed: {
         "newproject.formattedinputstring": function () {
             return JSON.stringify(this.newproject.inputs);
@@ -165,141 +137,142 @@ window.app = new Vue({
             }
         },
     },
-    data: {
-        newemail: {
-            valid_email: false,
-            email: "",
-            message: "",
-        },
-        moment: moment,
-        selectedProjectPage: 0,
-        disabledDates: [
-            function (date) {
-                return new Date(date) <= new Date();
-            },
-        ],
-        editentry: {
-            id: 0,
-            case_id: 0,
-            inputs: {},
-            modal: false,
-            actuallysave: false,
-            data: {
-                start: new Date(),
-                end: new Date(new Date().setMinutes(new Date().getMinutes() + 1)),
-                media_id: "",
-                media: "",
-                inputs: {},
-            },
-        },
-        selectedCase: {},
-        mainNotification: true,
-        lastPressedKey: "",
-        selectedEntriesData: [],
-        showentriestable: false,
-        errormessages: {
-            namemissing: "name is required. <br>",
-            inputnamemissing: "input name is required. <br>",
-            inputtypemissing: "input type is required. <br>",
-            multipleinputnoanswer: "provide a valid number of answers. <br>",
-        },
-        newcase: {
-            name: "",
-            duration: {
-                input: "",
-                starts_with_login: true,
-                selectedUnit: "days",
-                allowedUnits: ["day(s)", "week(s)"],
+    data() {
+        return {
+            newemail: {
+                valid_email: false,
+                email: "",
                 message: "",
-                value: "",
             },
-
-            minDate: new Date(),
-            backendcase: false,
-            inputLength: {
-                name: 200,
-            },
-            response: "",
-            sendanywayemail: false,
-        },
-        newproject: {
-            name: "",
-            ninputs: 0,
-            inputs: [],
-            response: "",
-            description: "",
-            media: [""],
-            inputLength: {
-                name: 200,
-                description: 255,
-            },
-        },
-        newentry: {
-            case_id: 0,
-            inputs: {},
-            modal: false,
-            data: {
-                start: new Date(),
-                end: new Date(new Date().setMinutes(new Date().getMinutes() + 5)),
-                media_id: "",
+            moment: moment,
+            selectedProjectPage: 0,
+            disabledDates: [
+                function (date) {
+                    return new Date(date) <= new Date();
+                },
+            ],
+            editentry: {
+                id: 0,
+                case_id: 0,
                 inputs: {},
+                modal: false,
+                actuallysave: false,
+                data: {
+                    start: new Date(),
+                    end: new Date(new Date().setMinutes(new Date().getMinutes() + 1)),
+                    media_id: "",
+                    media: "",
+                    inputs: {},
+                },
             },
-        },
-        dialog: {
-            show: false,
-            title: "",
-            message: "",
-            confirmText: "",
-            onConfirm: null,
-            onCancel: null,
-        },
-        registration: {
-            password: null,
-            password_length: 0,
-            contains_six_characters: false,
-            contains_number: false,
-            contains_letters: false,
-            contains_special_character: false,
-            valid_password: false,
-            email: "",
-            valid_email: true,
-        },
-        newuser: {
-            role: 2,
-            email: "",
-            emailexist: false,
-            emailexistmessage: "",
-            assignToCase: false,
-            case: {
+            selectedCase: {},
+            mainNotification: true,
+            lastPressedKey: "",
+            selectedEntriesData: [],
+            showentriestable: false,
+            errormessages: {
+                namemissing: "name is required. <br>",
+                inputnamemissing: "input name is required. <br>",
+                inputtypemissing: "input type is required. <br>",
+                multipleinputnoanswer: "provide a valid number of answers. <br>",
+            },
+            newcase: {
+                name: "",
                 duration: {
                     input: "",
-                    selectedUnit: "",
+                    starts_with_login: true,
+                    selectedUnit: "days",
                     allowedUnits: ["day(s)", "week(s)"],
                     message: "",
                     value: "",
                 },
-                name: "",
-                caseexistmessage: "",
-                caseexist: false,
-            },
-            project: 0,
-            tooltipActive: false,
-        },
-        chart: {
-            typeSelect: {
-                pdf: "application/pdf",
-                png: "image/png",
-                svg: "image/svg+xml",
-            },
-            type: "application/pdf",
-        },
-        snackbarMessage: '',
-        showSnackbar: false,
 
+                minDate: new Date(),
+                backendcase: false,
+                inputLength: {
+                    name: 200,
+                },
+                response: "",
+                sendanywayemail: false,
+            },
+            newproject: {
+                name: "",
+                ninputs: 0,
+                inputs: [],
+                response: "",
+                description: "",
+                media: [""],
+                inputLength: {
+                    name: 200,
+                    description: 255,
+                },
+            },
+            newentry: {
+                case_id: 0,
+                inputs: {},
+                modal: false,
+                data: {
+                    start: new Date(),
+                    end: new Date(new Date().setMinutes(new Date().getMinutes() + 5)),
+                    media_id: "",
+                    inputs: {},
+                },
+            },
+            dialog: {
+                show: false,
+                title: "",
+                message: "",
+                confirmText: "",
+                onConfirm: null,
+                onCancel: null,
+            },
+            registration: {
+                password: null,
+                password_length: 0,
+                contains_six_characters: false,
+                contains_number: false,
+                contains_letters: false,
+                contains_special_character: false,
+                valid_password: false,
+                email: "",
+                valid_email: true,
+            },
+            newuser: {
+                role: 2,
+                email: "",
+                emailexist: false,
+                emailexistmessage: "",
+                assignToCase: false,
+                case: {
+                    duration: {
+                        input: "",
+                        selectedUnit: "",
+                        allowedUnits: ["day(s)", "week(s)"],
+                        message: "",
+                        value: "",
+                    },
+                    name: "",
+                    caseexistmessage: "",
+                    caseexist: false,
+                },
+                project: 0,
+                tooltipActive: false,
+            },
+            chart: {
+                typeSelect: {
+                    pdf: "application/pdf",
+                    png: "image/png",
+                    svg: "image/svg+xml",
+                },
+                type: "application/pdf",
+            },
+            snackbarMessage: '',
+            showSnackbar: false,
+        };
     },
     methods: {
         showSnackbarMessage(message) {
-// This will access the snackbar component via ref and call its show method
+            // This will access the snackbar component via ref and call its show method
             if (this.$refs.snackbar) {
                 this.$refs.snackbar.message = message;
                 this.$refs.snackbar.show();
@@ -883,5 +856,26 @@ window.app = new Vue({
         switchFormatter() {
             this.$store.commit("switchFormatter", false);
         },
+        trans(key) {
+            if (typeof window.trans === 'undefined' || typeof window.trans[key] === 'undefined') {
+                return key;
+            } else {
+                if (window.trans[key] === "") return key;
+                return window.trans[key];
+            }
+        }
     },
+});
+
+// Use the store
+app.use(store);
+
+// Register all components
+Object.entries(components).forEach(([name, component]) => {
+    app.component(name, component);
+});
+
+// Mount the app when the DOM is ready
+window.addEventListener('DOMContentLoaded', () => {
+    window.app = app.mount("#app");
 });

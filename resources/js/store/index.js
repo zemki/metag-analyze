@@ -1,15 +1,14 @@
-import Vue from "vue";
-import Vuex from "vuex";
+import { createStore } from "vuex";
 
-Vue.use(Vuex);
-
-export default new Vuex.Store({
-  state: {
-    count: 0,
-    graph: {
-      yAxisAttribute: "media",
-      formatter: false
-    },
+export default createStore({
+  state() {
+    return {
+      count: 0,
+      graph: {
+        yAxisAttribute: "media",
+        formatter: false
+      },
+    };
   },
   mutations: {
     switchyAxisAttribute(state) {

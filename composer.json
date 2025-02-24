@@ -20,6 +20,7 @@
     "laravel/telescope": "5.*",
     "laravel/tinker": "^2.0",
     "laravel/ui": "^v4.0.0",
+    "laravel/vite-plugin": "^1.0.0",
     "livewire/livewire": "^2.10",
     "maatwebsite/excel": "^3.1",
     "psr/simple-cache": "^2.0"
