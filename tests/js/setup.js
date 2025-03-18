@@ -1,5 +1,18 @@
 // Import any global test utilities
 import '@testing-library/jest-dom';
+import { emitter, viteEnv } from './mocks/app';
+
+// Mock import.meta.env
+global.import = {
+  meta: {
+    env: {
+      VITE_ENV_MODE: 'development',
+    }
+  }
+};
+
+// Make emitter available globally
+global.emitter = emitter;
 
 // Mock global objects that might be used in components
 global.window = Object.create(window);

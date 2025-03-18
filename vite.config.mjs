@@ -18,7 +18,7 @@ export default defineConfig({
         vue({
             template: {
                 compilerOptions: {
-                    isCustomElement: (tag) => tag.includes('-')
+                    isCustomElement: (tag) => tag.includes('-') || tag === 'breadcrumb'
                 }
             }
         }),
@@ -32,7 +32,9 @@ export default defineConfig({
                 // For example, if you need to add global variables:
                 // additionalData: `@import "@/styles/variables.scss";`
             }
-        }
+        },
+        // Use the modern Sass API
+        devSourcemap: true,
     },
     build: {
         commonjsOptions: {transformMixedEsModules: true}
