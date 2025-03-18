@@ -15,6 +15,10 @@ import 'altcha';
 import Highcharts from "highcharts";
 import exporting from "highcharts/modules/exporting";
 import gantt from "highcharts/modules/gantt";
+import mitt from 'mitt';
+
+// Create a global event emitter
+export const emitter = mitt();
 
 // Initialize Alpine.js
 window.Alpine = Alpine;
@@ -27,118 +31,12 @@ HighchartsMore(Highcharts);
 
 // Create the Vue application
 const app = createApp({
-    setup() {
-        // Define productionUrl as a global property
-        const productionUrl = import.meta.env.VITE_ENV_MODE === "production" ? "/metag" : "";
-        
-        return {
-            productionUrl
-        };
-    },
-    computed: {
-        "newproject.formattedinputstring": function () {
-            return JSON.stringify(this.newproject.inputs);
-        },
-        url() {
-            return document.URL.split("/").pop();
-        },
-    },
-    mounted() {
-        window.addEventListener("keydown", (e) => {
-            this.lastPressedKey = e.keyCode;
-        });
-        const replaceUndefinedOrNull = function (key, value) {
-            if (value === null || value === undefined || value === "") {
-                return undefined;
-            }
-            return value;
-        };
-        // Check for stored message on page load
-        const storedMessage = localStorage.getItem('snackbarMessage');
-        if (storedMessage) {
-            this.showSnackbarMessage(storedMessage);
-            // Clear the message after showing it
-            localStorage.removeItem('snackbarMessage');
-        }
-    },
-    watch: {
-        // Consolidated Watchers for newcase.duration
-        'newcase.duration.starts_with_login': function (newVal, oldVal) {
-            if (newVal) {
-                this.handleDurationChange('newcase');
-            }
-        },
-        'newcase.duration.startdate': function (newVal, oldVal) {
-            this.handleDurationChange('newcase');
-        },
-        'newcase.duration.selectedUnit': function (newVal, oldVal) {
-            this.handleDurationChange('newcase');
-        },
-        'newcase.duration.input': function (newVal, oldVal) {
-            // Sanitize input to contain only digits
-            this.newcase.duration.input = newVal.replace(/\D/g, "");
-            this.handleDurationChange('newcase');
-        },
-
-        // Consolidated Watchers for newuser.case.duration
-        'newuser.case.duration.selectedUnit': function (newVal, oldVal) {
-            this.handleDurationChange('newuser');
-        },
-        'newuser.case.duration.input': function (newVal, oldVal) {
-            // Sanitize input to contain only digits
-            this.newuser.case.duration.input = newVal.replace(/\D/g, "");
-            this.handleDurationChange('newuser');
-        },
-
-        'newuser.email': function (newVal, oldVal) {
-            window.axios
-                .post("/users/exist", {email: newVal})
-                .then((response) => {
-                    this.newuser.emailexist = response.data;
-                    if (response.data) {
-                        this.newuser.emailexistmessage = "This user will be invited.";
-                    } else {
-                        this.newuser.emailexistmessage =
-                            "This user is not registered, an invitation email will be sent.";
-                    }
-                })
-                .catch((error) => {
-                    console.log(error);
-                });
-        },
-        "newproject.ninputs": function (newVal, oldVal) {
-            if (newVal < 0 || oldVal < 0) {
-                this.newproject.ninputs = 0;
-                return;
-            }
-
-            const direction = newVal - oldVal;
-
-            if (direction > 0) {
-                const inputtemplate = {
-                    name: "",
-                    type: "",
-                    mandatory: true,
-                    numberofanswer: 0,
-                    answers: [""],
-                };
-
-                for (let i = 0; i < direction; i++) {
-                    this.newproject.inputs.push(JSON.parse(JSON.stringify(inputtemplate)));
-                }
-            } else if (newVal === 0) {
-                // Special case
-                this.newproject.inputs = [];
-            } else {
-                // Decrease
-                for (let i = 0; i < Math.abs(direction); i++) {
-                    this.newproject.inputs.pop();
-                }
-            }
-        },
-    },
+    // Using Options API for now to ensure backward compatibility
+    // This will make migration smoother as we convert components to Composition API
+    // The root instance needs to provide data and methods for components that expect them
     data() {
         return {
+            productionUrl: import.meta.env.VITE_ENV_MODE === "production" ? "/metag" : "",
             newemail: {
                 valid_email: false,
                 email: "",
@@ -186,7 +84,6 @@ const app = createApp({
                     message: "",
                     value: "",
                 },
-
                 minDate: new Date(),
                 backendcase: false,
                 inputLength: {
@@ -270,6 +167,114 @@ const app = createApp({
             showSnackbar: false,
         };
     },
+    computed: {
+        "newproject.formattedinputstring": function () {
+            return JSON.stringify(this.newproject.inputs);
+        },
+        url() {
+            return document.URL.split("/").pop();
+        },
+    },
+    mounted() {
+        window.addEventListener("keydown", (e) => {
+            this.lastPressedKey = e.keyCode;
+        });
+        const replaceUndefinedOrNull = function (key, value) {
+            if (value === null || value === undefined || value === "") {
+                return undefined;
+            }
+            return value;
+        };
+        // Check for stored message on page load
+        const storedMessage = localStorage.getItem('snackbarMessage');
+        if (storedMessage) {
+            this.showSnackbarMessage(storedMessage);
+            // Clear the message after showing it
+            localStorage.removeItem('snackbarMessage');
+        }
+        
+        // Listen for snackbar events from components using mitt
+        emitter.on('show-snackbar', (message) => {
+            this.showSnackbarMessage(message);
+        });
+    },
+    watch: {
+        // Consolidated Watchers for newcase.duration
+        'newcase.duration.starts_with_login': function (newVal, oldVal) {
+            if (newVal) {
+                this.handleDurationChange('newcase');
+            }
+        },
+        'newcase.duration.startdate': function (newVal, oldVal) {
+            this.handleDurationChange('newcase');
+        },
+        'newcase.duration.selectedUnit': function (newVal, oldVal) {
+            this.handleDurationChange('newcase');
+        },
+        'newcase.duration.input': function (newVal, oldVal) {
+            // Sanitize input to contain only digits
+            this.newcase.duration.input = newVal.replace(/\D/g, "");
+            this.handleDurationChange('newcase');
+        },
+
+        // Consolidated Watchers for newuser.case.duration
+        'newuser.case.duration.selectedUnit': function (newVal, oldVal) {
+            this.handleDurationChange('newuser');
+        },
+        'newuser.case.duration.input': function (newVal, oldVal) {
+            // Sanitize input to contain only digits
+            this.newuser.case.duration.input = newVal.replace(/\D/g, "");
+            this.handleDurationChange('newuser');
+        },
+
+        'newuser.email': function (newVal, oldVal) {
+            window.axios
+                .post("/users/exist", {email: newVal})
+                .then((response) => {
+                    this.newuser.emailexist = response.data;
+                    if (response.data) {
+                        this.newuser.emailexistmessage = "This user will be invited.";
+                    } else {
+                        this.newuser.emailexistmessage =
+                            "This user is not registered, an invitation email will be sent.";
+                    }
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        },
+        "newproject.ninputs": function (newVal, oldVal) {
+            if (newVal < 0 || oldVal < 0) {
+                this.newproject.ninputs = 0;
+                return;
+            }
+
+            const direction = newVal - oldVal;
+
+            if (direction > 0) {
+                const inputtemplate = {
+                    name: "",
+                    type: "",
+                    mandatory: true,
+                    numberofanswer: 0,
+                    answers: [""],
+                };
+
+                for (let i = 0; i < direction; i++) {
+                    this.newproject.inputs.push(JSON.parse(JSON.stringify(inputtemplate)));
+                }
+            } else if (newVal === 0) {
+                // Special case
+                this.newproject.inputs = [];
+            } else {
+                // Decrease
+                for (let i = 0; i < Math.abs(direction); i++) {
+                    this.newproject.inputs.pop();
+                }
+            }
+        },
+    },
+
     methods: {
         showSnackbarMessage(message) {
             // This will access the snackbar component via ref and call its show method
@@ -857,15 +862,31 @@ const app = createApp({
             this.$store.commit("switchFormatter", false);
         },
         trans(key) {
-            if (typeof window.trans === 'undefined' || typeof window.trans[key] === 'undefined') {
-                return key;
-            } else {
-                if (window.trans[key] === "") return key;
-                return window.trans[key];
+            // Ensure window.trans exists and is an object
+            if (!window.trans || typeof window.trans !== 'object') {
+                window.trans = {};
             }
+
+            if (typeof key !== 'string') {
+                return '';
+            }
+
+            // Return the translation if available, otherwise return the key itself
+            if (typeof window.trans[key] === 'undefined' || window.trans[key] === "") {
+                return key;
+            }
+            return window.trans[key];
         }
     },
+    provide() {
+        return {
+            productionUrl: import.meta.env.VITE_ENV_MODE === "production" ? "/metag" : ""
+        }
+    }
 });
+
+// Add as a global property to help with backwards compatibility
+app.config.globalProperties.productionUrl = import.meta.env.VITE_ENV_MODE === "production" ? "/metag" : "";
 
 // Use the store
 app.use(store);
@@ -874,6 +895,25 @@ app.use(store);
 Object.entries(components).forEach(([name, component]) => {
     app.component(name, component);
 });
+
+// Add global properties for easier access in components
+app.config.globalProperties.emitter = emitter;
+app.config.globalProperties.trans = function(key) {
+    // Ensure window.trans exists and is an object
+    if (!window.trans || typeof window.trans !== 'object') {
+        window.trans = {};
+    }
+
+    if (typeof key !== 'string') {
+        return '';
+    }
+
+    // Return the translation if available, otherwise return the key itself
+    if (typeof window.trans[key] === 'undefined' || window.trans[key] === "") {
+        return key;
+    }
+    return window.trans[key];
+};
 
 // Mount the app when the DOM is ready
 window.addEventListener('DOMContentLoaded', () => {

@@ -167,13 +167,24 @@
 </template>
 <script>
 import Modal from "./global/modal.vue";
+import { emitter } from '../app';
 
 export default {
-  props: ["projects", "user"],
+  name: "ProjectsList",
+  props: {
+    projects: {
+      type: String,
+      required: true
+    },
+    user: {
+      type: String,
+      required: true
+    }
+  },
   components: {
-
     Modal,
   },
+  inject: ['productionUrl'],
   computed: {
     filteredList() {
       return JSON.parse(this.projects).filter((project) => {
@@ -202,27 +213,35 @@ export default {
       duplicateProjectId: null,
       duplicateProjectName: "",
       showDeleteProjectModal: false,
+      deleteProjectId: null,
       deleteProjectName: "",
       showLeaveProjectModal: false,
       showDuplicateProjectModal: false,
-
+      loading: false,
+      message: ""
     };
   },
-  created() {
-
-  },
   methods: {
-    confirmLeaveProject: function (userToDetach, studyId) {
+    trans(key) {
+      // Translation helper
+      if (typeof window.trans === 'undefined' || typeof window.trans[key] === 'undefined') {
+        return key;
+      } else {
+        if (window.trans[key] === "") return key;
+        return window.trans[key];
+      }
+    },
+    confirmLeaveProject(userToDetach, studyId) {
       this.leaveProjectStudyId = studyId;
       this.leaveProjectUserId = userToDetach.id;
       this.showLeaveProjectModal = true;
     },
-    detachUser: function () {
-      let self = this;
+    detachUser() {
+      const self = this;
       window.axios
           .post(
               window.location.origin +
-              self.productionUrl +
+              this.productionUrl +
               "/projects/invite/" +
               self.leaveProjectUserId,
               {
@@ -232,11 +251,11 @@ export default {
           )
           .then((response) => {
             self.showSnackbarMessage(response.data.message);
-            setTimeout(function () {
+            setTimeout(() => {
               window.location.reload();
             }, 1000);
           })
-          .catch(function (error) {
+          .catch((error) => {
             self.showSnackbarMessage(
                 "There was an error during the request - refresh page and try again"
             );
@@ -247,66 +266,64 @@ export default {
       this.leaveProjectStudyId = null;
       this.leaveProjectUserId = null;
     },
-        closeDuplicateModal() {
+    closeDuplicateModal() {
       this.showDuplicateProjectModal = false;
       this.duplicateProjectId = null;
       this.duplicateProjectName = "";
-
     },
-    confirmduplicate: function (id, name) {
+    confirmduplicate(id, name) {
       this.duplicateProjectId = id;
       this.duplicateProjectName = name;
       this.showDuplicateProjectModal = true;
     },
-    duplicatestudy: function () {
+    duplicatestudy() {
       this.loading = true;
       this.message = "";
-      let self = this;
-      axios
+      const self = this;
+      
+      window.axios
           .get("projects/" + self.duplicateProjectId + "/duplicate")
           .then((response) => {
-            setTimeout(function () {
+            setTimeout(() => {
               self.loading = false;
-
-            localStorage.setItem('snackbarMessage', self.trans("Project duplicated"));
-
+              localStorage.setItem('snackbarMessage', self.trans("Project duplicated"));
               window.location.reload();
             }, 500);
           })
-          .catch(function (error) {
-            console.log(error);
+          .catch((error) => {
+            console.error(error);
             self.loading = false;
             self.showSnackbarMessage(
                 "There was an error during the request - refresh page and try again"
             );
           });
     },
+    // Updated to use the event emitter
     showSnackbarMessage(message) {
-      this.$root.showSnackbarMessage(message);
-
+      emitter.emit('show-snackbar', message);
     },
-    confirmDelete: function (id, name) {
+    confirmDelete(id, name) {
       this.deleteProjectId = id;
       this.deleteProjectName = name;
       this.showDeleteProjectModal = true;
     },
-    deleteStudy: function () {
+    deleteStudy() {
       this.loading = true;
       this.message = "";
-      let self = this;
+      const self = this;
 
-      axios
-          .delete(self.productionUrl + '/projects/' + self.deleteProjectId, {data: self.deleteProjectId})
+      window.axios
+          .delete(this.productionUrl + '/projects/' + self.deleteProjectId, {data: self.deleteProjectId})
           .then((response) => {
-            setTimeout(function () {
+            setTimeout(() => {
               self.loading = false;
               localStorage.setItem("snackbarMessage", self.trans("Project deleted"));
               window.location.reload();
             }, 500);
           })
-          .catch(function (error) {
+          .catch((error) => {
             self.loading = false;
-            self.showSnackbarMessage(error.response.data);
+            self.showSnackbarMessage(error.response?.data || "Error deleting project");
           });
     },
     closeDeleteProjectModal() {
