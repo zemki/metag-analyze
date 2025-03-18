@@ -298,8 +298,9 @@ export default {
             );
           });
     },
-    // Updated to use the event emitter
+    // Updated to use the event emitter instead of $refs or $root
     showSnackbarMessage(message) {
+      // Always use the emitter for messaging
       emitter.emit('show-snackbar', message);
     },
     confirmDelete(id, name) {

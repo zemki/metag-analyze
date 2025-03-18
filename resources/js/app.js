@@ -176,15 +176,12 @@ const app = createApp({
         },
     },
     mounted() {
-        window.addEventListener("keydown", (e) => {
-            this.lastPressedKey = e.keyCode;
-        });
-        const replaceUndefinedOrNull = function (key, value) {
-            if (value === null || value === undefined || value === "") {
-                return undefined;
-            }
-            return value;
+        // Store the event handler as a method property so we can remove it later
+        this.handleKeyDown = (e) => {
+            this.lastPressedKey = e.key || e.keyCode; // Using e.key is more modern
         };
+        window.addEventListener("keydown", this.handleKeyDown);
+        
         // Check for stored message on page load
         const storedMessage = localStorage.getItem('snackbarMessage');
         if (storedMessage) {
@@ -197,6 +194,13 @@ const app = createApp({
         emitter.on('show-snackbar', (message) => {
             this.showSnackbarMessage(message);
         });
+    },
+    
+    // Vue 3 uses beforeUnmount instead of beforeDestroy
+    beforeUnmount() {
+        // Clean up event listeners
+        window.removeEventListener("keydown", this.handleKeyDown);
+        emitter.off('show-snackbar');
     },
     watch: {
         // Consolidated Watchers for newcase.duration
@@ -278,9 +282,12 @@ const app = createApp({
     methods: {
         showSnackbarMessage(message) {
             // This will access the snackbar component via ref and call its show method
-            if (this.$refs.snackbar) {
+            if (this.$refs && this.$refs.snackbar) {
                 this.$refs.snackbar.message = message;
                 this.$refs.snackbar.show();
+            } else {
+                // Use the emitter as a fallback
+                emitter.emit('show-snackbar', message);
             }
         },
         // Reusable method to handle duration changes
@@ -334,10 +341,10 @@ const app = createApp({
             else this.newemail.valid_email = false;
 
             if (!this.newemail.valid_email) {
-                // add the class border-red-500 to the input with id newemail if it's not already there
-                const newEmailElement = document.getElementById("newemail");
+                // Use refs instead of direct DOM manipulation when possible
+                const newEmailElement = this.$refs.newemail || document.getElementById("newemail");
                 if (newEmailElement && !newEmailElement.classList.contains("border-red-500")) {
-                    newEmailElement.classList.add("border-red-500");
+                newEmailElement.classList.add("border-red-500");
                 }
                 return;
             }
@@ -351,7 +358,8 @@ const app = createApp({
                     }
 
                     self.newemail.message = response.data;
-                    this.$forceUpdate();
+                    // $forceUpdate is rarely needed in Vue 3 due to improved reactivity
+            // Only use when absolutely necessary for edge cases
                 })
                 .catch(function (error) {
                     self.newemail.message = error;
@@ -885,18 +893,8 @@ const app = createApp({
     }
 });
 
-// Add as a global property to help with backwards compatibility
+// Add global properties for Vue 3
 app.config.globalProperties.productionUrl = import.meta.env.VITE_ENV_MODE === "production" ? "/metag" : "";
-
-// Use the store
-app.use(store);
-
-// Register all components
-Object.entries(components).forEach(([name, component]) => {
-    app.component(name, component);
-});
-
-// Add global properties for easier access in components
 app.config.globalProperties.emitter = emitter;
 app.config.globalProperties.trans = function(key) {
     // Ensure window.trans exists and is an object
@@ -914,6 +912,16 @@ app.config.globalProperties.trans = function(key) {
     }
     return window.trans[key];
 };
+
+// Use the store
+app.use(store);
+
+// Register all components
+Object.entries(components).forEach(([name, component]) => {
+    app.component(name, component);
+});
+
+
 
 // Mount the app when the DOM is ready
 window.addEventListener('DOMContentLoaded', () => {
