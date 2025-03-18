@@ -253,7 +253,24 @@
 import moment from "moment";
 
 export default {
-  props: ["cases", "notifications", "plannednotifications", "admin"],
+  props: {
+    cases: {
+      type: Array,
+      default: () => []
+    },
+    notifications: {
+      type: Array,
+      default: () => []
+    },
+    plannednotifications: {
+      type: Array,
+      default: () => []
+    },
+    admin: {
+      type: Boolean,
+      default: false
+    }
+  },
   data() {
     return {
       inputLength: { title: 100, message: 900 },
@@ -270,7 +287,6 @@ export default {
       ],
       minutes: ["00", 15, 30, 45],
       frequency: ["Every day", "Every two days", "Every three days"],
-
     };
   },
   mounted() {
@@ -319,26 +335,28 @@ export default {
         }
       }
     });
+    
     if (this.notifications != null) {
       this.notifications.forEach((notification) => {
         let d = moment(notification.created_at);
         notification.created_at_readable = moment(d).format("DD.MM.YYYY H:m:s");
-        notification.case = _.find(this.arrayOfCases, (cases) => {
+        notification.case = this.arrayOfCases.find((cases) => {
           return notification.data.case === cases.id;
         });
       });
     }
+    
     if (this.plannednotifications != null) {
       this.plannednotifications.forEach((notification) => {
         notification.data = JSON.parse(notification.data);
-        notification.case = _.find(this.arrayOfCases, (cases) => {
+        notification.case = this.arrayOfCases.find((cases) => {
           return notification.data.case === cases.id;
         });
       });
     }
   },
   computed: {
-    sortedNotifications: function () {
+    sortedNotifications() {
       return this.notifications.sort((a, b) => {
         let modifier = 1;
         if (this.currentSortDir === "desc") modifier = -1;
@@ -364,16 +382,25 @@ export default {
     },
   },
   methods: {
-    showSnackbar(message) {
-      this.$root.showSnackbarMessage(message.message);
+    trans(key) {
+      // Translation helper
+      if (typeof window.trans === 'undefined' || typeof window.trans[key] === 'undefined') {
+        return key;
+      } else {
+        if (window.trans[key] === "") return key;
+        return window.trans[key];
+      }
     },
-    sort: function (s) {
+    showSnackbar(message) {
+      this.$root.showSnackbarMessage(message.message || message);
+    },
+    sort(s) {
       if (s === this.currentSort) {
         this.currentSortDir = this.currentSortDir === "asc" ? "desc" : "asc";
       }
       this.currentSort = s;
     },
-    deletePlanned: function (notification) {
+    deletePlanned(notification) {
       let data = {
         notification: notification,
       };
@@ -386,8 +413,7 @@ export default {
           }
 
           if (response.status === 200) {
-            this.plannednotifications = _.filter(
-              this.plannednotifications,
+            this.plannednotifications = this.plannednotifications.filter(
               function (o) {
                 return o.id !== notification.id;
               }
@@ -401,7 +427,7 @@ export default {
           }
         });
     },
-    setAsNotificationSent: function (oneCase, response) {
+    setAsNotificationSent(oneCase, response) {
       this.arrayOfCases.forEach(function (el) {
         if (el.id === oneCase.id) {
           let d = moment(response.data.notified);
@@ -465,7 +491,7 @@ export default {
             if (response.status === 200) {
               let newNotification = response.data.notification;
               newNotification.data = JSON.parse(newNotification.data);
-              newNotification.case = _.find(this.arrayOfCases, (cases) => {
+              newNotification.case = this.arrayOfCases.find((cases) => {
                 return newNotification.data.case === cases.id;
               });
               this.plannednotifications.push(newNotification);
@@ -480,20 +506,22 @@ export default {
       }
     },
     validData(oneCase) {
-      if (_.isEmpty(oneCase.title) || _.isEmpty(oneCase.message)) return false;
+      if (!oneCase.title || oneCase.title.trim() === '' || !oneCase.message || oneCase.message.trim() === '') 
+        return false;
       return true;
     },
     validPlanning(oneCase) {
-      if (_.isEmpty(oneCase.title) || _.isEmpty(oneCase.message)) return false;
+      if (!oneCase.title || oneCase.title.trim() === '' || !oneCase.message || oneCase.message.trim() === '') 
+        return false;
       if (
-        _.isEmpty(oneCase.selectedFrequency) ||
-        _.isNil(oneCase.selectedHour) ||
-        _.isNil(oneCase.selectedMinutes)
+        !oneCase.selectedFrequency ||
+        oneCase.selectedHour === undefined ||
+        oneCase.selectedMinutes === undefined
       )
         return false;
       return true;
     },
-    cleanupNotification: function (cases) {
+    cleanupNotification(cases) {
       let data = {
         user: cases.user,
         cases: cases,

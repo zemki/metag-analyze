@@ -505,82 +505,91 @@
 </template>
 
 <script>
+import { ref, computed, reactive, onBeforeUnmount } from 'vue';
 import moment from "moment";
 import Modal from "./global/modal.vue";
+import Snackbar from "./global/snackbar.vue";
 
 export default {
+  name: 'SelectedCase',
   components: {
     Modal,
+    Snackbar
   },
   props: {
     cases: {
       type: Object,
       required: false,
+      default: () => ({})
     },
     projectinputs: {
       type: Array,
       required: true,
+      default: () => []
     },
+    productionUrl: {
+      type: String,
+      default: ''
+    }
   },
-  data() {
-    return {
-      caseIsSet: false,
-      caseNotEnded: false,
-      snackbarMessage: '',
-      showSnackbar: false,
-      editentry: {
-        id: 0,
-        case_id: 0,
+  emits: ['update:selectedCase'],
+  setup(props) {
+    const caseIsSet = ref(false);
+    const caseNotEnded = ref(false);
+    const snackbarMessage = ref('');
+    const showSnackbar = ref(false);
+    
+    const editentry = reactive({
+      id: 0,
+      case_id: 0,
+      inputs: {},
+      modal: false,
+      actuallysave: false,
+      data: {
+        start: new Date(),
+        end: new Date(new Date().setMinutes(new Date().getMinutes() + 1)),
+        media_id: "",
+        media: "",
         inputs: {},
-        modal: false,
-        actuallysave: false,
-        data: {
-          start: new Date(),
-          end: new Date(new Date().setMinutes(new Date().getMinutes() + 1)),
-          media_id: "",
-          media: "",
-          inputs: {},
-        },
       },
+    });
+
+    onBeforeUnmount(() => {
+      caseIsSet.value = false;
+    });
+
+    const showCase = computed(() => {
+      return caseIsSet.value && selectedCase.value?.consultable;
+    });
+
+    const selectedCase = computed(() => {
+      if (props.cases && props.cases.name) {
+        caseIsSet.value = true;
+        let processedCases = {...props.cases};
+        processedCases.entries = processEntries(props.cases.entries);
+        return processedCases;
+      }
+      return null;
+    });
+
+    const trans = (key) => {
+      if (typeof window.trans === 'undefined' || typeof window.trans[key] === 'undefined') {
+        return key;
+      } else {
+        if (window.trans[key] === "") return key;
+        return window.trans[key];
+      }
     };
-  },
-  beforeDestroy() {
-    this.caseIsSet = false;
-  },
-  computed: {
-    showCase() {
-      return this.caseIsSet && this.selectedCase.consultable;
-    },
-    selectedCase: {
-      get() {
-        if (this.cases && this.cases.name) {
-          this.caseIsSet = true;
-          let processedCases = {...this.cases};
-          processedCases.entries = this.processEntries(this.cases.entries);
-          return processedCases;
-        }
-      },
-      set(newCase) {
-        if (newCase && newCase.name) {
-          let processedCase = {...newCase};
-          processedCase.entries = this.processEntries(newCase.entries);
-          this.caseIsSet = true;
-          return processedCase;
-        }
-      },
-    },
-  },
-  created() {
-  },
-  methods: {
-    showSnackbarMessage(message) {
-      this.snackbarMessage = message;
-      this.showSnackbar = true;
+
+    const showSnackbarMessage = (message) => {
+      snackbarMessage.value = message;
+      showSnackbar.value = true;
       setTimeout(() => {
-        this.showSnackbar = false;
+        showSnackbar.value = false;
       }, 3000);  // Snackbar duration
-    },
-    processEntries(entries) {
+    };
+
+    const processEntries = (entries = []) => {
       return entries.map((entry) => {
         // Basic entry data
         entry.created_at_readable = moment(entry.created_at).format(
@@ -630,180 +639,194 @@ export default {
 
         return entry;
       });
-    },
-    entrySaveAndClose() {
-      const self = this;
+    };
+
+    const entrySaveAndClose = () => {
+      // Get productionUrl from props or default to empty string
+      const productionUrl = props.productionUrl || '';
       window.axios
           .post(
-              `${window.location.origin + this.productionUrl}/cases/${
-                  this.cases.id
+              `${window.location.origin + productionUrl}/cases/${
+                  props.cases.id
               }/entries`,
               {
-                case_id: this.cases.id,
-                inputs: this.editentry.data.inputs,
-                begin: moment(this.editentry.data.start).format(
+                case_id: props.cases.id,
+                inputs: editentry.data.inputs,
+                begin: moment(editentry.data.start).format(
                     "YYYY-MM-DD HH:mm:ss.SSSSSS"
                 ),
-                end: moment(this.editentry.data.end).format(
+                end: moment(editentry.data.end).format(
                     "YYYY-MM-DD HH:mm:ss.SSSSSS"
                 ),
-                media_id: this.editentry.data.media,
+                media_id: editentry.data.media,
               }
           )
           .then((response) => {
-            this.showSnackbarMessage(self.trans("Entry successfully sent."));
-
+            showSnackbarMessage(trans("Entry successfully sent."));
             setTimeout(() => window.location.reload(), 500);
           })
           .catch((error) => {
-            this.showSnackbarMessage(self.trans("There it was an error during the request - refresh page and try again"));
+            showSnackbarMessage(trans("There was an error during the request - refresh page and try again"));
           });
-    },
-    MandatoryEntry() {
-      const self = this;
+    };
 
-      if (this.editentry.actuallysave) {
+    const mandatoryEntry = () => {
+      if (editentry.actuallysave) {
         return (
-            self.editentry.data.media === "" ||
-            self.editentry.data.start === "" ||
-            self.editentry.data.end === ""
+            editentry.data.media === "" ||
+            editentry.data.start === "" ||
+            editentry.data.end === ""
         );
       } else {
         return (
-            self.editentry.data.media_id === "" ||
-            self.editentry.data.start === "" ||
-            self.editentry.data.end === ""
+            editentry.data.media_id === "" ||
+            editentry.data.start === "" ||
+            editentry.data.end === ""
         );
       }
-    },
-    editEntryAndClose() {
-      if (this.MandatoryEntry()) {
-        this.showSnackbarMessage(self.trans("Check your mandatory entries."));
+    };
 
+    const editEntryAndClose = () => {
+      if (mandatoryEntry()) {
+        showSnackbarMessage(trans("Check your mandatory entries."));
         return;
       }
 
-      const self = this;
-      if (this.editentry.actuallysave) {
-        this.entrySaveAndClose();
+      if (editentry.actuallysave) {
+        entrySaveAndClose();
       } else {
+        // Get productionUrl from props or default to empty string
+        const productionUrl = props.productionUrl || '';
         window.axios
             .patch(
-                `${window.location.origin + this.productionUrl}/cases/${
-                    this.editentry.case_id
-                }/entries/${this.editentry.id}`,
+                `${window.location.origin + productionUrl}/cases/${
+                    editentry.case_id
+                }/entries/${editentry.id}`,
                 {
-                  case_id: this.editentry.case_id,
-                  inputs: this.editentry.data.inputs,
-                  begin: moment(this.editentry.data.start).format(
+                  case_id: editentry.case_id,
+                  inputs: editentry.data.inputs,
+                  begin: moment(editentry.data.start).format(
                       "YYYY-MM-DD HH:mm:ss.SSSSSS"
                   ),
-                  end: moment(this.editentry.data.end).format(
+                  end: moment(editentry.data.end).format(
                       "YYYY-MM-DD HH:mm:ss.SSSSSS"
                   ),
-                  media_id: this.editentry.data.media,
+                  media_id: editentry.data.media,
                 }
             )
             .then((response) => {
-              this.showSnackbarMessage(self.trans("Entry successfully updated."));
-
+              showSnackbarMessage(trans("Entry successfully updated."));
               setTimeout(() => window.location.reload(), 500);
             })
             .catch((error) => {
-              this.showSnackbarMessage(self.trans(
-                  "There it was an error during the request - double check your data or contact the support."
+              showSnackbarMessage(trans(
+                  "There was an error during the request - double check your data or contact the support."
               ));
-
             });
       }
-    },
-    toggleEntryModal(entry = {
-      id: null,
-      case_id: null,
-      inputs: {},
-      data: {},
-      begin: null,
-      end: null,
-    }) {
-      let self = this;
+    };
 
-      if (entry.id !== null) {
-        // Ensure inputs are properly parsed
-        const parsedInputs = typeof entry.inputs === 'string'
-            ? JSON.parse(entry.inputs)
-            : entry.inputs;
-
-        self.editentry.id = entry.id;
-        self.editentry.case_id = entry.case_id;
-        self.editentry.inputs = self.projectinputs;
-        self.editentry.data.inputs = parsedInputs;
-        self.editentry.data.media_id = entry.media_id;
-        self.editentry.data.media = entry.media;
-
-        // Ensure dates are properly formatted
-        self.editentry.data.start = this.formatDateForInput(entry.begin);
-        self.editentry.data.end = this.formatDateForInput(entry.end);
-      } else {
-        self.editentry.actuallysave = true;
-        self.editentry.inputs = self.projectinputs;
-        self.editentry.data.inputs = {};
-      }
-
-      self.editentry.modal = !self.editentry.modal;
-
-      if (!self.editentry.modal) {
-        self.clearEditEntryData();
-      }
-    },
-
-    formatDateForInput(date) {
+    const formatDateForInput = (date) => {
       return moment(date)
           .add(moment(date).utcOffset(), "minutes")
           .toISOString()
           .slice(0, 16); // Format as YYYY-MM-DDTHH:mm
-    },
+    };
 
-    // Method to clear editentry data
-    clearEditEntryData() {
-      this.editentry.id = 0;
-      this.editentry.case_id = 0;
-      this.editentry.inputs = {};
-      this.editentry.actuallysave = false;
-      this.editentry.data = {
+    const clearEditEntryData = () => {
+      editentry.id = 0;
+      editentry.case_id = 0;
+      editentry.inputs = {};
+      editentry.actuallysave = false;
+      editentry.data = {
         start: new Date(),
         end: new Date(new Date().setMinutes(new Date().getMinutes() + 1)),
         media_id: "",
         media: "",
         inputs: {},
       };
-    },
+    };
 
-    editentrydateselected(edit = "") {
-      if (edit === "") {
-        this.editentry.data.end = new Date(
-            new Date(this.editentry.data.start).setMinutes(
-                new Date(this.editentry.data.start).getMinutes() + 5
-            )
-        );
+    const toggleEntryModal = (entry = {
+      id: null,
+      case_id: null,
+      inputs: {},
+      data: {},
+      begin: null,
+      end: null,
+    }) => {
+      if (entry.id !== null) {
+        // Ensure inputs are properly parsed
+        const parsedInputs = typeof entry.inputs === 'string'
+            ? JSON.parse(entry.inputs)
+            : entry.inputs;
+
+        editentry.id = entry.id;
+        editentry.case_id = entry.case_id;
+        editentry.inputs = props.projectinputs;
+        editentry.data.inputs = parsedInputs;
+        editentry.data.media_id = entry.media_id;
+        editentry.data.media = entry.media;
+
+        // Ensure dates are properly formatted
+        editentry.data.start = formatDateForInput(entry.begin);
+        editentry.data.end = formatDateForInput(entry.end);
       } else {
-        this.editentry.data.end = new Date(
-            new Date(this.editentry.data.start).setMinutes(
-                new Date(this.editentry.data.start).getMinutes() + 5
-            )
-        );
+        editentry.actuallysave = true;
+        editentry.inputs = props.projectinputs;
+        editentry.data.inputs = {};
       }
-    },
-    forceRender(cases) {
-      this.selectedCase = cases;
-      this.$forceUpdate();
-    },
-    distinctPath() {
-      return this.cases.project.id + "/distinctcases/" + this.cases.id;
-    },
-    groupedCasesPath() {
-      return this.cases.project.id + "/groupedcases/" + this.cases.id;
-    },
-  },
+
+      editentry.modal = !editentry.modal;
+
+      if (!editentry.modal) {
+        clearEditEntryData();
+      }
+    };
+
+    const editentrydateselected = (edit = "") => {
+      editentry.data.end = new Date(
+          new Date(editentry.data.start).setMinutes(
+              new Date(editentry.data.start).getMinutes() + 5
+          )
+      );
+    };
+
+    const forceRender = (cases) => {
+      // This is handled by the reactivity system in Vue 3
+    };
+
+    const distinctPath = () => {
+      return props.cases.project.id + "/distinctcases/" + props.cases.id;
+    };
+
+    const groupedCasesPath = () => {
+      return props.cases.project.id + "/groupedcases/" + props.cases.id;
+    };
+
+    return {
+      caseIsSet,
+      caseNotEnded,
+      editentry,
+      showCase,
+      selectedCase,
+      snackbarMessage,
+      showSnackbar,
+      trans,
+      showSnackbarMessage,
+      processEntries,
+      entrySaveAndClose,
+      MandatoryEntry: mandatoryEntry,
+      editEntryAndClose,
+      toggleEntryModal,
+      formatDateForInput,
+      clearEditEntryData,
+      editentrydateselected,
+      forceRender,
+      distinctPath,
+      groupedCasesPath,
+    };
+  }
 };
 </script>
 
