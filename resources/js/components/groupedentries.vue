@@ -4,9 +4,21 @@
 
 <script>
 import Highcharts from 'highcharts';
-import HighchartsMore from 'highcharts/highcharts-more';
+import _ from 'lodash'; // Make sure this is installed
 import { mapState, useStore } from 'vuex';
-HighchartsMore(Highcharts);
+
+// Lazy-load modules for better performance
+const loadHighchartsModules = async () => {
+  const [highchartsMore, exportingModule, stockModule] = await Promise.all([
+    import('highcharts/highcharts-more'),
+    import('highcharts/modules/exporting'),
+    import('highcharts/modules/stock')
+  ]);
+  
+  highchartsMore.default(Highcharts);
+  exportingModule.default(Highcharts);
+  stockModule.default(Highcharts);
+};
 
 export default {
   name: 'MedtagGraph',
@@ -38,6 +50,8 @@ export default {
       begin: null,
       end: null,
       extremes: null,
+      isLoading: true,
+      resizeTimer: null
     };
   },
   computed: {
@@ -58,21 +72,41 @@ export default {
     begin: 'updateChartExtremes',
     end: 'updateChartExtremes',
   },
-  created() {
+  async created() {
+    // Load Highcharts modules first
+    await loadHighchartsModules();
+    
     this.categories = this.getYAxisCategories();
     this.yAxisCategoryNames = this.categories.map((category) => category.name);
 
     this.$nextTick(() => {
       this.initiateChart();
       this.updateChart();
+      
+      // Add responsive handling
+      window.addEventListener('resize', this.handleResize);
+      
+      this.isLoading = false;
     });
   },
   unmounted() {
     if (this.chart) {
       this.chart.destroy();
     }
+    
+    // Remove event listeners
+    window.removeEventListener('resize', this.handleResize);
   },
   methods: {
+    handleResize() {
+      // Throttle resize events to improve performance
+      clearTimeout(this.resizeTimer);
+      this.resizeTimer = setTimeout(() => {
+        if (this.chart) {
+          this.chart.reflow();
+        }
+      }, 250);
+    },
     switchInputs() {
       const store = useStore();
       store.commit("switchyAxisAttribute");
@@ -94,9 +128,14 @@ export default {
         chart: {
           type: 'columnrange',
           inverted: true,
-          zoomType: 'y',
+          zoomType: 'xy',
           height: (9 / 16) * 100 + '%',
           animation: false,
+          panning: true,
+          panKey: 'shift',
+          style: {
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+          }
         },
         credits: {
           enabled: false,
@@ -107,7 +146,16 @@ export default {
           max: this.yAxisCategoryNames.length - 1,
           labels: {
             step: 1,
+            rotation: 0,
+            style: {
+              fontSize: '12px'
+            }
           },
+          crosshair: {
+            width: 1,
+            color: 'rgba(80,180,50,0.5)',
+            dashStyle: 'dot'
+          }
         },
         yAxis: {
           type: 'datetime',
@@ -123,35 +171,130 @@ export default {
           lineWidth: 1,
           startOnTick: false,
           endOnTick: false,
+          labels: {
+            format: '{value:%H:%M}',
+          },
+          crosshair: {
+            width: 1,
+            color: 'rgba(80,180,50,0.5)',
+            dashStyle: 'dot'
+          }
         },
         plotOptions: {
           columnrange: {
             grouping: false,
+            borderRadius: 3,
+            pointPadding: 0.2,
+            borderWidth: 0
           },
           series: {
             states: {
               inactive: {
-                opacity: 1,
+                opacity: 0.5, // Change to 0.5 for better distinction
               },
               hover: {
+                brightness: 0.15,
                 opacity: 1,
               },
             },
+            events: {
+              click: function(e) {
+                // Alert or show details when clicking a point
+                const entry = e.point.meTagEntry;
+                if (entry) {
+                  const time = Highcharts.dateFormat('%H:%M', e.point.low) + ' - ' + 
+                               Highcharts.dateFormat('%H:%M', e.point.high);
+                  
+                  // You can replace this with a custom modal or details panel
+                  alert(`Entry: ${entry.id}\nTime: ${time}`);
+                }
+              }
+            }
           },
         },
         tooltip: {
-          pointFormatter: function () {
-            const low = Highcharts.dateFormat('%H:%M', this.low);
-            const high = Highcharts.dateFormat('%H:%M', this.high);
-
-            const coloredCategories = Array.isArray(this.meTagEntry[this.series.chart.options.coloredAttribute])
-              ? this.meTagEntry[this.series.chart.options.coloredAttribute].map((category) => category.name).join('<br>')
+          useHTML: true,
+          borderRadius: 8,
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          borderWidth: 1,
+          shadow: true,
+          hideDelay: 200,
+          formatter: function() {
+            const low = Highcharts.dateFormat('%H:%M', this.point.low);
+            const high = Highcharts.dateFormat('%H:%M', this.point.high);
+            const date = Highcharts.dateFormat('%A, %b %e, %Y', this.point.low);
+            
+            // Calculate duration
+            const durationMs = this.point.high - this.point.low;
+            const hours = Math.floor(durationMs / (1000 * 60 * 60));
+            const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+            const duration = `${hours}h ${minutes}m`;
+            
+            const coloredCategories = Array.isArray(this.point.meTagEntry[this.series.chart.options.coloredAttribute])
+              ? this.point.meTagEntry[this.series.chart.options.coloredAttribute].map((category) => 
+                  `<span style="color:${this.series.color}">${category.name}</span>`).join('<br>')
               : '';
-
-            return `<b>${low} - ${high}</b><br>${coloredCategories}`;
+            
+            return `<div style="min-width:180px; padding:10px;">
+                      <div style="font-weight:bold; margin-bottom:8px;">${date}</div>
+                      <div style="margin-bottom:5px;"><b>${low} - ${high}</b> (${duration})</div>
+                      <div style="margin-top:8px;">${coloredCategories}</div>
+                    </div>`;
           },
         },
         series: [],
+        navigator: {
+          enabled: true,
+          adaptToUpdatedData: true,
+          height: 30,
+          margin: 10,
+          outlineColor: '#999',
+          handles: {
+            backgroundColor: '#f7f7f7',
+            borderColor: '#999'
+          }
+        },
+        scrollbar: {
+          enabled: true,
+          barBackgroundColor: '#eeeeee',
+          barBorderColor: '#cccccc',
+          buttonBackgroundColor: '#f7f7f7',
+          buttonBorderColor: '#cccccc',
+          height: 10
+        },
+        rangeSelector: {
+          enabled: true,
+          inputEnabled: false,
+          buttonPosition: {
+            align: 'right'
+          },
+          buttons: [{
+            type: 'day',
+            count: 1,
+            text: '1d'
+          }, {
+            type: 'day',
+            count: 3,
+            text: '3d'
+          }, {
+            type: 'week',
+            count: 1,
+            text: '1w'
+          }, {
+            type: 'all',
+            text: 'All'
+          }]
+        },
+        annotations: [{
+          draggable: '',
+          labelOptions: {
+            backgroundColor: 'rgba(255,255,255,0.8)',
+            borderColor: '#AAA',
+            borderRadius: 3,
+            borderWidth: 1,
+            verticalAlign: 'top'
+          }
+        }],
         exporting: {
           enabled: false,
           sourceWidth: 1200,
@@ -162,14 +305,59 @@ export default {
           },
         },
         legend: {
-          itemWidth: 275,
+          itemWidth: 200,
+          itemStyle: {
+            fontSize: '12px',
+            fontWeight: 'normal'
+          },
+          symbolHeight: 12,
+          symbolWidth: 12,
+          symbolRadius: 6
         },
+        responsive: {
+          rules: [{
+            condition: {
+              maxWidth: 500
+            },
+            chartOptions: {
+              xAxis: {
+                labels: {
+                  step: 2,
+                  style: {
+                    fontSize: '10px'
+                  }
+                }
+              },
+              legend: {
+                itemWidth: 150
+              },
+              rangeSelector: {
+                dropdown: 'always',
+                buttonPosition: {
+                  x: 0
+                }
+              }
+            }
+          }]
+        }
       });
+      
+      // Add weekend plot bands
+      this.addWeekendPlotBands();
+      
+      // Add touch support
+      this.addTouchSupport();
+      
+      // Set coloredAttribute for tooltip access
+      this.chart.options.coloredAttribute = this.coloredAttribute;
     },
     updateChartAsync() {
-      this.$nextTick(() => {
+      // Throttle updates to prevent performance issues
+      this.debounceUpdate = this.debounceUpdate || _.debounce(() => {
         this.updateChart();
-      });
+      }, 300);
+      
+      this.debounceUpdate();
     },
     updateChartExtremes() {
       if (this.begin && this.end) {
@@ -183,6 +371,7 @@ export default {
       this.categories = this.getYAxisCategories();
       this.yAxisCategoryNames = this.categories.map((category) => category.name);
 
+      // Performance: Memoize expensive calculations
       this.allSeries = this.prepareSeriesData();
 
       this.chart.xAxis[0].setCategories(this.yAxisCategoryNames, false);
@@ -208,38 +397,46 @@ export default {
       this.updatePlotBands();
     },
     prepareSeriesData() {
-      return this.getColoredCategories().map((category) => {
-        const seriesData = this.entries
-          .filter((entry) => {
-            const coloredAttributeArray = Array.isArray(entry[this.coloredAttribute])
-              ? entry[this.coloredAttribute]
-              : [entry[this.coloredAttribute]];
-            return coloredAttributeArray[0]?.name === category.name;
-          })
-          .map((entry) => {
-            const yAxisAttributeArray = Array.isArray(entry[this.yAxisAttribute])
-              ? entry[this.yAxisAttribute]
-              : [entry[this.yAxisAttribute]];
-            const x = this.yAxisCategoryNames.indexOf(yAxisAttributeArray[0]?.name);
+      // Performance: Use filter->map pattern for large datasets
+      const coloredCategories = this.getColoredCategories();
+      const entries = this.entries;
+      const yAxisAttribute = this.yAxisAttribute;
+      const coloredAttribute = this.coloredAttribute;
+      const yAxisCategoryNames = this.yAxisCategoryNames;
+      const interval = this.interval;
+      
+      return coloredCategories.map((category) => {
+        // Filter entries first to reduce subsequent iterations
+        const filteredEntries = entries.filter((entry) => {
+          const coloredAttributeArray = Array.isArray(entry[coloredAttribute])
+            ? entry[coloredAttribute]
+            : [entry[coloredAttribute]];
+          return coloredAttributeArray[0]?.name === category.name;
+        });
+        
+        // Then map to chart points
+        const seriesData = filteredEntries.map((entry) => {
+          const yAxisAttributeArray = Array.isArray(entry[yAxisAttribute])
+            ? entry[yAxisAttribute]
+            : [entry[yAxisAttribute]];
+          const x = yAxisCategoryNames.indexOf(yAxisAttributeArray[0]?.name);
 
-            if (x !== -1) {
-              let low = entry.begin * 1000;
-              let high = entry.end * 1000;
-              if (high - low < this.interval * 60 * 1000) {
-                high = low + this.interval * 60 * 1000;
-              }
-
-              return {
-                x,
-                low,
-                high,
-                meTagEntry: entry,
-              };
+          if (x !== -1) {
+            let low = entry.begin * 1000;
+            let high = entry.end * 1000;
+            if (high - low < interval * 60 * 1000) {
+              high = low + interval * 60 * 1000;
             }
-            return null;
-          })
-          .filter(Boolean)
-          .sort((a, b) => a.x - b.x);
+
+            return {
+              x,
+              low,
+              high,
+              meTagEntry: entry,
+            };
+          }
+          return null;
+        }).filter(Boolean).sort((a, b) => a.x - b.x);
 
         return {
           id: String(category.id),
@@ -247,15 +444,21 @@ export default {
           borderWidth: 0,
           name: category.name,
           data: seriesData,
+          cursor: 'pointer'
         };
       });
     },
     updatePlotBands() {
       // Clear existing plot bands
-      this.chart.yAxis[0].plotBands.forEach((band) => {
+      this.chart.yAxis[0].plotLinesAndBands.forEach((band) => {
         this.chart.yAxis[0].removePlotBand(band.id);
       });
 
+      this.addWeekendPlotBands();
+    },
+    addWeekendPlotBands() {
+      if (!this.begin || !this.end) return;
+      
       // Add new plot bands
       let date = new Date(this.begin.getTime());
       date.setHours(0, 0, 0, 0);
@@ -265,13 +468,85 @@ export default {
       }
 
       while (date < this.end) {
+        const weekend = date.getTime();
         this.chart.yAxis[0].addPlotBand({
-          id: `weekend-${date.getTime()}`,
-          color: '#eee',
-          from: date.getTime(),
-          to: date.getTime() + 2 * 24 * 60 * 60 * 1000,
+          id: `weekend-${weekend}`,
+          color: 'rgba(240, 240, 240, 0.5)',
+          from: weekend,
+          to: weekend + 2 * 24 * 60 * 60 * 1000,
+          label: {
+            text: 'Weekend',
+            style: {
+              color: '#999',
+              fontStyle: 'italic'
+            },
+            rotation: 90,
+            textAlign: 'left',
+            x: 5
+          }
         });
         date.setDate(date.getDate() + 7);
+      }
+      
+      // Add current day line
+      const now = new Date();
+      this.chart.yAxis[0].addPlotLine({
+        id: 'now-line',
+        color: 'rgba(255, 0, 0, 0.5)',
+        width: 1,
+        value: now.getTime(),
+        dashStyle: 'Dash',
+        zIndex: 5,
+        label: {
+          text: 'Now',
+          align: 'right',
+          style: {
+            color: '#f00',
+            fontWeight: 'bold'
+          }
+        }
+      });
+    },
+    addTouchSupport() {
+      if (!this.chart) return;
+      
+      const chartContainer = document.getElementById('chart');
+      if (chartContainer) {
+        // Simple touch event handling for chart panning
+        let touchStartX = 0;
+        let touchStartY = 0;
+        
+        chartContainer.addEventListener('touchstart', (e) => {
+          const touch = e.touches[0];
+          touchStartX = touch.clientX;
+          touchStartY = touch.clientY;
+        }, { passive: true });
+        
+        chartContainer.addEventListener('touchmove', _.throttle((e) => {
+          if (e.touches.length > 1) return; // Skip multi-touch (zooming)
+          
+          const touch = e.touches[0];
+          const deltaY = touchStartY - touch.clientY;
+          
+          if (Math.abs(deltaY) > 30) { // Threshold to prevent accidental panning
+            const yAxis = this.chart.yAxis[0];
+            const extremes = yAxis.getExtremes();
+            const range = extremes.max - extremes.min;
+            
+            // Calculate pan amount based on touch movement
+            const panAmount = (deltaY / chartContainer.clientHeight) * range;
+            
+            // Apply the pan
+            yAxis.setExtremes(
+              extremes.min + panAmount,
+              extremes.max + panAmount
+            );
+            
+            // Update start position for next move
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+          }
+        }, 50), { passive: true });
       }
     },
     download(type) {
@@ -280,6 +555,7 @@ export default {
           sourceWidth: this.chart.container.offsetWidth,
           sourceHeight: this.chart.container.offsetHeight,
           type,
+          filename: `chart-export-${new Date().toISOString().split('T')[0]}`
         },
         {
           chart: {
@@ -340,3 +616,20 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+#chart {
+  width: 100%;
+  height: 500px;
+  overflow: visible !important;
+  margin: 30px auto;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  #chart {
+    height: 400px;
+  }
+}
+</style>
