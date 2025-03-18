@@ -2,11 +2,16 @@ module.exports = {
   testEnvironment: 'jsdom',
   moduleFileExtensions: ['js', 'json', 'vue'],
   transform: {
-    '^.+\\.js$': 'babel-jest',
+    '^.+\\.js$': '<rootDir>/tests/js/transformers/vite-env-transformer.js',
     '^.+\\.vue$': '@vue/vue3-jest'
   },
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/resources/js/$1'
+    '^@/(.*)$': '<rootDir>/resources/js/$1',
+    // Mock app.js imports to avoid circular dependencies
+    '^../app$': '<rootDir>/tests/js/mocks/app.js',
+    '^./app$': '<rootDir>/tests/js/mocks/app.js',
+    // Mock mitt
+    'mitt': '<rootDir>/tests/js/mocks/mitt.js'
   },
   testMatch: [
     '**/tests/js/**/*.spec.js',
@@ -19,6 +24,6 @@ module.exports = {
     customExportConditions: ['node', 'node-addons'],
   },
   transformIgnorePatterns: [
-    '/node_modules/(?!vue-router|@babel|vuex)'
+    '/node_modules/(?!vue-router|@babel|vuex|mitt)'
   ]
 }

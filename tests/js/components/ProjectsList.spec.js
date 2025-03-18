@@ -1,6 +1,7 @@
-import { shallowMount } from '@vue/test-utils';
+import { mount, shallowMount } from '@vue/test-utils';
 import ProjectsList from '@/components/projects-list.vue';
 import Modal from '@/components/global/modal.vue';
+import { emitter } from '../mocks/app';
 
 // Mock data for testing
 const mockProjects = JSON.stringify([
@@ -32,67 +33,15 @@ const mockUser = JSON.stringify({
   email: 'test@example.com'
 });
 
-// Create a component stub
-const ProjectsListStub = {
-  template: ProjectsList.template,
-  props: ProjectsList.props,
-  components: { Modal },
-  data() {
-    return {
-      search: "",
-      loggedUser: JSON.parse(this.user),
-      onlyInvitation: false,
-      leaveProjectStudyId: null,
-      leaveProjectUserId: null,
-      duplicateProjectId: null,
-      duplicateProjectName: "",
-      showDeleteProjectModal: false,
-      deleteProjectId: null,
-      deleteProjectName: "",
-      showLeaveProjectModal: false,
-      showDuplicateProjectModal: false,
-      loading: false,
-      message: ""
-    };
-  },
-  computed: {
-    filteredList() {
-      return JSON.parse(this.projects).filter((project) => {
-        if (this.onlyInvitation) {
-          return (
-            project.name.toLowerCase().includes(this.search.toLowerCase()) &&
-            !project.authiscreator
-          );
-        } else {
-          return project.name.toLowerCase().includes(this.search.toLowerCase());
-        }
-      });
-    },
-    invitesExists() {
-      return this.filteredList.some((s) => !s.authiscreator);
-    }
-  },
-  methods: {
-    trans(key) { return key; },
-    showSnackbarMessage: jest.fn(),
-    confirmLeaveProject: jest.fn(),
-    detachUser: jest.fn(),
-    closeLeaveProjectModal: jest.fn(),
-    closeDuplicateModal: jest.fn(),
-    confirmduplicate: jest.fn(),
-    duplicatestudy: jest.fn(),
-    confirmDelete: jest.fn(),
-    deleteStudy: jest.fn(),
-    closeDeleteProjectModal: jest.fn()
-  }
-};
-
 describe('ProjectsList.vue', () => {
   let wrapper;
   
   beforeEach(() => {
+    // Reset mocks
+    jest.clearAllMocks();
+    
     // Create a fresh wrapper before each test
-    wrapper = shallowMount(ProjectsListStub, {
+    wrapper = shallowMount(ProjectsList, {
       props: {
         projects: mockProjects,
         user: mockUser
@@ -100,6 +49,12 @@ describe('ProjectsList.vue', () => {
       global: {
         provide: {
           productionUrl: ''
+        },
+        stubs: {
+          Modal: true
+        },
+        mocks: {
+          trans: (key) => key // simple translation mock
         }
       }
     });
@@ -109,6 +64,15 @@ describe('ProjectsList.vue', () => {
     expect(wrapper.html()).toContain('Test Project');
     expect(wrapper.html()).toContain('Test Project 2');
     expect(wrapper.html()).toContain('This is a test project');
+  });
+
+  test('emits snackbar message using event emitter', async () => {
+    const testMessage = 'Test snackbar message';
+    // Call the showSnackbarMessage method
+    wrapper.vm.showSnackbarMessage(testMessage);
+    
+    // Verify the emitter was called with the correct event and message
+    expect(emitter.emit).toHaveBeenCalledWith('show-snackbar', testMessage);
   });
 
   test('filters projects when searching', async () => {
@@ -164,7 +128,10 @@ describe('ProjectsList.vue', () => {
   });
 
   test('calls confirmDelete when clicking "Delete Project"', async () => {
-    const spy = jest.spyOn(wrapper.vm, 'confirmDelete');
+    // Mock the confirmDelete method
+    const confirmDeleteMock = jest.fn();
+    wrapper.vm.confirmDelete = confirmDeleteMock;
+    
     // Find and click the delete button
     const deleteButton = wrapper.findAll('a').find(node => 
       node.text().includes('Delete Project')
@@ -172,6 +139,6 @@ describe('ProjectsList.vue', () => {
     await deleteButton.trigger('click');
     
     // Check that confirmDelete was called
-    expect(spy).toHaveBeenCalled();
+    expect(confirmDeleteMock).toHaveBeenCalled();
   });
 });
