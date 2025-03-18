@@ -377,7 +377,7 @@ export default {
       }
     }
   },
-  beforeUnmount() {
+  unmounted() {
     // Clean up the chart when component is destroyed
     if (this.chart) {
       this.chart.destroy();
