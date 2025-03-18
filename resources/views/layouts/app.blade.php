@@ -21,6 +21,8 @@
                      :confirm-text="dialog.confirmText" :on-confirm="dialog.onConfirm"
                      ref="customDialogue"
                      :on-cancel="dialog.onCancel"/>
+    
+    <debug-panel />
 
 
 </div>

@@ -1,34 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Vue 3 Test</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
-    <script type="module" src="{{ asset('js/test-vue3-app.js') }}"></script>
-    <script>
-        window.trans = window.trans || {};
+@include('layouts.header')
 
-        // Display any errors on the page itself
-        window.addEventListener('error', function(event) {
-            const errorDiv = document.getElementById('error-output');
-            if (errorDiv) {
-                errorDiv.innerHTML += `<p>ERROR: ${event.message} at ${event.filename}:${event.lineno}</p>`;
-                errorDiv.style.display = 'block';
-            }
-        });
-    </script>
-</head>
 <body>
-    <h1 class="text-3xl font-bold p-4">Vue 3 Standalone Test Page</h1>
-    
-    <!-- Error display area -->
-    <div id="error-output" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded m-4" style="display: none;"></div>
-    
-    <!-- Vue mount point -->
-    <div id="app" class="p-4">
+<div id="app">
+    <div class="w-2/3 pt-2 mx-auto">
+        <h1 class="text-2xl font-bold my-4">Vue 3 Test Page</h1>
+        <p class="mb-4">This is a test page to verify Vue 3 functionality.</p>
+        
         <test-vue3></test-vue3>
+        
+        <debug-panel></debug-panel>
     </div>
+</div>
+
+@vite(['resources/sass/app.scss', 'resources/js/app.js'])
 </body>
 </html>

@@ -24,7 +24,16 @@ export default defineConfig({
         }),
         vitePluginRequire.default(),
     ],
-    css: postcss,
+    css: {
+        ...postcss,
+        preprocessorOptions: {
+            scss: {
+                // You can add any Sass options needed here
+                // For example, if you need to add global variables:
+                // additionalData: `@import "@/styles/variables.scss";`
+            }
+        }
+    },
     build: {
         commonjsOptions: {transformMixedEsModules: true}
     },
@@ -32,6 +41,7 @@ export default defineConfig({
         alias: {
             '@': resolve(__dirname, './resources/js'),
             'jquery-ui': 'jquery-ui-dist/jquery-ui.js',
+            'vue': 'vue/dist/vue.esm-bundler.js'
         },
     },
 });
