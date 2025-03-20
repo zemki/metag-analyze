@@ -9,4 +9,4 @@
 @yield('pagespecificscripts')
 </body>
 
-</html>s
+</html>

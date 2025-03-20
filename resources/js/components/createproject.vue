@@ -257,9 +257,9 @@
         <div
           class="relative px-4 py-3 text-red-700 bg-red-100 border border-red-400 rounded"
           v-if="newProject.response"
-          v-html="newProject.response"
         >
-          <button class="delete" @click.prevent="newProject.response = ''">×</button>
+          <div v-html="newProject.response"></div>
+          <button class="delete absolute top-2 right-2" @click.prevent="newProject.response = ''">×</button>
         </div>
       </div>
     </form>
@@ -296,6 +296,16 @@ export default {
     };
   },
   methods: {
+    trans(key) {
+      // Translation helper
+      if (typeof window.trans === 'undefined' || typeof window.trans[key] === 'undefined') {
+        return key;
+      } else {
+        if (window.trans[key] === "") return key;
+        return window.trans[key];
+      }
+    },
+    
     // Form Validation and Submission
     validateProject() {
       // Perform client-side validation if needed
@@ -305,14 +315,14 @@ export default {
       const formData = {
         name: this.newProject.name,
         description: this.newProject.description,
-        media: this.newProject.media,
+        media: this.newProject.media.filter(m => m.trim() !== ''),
         ninputs: this.newProject.ninputs,
         inputs: this.newProject.inputs,
         created_by: this.userId,
       };
 
       // Submit the form via Axios
-      axios.post(this.productionUrl+'/projects', formData)
+      window.axios.post(this.productionUrl+'/projects', formData)
         .then(response => {
           // Handle successful response
           window.location.href = this.productionUrl+'/projects';
@@ -329,7 +339,6 @@ export default {
 
     // Media Inputs Handling
     handleMediaInputs(index, mediaName) {
-
       // Add a new media field if the last one is filled
       if (mediaName && index === this.newProject.media.length - 1) {
         this.newProject.media.push('');
@@ -360,21 +369,28 @@ export default {
 
     // Toggle Dropdown Visibility
     toggleDropdown(index) {
+      // Close all other dropdowns first
+      this.newProject.inputs.forEach((input, i) => {
+        if (i !== index && input.showDropdown) {
+          input.showDropdown = false;
+        }
+      });
+      // Toggle the current dropdown
       this.newProject.inputs[index].showDropdown = !this.newProject.inputs[index].showDropdown;
     },
 
     // Select Input Type
     selectType(index, type) {
-      this.$set(this.newProject.inputs[index], 'type', type);
+      this.newProject.inputs[index].type = type;
       this.newProject.inputs[index].showDropdown = false;
 
       // Initialize answers if the type requires it
       if (this.isChoiceType(type)) {
         if (!this.newProject.inputs[index].answers.length) {
-          this.$set(this.newProject.inputs[index], 'answers', ['']);
+          this.newProject.inputs[index].answers = [''];
         }
       } else {
-        this.$set(this.newProject.inputs[index], 'answers', []);
+        this.newProject.inputs[index].answers = [];
       }
     },
 

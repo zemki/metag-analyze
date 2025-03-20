@@ -13,7 +13,7 @@
           <div class="flex items-start">
             <div class="flex-shrink-0">
               <svg
-                :if="type == 'success'"
+                v-if="type == 'success'"
                 class="w-6 h-6 text-green-400"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -29,7 +29,7 @@
                 />
               </svg>
               <svg
-                :if="type == 'error'"
+                v-if="type == 'error'"
                 class="w-6 h-6 text-red-600"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -78,7 +78,20 @@
 </template>
 <script>
 export default {
-  props: ["message", "type", "duration"],
+  props: {
+    message: {
+      type: String,
+      default: ""
+    },
+    type: {
+      type: String,
+      default: "success"
+    },
+    duration: {
+      type: Number,
+      default: 3000
+    }
+  },
   data() {
     return {
       show: false,
@@ -88,7 +101,7 @@ export default {
     this.show = true;
     setTimeout(() => {
       this.show = false;
-      this.message = "";
+      this.$emit('update:message', '');
     }, this.duration);
   },
 };

@@ -63,8 +63,21 @@ import Gravatar from "vue-gravatar";
 import Snackbar from "./global/snackbar.vue";
 
 export default {
-    name: "projectsInvites",
-    props: ["invitedlist", "isowner", "project"],
+    name: "ProjectsInvites",
+    props: {
+        invitedlist: {
+            type: Array,
+            required: true
+        },
+        isowner: {
+            type: Boolean,
+            default: false
+        },
+        project: {
+            type: [Number, String],
+            required: true
+        }
+    },
     components: {
         Gravatar,
         Snackbar,
@@ -79,10 +92,19 @@ export default {
         };
     },
     methods: {
+        trans(key) {
+            // Translation helper
+            if (typeof window.trans === 'undefined' || typeof window.trans[key] === 'undefined') {
+                return key;
+            } else {
+                if (window.trans[key] === "") return key;
+                return window.trans[key];
+            }
+        },
         forceRerender() {
             this.projectsInvite += 1;
         },
-        invite: function () {
+        invite() {
             const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
             if (!emailPattern.test(this.toInvite)) {
@@ -92,7 +114,6 @@ export default {
 
             this.loading = true;
 
-            let self = this;
             window.axios
                 .post(
                     window.location.origin +
@@ -109,9 +130,9 @@ export default {
 
                     if (
                         response.data.user &&
-                        !self.invitedlist.some(invite => invite.email === response.data.user.email)
+                        !this.invitedlist.some(invite => invite.email === response.data.user.email)
                     ) {
-                        self.invitedlist.push(response.data.user);
+                        this.invitedlist.push(response.data.user);
                     }
 
                     this.forceRerender();
@@ -125,13 +146,12 @@ export default {
                     }
                 });
         },
-        confirmdelete: function (userToDetach) {
+        confirmdelete(userToDetach) {
             if (confirm(this.trans("Are you sure you want to remove the invite for this user?"))) {
                 this.detachUser(userToDetach);
             }
         },
-        detachUser: function (userToDetach) {
-            let self = this;
+        detachUser(userToDetach) {
             window.axios
                 .post(
                     window.location.origin +
@@ -143,12 +163,12 @@ export default {
                 .then((response) => {
                     this.showSnackbarMessage(response.data.message);
 
-                    self.invitedlist = self.invitedlist.filter(
+                    this.invitedlist = this.invitedlist.filter(
                         user => user.email !== userToDetach.email
                     );
                     this.forceRerender();
                 })
-                .catch(function (error) {
+                .catch((error) => {
                     this.showSnackbarMessage(
                         this.trans("There was an error during the request - refresh page and try again")
                     );

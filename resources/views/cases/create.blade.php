@@ -48,9 +48,8 @@
 
             <label for="duration" class="block text-sm font-medium text-gray-700">{{__('Estimated end: ')}}</label>
 
-            <div class="w-full py-2 pl-3 pr-10 mt-1" v-show="newcase.duration.message != ''"
-                v-html="newcase.duration.message">
-
+            <div class="w-full py-2 pl-3 pr-10 mt-1" v-show="newcase.duration.message != ''">
+                <div v-html="newcase.duration.message"></div>
             </div>
         </div>
 
@@ -226,8 +225,9 @@
 
     <div class="block mt-2">
         <div class="relative px-4 py-3 text-red-700 bg-red-100 border border-red-400 rounded"
-            v-if="newcase.response != ''" v-html="newcase.response">
-            <button class="delete" @click.preventdefault="newcase.response = ''"></button>
+            v-if="newcase.response != ''">
+            <div v-html="newcase.response"></div>
+            <button class="delete absolute top-2 right-2" @click.prevent="newcase.response = ''"></button>
         </div>
     </div>
 </form>

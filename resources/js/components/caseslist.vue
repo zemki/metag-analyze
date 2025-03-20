@@ -125,9 +125,19 @@ export default {
         onConfirm: null,
         onCancel: null,
       },
+      loading: false
     };
   },
   methods: {
+    trans(key) {
+      // Translation helper
+      if (typeof window.trans === 'undefined' || typeof window.trans[key] === 'undefined') {
+        return key;
+      } else {
+        if (window.trans[key] === "") return key;
+        return window.trans[key];
+      }
+    },
     updateSelectedCase(caseItem) {
       this.$emit('select-case', caseItem);
       this.selectedCase = caseItem;
@@ -135,7 +145,6 @@ export default {
     getDuration(duration) {
       // Extract duration string (equivalent to Helper::get_string_between)
       const match = duration.match(/days:(\d+)/);
-
       return match ? match[1] : '';
     },
     formatDate(dateString) {
@@ -147,33 +156,26 @@ export default {
       const date = new Date(dateString);
       return date > new Date();
     },
-
     confirmdeletecase(url) {
       this.dialog.show = true;
-      this.dialog.message = 'Do you want to delete this case and all the entries?';
-      this.dialog.title = "Confirm Case deletion";
-
-      this.dialog.confirmText = "YES delete case and all the entries";
+      this.dialog.message = this.trans('Do you want to delete this case and all the entries?');
+      this.dialog.title = this.trans("Confirm Case deletion");
+      this.dialog.confirmText = this.trans("YES delete case and all the entries");
       this.dialog.onConfirm = () => this.deleteCase(url);
       this.dialog.onCancel = () => {
         this.dialog.show = false;
       };
-
-
     },
     showSnackbarMessage(message) {
-
       this.$root.showSnackbarMessage(message);
-
     },
-
     deleteCase(url) {
-      const self = this;
+      this.loading = true;
       axios
           .delete(url)
           .then((response) => {
             // Store the message before reload
-            localStorage.setItem('snackbarMessage', self.trans("Case deleted"));
+            localStorage.setItem('snackbarMessage', this.trans("Case deleted"));
             window.location.reload();
           })
           .catch((error) => {
@@ -181,8 +183,8 @@ export default {
             if (error.response && error.response.data && error.response.data.message) {
               message = error.response.data.message;
             }
-            self.loading = false;
-            self.showSnackbarMessage(message);
+            this.loading = false;
+            this.showSnackbarMessage(message);
           });
     }
   }

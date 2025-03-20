@@ -14,6 +14,11 @@ use App\Http\Controllers\EntryController;
 
 Auth::routes(['verify' => true]);
 
+// Test route for Vue 3
+Route::get('/test-vue3', function () {
+    return view('test-vue3');
+});
+
 Route::group(['middleware' => ['throttle:3,10']], static function () {
     Route::get('/password/set', 'Auth\VerificationController@showresetpassword');
     Route::get('/password/reset-form', 'Auth\ResetPasswordController@reset')->name('password.reset.form');

@@ -7,13 +7,20 @@
 <script>
 export default {
     props: {
-        message: String,
-        type: String,
+        message: {
+            type: String,
+            required: true
+        },
+        type: {
+            type: String,
+            default: 'default'
+        },
         timeout: {
             type: Number,
             default: 1000
         }
     },
+    emits: ['close'],
     data() {
         return {
             fadeOut: false,

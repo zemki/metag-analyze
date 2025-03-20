@@ -258,6 +258,8 @@ export default {
       default: () => []
     }
   },
+  
+  emits: ['update:editable'],
 
   data() {
     return {
@@ -282,6 +284,16 @@ export default {
   },
 
   methods: {
+    trans(key) {
+      // Translation helper
+      if (typeof window.trans === 'undefined' || typeof window.trans[key] === 'undefined') {
+        return key;
+      } else {
+        if (window.trans[key] === "") return key;
+        return window.trans[key];
+      }
+    },
+    
     initializeProjectData() {
       // Basic project info
       this.projectData.name = this.project.name || '';
@@ -327,14 +339,12 @@ export default {
       }
     },
 
-
     addMedia() {
       const lastMedia = this.projectData.media[this.projectData.media.length - 1];
       if (lastMedia.trim() !== '') {
         this.projectData.media.push('');
       } else {
-        let self = this;
-        this.showSnackbarMessage(self.trans('Please fill out the last media field before adding a new one.'));
+        this.showSnackbarMessage(this.trans('Please fill out the last media field before adding a new one.'));
       }
     },
 
@@ -435,7 +445,7 @@ export default {
           media: this.projectData.media.filter(media => media.trim() !== ""),
         };
 
-        const response = await axios.patch(this.productionUrl+`/projects/${submitData.id}`, submitData);
+        const response = await window.axios.patch(this.productionUrl+`/projects/${submitData.id}`, submitData);
         this.showSnackbarMessage(response.data.message || this.trans('Project updated successfully.'));
 
       } catch (error) {

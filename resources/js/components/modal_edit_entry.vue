@@ -128,14 +128,42 @@
     <!--End Modal--></template>
 <script>
 export default {
-  props: {},
-  data() {
-    return {entryedit:false};},
-      methods: {
-      toggleEntryModal() {
-          
-      },
+  props: {
+    editentry: {
+      type: Object,
+      required: true
     }
-
+  },
+  emits: ['update:editentry'],
+  data() {
+    return {
+      entryEdit: false
+    };
+  },
+  methods: {
+    toggleEntryModal() {
+      this.entryEdit = !this.entryEdit;
+      this.$emit('update:editentry', this.entryEdit);
+    },
+    editEntryAndClose() {
+      // Implement this method based on your requirements
+      this.$emit('edit-entry-and-close');
+    },
+    newentrydateselected(type) {
+      // Implement this method based on your requirements
+    },
+    trans(key) {
+      // Translation method
+      if (typeof window.trans === 'undefined' || typeof window.trans[key] === 'undefined') {
+        return key;
+      } else {
+        if (window.trans[key] === "") return key;
+        return window.trans[key];
+      }
+    },
+    __(key) {
+      return this.trans(key);
+    }
+  }
 };
 </script>

@@ -172,13 +172,37 @@
 <script>
 const convertTimeHHMMSS = (val) => {
   const hhmmss = new Date(val * 1000).toISOString().substr(11, 8);
-
   return hhmmss.indexOf("00:") === 0 ? hhmmss.substr(3) : hhmmss;
 };
 
 export default {
-  props: ["file", "autoplay", "loop", "name", "date", "caseid"],
-  name: "audioPlayer",
+  props: {
+    file: {
+      type: Object,
+      required: true
+    },
+    autoplay: {
+      type: Boolean,
+      default: false
+    },
+    loop: {
+      type: Boolean,
+      default: false
+    },
+    name: {
+      type: String,
+      required: true
+    },
+    date: {
+      type: String,
+      default: ''
+    },
+    caseid: {
+      type: [String, Number],
+      required: true
+    }
+  },
+  name: "AudioPlayer",
   data() {
     return {
       audio: undefined,
@@ -204,9 +228,7 @@ export default {
     this.innerLoop = this.loop;
   },
   mounted() {
-    // eslint-disable-next-line prefer-destructuring
-    this.audio = this.$el.querySelectorAll("audio")[0];
-    console.log(this.audio);
+    this.audio = this.$refs.audiofile;
     this.audio.addEventListener("timeupdate", this.update);
     this.audio.addEventListener("durationchange", this.load);
     this.audio.addEventListener("pause", () => {
@@ -242,22 +264,15 @@ export default {
       a.click();
     },
     load() {
-
       if (isFinite(this.audio.duration)) {
         this.loaded = true;
         this.durationSeconds = parseInt(this.audio.duration, 10);
-        console.log('Loaded', this.durationSeconds); // Add this
-        console.log(`Duration changed: ${this.audio.duration}`);
         return this.playing === this.autoPlay;
       }
     },
-
-
     update() {
       this.currentSeconds = parseInt(this.audio.currentTime, 10);
-
     },
-
     confirmDeleteFile() {
       this.$root.dialog.show = true;
       this.$root.dialog.title = "Confirm Delete";
@@ -276,9 +291,11 @@ export default {
     },
     deleteFile() {
       const self = this;
+      // Get productionUrl from the root app or as an injected prop
+      const productionUrl = this.$root?.productionUrl || '';
       window.axios
           .delete(
-              `${window.location.origin + self.productionUrl}/cases/${
+              `${window.location.origin + productionUrl}/cases/${
                   self.caseid
               }/files/${self.file.id}`,
               {file: self.file.id}
@@ -296,7 +313,7 @@ export default {
     },
     mute() {
       if (this.muted) {
-        return this.volume === this.previousVolume;
+        return this.volume = this.previousVolume;
       }
 
       this.previousVolume = this.volume;
@@ -304,7 +321,6 @@ export default {
     },
     seek(e) {
       if (!this.playing || e.target.tagName === "SPAN") {
-        console.log("Seek early exit");
         return;
       }
 
@@ -315,17 +331,13 @@ export default {
       // Check if the new time is within the seekable range
       for (let i = 0; i < this.audio.seekable.length; i++) {
         if (newTime >= this.audio.seekable.start(i) && newTime <= this.audio.seekable.end(i)) {
-          console.log("New time is in seekable range");
           this.audio.pause(); // pause while seeking
           this.audio.currentTime = newTime;
           this.audio.play();  // resume playback
           return;
         }
       }
-
-      console.log("New time is NOT in seekable range");
     },
-
     stop() {
       this.playing = false;
       this.audio.currentTime = 0;
@@ -343,6 +355,19 @@ export default {
       this.audio.volume = this.volume / 100;
     },
   },
+  beforeUnmount() {
+    // Clean up event listeners
+    if (this.audio) {
+      this.audio.removeEventListener("timeupdate", this.update);
+      this.audio.removeEventListener("durationchange", this.load);
+      this.audio.removeEventListener("pause", () => {
+        this.playing = false;
+      });
+      this.audio.removeEventListener("play", () => {
+        this.playing = true;
+      });
+    }
+  }
 };
 </script>
 
