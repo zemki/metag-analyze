@@ -37,7 +37,26 @@ export default defineConfig({
         devSourcemap: true,
     },
     build: {
-        commonjsOptions: {transformMixedEsModules: true}
+        commonjsOptions: {transformMixedEsModules: true},
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    vendor: [
+                        'vue',
+                        'alpinejs',
+                        'axios',
+                        'mitt'
+                    ],
+                    charts: [
+                        'highcharts',
+                        'highcharts/highcharts-more',
+                        'highcharts/modules/exporting',
+                        'highcharts/modules/gantt'
+                    ]
+                }
+            }
+        },
+        chunkSizeWarningLimit: 1200
     },
     resolve: {
         alias: {
