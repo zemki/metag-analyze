@@ -7,17 +7,15 @@ import Highcharts from 'highcharts';
 import _ from 'lodash'; // Make sure this is installed
 import { mapState, useStore } from 'vuex';
 
-// Lazy-load modules for better performance
+// We don't need to import these modules here as they're already
+// loaded in app.js and available globally
+// This prevents duplicate loading warnings
 const loadHighchartsModules = async () => {
-  const [highchartsMore, exportingModule, stockModule] = await Promise.all([
-    import('highcharts/highcharts-more'),
-    import('highcharts/modules/exporting'),
-    import('highcharts/modules/stock')
-  ]);
-  
-  highchartsMore.default(Highcharts);
-  exportingModule.default(Highcharts);
-  stockModule.default(Highcharts);
+  // Simply verify that the modules are loaded
+  if (!Highcharts.stockChart) {
+    console.warn('Highcharts Stock module should be loaded in app.js');
+  }
+  return Promise.resolve();
 };
 
 export default {

@@ -3,20 +3,20 @@
 </template>
 
 <script>
-// Lazy-load Highcharts modules for better performance
+// Import Highcharts modules
 import Highcharts from 'highcharts';
 import { v4 as uuidv4 } from 'uuid';
 import _ from 'lodash'; // Make sure this is installed
 
-// Import modules dynamically for performance
+// We don't need to import these modules here as they're already
+// loaded in app.js and available globally
+// This prevents duplicate loading warnings
 const loadHighchartsModules = async () => {
-  const [ganttModule, exportingModule] = await Promise.all([
-    import('highcharts/modules/gantt'),
-    import('highcharts/modules/exporting')
-  ]);
-  
-  ganttModule.default(Highcharts);
-  exportingModule.default(Highcharts);
+  // Simply verify that the modules are loaded
+  if (!Highcharts.ganttChart) {
+    console.warn('Highcharts Gantt module should be loaded in app.js');
+  }
+  return Promise.resolve();
 };
 
 export default {
