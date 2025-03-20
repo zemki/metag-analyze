@@ -16,7 +16,7 @@
     "filament/filament": "^3.0",
     "grantholle/laravel-altcha": "*",
     "laravel-notification-channels/fcm": "~3.0",
-    "laravel/framework": "^11.0",
+    "laravel/framework": "^10.0",
     "laravel/telescope": "^5.0",
     "laravel/tinker": "^2.0",
     "laravel/ui": "^4.0",
