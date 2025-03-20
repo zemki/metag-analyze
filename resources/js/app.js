@@ -15,6 +15,7 @@ import 'altcha';
 import Highcharts from "highcharts";
 import exporting from "highcharts/modules/exporting";
 import gantt from "highcharts/modules/gantt";
+import stock from "highcharts/modules/stock";
 import mitt from 'mitt';
 
 // Create a global event emitter
@@ -28,6 +29,7 @@ Alpine.start();
 exporting(Highcharts);
 gantt(Highcharts);
 HighchartsMore(Highcharts);
+stock(Highcharts);
 
 // Create the Vue application
 const app = createApp({
