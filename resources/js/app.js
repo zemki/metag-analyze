@@ -11,15 +11,12 @@ import { components } from "./components";
 import moment from "moment";
 import HighchartsMore from "highcharts/highcharts-more";
 import store from "./store";
-import "altcha";
+import 'altcha';
 import Highcharts from "highcharts";
 import exporting from "highcharts/modules/exporting";
 import gantt from "highcharts/modules/gantt";
 import stock from "highcharts/modules/stock";
-import mitt from 'mitt';
-
-// Create a global event emitter
-export const emitter = mitt();
+import { emitter } from './emitter';
 
 // Initialize Alpine.js
 window.Alpine = Alpine;

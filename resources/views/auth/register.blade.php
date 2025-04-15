@@ -29,9 +29,13 @@
                                placeholder="{{ __('Password') }}">
                     </div>
                     <div class="pt-2" v-pre>
+
+                        <div class="bg-blue-50 border-l-4 border-blue-400 text-blue-700 p-4" role="alert">
+                            <p class="font-bold">Temporary bug:</p>
+                            <p>In case you see two altcha boxes, please check both of them.</p>
+                        </div>
                         <!-- Only one altcha-widget should be here -->
-                        <altcha-widget id="altcha-widget" challengeurl="{{url('/altcha-challenge')}}"></altcha-widget>
-                        <input type="hidden" id="altoken" name="altoken">
+                        <altcha-widget challengeurl="{{url('/altcha-challenge')}}" class="p-1"></altcha-widget>
                     </div>
                 </div>
 
@@ -74,17 +78,24 @@
 @section('pagespecificscripts')
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            console.log('DOM fully loaded and parsed');
             // Simple event handler for altcha verification
             const altchaWidget = document.getElementById('altcha-widget');
             const altokenInput = document.getElementById('altoken');
 
             if (altchaWidget && altokenInput) {
+                console.log('Altcha widget and altoken input found');
                 altchaWidget.addEventListener('statechange', function (ev) {
                     if (ev.detail.state === 'verified') {
                         altokenInput.value = ev.detail.payload;
                         console.log('Altcha verified, token set successfully');
+                    }else{
+                        altokenInput.value = '';
+                        console.log('Altcha not verified, token cleared');
                     }
                 });
+            }else {
+                console.error('Altcha widget or altoken input not found');
             }
         });
     </script>
