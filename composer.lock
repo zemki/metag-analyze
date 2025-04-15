@@ -729,36 +729,36 @@
         },
         {
             "name": "creativeorange/gravatar",
-            "version": "v1.0.24",
+            "version": "v1.0.25",
             "source": {
                 "type": "git",
-                "url": "https://github.com/creativeorange/gravatar.git",
-                "reference": "ec0d78c7d4ef6d66c3cc09b6a03ab8d53e44379f"
+                "url": "https://github.com/brainpink/gravatar.git",
+                "reference": "21ba6cbe125d57965c58468047ea29dfa822b4d3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/creativeorange/gravatar/zipball/ec0d78c7d4ef6d66c3cc09b6a03ab8d53e44379f",
-                "reference": "ec0d78c7d4ef6d66c3cc09b6a03ab8d53e44379f",
+                "url": "https://api.github.com/repos/brainpink/gravatar/zipball/21ba6cbe125d57965c58468047ea29dfa822b4d3",
+                "reference": "21ba6cbe125d57965c58468047ea29dfa822b4d3",
                 "shasum": ""
             },
             "require": {
-                "illuminate/support": "^5|^6|^7|^8|^9|^10.0|^11.0",
+                "illuminate/support": "^5|^6|^7|^8|^9|^10.0|^11.0|^12.0",
                 "php": ">=5.4.0"
             },
             "require-dev": {
                 "nunomaduro/larastan": "^0.6.2|^2.4",
-                "orchestra/testbench": "^5.4|^8.0|^9.0",
+                "orchestra/testbench": "^5.4|^8.0|^9.0|^10.0",
                 "php": ">=7.2"
             },
             "type": "library",
             "extra": {
                 "laravel": {
-                    "providers": [
-                        "Creativeorange\\Gravatar\\GravatarServiceProvider"
-                    ],
                     "aliases": {
                         "Gravatar": "Creativeorange\\Gravatar\\Facades\\Gravatar"
-                    }
+                    },
+                    "providers": [
+                        "Creativeorange\\Gravatar\\GravatarServiceProvider"
+                    ]
                 }
             },
             "autoload": {
@@ -785,10 +785,10 @@
                 "laravel"
             ],
             "support": {
-                "issues": "https://github.com/creativeorange/gravatar/issues",
-                "source": "https://github.com/creativeorange/gravatar/tree/v1.0.24"
+                "issues": "https://github.com/brainpink/gravatar/issues",
+                "source": "https://github.com/brainpink/gravatar/tree/v1.0.25"
             },
-            "time": "2024-02-28T09:23:55+00:00"
+            "time": "2025-02-22T19:11:54+00:00"
         },
         {
             "name": "danharrin/date-format-converter",
@@ -2343,41 +2343,41 @@
         },
         {
             "name": "grantholle/laravel-altcha",
-            "version": "1.1.0",
+            "version": "1.2.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/grantholle/laravel-altcha.git",
-                "reference": "d5d75903c9c11fee194af62b9e1ecbc296407c17"
+                "reference": "434c19b5c5cca177aede3ff667c4cc00c529224c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/grantholle/laravel-altcha/zipball/d5d75903c9c11fee194af62b9e1ecbc296407c17",
-                "reference": "d5d75903c9c11fee194af62b9e1ecbc296407c17",
+                "url": "https://api.github.com/repos/grantholle/laravel-altcha/zipball/434c19b5c5cca177aede3ff667c4cc00c529224c",
+                "reference": "434c19b5c5cca177aede3ff667c4cc00c529224c",
                 "shasum": ""
             },
             "require": {
-                "illuminate/contracts": "^10.0|^11.0",
+                "illuminate/contracts": "^10.0|^11.0|^12.0",
                 "php": "^8.2",
                 "spatie/laravel-package-tools": "^1.14.0"
             },
             "require-dev": {
                 "laravel/pint": "^1.0",
-                "nunomaduro/collision": "^7.8",
-                "orchestra/testbench": "^8.8",
-                "pestphp/pest": "^2.20",
-                "pestphp/pest-plugin-arch": "^2.0",
-                "pestphp/pest-plugin-laravel": "^2.0",
+                "nunomaduro/collision": "^8.1.1||^7.10.0",
+                "orchestra/testbench": "^10.0.0||^9.0.0||^8.22.0",
+                "pestphp/pest": "^3.0||^2.0",
+                "pestphp/pest-plugin-arch": "^3.0||^2.0",
+                "pestphp/pest-plugin-laravel": "^3.0||^2.0",
                 "spatie/laravel-ray": "^1.26"
             },
             "type": "library",
             "extra": {
                 "laravel": {
-                    "providers": [
-                        "GrantHolle\\Altcha\\AltchaServiceProvider"
-                    ],
                     "aliases": {
                         "Altcha": "GrantHolle\\Altcha\\Facades\\Altcha"
-                    }
+                    },
+                    "providers": [
+                        "GrantHolle\\Altcha\\AltchaServiceProvider"
+                    ]
                 }
             },
             "autoload": {
@@ -2406,7 +2406,7 @@
             ],
             "support": {
                 "issues": "https://github.com/grantholle/laravel-altcha/issues",
-                "source": "https://github.com/grantholle/laravel-altcha/tree/1.1.0"
+                "source": "https://github.com/grantholle/laravel-altcha/tree/1.2.2"
             },
             "funding": [
                 {
@@ -2414,7 +2414,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-03-19T20:30:37+00:00"
+            "time": "2025-04-14T13:00:29+00:00"
         },
         {
             "name": "grpc/grpc",
@@ -9735,16 +9735,16 @@
         },
         {
             "name": "laravel/pint",
-            "version": "v1.18.1",
+            "version": "v1.22.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/pint.git",
-                "reference": "35c00c05ec43e6b46d295efc0f4386ceb30d50d9"
+                "reference": "7ddfaa6523a675fae5c4123ee38fc6bfb8ee4f36"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/pint/zipball/35c00c05ec43e6b46d295efc0f4386ceb30d50d9",
-                "reference": "35c00c05ec43e6b46d295efc0f4386ceb30d50d9",
+                "url": "https://api.github.com/repos/laravel/pint/zipball/7ddfaa6523a675fae5c4123ee38fc6bfb8ee4f36",
+                "reference": "7ddfaa6523a675fae5c4123ee38fc6bfb8ee4f36",
                 "shasum": ""
             },
             "require": {
@@ -9752,16 +9752,16 @@
                 "ext-mbstring": "*",
                 "ext-tokenizer": "*",
                 "ext-xml": "*",
-                "php": "^8.1.0"
+                "php": "^8.2.0"
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "^3.64.0",
-                "illuminate/view": "^10.48.20",
-                "larastan/larastan": "^2.9.8",
-                "laravel-zero/framework": "^10.4.0",
+                "friendsofphp/php-cs-fixer": "^3.75.0",
+                "illuminate/view": "^11.44.2",
+                "larastan/larastan": "^3.3.1",
+                "laravel-zero/framework": "^11.36.1",
                 "mockery/mockery": "^1.6.12",
-                "nunomaduro/termwind": "^1.15.1",
-                "pestphp/pest": "^2.35.1"
+                "nunomaduro/termwind": "^2.3",
+                "pestphp/pest": "^2.36.0"
             },
             "bin": [
                 "builds/pint"
@@ -9797,7 +9797,7 @@
                 "issues": "https://github.com/laravel/pint/issues",
                 "source": "https://github.com/laravel/pint"
             },
-            "time": "2024-09-24T17:22:50+00:00"
+            "time": "2025-04-08T22:11:45+00:00"
         },
         {
             "name": "mockery/mockery",
@@ -11825,6 +11825,6 @@
         "php": "8.3.*",
         "ext-json": "*"
     },
-    "platform-dev": [],
+    "platform-dev": {},
     "plugin-api-version": "2.6.0"
 }
