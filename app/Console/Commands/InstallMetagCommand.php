@@ -73,7 +73,7 @@ class InstallMetagCommand extends Command
 
             return false;
         }
-        $user = new User();
+        $user = new User;
         $user->email = $email;
         $user->password = bcrypt($password);
         $user->password_token = bcrypt(Helper::random_str(60));

@@ -25,8 +25,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->job(new NotificationChecker())->everyMinute();
-        $schedule->job(new NotificationCleanDeviceID())->dailyAt('01:30');
+        $schedule->job(new NotificationChecker)->everyMinute();
+        $schedule->job(new NotificationCleanDeviceID)->dailyAt('01:30');
     }
 
     /**

@@ -25,11 +25,11 @@
                     <div class="pt-2">
                         <label for="password" class="sr-only">{{ __('Password') }}</label>
                         <input id="password" name="password" type="password" autocomplete="new-password" required
-
                                class="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                                placeholder="{{ __('Password') }}">
                     </div>
                     <div class="pt-2">
+                        <!-- Only one altcha-widget should be here -->
                         <altcha-widget id="altcha-widget" challengeurl="{{url('/altcha-challenge')}}"></altcha-widget>
                         <input type="hidden" id="altoken" name="altoken">
                     </div>
@@ -74,17 +74,18 @@
 @section('pagespecificscripts')
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            let altchaWidget = document.getElementById('altcha-widget');
-            let altokenInput = document.getElementById('altoken');
+            // Simple event handler for altcha verification
+            const altchaWidget = document.getElementById('altcha-widget');
+            const altokenInput = document.getElementById('altoken');
 
-            altchaWidget.addEventListener('statechange', function (ev) {
-                if (ev.detail.state === 'verified') {
-                    altokenInput.value = ev.detail.payload;
-
-                }
-            });
+            if (altchaWidget && altokenInput) {
+                altchaWidget.addEventListener('statechange', function (ev) {
+                    if (ev.detail.state === 'verified') {
+                        altokenInput.value = ev.detail.payload;
+                        console.log('Altcha verified, token set successfully');
+                    }
+                });
+            }
         });
-
     </script>
 @endsection
-

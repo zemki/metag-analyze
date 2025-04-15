@@ -2,6 +2,4 @@
 
 namespace App\Http\Controllers;
 
-class CaseController extends Controller
-{
-}
+class CaseController extends Controller {}
