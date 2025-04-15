@@ -14,7 +14,6 @@ import Modal from "./components/global/modal.vue";
 import Snackbar from "./components/global/snackbar.vue";
 import CustomDialogue from "./components/global/CustomDialogue.vue";
 import Caseslist from "./components/caseslist.vue";
-import TestVue3 from "./components/test-vue3.vue";
 import DebugPanel from "./components/debug-panel.vue";
 import Breadcrumb from "./components/breadcrumb.vue";
 
@@ -36,7 +35,6 @@ export const components = {
   "snackbar": Snackbar,
   "custom-dialogue": CustomDialogue,
   "cases-list": Caseslist,
-  "test-vue3": TestVue3,
   "debug-panel": DebugPanel,
   "breadcrumb": Breadcrumb
 };
