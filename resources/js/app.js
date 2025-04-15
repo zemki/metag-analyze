@@ -11,7 +11,7 @@ import { components } from "./components";
 import moment from "moment";
 import HighchartsMore from "highcharts/highcharts-more";
 import store from "./store";
-import 'altcha';
+import "altcha";
 import Highcharts from "highcharts";
 import exporting from "highcharts/modules/exporting";
 import gantt from "highcharts/modules/gantt";
@@ -183,7 +183,7 @@ const app = createApp({
             this.lastPressedKey = e.key || e.keyCode; // Using e.key is more modern
         };
         window.addEventListener("keydown", this.handleKeyDown);
-        
+
         // Check for stored message on page load
         const storedMessage = localStorage.getItem('snackbarMessage');
         if (storedMessage) {
@@ -191,13 +191,13 @@ const app = createApp({
             // Clear the message after showing it
             localStorage.removeItem('snackbarMessage');
         }
-        
+
         // Listen for snackbar events from components using mitt
         emitter.on('show-snackbar', (message) => {
             this.showSnackbarMessage(message);
         });
     },
-    
+
     // Vue 3 uses beforeUnmount instead of beforeDestroy
     beforeUnmount() {
         // Clean up event listeners

@@ -48,3 +48,4 @@ changes.txt
 Homestead.yaml
 Homestead.json
 /public/vendor
+*.cache
