@@ -322,7 +322,6 @@ class Cases extends Model
 
     public function plannedNotifications()
     {
-        //return DB::select('SELECT *  FROM notifications WHERE data NOT LIKE ? and data LIKE ? and data LIKE ?', ['%"planning":false%', '%planning%', '%"case":' . $this->id . '%']);
 
         return Notification::whereJsonDoesntContain('data->planning', false)
             ->where('data->case', $this->id)
