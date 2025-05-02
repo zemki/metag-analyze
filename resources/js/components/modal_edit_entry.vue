@@ -146,11 +146,11 @@ export default {
       this.$emit('update:editentry', this.entryEdit);
     },
     editEntryAndClose() {
-      // Implement this method based on your requirements
+      
       this.$emit('edit-entry-and-close');
     },
     newentrydateselected(type) {
-      // Implement this method based on your requirements
+      
     },
     trans(key) {
       // Translation method
