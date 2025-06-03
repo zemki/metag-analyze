@@ -57,7 +57,7 @@ class ApiController extends Controller
      *
      * @return mixed
      */
-    protected function formatLoginResponse($response)
+    public function formatLoginResponse($response)
     {
         // V2 uses 'entity' as the primary field name
         $entityName = $response->project->entity_name ?? 'entity';

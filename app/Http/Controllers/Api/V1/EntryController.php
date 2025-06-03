@@ -85,7 +85,7 @@ class EntryController extends Controller
 
         if (request()->hasHeader('x-file-token') && request()->header('x-file-token') !== '0' && request()->header('x-file-token') !== '') {
             $appToken = request()->header('x-file-token');
-            $clientFileTokenIsSameWithServer = strcmp(Crypt::decryptString($case->file_token), $appToken) !== 0;
+            $clientFileTokenIsSameWithServer = !hash_equals(Crypt::decryptString($case->file_token), $appToken);
             if ($clientFileTokenIsSameWithServer) {
                 return response('You are not authorized!', 403);
             } else {
@@ -197,9 +197,13 @@ class EntryController extends Controller
             }
             $entry->delete();
         } catch (Exception $error) {
-            echo 'Caught exception: ', $error->getMessage(), "\n";
+            \Log::error('Entry deletion failed', [
+                'entry_id' => $entry->id,
+                'case_id' => $case->id,
+                'error' => $error->getMessage()
+            ]);
 
-            return response('error!', 500);
+            return response(['error' => 'Unable to delete entry'], 500);
         }
 
         return response('entry deleted', 200);

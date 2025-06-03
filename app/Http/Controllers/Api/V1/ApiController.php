@@ -55,7 +55,7 @@ class ApiController extends Controller
      *
      * @return mixed
      */
-    protected function formatLoginResponse($response)
+    public function formatLoginResponse($response)
     {
         // V1 primarily uses 'media' but includes entity for forward compatibility
         $entityName = $response->project->entity_name ?? 'entity';

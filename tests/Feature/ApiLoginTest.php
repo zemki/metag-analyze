@@ -67,17 +67,25 @@ class ApiLoginTest extends TestCase
     /** @test */
     public function it_tracks_failed_login_attempts()
     {
+        $user = User::factory()->create([
+            'email' => 'test3@example.com',
+            'password' => bcrypt('password123'),
+        ]);
+
+        // Disable rate limiting for this test
+        $this->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class);
+
         for ($i = 0; $i < 6; $i++) {
             $this->postJson('/api/login', [
-                'email' => 'test@example.com',
+                'email' => 'test3@example.com',
                 'password' => 'wrongpassword',
             ]);
         }
 
-        $this->user->refresh();
+        $user->refresh();
 
-        $this->assertEquals(6, $this->user->failed_login_attempts);
-        $this->assertNotNull($this->user->lockout_until);
+        $this->assertEquals(6, $user->failed_login_attempts);
+        $this->assertNotNull($user->lockout_until);
     }
 
     /** @test */
@@ -107,6 +115,6 @@ class ApiLoginTest extends TestCase
             'datetime' => time(),
         ]);
 
-        $this->assertNotNull($this->user->profile);
+        $this->assertNotNull($this->user->fresh()->profile);
     }
 }
