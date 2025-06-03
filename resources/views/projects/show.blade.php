@@ -143,9 +143,9 @@
                 />
             </div>
 
-            <!-- Media -->
+            <!-- Entity/Media -->
             <div class="mb-4">
-                <label class="block text-sm font-semibold text-gray-700">{{ trans('Media') }} *</label>
+                <label class="block text-sm font-semibold text-gray-700">{{ $project->entity_name ?? trans('Media') }} *</label>
                 <input
                         type="text"
                         v-model="newentry.data.media_id"
