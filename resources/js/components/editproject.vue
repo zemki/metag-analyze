@@ -50,14 +50,44 @@
       </p>
     </div>
 
-    <!-- Media Section -->
+    <!-- Entity Name Field -->
+    <div class="space-y-2" v-if="!isLegacyProject">
+      <label for="entityName" class="block text-sm font-medium text-gray-700">{{ trans('Entity Field Name') }}</label>
+      <input
+          type="text"
+          :disabled="!editable"
+          id="entityName"
+          v-model="projectData.entityName"
+          class="block w-full px-4 py-3 rounded-md shadow-sm transition duration-150"
+          :class="editable ? 'border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200' : 'bg-gray-50 border-gray-200'"
+          placeholder="Enter name for entity field (default: 'entity')"
+      />
+      <p class="text-xs text-gray-500">{{ trans('This name will be used in the mobile app. Default is \'entity\' if left empty.') }}</p>
+    </div>
+
+    <!-- Entity/Media Section -->
     <div class="space-y-4">
       <div class="flex items-center justify-between">
-        <label class="block text-sm font-medium text-gray-700">{{ trans('Media') }}</label>
+        <div class="flex items-center">
+          <label class="block text-sm font-medium text-gray-700">{{ isLegacyProject ? trans('Media') : (projectData.entityName || trans('Entity')) }}</label>
+          <div class="ml-4 flex items-center" v-if="!isLegacyProject">
+            <input
+                type="checkbox"
+                id="useEntity"
+                v-model="projectData.useEntity"
+                :disabled="!editable"
+                class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
+            />
+            <label for="useEntity" class="ml-2 block text-sm text-gray-700">
+              {{ trans('Include this field in the project') }}
+            </label>
+          </div>
+        </div>
       </div>
 
-      <div class="space-y-3">
-        <!-- Media Inputs -->
+      <!-- Show media input section ONLY if useEntity is true OR if it's a legacy project -->
+      <div v-if="projectData.useEntity || isLegacyProject" class="space-y-3">
+        <!-- Entity/Media Inputs -->
         <div v-for="(media, index) in projectData.media" :key="index"
              class="flex items-center space-x-2">
           <input
@@ -66,13 +96,13 @@
               :disabled="!editable"
               class="flex-1 px-4 py-3 rounded-md shadow-sm transition duration-150"
               :class="editable ? 'border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200' : 'bg-gray-50 border-gray-200'"
-              placeholder="Enter media"
+              :placeholder="isLegacyProject ? trans('Enter media') : `${trans('Enter')} ${projectData.entityName || trans('entity')}`"
           />
           <button
               v-if="editable && projectData.media.length > 1"
               @click="removeMedia(index)"
               class="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors duration-150"
-              aria-label="Remove Media"
+              :aria-label="isLegacyProject ? 'Remove Media' : `${trans('Remove')} ${projectData.entityName || trans('Entity')}`"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
@@ -80,7 +110,7 @@
           </button>
         </div>
 
-        <!-- Add Media Button -->
+        <!-- Add Button -->
         <button
             v-if="editable"
             @click="addMedia"
@@ -89,9 +119,13 @@
           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/>
           </svg>
-          {{ trans('Add Media') }}
+          {{ isLegacyProject ? trans('Add Media') : `${trans('Add')} ${projectData.entityName || trans('Entity')}` }}
         </button>
       </div>
+      <!-- Text below is shown when the entity field is disabled -->
+      <p v-else-if="!isLegacyProject" class="text-xs text-gray-500">
+        {{ trans('This field won\'t be included in the mobile app.') }}
+      </p>
     </div>
 
     <!-- Inputs Section -->
@@ -258,16 +292,20 @@ export default {
       default: () => []
     }
   },
-  
+
   emits: ['update:editable'],
 
   data() {
     return {
       isLoading: false,
       response: "",
+      isLegacyProject: false,
+      cutoffDate: '2025-03-21', // Default cutoff date if not available from config
       projectData: {
         name: "",
         description: "",
+        entityName: "entity",
+        useEntity: true,
         inputs: [],
         media: [],
       },
@@ -281,6 +319,18 @@ export default {
         this.initializeProjectData();
       },
     },
+    'projectData.useEntity': function(newVal) {
+      // When useEntity changes, update media array accordingly
+      if (!this.isLegacyProject) {
+        if (newVal === false) {
+          // Clear media when useEntity is set to false
+          this.projectData.media = [];
+        } else if (this.projectData.media.length === 0) {
+          // Initialize with one empty input when useEntity is set to true
+          this.projectData.media = [''];
+        }
+      }
+    }
   },
 
   methods: {
@@ -293,32 +343,63 @@ export default {
         return window.trans[key];
       }
     },
-    
+
     initializeProjectData() {
+      // Check if it's a legacy project (created before cutoff date)
+      if (this.project.created_at) {
+        const projectDate = new Date(this.project.created_at);
+        const cutoffDate = new Date(this.cutoffDate);
+        this.isLegacyProject = projectDate < cutoffDate;
+      }
+
       // Basic project info
       this.projectData.name = this.project.name || '';
       this.projectData.description = this.project.description || '';
+      this.projectData.entityName = this.project.entity_name || (this.isLegacyProject ? 'media' : 'entity');
+      
+      // Explicitly check the boolean value of use_entity
+      console.log('Project use_entity value:', this.project.use_entity);
+      this.projectData.useEntity = this.project.use_entity === false ? false : true;
+      console.log('Initialized useEntity as:', this.projectData.useEntity);
 
       // Initialize inputs
       try {
         const inputsData = JSON.parse(this.project.inputs || '[]');
-        this.projectData.inputs = Array.isArray(inputsData) ? inputsData.map(input => ({
-          name: input.name || '',
-          type: input.type || '',
-          mandatory: input.mandatory !== undefined ? input.mandatory : true,
-          answers: Array.isArray(input.answers) && input.answers.length > 0 ?
-              input.answers.filter(answer => answer.trim() !== '') :
-              ['']
-        })) : [];
+        this.projectData.inputs = Array.isArray(inputsData) ? inputsData.map(input => {
+          const inputObj = {
+            name: input.name || '',
+            type: input.type || '',
+            mandatory: input.mandatory !== undefined ? input.mandatory : true,
+          };
+
+          // Handle answers based on input type
+          if (this.isChoiceType(input.type)) {
+            // For choice types, ensure we have at least one empty answer if none exist
+            inputObj.answers = Array.isArray(input.answers) && input.answers.some(a => a.trim() !== '')
+              ? input.answers.filter(a => a.trim() !== '')
+              : [''];
+          } else {
+            // For non-choice types, initialize an empty array
+            inputObj.answers = [];
+          }
+
+          return inputObj;
+        }) : [];
       } catch (error) {
         console.error('Error parsing inputs:', error);
         this.projectData.inputs = [];
       }
 
-      // Initialize media
-      this.projectData.media = Array.isArray(this.projectmedia) && this.projectmedia.length > 0 ?
-          [...this.projectmedia] :
-          [''];  // Start with one empty media input
+      // Initialize media based on useEntity
+      if ((this.isLegacyProject) || (this.project.use_entity !== false)) {
+        // Only include media if useEntity is true or it's a legacy project
+        this.projectData.media = Array.isArray(this.projectmedia) && this.projectmedia.length > 0 ?
+            [...this.projectmedia] :
+            [''];  // Start with one empty media input
+      } else {
+        // Clear media when useEntity is false
+        this.projectData.media = [];
+      }
     },
 
     // Input Management
@@ -328,7 +409,7 @@ export default {
           name: "",
           type: "",
           mandatory: true,
-          answers: [""]
+          answers: [""] // Initialize with empty answer for all input types
         });
       }
     },
@@ -416,9 +497,24 @@ export default {
 
       for (const input of this.projectData.inputs) {
         if (!input.name.trim() || !input.type) return false;
-        if (this.isChoiceType(input.type) &&
-            (!input.answers.length || !input.answers.some(a => a.trim()))) {
-          return false;
+
+        // For choice types, validate that there's at least one non-empty answer
+        if (this.isChoiceType(input.type)) {
+          // Make sure answers is an array
+          if (!Array.isArray(input.answers)) {
+            input.answers = [''];
+            return false;
+          }
+
+          // Make sure there's at least one non-empty answer
+          if (!input.answers.some(a => a && a.trim() !== '')) {
+            return false;
+          }
+        } else {
+          // For non-choice types, ensure answers is an empty array
+          if (!Array.isArray(input.answers)) {
+            input.answers = [];
+          }
         }
       }
 
@@ -437,13 +533,40 @@ export default {
         const submitData = {
           id: this.project.id,
           name: this.projectData.name.trim(),
-          description: this.projectData.description.trim(),
-          inputs: this.projectData.inputs.map(input => ({
-            ...input,
-            answers: input.answers.filter(a => a.trim() !== '')
-          })),
-          media: this.projectData.media.filter(media => media.trim() !== ""),
+          description: this.projectData.description.trim()
         };
+
+        // Always include entityName and useEntity for compatibility
+        submitData.entityName = this.projectData.entityName?.trim() || 'entity';
+        submitData.useEntity = this.projectData.useEntity !== false; // Default to true
+
+        submitData.inputs = this.projectData.inputs.map(input => {
+          // Ensure each input has an answers array
+          const processedInput = { ...input };
+
+          // If it's a choice type, filter out empty answers
+          if (this.isChoiceType(input.type) && Array.isArray(input.answers)) {
+            processedInput.answers = input.answers.filter(a => a && a.trim() !== '');
+          } else {
+            // For non-choice types, initialize an empty array
+            processedInput.answers = [];
+          }
+
+          return processedInput;
+        });
+
+        // Stringify inputs array
+        submitData.inputs = JSON.stringify(submitData.inputs);
+
+        // Include media based on project type
+        if (this.isLegacyProject || this.projectData.useEntity) {
+          submitData.media = this.projectData.media.filter(media => media.trim() !== "");
+        } else {
+          // When useEntity is false, don't include media at all to prevent it from being processed
+          submitData.media = [];
+          // Also reset the media array in the local state
+          this.projectData.media = [];
+        }
 
         const response = await window.axios.patch(this.productionUrl+`/projects/${submitData.id}`, submitData);
         this.showSnackbarMessage(response.data.message || this.trans('Project updated successfully.'));

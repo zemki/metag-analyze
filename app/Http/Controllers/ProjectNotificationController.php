@@ -48,7 +48,5 @@ class ProjectNotificationController extends Controller
     /**
      * Store and/or send a notification
      */
-    public function store()
-    {
-    }
+    public function store() {}
 }
