@@ -14,6 +14,7 @@ class Project extends Model
      */
     protected $fillable = [
         'name', 'description', 'duration', 'created_by', 'is_locked', 'inputs',
+        'entity_name', 'use_entity', // New entity-related fields
     ];
 
     // this is a recommended way to declare event handlers

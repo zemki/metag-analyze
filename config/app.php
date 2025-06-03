@@ -71,6 +71,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | API v2 Cutoff Date
+    |--------------------------------------------------------------------------
+    |
+    | This date determines which projects will use the v2 API with entity field
+    | instead of the v1 API with media field. Projects created after this date
+    | will use the new API.
+    |
+    */
+
+    'api_v2_cutoff_date' => env('API_V2_CUTOFF_DATE', '2025-03-21'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Locale Configuration
     |--------------------------------------------------------------------------
     |

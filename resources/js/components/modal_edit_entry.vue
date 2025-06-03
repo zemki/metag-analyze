@@ -65,6 +65,8 @@
                     <input type="text" name="media_id"
                            v-model="editentry.data.media_id"
                            class="block w-full px-4 py-2 leading-normal bg-white border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring"></input>
+                    <!-- Hidden entity_id field to maintain compatibility -->
+                    <input type="hidden" name="entity_id" v-model="editentry.data.media_id">
 
                 </div>
                 <h1 class="my-4 text-2xl font-bold tracking-wide text-center text-gray-700 uppercase">Inputs</h1>
