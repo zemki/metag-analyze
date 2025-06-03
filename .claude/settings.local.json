@@ -6,7 +6,8 @@
       "Bash(grep:*)",
       "Bash(npm install:*)",
       "Bash(npm run:*)",
-      "Bash(./vendor/bin/phpunit:*)"
+      "Bash(./vendor/bin/phpunit:*)",
+      "Bash(git fetch:*)"
     ],
     "deny": []
   }

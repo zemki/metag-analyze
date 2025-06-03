@@ -122,7 +122,9 @@ class ProjectController extends Controller
             });
         }
 
-        $data[self::PROJECT . 'media'] = $project->media()->pluck('media.name')->toArray();
+        // Only include media if project uses entity field or is legacy project
+        $useEntity = $project->use_entity ?? true;
+        $data[self::PROJECT . 'media'] = $useEntity ? $project->media()->pluck('media.name')->toArray() : [];
         $data['invites'] = $project->invited()->get();
         $data['inputs'] = config('inputs');
 
@@ -191,7 +193,8 @@ class ProjectController extends Controller
 
         // Handle media and entity synchronization
         // Only process media if useEntity is true or if it's a legacy project (no entity_name field)
-        if ($attributes['use_entity'] !== false && $media && is_array($media)) {
+        $useEntity = $attributes['use_entity'] ?? true; // Default to true for legacy projects
+        if ($useEntity !== false && $media && is_array($media)) {
             // Filter out empty values
             $filteredMedia = array_filter($media, function ($value) {
                 return ! empty(trim($value));
@@ -201,7 +204,7 @@ class ProjectController extends Controller
             if (! empty($filteredMedia)) {
                 $this->syncMedia($filteredMedia, $project, $mToSync);
             }
-        } elseif ($attributes['use_entity'] === false) {
+        } elseif ($useEntity === false) {
             // If use_entity is false, clear any existing media
             $project->media()->sync([]);
         }
@@ -303,7 +306,8 @@ class ProjectController extends Controller
 
         // Handle media and entity synchronization
         // Only process media if useEntity is true or it's a legacy project
-        if ($attributes['use_entity'] !== false && $media && is_array($media)) {
+        $useEntity = $attributes['use_entity'] ?? true; // Default to true for legacy projects
+        if ($useEntity !== false && $media && is_array($media)) {
             // Filter out empty values
             $filteredMedia = array_filter($media, function ($value) {
                 return ! empty(trim($value));
@@ -313,7 +317,7 @@ class ProjectController extends Controller
             if (! empty($filteredMedia)) {
                 $this->syncMedia($filteredMedia, $project, $mToSync);
             }
-        } elseif ($attributes['use_entity'] === false) {
+        } elseif ($useEntity === false) {
             // If use_entity is false, clear any existing media
             $project->media()->sync([]);
         }
@@ -430,6 +434,10 @@ class ProjectController extends Controller
             $projects[$key]['entries'] = $project->cases->sum('entries_count');
             $projects[$key]['casescount'] = $project->cases()->count();
             $projects[$key]['editable'] = $project->isEditable();
+            
+            // Add entity information for frontend compatibility
+            $projects[$key]['entity_name'] = $project->entity_name ?? 'media';
+            $projects[$key]['use_entity'] = $project->use_entity ?? true;
         }
 
         return $projects;

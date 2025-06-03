@@ -52,11 +52,6 @@ class RouteServiceProvider extends ServiceProvider
             ->namespace($this->namespace)
             ->group(base_path('routes/api.php'));
             
-        // Mart API Routes
-        Route::prefix('mart-api')
-            ->middleware('api')
-            ->namespace($this->namespace)
-            ->group(base_path('routes/mart_api.php'));
     }
 
     /**
