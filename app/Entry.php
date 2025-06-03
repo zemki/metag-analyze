@@ -15,6 +15,24 @@ class Entry extends Model
     protected $guarded = [];
 
     /**
+     * Boot the model.
+     *
+     * @return void
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Handle setting entity_id -> media_id for V2 API
+        static::saving(function ($model) {
+            if (isset($model->attributes['entity_id'])) {
+                $model->attributes['media_id'] = $model->attributes['entity_id'];
+                unset($model->attributes['entity_id']);
+            }
+        });
+    }
+
+    /**
      * @return BelongsTo
      */
     public function cases()
@@ -36,5 +54,16 @@ class Entry extends Model
     public function media()
     {
         return $this->belongsTo(Media::class);
+    }
+
+    /**
+     * Entity relationship (same as media but with V2 naming)
+     * Uses media_id column for database compatibility
+     *
+     * @return BelongsTo
+     */
+    public function entity()
+    {
+        return $this->belongsTo(Media::class, 'media_id');
     }
 }

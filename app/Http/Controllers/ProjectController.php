@@ -152,14 +152,59 @@ class ProjectController extends Controller
             'description' => self::REQUIRED,
             'created_by' => self::REQUIRED,
             self::INPUTS => self::NULLABLE,
+            'entityName' => self::NULLABLE,
+            'useEntity' => 'boolean|nullable',
         ]);
-        $inputs = $attributes[self::INPUTS];
-        foreach ($inputs as $input) {
-            $input['answers'] = array_filter($input['answers']);
+        // Check if inputs is already a JSON string or an array
+        if (is_string($attributes[self::INPUTS]) && $this->isJson($attributes[self::INPUTS])) {
+            $inputs = json_decode($attributes[self::INPUTS], true);
+        } else {
+            $inputs = $attributes[self::INPUTS];
         }
+        
+        // Process each input to ensure answers are properly handled
+        foreach ($inputs as &$input) {
+            // Check if the input has 'answers' key before attempting to filter
+            if (isset($input['answers'])) {
+                $input['answers'] = array_filter($input['answers']);
+            } else {
+                // Initialize an empty array for non-choice type inputs
+                $input['answers'] = [];
+            }
+        }
+        
         $attributes[self::INPUTS] = json_encode($inputs);
+
+        // Only update entity_name and use_entity for non-legacy projects
+        if (request()->has('entityName') || request()->has('useEntity')) {
+            // For new projects, apply entity settings
+            // Set default entity name if not provided
+            $attributes['entity_name'] = $attributes['entityName'] ?? 'entity';
+            unset($attributes['entityName']); // Remove the original key
+
+            // Set use_entity flag
+            $attributes['use_entity'] = $attributes['useEntity'] ?? true;
+            unset($attributes['useEntity']); // Remove the original key
+        }
+
         $project = auth()->user()->projects()->create($attributes);
-        $this->syncMedia($media, $project, $mToSync);
+
+        // Handle media and entity synchronization
+        // Only process media if useEntity is true or if it's a legacy project (no entity_name field)
+        if ($attributes['use_entity'] !== false && $media && is_array($media)) {
+            // Filter out empty values
+            $filteredMedia = array_filter($media, function ($value) {
+                return ! empty(trim($value));
+            });
+
+            // Only sync if we have media items
+            if (! empty($filteredMedia)) {
+                $this->syncMedia($filteredMedia, $project, $mToSync);
+            }
+        } elseif ($attributes['use_entity'] === false) {
+            // If use_entity is false, clear any existing media
+            $project->media()->sync([]);
+        }
 
         // return all the users projects
         $data['projects'] = auth()->user()->projects()->get();
@@ -204,16 +249,74 @@ class ProjectController extends Controller
             'duration' => self::NULLABLE,
             'is_locked' => 'nullable ',
             self::INPUTS => self::NULLABLE,
+            'entityName' => self::NULLABLE,
+            'useEntity' => 'boolean|nullable',
         ]);
-        $decodedAttributes = $attributes[self::INPUTS];
+        // Check if inputs is already a JSON string or an array
+        if (is_string($attributes[self::INPUTS]) && $this->isJson($attributes[self::INPUTS])) {
+            $decodedAttributes = json_decode($attributes[self::INPUTS], true);
+        } else {
+            $decodedAttributes = $attributes[self::INPUTS];
+        }
+        
         foreach ($decodedAttributes as $input => $value) {
-            $decodedAttributes[$input]['answers'] = array_filter($decodedAttributes[$input]['answers'], fn ($v) => ! is_null($v) && $v !== '');
+            if (isset($value['answers'])) {
+                $decodedAttributes[$input]['answers'] = array_filter($value['answers'], fn ($v) => ! is_null($v) && $v !== '');
+            } else {
+                // Initialize an empty array for non-choice type inputs
+                $decodedAttributes[$input]['answers'] = [];
+            }
         }
 
         $attributes[self::INPUTS] = json_encode($decodedAttributes);
+
+        // Only update entity_name and use_entity for non-legacy projects
+        if (request()->has('entityName') || request()->has('useEntity')) {
+            $projectDate = new \DateTime($project->created_at);
+            $cutoffDate = new \DateTime(config('app.api_v2_cutoff_date', '2025-03-21'));
+
+            if ($projectDate >= $cutoffDate) {
+                // Set default entity name if not provided
+                if (request()->has('entityName')) {
+                    $attributes['entity_name'] = $attributes['entityName'] ?? 'entity';
+                    unset($attributes['entityName']); // Remove the original key
+                }
+
+                // Set use_entity flag
+                if (request()->has('useEntity')) {
+                    $attributes['use_entity'] = $attributes['useEntity'] ?? true;
+                    unset($attributes['useEntity']); // Remove the original key
+                }
+            } else {
+                // For legacy projects, just remove these keys to avoid DB column errors
+                if (isset($attributes['entityName'])) {
+                    unset($attributes['entityName']);
+                }
+                if (isset($attributes['useEntity'])) {
+                    unset($attributes['useEntity']);
+                }
+            }
+        }
+
         $project->update($attributes);
         $project->save();
-        $this->syncMedia($media, $project, $mToSync);
+
+        // Handle media and entity synchronization
+        // Only process media if useEntity is true or it's a legacy project
+        if ($attributes['use_entity'] !== false && $media && is_array($media)) {
+            // Filter out empty values
+            $filteredMedia = array_filter($media, function ($value) {
+                return ! empty(trim($value));
+            });
+
+            // Only sync if we have media items
+            if (! empty($filteredMedia)) {
+                $this->syncMedia($filteredMedia, $project, $mToSync);
+            }
+        } elseif ($attributes['use_entity'] === false) {
+            // If use_entity is false, clear any existing media
+            $project->media()->sync([]);
+        }
 
         return response('Updated project successfully');
     }
@@ -346,5 +449,17 @@ class ProjectController extends Controller
         }
 
         return $invites;
+    }
+    
+    /**
+     * Check if a string is valid JSON
+     *
+     * @param string $string The string to check
+     * @return bool True if the string is valid JSON, false otherwise
+     */
+    private function isJson($string)
+    {
+        json_decode($string);
+        return json_last_error() === JSON_ERROR_NONE;
     }
 }

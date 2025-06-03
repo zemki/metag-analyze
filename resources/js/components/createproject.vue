@@ -6,12 +6,14 @@
     <!-- Header Section -->
     <div class="flex flex-col h-full">
       <div>
-        <div class="my-2">
+        <div>
           <h1 class="text-4xl font-extrabold text-gray-900 sm:text-5xl sm:tracking-tight lg:text-6xl">
             Create a Project
           </h1>
+        </div>
+        <div>
           <p class="mt-5 text-xl text-gray-500">
-            The predefined inputs are Begin Date/Time, End Date/Time, and Media used.
+            The predefined inputs are Begin Date/Time, End Date/Time, and {{ newProject.entityName || 'Entity' }} used.
             You can enter up to 3 additional inputs giving them name and details,
             this will be reflected in the mobile app.
           </p>
@@ -20,7 +22,7 @@
     </div>
 
     <!-- Project Creation Form -->
-    <form @submit.prevent="validateProject" class="mx-auto pt-10">
+    <form @submit.prevent="validateProject" class="mx-auto pt-10" @keydown.enter.prevent="preventSubmitOnEnter">
       <!-- Hidden Fields -->
       <input type="hidden" :value="userId" name="created_by">
 
@@ -32,15 +34,16 @@
             <label for="name" class="block text-sm font-medium text-gray-700">Name *</label>
             <div class="mt-1 relative">
               <input
-                type="text"
-                id="name"
-                v-model="newProject.name"
-                class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                maxlength="200"
-                placeholder="Enter project name"
+                  type="text"
+                  id="name"
+                  v-model="newProject.name"
+                  @keydown.enter.prevent
+                  class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  maxlength="200"
+                  placeholder="Enter project name"
               />
               <span
-                :class="newProject.name.length > inputLength.name ? 'text-red-600 text-xs w-auto inline-flex float-right' : 'text-xs text-gray-500 w-auto inline-flex float-right'"
+                  :class="newProject.name.length > inputLength.name ? 'text-red-600 text-xs w-auto inline-flex float-right' : 'text-xs text-gray-500 w-auto inline-flex float-right'"
               >
                 {{ inputLength.name - newProject.name.length }}/{{ inputLength.name }}
               </span>
@@ -52,15 +55,15 @@
             <label for="description" class="block text-sm font-medium text-gray-700">Description *</label>
             <div class="mt-1 relative">
               <textarea
-                id="description"
-                v-model="newProject.description"
-                rows="3"
-                class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                maxlength="255"
-                placeholder="Enter project description"
+                  id="description"
+                  v-model="newProject.description"
+                  rows="3"
+                  class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  maxlength="255"
+                  placeholder="Enter project description"
               ></textarea>
               <span
-                :class="newProject.description.length > inputLength.description ? 'text-red-600 text-xs w-auto inline-flex float-right' : 'text-xs text-gray-500 w-auto inline-flex float-right'"
+                  :class="newProject.description.length > inputLength.description ? 'text-red-600 text-xs w-auto inline-flex float-right' : 'text-xs text-gray-500 w-auto inline-flex float-right'"
               >
                 {{ inputLength.description - newProject.description.length }}/{{ inputLength.description }}
               </span>
@@ -68,22 +71,6 @@
           </div>
         </div>
 
-        <!-- Media Inputs Section -->
-        <div>
-          <label for="media" class="block text-sm font-medium text-gray-700">Media</label>
-          <div class="mt-1" v-for="(singleMedia, index) in newProject.media" :key="index">
-            <input
-              type="text"
-              v-model="newProject.media[index]"
-              @keyup="handleMediaInputs(index, singleMedia)"
-              autocomplete="off"
-              @keydown.enter.prevent
-              @keydown.tab.prevent
-              class="block w-64 p-2 border-b-2 border-blue-500 rounded-md shadow-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              placeholder="Enter media"
-            />
-          </div>
-        </div>
 
         <!-- Additional Inputs Count Section -->
         <div>
@@ -91,33 +78,111 @@
             Number of additional inputs
           </label>
 
-          <input type="hidden" :value="JSON.stringify(newProject.inputs)" name="inputs" />
+          <input type="hidden" :value="JSON.stringify(newProject.inputs)" name="inputs"/>
 
           <div class="relative flex flex-row w-64 h-10 mt-1 bg-transparent rounded-lg">
             <button
-              type="button"
-              class="w-20 h-full text-gray-600 bg-gray-300 rounded-l outline-none cursor-pointer hover:text-gray-700 hover:bg-gray-400"
-              @click="decrementInputs"
+                type="button"
+                class="w-20 h-full text-gray-600 bg-gray-300 rounded-l outline-none cursor-pointer hover:text-gray-700 hover:bg-gray-400"
+                @click="decrementInputs"
             >
               <span class="m-auto text-2xl font-thin">−</span>
             </button>
             <input
-              v-model.number="newProject.ninputs"
-              type="number"
-              min="0"
-              max="3"
-              class="flex items-center w-full font-semibold text-center text-gray-700 bg-white outline-none focus:outline-none text-md hover:text-black focus:text-black md:text-base cursor-default"
-              name="ninputs"
-              id="ninputs"
+                v-model.number="newProject.ninputs"
+                type="number"
+                min="0"
+                max="3"
+                class="flex items-center w-full font-semibold text-center text-gray-700 bg-white outline-none focus:outline-none text-md hover:text-black focus:text-black md:text-base cursor-default"
+                name="ninputs"
+                id="ninputs"
             />
             <button
-              type="button"
-              class="w-20 h-full text-gray-600 bg-gray-300 rounded-r cursor-pointer hover:text-gray-700 hover:bg-gray-400"
-              @click="incrementInputs"
+                type="button"
+                class="w-20 h-full text-gray-600 bg-gray-300 rounded-r cursor-pointer hover:text-gray-700 hover:bg-gray-400"
+                @click="incrementInputs"
             >
               <span class="m-auto text-2xl font-thin">+</span>
             </button>
           </div>
+        </div>
+        <!-- Entity Name Field -->
+        <div>
+          <label for="entityName" class="block text-sm font-medium text-gray-700">Entity Field Name</label>
+          <div class="mt-1 relative">
+            <input
+                type="text"
+                id="entityName"
+                v-model="newProject.entityName"
+                @keydown.enter.prevent
+                class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                maxlength="50"
+                placeholder="Enter name for entity field (default: 'entity')"
+            />
+            <span class="text-xs text-gray-500 mt-1 block">This name will be used in the mobile app. Default is 'entity' if left empty.</span>
+          </div>
+        </div>
+        <!-- Entity Inputs Section -->
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <label for="useEntity"
+                     class="block text-sm font-medium text-gray-700">{{ newProject.entityName || 'Entity' }}
+                Field</label>
+              <div class="ml-4 flex items-center">
+                <input
+                    type="checkbox"
+                    id="useEntity"
+                    v-model="newProject.useEntity"
+                    class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
+                />
+                <label for="useEntity" class="ml-2 block text-sm text-gray-700">
+                  Include this field in the project
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="newProject.useEntity" class="space-y-3">
+            <!-- Entity Inputs -->
+            <div v-for="(entityItem, index) in newProject.media" :key="index"
+                 class="flex items-center space-x-2">
+              <input
+                  type="text"
+                  v-model="newProject.media[index]"
+                  @keyup="handleMediaInputs(index, entityItem)"
+                  autocomplete="off"
+                  @keydown.enter.prevent
+                  @keydown.tab.prevent
+                  class="block w-64 p-2 border-b-2 border-blue-500 rounded-md shadow-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  :placeholder="`Enter ${newProject.entityName || 'entity'}`"
+              />
+              <button
+                  v-if="newProject.media.length > 1"
+                  @click="removeMedia(index)"
+                  class="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors duration-150"
+                  aria-label="Remove Entity"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Add Entity Button -->
+            <button
+                @click="addMedia"
+                class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-500 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors duration-150"
+            >
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              {{ `Add ${newProject.entityName || 'Entity'}` }}
+            </button>
+          </div>
+          <p v-else class="text-xs text-gray-500">
+            This field won't be included in the mobile app.
+          </p>
         </div>
 
         <!-- Dynamic Additional Inputs Section -->
@@ -127,10 +192,10 @@
             <label class="block text-sm font-medium text-gray-700">Input Name</label>
             <div class="mt-1">
               <input
-                type="text"
-                v-model="input.name"
-                class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="Enter input name"
+                  type="text"
+                  v-model="input.name"
+                  class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder="Enter input name"
               />
             </div>
           </div>
@@ -139,10 +204,10 @@
           <div class="relative flex items-start my-2">
             <div class="flex items-center h-5">
               <input
-                type="checkbox"
-                v-model="input.mandatory"
-                class="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
-                :id="'mandatory-' + index"
+                  type="checkbox"
+                  v-model="input.mandatory"
+                  class="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                  :id="'mandatory-' + index"
               />
             </div>
             <div class="ml-3 text-sm">
@@ -154,19 +219,20 @@
           <label class="block text-sm font-medium text-gray-700">Type</label>
           <div class="relative mt-1">
             <button
-              type="button"
-              @click="toggleDropdown(index)"
-              :class="dropdownClass(input.type)"
-              aria-haspopup="listbox"
+                type="button"
+                @click="toggleDropdown(index)"
+                :class="dropdownClass(input.type)"
+                aria-haspopup="listbox"
             >
               <span class="block truncate">{{ input.type || 'Select Type' }}</span>
               <span class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
                 <!-- Selector Icon -->
-                <svg class="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <svg class="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                     fill="currentColor" aria-hidden="true">
                   <path
-                    fill-rule="evenodd"
-                    d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                    clip-rule="evenodd"
+                      fill-rule="evenodd"
+                      d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                      clip-rule="evenodd"
                   />
                 </svg>
               </span>
@@ -174,27 +240,28 @@
 
             <!-- Dropdown List -->
             <ul
-              v-if="input.showDropdown"
-              :id="'type-' + index"
-              class="absolute z-10 w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-60 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
-              role="listbox"
-              aria-labelledby="listbox-label"
+                v-if="input.showDropdown"
+                :id="'type-' + index"
+                class="absolute z-10 w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-60 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+                role="listbox"
+                aria-labelledby="listbox-label"
             >
               <li
-                v-for="(type, typeIndex) in inputs.available"
-                :key="typeIndex"
-                :class="selectedTypeClass(type, input.type)"
-                @click="selectType(index, type)"
-                role="option"
+                  v-for="(type, typeIndex) in inputs.available"
+                  :key="typeIndex"
+                  :class="selectedTypeClass(type, input.type)"
+                  @click="selectType(index, type)"
+                  role="option"
               >
                 <span class="block font-normal truncate">{{ type }}</span>
                 <span v-if="type === input.type" class="absolute inset-y-0 right-0 flex items-center pr-4 text-white">
                   <!-- Check Icon -->
-                  <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                       aria-hidden="true">
                     <path
-                      fill-rule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clip-rule="evenodd"
+                        fill-rule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clip-rule="evenodd"
                     />
                   </svg>
                 </span>
@@ -207,14 +274,14 @@
             <label class="block text-sm font-medium text-gray-700">Answers</label>
             <div class="mt-2" v-for="(answer, answerIndex) in input.answers" :key="answerIndex">
               <input
-                type="text"
-                v-model="input.answers[answerIndex]"
-                @keyup="handleAdditionalInputs(index, answerIndex, answer)"
-                autocomplete="off"
-                @keydown.enter.prevent
-                @keydown.tab.prevent
-                class="block w-64 p-2 border-b-2 border-blue-500 rounded-md shadow-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="Enter answer"
+                  type="text"
+                  v-model="input.answers[answerIndex]"
+                  @keyup="handleAdditionalInputs(index, answerIndex, answer)"
+                  autocomplete="off"
+                  @keydown.enter.prevent
+                  @keydown.tab.prevent
+                  class="block w-64 p-2 border-b-2 border-blue-500 rounded-md shadow-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder="Enter answer"
               />
             </div>
           </div>
@@ -229,10 +296,10 @@
                 <!-- Plus Icon -->
                 <svg class="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
                   <path
-                    fill="#6B7280"
-                    fill-rule="evenodd"
-                    d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                    clip-rule="evenodd"
+                      fill="#6B7280"
+                      fill-rule="evenodd"
+                      d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                      clip-rule="evenodd"
                   />
                 </svg>
               </span>
@@ -245,8 +312,9 @@
 
         <!-- Submit Button -->
         <button
-          type="submit"
-          class="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            type="button"
+            @click="validateProject"
+            class="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
           Create Project
         </button>
@@ -255,8 +323,8 @@
       <!-- Response Message -->
       <div class="block mt-2">
         <div
-          class="relative px-4 py-3 text-red-700 bg-red-100 border border-red-400 rounded"
-          v-if="newProject.response"
+            class="relative px-4 py-3 text-red-700 bg-red-100 border border-red-400 rounded"
+            v-if="newProject.response"
         >
           <div v-html="newProject.response"></div>
           <button class="delete absolute top-2 right-2" @click.prevent="newProject.response = ''">×</button>
@@ -284,6 +352,8 @@ export default {
       newProject: {
         name: '',
         description: '',
+        entityName: 'entity', // Default value
+        useEntity: true, // Default to include entity field
         media: [''],
         ninputs: 0,
         inputs: [],
@@ -295,6 +365,19 @@ export default {
       },
     };
   },
+  
+  watch: {
+    'newProject.useEntity': function(newVal) {
+      // When useEntity changes, update the media array
+      if (newVal === false) {
+        // Clear media when useEntity is set to false
+        this.newProject.media = [];
+      } else if (this.newProject.media.length === 0) {
+        // Initialize with one empty input when useEntity is set to true
+        this.newProject.media = [''];
+      }
+    }
+  },
   methods: {
     trans(key) {
       // Translation helper
@@ -305,36 +388,75 @@ export default {
         return window.trans[key];
       }
     },
-    
+
     // Form Validation and Submission
     validateProject() {
-      // Perform client-side validation if needed
-      // For example, check if required fields are filled
+      // Prepare the inputs data to include entity information
+      const inputsData = [...this.newProject.inputs];
 
-      // Prepare form data
+      // Ensure all inputs have an 'answers' array
+      inputsData.forEach(input => {
+        // Initialize answers array if not present or if it's not an array
+        if (!input.answers || !Array.isArray(input.answers)) {
+          input.answers = [];
+        }
+        // Filter out any empty answers
+        input.answers = input.answers.filter(answer => answer && answer.trim() !== '');
+      });
+
+      // If useEntity is false, clear the media array
+      if (!this.newProject.useEntity) {
+        this.newProject.media = [];
+      }
+
+      // Add entity configuration to the inputs JSON data
+      const entityConfig = {
+        isEntityConfig: true, // Special flag to identify this entry
+        entityName: this.newProject.entityName || 'entity',
+        useEntity: this.newProject.useEntity,
+        media: this.newProject.useEntity ? this.newProject.media.filter(m => m.trim() !== '') : [],
+        answers: [] // Ensure entity config also has an answers array
+      };
+
+      // Prepare form data - without the entity_name and use_entity columns
       const formData = {
         name: this.newProject.name,
         description: this.newProject.description,
-        media: this.newProject.media.filter(m => m.trim() !== ''),
         ninputs: this.newProject.ninputs,
-        inputs: this.newProject.inputs,
+        inputs: JSON.stringify([...inputsData, entityConfig]), // Include entity config in inputs array and stringify
         created_by: this.userId,
+        media: this.newProject.useEntity ? this.newProject.media.filter(m => m.trim() !== '') : [],
       };
 
       // Submit the form via Axios
-      window.axios.post(this.productionUrl+'/projects', formData)
-        .then(response => {
-          // Handle successful response
-          window.location.href = this.productionUrl+'/projects';
-        })
-        .catch(error => {
-          // Handle errors
-          if (error.response && error.response.data) {
-            this.newProject.response = error.response.data.message || 'An error occurred.';
-          } else {
-            this.newProject.response = 'An unexpected error occurred.';
-          }
-        });
+      window.axios.post(this.productionUrl + '/projects', formData)
+          .then(response => {
+            // Handle successful response
+            window.location.href = this.productionUrl + '/projects';
+          })
+          .catch(error => {
+            if (error.response && error.response.data) {
+              // Handle validation errors (multiple errors)
+              if (error.response.data.errors) {
+                let errorMessages = '<ul class="list-disc pl-5">';
+
+                // Loop through all error messages
+                Object.keys(error.response.data.errors).forEach(field => {
+                  error.response.data.errors[field].forEach(message => {
+                    errorMessages += `<li>${message}</li>`;
+                  });
+                });
+
+                errorMessages += '</ul>';
+                this.newProject.response = errorMessages;
+              } else {
+                // Single error message
+                this.newProject.response = error.response.data.message || 'An error occurred.';
+              }
+            } else {
+              this.newProject.response = 'An unexpected error occurred.';
+            }
+          });
     },
 
     // Media Inputs Handling
@@ -342,6 +464,26 @@ export default {
       // Add a new media field if the last one is filled
       if (mediaName && index === this.newProject.media.length - 1) {
         this.newProject.media.push('');
+      }
+    },
+
+    // Prevent form submission on Enter key
+    preventSubmitOnEnter(e) {
+      // Only allow Enter in textarea elements
+      if (e.target.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+      }
+    },
+
+    // Add Media Item
+    addMedia() {
+      this.newProject.media.push('');
+    },
+
+    // Remove Media Item
+    removeMedia(index) {
+      if (this.newProject.media.length > 1) {
+        this.newProject.media.splice(index, 1);
       }
     },
 
@@ -410,15 +552,15 @@ export default {
     // Determine Dropdown Class Based on Input Type
     dropdownClass(type) {
       return type
-        ? 'relative w-full py-2 pl-3 pr-10 text-left bg-white border border-gray-300 rounded-md shadow-sm cursor-default focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
-        : 'relative w-full py-4 pl-3 pr-10 text-left bg-white border border-gray-300 rounded-md shadow-sm cursor-default focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm';
+          ? 'relative w-full py-2 pl-3 pr-10 text-left bg-white border border-gray-300 rounded-md shadow-sm cursor-default focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+          : 'relative w-full py-4 pl-3 pr-10 text-left bg-white border border-gray-300 rounded-md shadow-sm cursor-default focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm';
     },
 
     // Determine Selected Type Class
     selectedTypeClass(type, currentType) {
       return type === currentType
-        ? 'relative py-2 pl-3 bg-blue-500 text-white cursor-default select-none pr-9'
-        : 'relative py-2 pl-3 text-gray-900 cursor-default select-none pr-9';
+          ? 'relative py-2 pl-3 bg-blue-500 text-white cursor-default select-none pr-9'
+          : 'relative py-2 pl-3 text-gray-900 cursor-default select-none pr-9';
     },
   },
 };

@@ -251,7 +251,7 @@ class User extends Authenticatable implements FilamentUser, HasName, MustVerifyE
      */
     public function addProfile($user)
     {
-        $profile = new Profile();
+        $profile = new Profile;
         $profile->user_id = $user->id;
         $profile->save();
 
@@ -265,7 +265,7 @@ class User extends Authenticatable implements FilamentUser, HasName, MustVerifyE
      */
     public function addAction($name, $url, $description = '')
     {
-        $action = new Action();
+        $action = new Action;
         $action->name = $name;
         $action->description = $description;
         $action->url = $url;

@@ -41,10 +41,8 @@
         />
       </div>
       <div class="my-2">
-        <label
-          class="text-base font-bold tracking-wide text-gray-700 uppercase"
-        >
-          {{ trans("Media *") }}
+        <label class="text-base font-bold tracking-wide text-gray-700 uppercase">
+          {{ (cases.project?.entity_name || 'Media') + ' *' }}
         </label>
         <input
           type="text"
@@ -243,7 +241,7 @@
           </div>
           <div class="sm:flex sm:justify-between sm:items-baseline">
             <h3 class="text-base font-medium">
-              <span class="text-gray-500">{{ trans("Media") }}: </span>
+              <span class="text-gray-500">{{ trans("Entity") }}: </span>
               <span class="text-gray-900">{{ entry.media }}</span>
             </h3>
             <p
@@ -351,9 +349,7 @@
                     <div class="p-2 text-justify text-gray-400">
                       <div class="sm:flex sm:justify-between sm:items-baseline">
                         <h3 class="text-base font-medium">
-                          <span class="text-gray-500"
-                            >{{ trans("Media") }}:
-                          </span>
+                          <span class="text-gray-500">{{ (cases.project?.entity_name || 'Media') }}:</span>
                           <span class="text-gray-900">{{
                             entry.mediaforFirstValue
                           }}</span>

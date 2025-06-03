@@ -30,6 +30,8 @@ class ApiController extends Controller
 
     const MEDIA = 'media';
 
+    const ENTITY = 'entity';
+
     /**
      * @return ResponseFactory|Response
      */
@@ -63,11 +65,6 @@ class ApiController extends Controller
         return response(Role::all()->jsonSerialize(), 200);
     }
 
-    /**
-     * Handles Login Request
-     *
-     * @return JsonResponse
-     */
     /**
      * Handles Login Request
      *
@@ -121,7 +118,24 @@ class ApiController extends Controller
             $userHasACase->duration .= $lastDayPos ? '' : '|lastDay:' . $duration;
             $userHasACase->save();
 
-            $inputs = $this->formatLoginResponse($userHasACase);
+            // Determine which API version to use
+            $forceApiV2 = env('FORCE_API_V2', false);
+            $projectDate = new \DateTime($userHasACase->project->created_at ?? 'now');
+            $cutoffDate = new \DateTime(config('app.api_v2_cutoff_date', '2025-03-21'));
+
+            // Use API V2 if forced or if project was created after cutoff date
+            $useApiV2 = $forceApiV2 || ($projectDate >= $cutoffDate);
+
+            if ($useApiV2) {
+                // Use V2 formatting
+                $v2ApiController = new \App\Http\Controllers\Api\V2\ApiController;
+                $inputs = $v2ApiController->formatLoginResponse($userHasACase);
+            } else {
+                // Use legacy V1 formatting
+                $v1ApiController = new \App\Http\Controllers\Api\V1\ApiController;
+                $inputs = $v1ApiController->formatLoginResponse($userHasACase);
+            }
+
             $notStarted = (strtotime(date('d.m.Y')) < strtotime($startDay));
 
             return response()->json([
@@ -132,6 +146,7 @@ class ApiController extends Controller
                 'duration' => $duration,
                 self::CUSTOMINPUTS => $inputs[self::INPUTS][self::CUSTOMINPUTS],
                 self::NOTSTARTED => $notStarted,
+                'api_version' => $useApiV2 ? 'v2' : 'v1',
             ], 200);
 
         } else {
@@ -147,20 +162,6 @@ class ApiController extends Controller
 
             return response()->json(['error' => 'invalid credentials'], 401);
         }
-    }
-
-    /**
-     * @param  $inputs
-     * @return mixed
-     */
-    protected function formatLoginResponse($response)
-    {
-        $data[self::INPUTS][self::MEDIA] = $response->project->media;
-        $nullItem = (object) ['id' => 0, 'name' => ''];
-        $data[self::INPUTS][self::MEDIA]->prepend($nullItem);
-        $data[self::INPUTS][self::CUSTOMINPUTS] = $response->project->inputs;
-
-        return $data;
     }
 
     /**
@@ -195,14 +196,6 @@ class ApiController extends Controller
     }
 
     /**
-     * @return JsonResponse
-     */
-    public function getProject(Project $project)
-    {
-        return response()->json(compact($project), 200);
-    }
-
-    /**
      * Update the authenticated user's API token.
      *
      * @return array
@@ -217,15 +210,5 @@ class ApiController extends Controller
         ])->save();
 
         return [self::TOKEN => $token];
-    }
-
-    /**
-     * @return JsonResponse
-     */
-    public function getInputs(Project $project)
-    {
-        $data[self::MEDIA] = $project->media;
-
-        return response()->json($data, 200);
     }
 }

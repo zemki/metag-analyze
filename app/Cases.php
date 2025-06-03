@@ -249,6 +249,14 @@ class Cases extends Model
     }
 
     /**
+     * Get the stats associated with the case.
+     */
+    public function stats()
+    {
+        return $this->hasMany(Stat::class);
+    }
+
+    /**
      * edit the case only if has no entries
      */
     public function isEditable(): bool

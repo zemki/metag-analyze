@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api\V1;
 
 use App\Cases;
 use App\Entry;
 use App\Files;
+use App\Http\Controllers\Controller;
 use App\Http\Resources\Entry as EntryResource;
 use App\Media;
 use Crypt;
@@ -12,9 +13,7 @@ use Exception;
 use File;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Routing\ResponseFactory;
-use Illuminate\Contracts\View\Factory;
 use Illuminate\Http\Response;
-use Illuminate\View\View;
 
 class EntryController extends Controller
 {
@@ -30,13 +29,18 @@ class EntryController extends Controller
 
     protected const ENTRIES = 'entries';
 
+    /**
+     * Get entries for a specific case
+     *
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
     public function entriesByCase(Cases $case)
     {
         return EntryResource::collection($case->entries->sortByDesc(self::BEGIN));
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a new entry
      *
      * @return Response
      *
@@ -46,16 +50,17 @@ class EntryController extends Controller
     {
         $this->authorize('store', [Entry::class, $case]);
 
-        // if request has "media" key, assign it to the key "media_id"
+        // V1 primarily uses media_id but accepts entity_id for forward compatibility
         if (request()->has('media')) {
             request()->merge([self::MEDIA_ID => request()->media]);
         }
 
-        // if request has "entity_id" key, use it instead of media_id
+        // Accept entity_id for forward compatibility
         if (request()->has(self::ENTITY_ID)) {
             request()->merge([self::MEDIA_ID => request()->input(self::ENTITY_ID)]);
         }
-        // if request has "entity" key, also use it for media_id (older field name for compatibility)
+
+        // Also accept entity for forward compatibility
         if (request()->has('entity')) {
             request()->merge([self::MEDIA_ID => request()->entity]);
         }
@@ -100,22 +105,27 @@ class EntryController extends Controller
     }
 
     /**
+     * Update an existing entry
+     *
      * @return ResponseFactory|Response
+     *
+     * @throws AuthorizationException
      */
     public function update(Cases $case, Entry $entry)
     {
         $this->authorize('update', [Entry::class, $entry]);
 
-        // if request has "media" key, assign it to the key "media_id"
+        // V1 primarily uses media_id but accepts entity_id for forward compatibility
         if (request()->has('media')) {
             request()->merge([self::MEDIA_ID => request()->media]);
         }
 
-        // if request has "entity_id" key, use it instead of media_id
+        // Accept entity_id for forward compatibility
         if (request()->has(self::ENTITY_ID)) {
             request()->merge([self::MEDIA_ID => request()->input(self::ENTITY_ID)]);
         }
-        // if request has "entity" key, also use it for media_id (older field name for compatibility)
+
+        // Also accept entity for forward compatibility
         if (request()->has('entity')) {
             request()->merge([self::MEDIA_ID => request()->entity]);
         }
@@ -127,24 +137,27 @@ class EntryController extends Controller
             self::MEDIA_ID => self::REQUIRED,
             self::INPUTS => 'nullable',
         ]);
+
         if (is_string($attributes[self::MEDIA_ID])) {
             $attributes[self::MEDIA_ID] = Media::firstOrCreate(['name' => $attributes[self::MEDIA_ID]])->id;
         }
+
         $oldInputs = $entry->inputs;
 
         $attributes[self::INPUTS] = json_encode($attributes[self::INPUTS]);
         $oldEntry = $entry->replicate();
         $entry->update($attributes);
         $entry->save();
+
         if ($case->isConsultable() && ! array_key_exists('firstValue', json_decode($oldInputs, true))) {
             $entry->update(['inputs->firstValue' => $oldEntry]);
         }
 
         if (request()->hasHeader('x-file-token') && request()->header('x-file-token') !== '0' && request()->header('x-file-token') !== '') {
-
             $appToken = request()->header('x-file-token');
             $clientFileTokenIsSameWithServer = strcmp(Crypt::decryptString($case->file_token), $appToken) !== 0;
             $keepExistingAudioFile = request()->has('audio') && empty(request()->input('audio') && property_exists($oldInputs, 'file'));
+
             if ($clientFileTokenIsSameWithServer) {
                 return response('You are not authorized!', 403);
             } else {
@@ -156,11 +169,9 @@ class EntryController extends Controller
                     $filename = '';
                     Files::storeEntryFile(request()->input('image'), 'image', $case->project, $case, $entry, $filename);
                 } elseif ($keepExistingAudioFile) {
-                    $entry->update(
-                        [
-                            'inputs->file' => json_decode($oldInputs)->file,
-                        ],
-                    );
+                    $entry->update([
+                        'inputs->file' => json_decode($oldInputs)->file,
+                    ]);
                 }
             }
         }
@@ -169,19 +180,8 @@ class EntryController extends Controller
     }
 
     /**
-     * @return Factory|View
-     */
-    public function consult(Cases $case)
-    {
-        $data[self::ENTRIES] = $case->entries()
-            ->join('media', 'entries.media_id', '=', 'media.id')->get()->map->only(['name', self::BEGIN, 'end'])
-            ->flatten()->chunk(3)->toArray();
-        $data[self::ENTRIES] = array_map('array_values', $data[self::ENTRIES]);
-
-        return view('entries.index', $data);
-    }
-
-    /**
+     * Delete an entry
+     *
      * @return ResponseFactory|Response
      */
     public function destroy(Cases $case, Entry $entry)
