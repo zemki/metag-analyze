@@ -418,13 +418,15 @@ export default {
         answers: [] // Ensure entity config also has an answers array
       };
 
-      // Prepare form data - without the entity_name and use_entity columns
+      // Prepare form data - include entity fields
       const formData = {
         name: this.newProject.name,
         description: this.newProject.description,
         ninputs: this.newProject.ninputs,
-        inputs: JSON.stringify([...inputsData, entityConfig]), // Include entity config in inputs array and stringify
+        inputs: JSON.stringify(inputsData), // Only include user inputs, not entity config
         created_by: this.userId,
+        entityName: this.newProject.entityName || 'entity',
+        useEntity: this.newProject.useEntity,
         media: this.newProject.useEntity ? this.newProject.media.filter(m => m.trim() !== '') : [],
       };
 
