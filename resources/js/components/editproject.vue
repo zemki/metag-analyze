@@ -246,6 +246,29 @@
       </div>
     </div>
 
+    <!-- Error Message Display -->
+    <div v-if="response" class="p-4 bg-red-50 border border-red-200 rounded-md">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <div class="ml-3">
+          <p class="text-sm text-red-800">{{ response }}</p>
+        </div>
+        <div class="ml-auto pl-3">
+          <div class="-mx-1.5 -my-1.5">
+            <button @click="response = ''" class="inline-flex bg-red-50 rounded-md p-1.5 text-red-500 hover:bg-red-100">
+              <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Action Buttons -->
     <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
       <button
@@ -357,10 +380,19 @@ export default {
       this.projectData.description = this.project.description || '';
       this.projectData.entityName = this.project.entity_name || (this.isLegacyProject ? 'media' : 'entity');
       
-      // Explicitly check the boolean value of use_entity
-      console.log('Project use_entity value:', this.project.use_entity);
-      this.projectData.useEntity = this.project.use_entity === false ? false : true;
-      console.log('Initialized useEntity as:', this.projectData.useEntity);
+      // Handle use_entity - convert database value (1/0) to boolean
+      if (this.isLegacyProject) {
+        this.projectData.useEntity = true; // Legacy projects always use entity
+      } else {
+        // For new projects, convert database value (1/0/true/false/null) to boolean
+        const useEntityValue = this.project.use_entity;
+        if (useEntityValue === null || useEntityValue === undefined) {
+          this.projectData.useEntity = true; // Default to true for null/undefined
+        } else {
+          // Convert 1/0 or true/false to boolean
+          this.projectData.useEntity = Boolean(Number(useEntityValue));
+        }
+      }
 
       // Initialize inputs
       try {
@@ -391,7 +423,7 @@ export default {
       }
 
       // Initialize media based on useEntity
-      if ((this.isLegacyProject) || (this.project.use_entity !== false)) {
+      if (this.isLegacyProject || this.projectData.useEntity) {
         // Only include media if useEntity is true or it's a legacy project
         this.projectData.media = Array.isArray(this.projectmedia) && this.projectmedia.length > 0 ?
             [...this.projectmedia] :
@@ -569,11 +601,29 @@ export default {
         }
 
         const response = await window.axios.patch(this.productionUrl+`/projects/${submitData.id}`, submitData);
-        this.showSnackbarMessage(response.data.message || this.trans('Project updated successfully.'));
+        console.log(response);
+        
+        // Controller returns simple string response
+        this.showSnackbarMessage(response.data);
+        
+        // Exit edit mode after successful save
+        this.$emit('update:editable', false);
 
       } catch (error) {
-        this.response = error.response?.data?.message || this.trans('An error occurred while saving.');
-        this.showSnackbarMessage(this.response);
+        let errorMessage = this.trans('An error occurred while saving.');
+        
+        if (error.response?.data) {
+          if (error.response.data.errors) {
+            // Handle validation errors
+            const errors = Object.values(error.response.data.errors).flat();
+            errorMessage = errors.join(', ');
+          } else if (error.response.data.message) {
+            errorMessage = error.response.data.message;
+          }
+        }
+        
+        this.response = errorMessage;
+        this.showSnackbarMessage(errorMessage);
 
       } finally {
         this.isLoading = false;
