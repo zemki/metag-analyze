@@ -14,7 +14,7 @@
     <div class="w-2/3 pt-2 mx-auto">
 
         @yield('content')
-            <snackbar ref="snackbar"></snackbar>
+        <snackbar ref="snackbar" :message="snackbarMessage"></snackbar>
     </div>
     <custom-dialogue v-if="dialog.show" :message="customDialogue" ref="dialogue" :title="dialog.title"
                      :message="dialog.message"

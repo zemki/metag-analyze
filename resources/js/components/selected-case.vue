@@ -833,7 +833,6 @@ export default {
       formatDateForInput,
       clearEditEntryData,
       editentrydateselected,
-      forceRender,
       distinctPath,
       groupedCasesPath,
     };

@@ -605,12 +605,11 @@ export default {
         
         // Controller returns simple string response
         this.showSnackbarMessage(response.data);
-        
-        // Exit edit mode after successful save
-        this.$emit('update:editable', false);
+      
 
       } catch (error) {
         let errorMessage = this.trans('An error occurred while saving.');
+        console.log(error)
         
         if (error.response?.data) {
           if (error.response.data.errors) {
@@ -622,7 +621,7 @@ export default {
           }
         }
         
-        this.response = errorMessage;
+        
         this.showSnackbarMessage(errorMessage);
 
       } finally {

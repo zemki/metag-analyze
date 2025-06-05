@@ -286,13 +286,10 @@ const app = createApp({
 
   methods: {
     showSnackbarMessage(message) {
+      this.snackbarMessage = message;
       // This will access the snackbar component via ref and call its show method
       if (this.$refs && this.$refs.snackbar) {
-        this.$refs.snackbar.message = message;
         this.$refs.snackbar.show();
-      } else {
-        // Use the emitter as a fallback
-        emitter.emit("show-snackbar", message);
       }
     },
     // Reusable method to handle duration changes
