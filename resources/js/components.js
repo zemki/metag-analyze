@@ -17,6 +17,11 @@ import Caseslist from "./components/caseslist.vue";
 import TestVue3 from "./components/test-vue3.vue";
 import DebugPanel from "./components/debug-panel.vue";
 import Breadcrumb from "./components/breadcrumb.vue";
+import Treemap from "./components/treemap.vue";
+import CasesListWithPagination from "./components/CasesListWithPagination.vue";
+import CaseCard from "./components/CaseCard.vue";
+import PaginationControls from "./components/PaginationControls.vue";
+import ProjectCasesView from "./components/ProjectCasesView.vue";
 
 // Create a named export for all components to be used with app.component() in app.js
 export const components = {
@@ -38,5 +43,10 @@ export const components = {
   "cases-list": Caseslist,
   "test-vue3": TestVue3,
   "debug-panel": DebugPanel,
-  "breadcrumb": Breadcrumb
+  "breadcrumb": Breadcrumb,
+  "treemap": Treemap,
+  "cases-list-with-pagination": CasesListWithPagination,
+  "case-card": CaseCard,
+  "pagination-controls": PaginationControls,
+  "project-cases-view": ProjectCasesView
 };
