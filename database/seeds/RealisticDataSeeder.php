@@ -19,6 +19,9 @@ class RealisticDataSeeder extends Seeder
     {
         $this->command->info('Creating realistic test data...');
         
+        // Ask if user wants to create a large-scale test project
+        $createLargeProject = $this->command->confirm('Do you want to create a test project with 500+ cases for performance testing?', false);
+        
         // Get or create admin user
         $admin = User::find(1) ?? User::factory()->create(['id' => 1]);
         
@@ -40,6 +43,11 @@ class RealisticDataSeeder extends Seeder
                 // Create realistic entries for each case
                 $this->createRealisticEntries($case, $project);
             }
+        }
+        
+        // Create large-scale test project if requested
+        if ($createLargeProject) {
+            $this->createLargeScaleTestProject($admin);
         }
         
         $this->command->info('Realistic test data created successfully!');
@@ -451,10 +459,10 @@ class RealisticDataSeeder extends Seeder
         ]);
     }
     
-    private function createRealisticEntries($case, $project)
+    private function createRealisticEntries($case, $project, $entriesCount = null)
     {
         $inputs = json_decode($project->inputs, true);
-        $entriesCount = rand(15, 50); // Realistic number of entries
+        $entriesCount = $entriesCount ?? rand(15, 50); // Use provided count or default range
         
         // Parse case duration to get the actual time window
         $duration = $case->duration;
@@ -639,5 +647,132 @@ class RealisticDataSeeder extends Seeder
         }
         
         return $entryInputs;
+    }
+    
+    private function createLargeScaleTestProject($admin)
+    {
+        $this->command->info('Creating large-scale test project for performance testing...');
+        
+        // Create a performance test project
+        $project = Project::create([
+            'name' => 'Performance Test Project - Large Scale',
+            'description' => 'A test project with 500+ cases to evaluate system performance and optimization.',
+            'entity_name' => 'activity',
+            'use_entity' => 1,
+            'inputs' => json_encode([
+                [
+                    'name' => 'Activity type',
+                    'type' => 'one choice',
+                    'numberofanswer' => 5,
+                    'mandatory' => true,
+                    'answers' => ['Work', 'Study', 'Leisure', 'Exercise', 'Social', '']
+                ],
+                [
+                    'name' => 'Duration category',
+                    'type' => 'one choice',
+                    'numberofanswer' => 4,
+                    'mandatory' => true,
+                    'answers' => ['Short (< 30min)', 'Medium (30-60min)', 'Long (1-2h)', 'Extended (2h+)', '']
+                ],
+                [
+                    'name' => 'Engagement level',
+                    'type' => 'scale',
+                    'numberofanswer' => 0,
+                    'mandatory' => true,
+                    'answers' => ['']
+                ],
+                [
+                    'name' => 'Satisfaction',
+                    'type' => 'scale',
+                    'numberofanswer' => 0,
+                    'mandatory' => true,
+                    'answers' => ['']
+                ]
+            ]),
+            'created_by' => $admin->id,
+            'is_locked' => 0
+        ]);
+        
+        // Associate some media with the project
+        $media = Media::inRandomOrder()->limit(10)->get();
+        $project->media()->sync($media->pluck('id'));
+        
+        $this->command->info("Created performance test project: {$project->name}");
+        
+        // Create 500+ cases with realistic distribution
+        $totalCases = 520; // A bit over 500 for testing
+        $this->command->info("Creating {$totalCases} cases...");
+        
+        $progressBar = $this->command->getOutput()->createProgressBar($totalCases);
+        $progressBar->start();
+        
+        for ($i = 1; $i <= $totalCases; $i++) {
+            // Create case with batch processing every 50 cases for memory efficiency
+            $case = $this->createPerformanceTestCase($project, $admin, $i);
+            
+            // Create fewer entries per case for this performance test (5-15 instead of 15-50)
+            $entriesCount = rand(5, 15);
+            $this->createRealisticEntries($case, $project, $entriesCount);
+            
+            $progressBar->advance();
+            
+            // Memory cleanup every 50 cases
+            if ($i % 50 == 0) {
+                gc_collect_cycles();
+            }
+        }
+        
+        $progressBar->finish();
+        $this->command->line('');
+        $this->command->info("Successfully created {$totalCases} cases for performance testing!");
+        $this->command->info("Project ID: {$project->id}");
+        $this->command->info("You can now test the performance improvements with this large dataset.");
+    }
+    
+    private function createPerformanceTestCase($project, $admin, $caseNumber)
+    {
+        // Create varied case durations
+        $durationOptions = [
+            ['hours' => 168, 'days' => 7],   // 1 week - 40%
+            ['hours' => 336, 'days' => 14],  // 2 weeks - 30%
+            ['hours' => 504, 'days' => 21],  // 3 weeks - 20%
+            ['hours' => 720, 'days' => 30],  // 1 month - 10%
+        ];
+        
+        $weights = [40, 30, 20, 10];
+        $totalWeight = array_sum($weights);
+        $random = rand(1, $totalWeight);
+        
+        $selectedIndex = 0;
+        $currentWeight = 0;
+        foreach ($weights as $index => $weight) {
+            $currentWeight += $weight;
+            if ($random <= $currentWeight) {
+                $selectedIndex = $index;
+                break;
+            }
+        }
+        
+        $selectedDuration = $durationOptions[$selectedIndex];
+        
+        // Distribute case start dates over the last 6 months for variety
+        $startDaysAgo = rand(5, 180);
+        $startDate = Carbon::now()->subDays($startDaysAgo);
+        $endDate = $startDate->copy()->addDays($selectedDuration['days']);
+        
+        $duration = sprintf(
+            'value:%d|days:%d|lastDay:%s',
+            $selectedDuration['hours'],
+            $selectedDuration['days'],
+            $endDate->format('d.m.Y')
+        );
+        
+        return Cases::create([
+            'name' => "Performance Test Case #{$caseNumber}",
+            'duration' => $duration,
+            'project_id' => $project->id,
+            'user_id' => $admin->id,
+            'file_token' => \Illuminate\Support\Facades\Crypt::encryptString(\App\Helpers\Helper::random_str(60))
+        ]);
     }
 }

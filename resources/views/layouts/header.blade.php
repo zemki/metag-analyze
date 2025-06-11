@@ -14,13 +14,13 @@
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 
     <script>
-        window.trans = [];
+        window.trans = {};
         window.trans = <?php
                        if (File::exists(resource_path() . "/lang/" . App::getLocale() . '.json')) {
                            $json_file = File::get(resource_path() . "/lang/" . App::getLocale() . '.json');
-                           echo json_decode(json_encode($json_file, true));
+                           echo $json_file; // Output the JSON directly
                        } else {
-                           echo "[]";
+                           echo "{}";
                        }
                        ?>;
     </script>

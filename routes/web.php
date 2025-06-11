@@ -48,6 +48,7 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified', 'LoggedUser']],
     Route::post('/projects', 'ProjectController@store')->name('projects');
     Route::get('/projects/new', 'ProjectController@create');
     Route::get('/projects/{project}', 'ProjectController@show');
+    Route::get('/projects/{project}/cases-ajax', 'ProjectController@getCasesAjax');
     Route::patch('/projects/{project}', 'ProjectController@update');
     Route::delete('/projects/{project}', 'ProjectController@destroy')->name('projects.destroy');
 
@@ -65,6 +66,7 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified', 'LoggedUser']],
     Route::post('/projects/{project}/cases', 'ProjectCasesController@store');
     Route::get('/projects/{project}/distinctcases/{case}', 'ProjectCasesController@distinctshow');
     Route::get('/projects/{project}/groupedcases/{case}', 'ProjectCasesController@groupedshow');
+    Route::get('/projects/{project}/treemap', 'ProjectController@treemap');
     Route::get('/cases/{case}/export', 'ProjectCasesController@export');
     Route::patch('/projects/{project}/cases/{case}', 'ProjectCasesController@update');
     Route::delete('/cases/{case}', 'ProjectCasesController@destroy')->name('cases.destroy');

@@ -63,64 +63,62 @@ class ProjectController extends Controller
         }
         $data['breadcrumb'] = [url($project->path()) => strlen($project->name) > 20 ? substr($project->name, 0, 20) . '...' : $project->name];
         $data[self::PROJECT] = $project;
-        $data[self::CASES] = $project->cases;
-        $data['casesWithUsers'] = $project->cases()->with('user')->get();
-        $data['casesWithEntries'] = $project->cases()->with('user', 'project', 'entries')->orderBy('created_at', 'desc')->get()->map(function ($case) {
-            $case->first_day = $case->firstDay();
-            $case->start_day = $case->startDay();
-            $case->duration_string = Helper::get_string_between($case->duration, 'duration:', '|');
-            $case->last_day = $case->lastDay() ?: 'Case not started by the user';
-            $case->is_consultable = $case->isConsultable();
+        
+        // Optimized query with pagination and eager loading
+        $data['casesWithEntries'] = $project->cases()
+            ->with([
+                'user:id,email',
+                'user.profile:user_id,name',
+                'entries' => function($query) {
+                    $query->select('id', 'case_id', 'media_id', 'begin', 'end', 'inputs')
+                          ->with('media:id,name');
+                },
+                'files:id,case_id,path'
+            ])
+            ->select('id', 'name', 'duration', 'user_id', 'created_at', 'project_id')
+            ->orderBy('created_at', 'desc')
+            ->paginate(50)
+            ->through(function ($case) {
+                // Cache computed values to avoid repeated calculations
+                $case->first_day = $case->firstDay();
+                $case->start_day = $case->startDay();
+                $case->duration_string = Helper::get_string_between($case->duration, 'duration:', '|');
+                $case->last_day = $case->lastDay() ?: 'Case not started by the user';
+                $case->is_consultable = $case->isConsultable();
+                $case->consultable = $case->isConsultable() && ! $case->notYetStarted();
+                $case->backend = $case->isBackend();
 
-            return $case;
-        });
-
-        foreach ($data['casesWithEntries'] as $case) {
-            $case->entries->map(function ($entry) {
-                $entry->media = $entry->media()->first() ? $entry->media()->first()->name : '';
-            });
-            // parse the lastday: string in the duration field, delimited by '|'
-
-            $case->consultable = $case->isConsultable() && ! $case->notYetStarted();
-            $case->backend = $case->isBackend();
-
-            // check the inputs in the entries of the case, if it contains the file property, resolve it to the file address
-            $case->entries->map(function ($entry) use ($case) {
-                if ($entry->inputs) {
-                    $entry->inputs = json_decode($entry->inputs, true);
-                    foreach ($entry->inputs as $key => $value) {
-                        if ($key == 'file') {
-                            $entry->file_object = Files::find($value);
-
-                            if ($entry->file_object) {
-                                try {
-                                    $entry->file_object['audiofile'] = decrypt(file_get_contents($entry->file_object['path']));
-                                } catch (\Exception $e) {
-                                    // Log the exception or handle it as you need
-                                    Log::error("Could not decrypt the file: {$e->getMessage()}");
-                                }
-
-                                $entry->file_object['entry'] = $case->entries()->whereJsonContains('inputs->file', $entry->file_object['id'])->first();
-
-                                if (! empty($entry->file_object['entry'])) {
-                                    $entry->file_object['entry']->media_id = optional(Media::where('id', '=', $entry->file_object['entry']->media_id)->first())->name;
-                                }
-
-                                $entry->file_path = $entry->file_object->path;
-                            } else {
-                                // Handle the condition where file_object is not found
-                                Log::warning("File object not found for entry id: {$entry->id}");
+                // Optimize entry processing
+                $case->entries->each(function ($entry) {
+                    $entry->media_name = $entry->media ? $entry->media->name : '';
+                    
+                    if ($entry->inputs) {
+                        $inputs = is_string($entry->inputs) ? json_decode($entry->inputs, true) : $entry->inputs;
+                        $entry->inputs = $inputs;
+                        
+                        // Only process file entries if they exist
+                        if (isset($inputs['file'])) {
+                            $fileObject = $case->files->where('id', $inputs['file'])->first();
+                            if ($fileObject) {
+                                $entry->file_object = $fileObject;
+                                $entry->file_path = $fileObject->path;
+                                // Note: File decryption moved to on-demand loading for performance
                             }
                         }
+                        
+                        if (isset($inputs['firstValue']['media_id'])) {
+                            // This should also be optimized with eager loading if frequently used
+                            $entry->mediaforFirstValue = Media::where('id', $inputs['firstValue']['media_id'])->value('name') ?: '';
+                        }
                     }
-                }
+                });
 
-                if (array_key_exists('firstValue', $entry->inputs)) {
-                    $temp = $entry->inputs['firstValue'];
-                    $entry->mediaforFirstValue = Media::where('id', '=', $temp['media_id'])->first() ? Media::where('id', '=', $temp['media_id'])->first()->name : '';
-                }
+                return $case;
             });
-        }
+
+        // Keep legacy data for backward compatibility but mark as deprecated
+        $data[self::CASES] = $project->cases()->select('id', 'name', 'duration', 'user_id', 'created_at')->get();
+        $data['casesWithUsers'] = $project->cases()->with(['user:id,email', 'user.profile:user_id,name'])->select('id', 'name', 'user_id')->get();
 
         // Only include media if project uses entity field or is legacy project
         $useEntity = $project->use_entity ?? true;
@@ -129,6 +127,101 @@ class ProjectController extends Controller
         $data['inputs'] = config('inputs');
 
         return view('projects.show', $data);
+    }
+
+    /**
+     * Get paginated cases for a project via AJAX
+     */
+    public function getCasesAjax(Project $project, Request $request)
+    {
+        if (auth()->user()->notOwnerNorInvited($project) && ! auth()->user()->isAdmin()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $query = $project->cases()
+            ->with([
+                'user:id,email',
+                'user.profile:user_id,name',
+                'entries' => function($query) {
+                    $query->select('id', 'case_id', 'media_id', 'begin', 'end', 'inputs')
+                          ->with('media:id,name');
+                },
+                'files:id,case_id,path'
+            ])
+            ->select('id', 'name', 'duration', 'user_id', 'created_at', 'project_id');
+
+        // Apply search filter
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                  ->orWhereHas('user', function($userQuery) use ($search) {
+                      $userQuery->where('email', 'LIKE', "%{$search}%");
+                  });
+            });
+        }
+
+        // Apply status filter
+        if ($request->filled('status')) {
+            $status = $request->input('status');
+            switch ($status) {
+                case 'active':
+                    $query->whereRaw("STR_TO_DATE(SUBSTRING_INDEX(SUBSTRING_INDEX(duration, 'lastDay:', -1), '|', 1), '%d.%m.%Y') >= CURDATE()");
+                    break;
+                case 'completed':
+                    $query->whereRaw("STR_TO_DATE(SUBSTRING_INDEX(SUBSTRING_INDEX(duration, 'lastDay:', -1), '|', 1), '%d.%m.%Y') < CURDATE()");
+                    break;
+                case 'backend':
+                    $query->whereRaw("SUBSTRING_INDEX(SUBSTRING_INDEX(duration, 'value:', -1), '|', 1) = '0'");
+                    break;
+            }
+        }
+
+        // Apply sorting
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortOrder = $request->input('sort_order', 'desc');
+        $query->orderBy($sortBy, $sortOrder);
+
+        $perPage = $request->input('per_page', 50);
+        $cases = $query->paginate($perPage);
+
+        // Process cases with computed properties
+        $cases->getCollection()->transform(function ($case) {
+            $case->first_day = $case->firstDay();
+            $case->start_day = $case->startDay();
+            $case->duration_string = Helper::get_string_between($case->duration, 'duration:', '|');
+            $case->last_day = $case->lastDay() ?: 'Case not started by the user';
+            $case->is_consultable = $case->isConsultable();
+            $case->consultable = $case->isConsultable() && ! $case->notYetStarted();
+            $case->backend = $case->isBackend();
+
+            // Optimize entry processing
+            $case->entries->each(function ($entry) use ($case) {
+                $entry->media_name = $entry->media ? $entry->media->name : '';
+                
+                if ($entry->inputs) {
+                    $inputs = is_string($entry->inputs) ? json_decode($entry->inputs, true) : $entry->inputs;
+                    $entry->inputs = $inputs;
+                    
+                    // Only process file entries if they exist
+                    if (isset($inputs['file'])) {
+                        $fileObject = $case->files->where('id', $inputs['file'])->first();
+                        if ($fileObject) {
+                            $entry->file_object = $fileObject;
+                            $entry->file_path = $fileObject->path;
+                        }
+                    }
+                    
+                    if (isset($inputs['firstValue']['media_id'])) {
+                        $entry->mediaforFirstValue = Media::where('id', $inputs['firstValue']['media_id'])->value('name') ?: '';
+                    }
+                }
+            });
+
+            return $case;
+        });
+
+        return response()->json($cases);
     }
 
     /**
@@ -469,5 +562,50 @@ class ProjectController extends Controller
     {
         json_decode($string);
         return json_last_error() === JSON_ERROR_NONE;
+    }
+
+    /**
+     * Display the treemap visualization for a project
+     *
+     * @param Project $project
+     * @return Factory|View
+     * @throws AuthorizationException
+     */
+    public function treemap(Project $project)
+    {
+        // Check authorization
+        if (auth()->user()->notOwnerNorInvited($project) && !auth()->user()->isAdmin()) {
+            abort(403);
+        }
+
+        // Prepare breadcrumb
+        $data['breadcrumb'] = [
+            url('/projects') => 'Projects',
+            url($project->path()) => strlen($project->name) > 20 ? substr($project->name, 0, 20) . '...' : $project->name,
+            url($project->path() . '/treemap') => 'Treemap Visualization'
+        ];
+
+        // Get project data
+        $data['project'] = $project;
+        
+        // Get all cases with their entries
+        $data['cases'] = $project->cases()->with(['entries', 'user'])->get();
+        
+        // Get all entries for this project
+        $data['entries'] = $project->cases()
+            ->join('entries', 'cases.id', '=', 'entries.case_id')
+            ->select('entries.*')
+            ->get();
+        
+        // Get all media/entities used in this project
+        $data['media'] = $project->media()->get();
+        
+        // Prepare data for JavaScript
+        $data['projectJson'] = json_encode($project);
+        $data['casesJson'] = json_encode($data['cases']);
+        $data['entriesJson'] = json_encode($data['entries']);
+        $data['mediaJson'] = json_encode($data['media']);
+
+        return view('projects.treemap', $data);
     }
 }

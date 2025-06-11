@@ -16,6 +16,7 @@ import Highcharts from "highcharts";
 import exporting from "highcharts/modules/exporting";
 import gantt from "highcharts/modules/gantt";
 import stock from "highcharts/modules/stock";
+import treemap from "highcharts/modules/treemap";
 import mitt from "mitt";
 
 // Create a global event emitter
@@ -30,6 +31,7 @@ exporting(Highcharts);
 gantt(Highcharts);
 HighchartsMore(Highcharts);
 stock(Highcharts);
+treemap(Highcharts);
 
 // Create the Vue application
 const app = createApp({
@@ -966,12 +968,12 @@ app.config.globalProperties.trans = function (key) {
 // Use the store
 app.use(store);
 
-// Register all components
-Object.entries(components).forEach(([name, component]) => {
-  app.component(name, component);
-});
-
 // Mount the app when the DOM is ready
 window.addEventListener("DOMContentLoaded", () => {
+  // Register all components inside the DOMContentLoaded event
+  Object.entries(components).forEach(([name, component]) => {
+    app.component(name, component);
+  });
+  
   window.app = app.mount("#app");
 });

@@ -42,7 +42,7 @@
       </div>
       <div class="my-2">
         <label class="text-base font-bold tracking-wide text-gray-700 uppercase">
-          {{ (cases.project?.entity_name || 'Media') + ' *' }}
+          {{ trans("Media *") }}
         </label>
         <input
           type="text"
@@ -56,7 +56,7 @@
       >
         {{ trans("Inputs") }}
       </h1>
-      <div v-for="(value, index) in editentry.inputs" :key="index">
+      <div v-for="(value, index) in JSON.parse(projectInputs)" :key="index">
         <label
           v-if="value.type !== 'audio recording'"
           class="pb-2 text-base font-bold tracking-wide text-gray-700 uppercase"
@@ -79,7 +79,7 @@
               class="block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             >
               <option
-                v-for="(answer, indexA) in value.answers"
+                v-for="(answer, indexA) in value.answers.filter(a => a.trim() !== '')"
                 :key="indexA"
                 :value="answer"
               >
@@ -95,7 +95,7 @@
               class="block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             >
               <option
-                v-for="(answer, indexA) in value.answers"
+                v-for="(answer, indexA) in value.answers.filter(a => a.trim() !== '')"
                 :key="indexA"
                 :value="answer"
               >
@@ -525,7 +525,7 @@ export default {
       required: false,
       default: () => ({}),
     },
-    projectinputs: {
+    projectInputs: {
       type: Array,
       required: true,
       default: () => [],
@@ -779,8 +779,24 @@ export default {
 
         editentry.id = entry.id;
         editentry.case_id = entry.case_id;
-        editentry.inputs = props.projectinputs;
-        editentry.data.inputs = parsedInputs;
+        editentry.inputs = props.projectInputs;
+        
+        // Process the inputs to match expected format
+        const projectInputsArray = JSON.parse(props.projectInputs);
+        const processedInputs = {};
+        
+        projectInputsArray.forEach(input => {
+          const currentValue = parsedInputs[input.name];
+          if (input.type === 'one choice') {
+            // Ensure one choice is always an array
+            processedInputs[input.name] = Array.isArray(currentValue) ? currentValue : [currentValue || ''];
+          } else {
+            // Keep other types as-is
+            processedInputs[input.name] = currentValue;
+          }
+        });
+        
+        editentry.data.inputs = processedInputs;
         editentry.data.media_id = entry.media_id;
         editentry.data.media = entry.media;
 
@@ -789,7 +805,7 @@ export default {
         editentry.data.end = formatDateForInput(entry.end);
       } else {
         editentry.actuallysave = true;
-        editentry.inputs = props.projectinputs;
+        editentry.inputs = props.projectInputs;
         editentry.data.inputs = {};
       }
 
