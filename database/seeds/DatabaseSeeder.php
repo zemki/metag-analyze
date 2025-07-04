@@ -15,6 +15,9 @@ class DatabaseSeeder extends Seeder
         $this->call(RolesTableSeeder::class);
         $this->call(UserRoleTableSeeder::class);
         
+        // Seed MART authentication user
+        $this->call(MartAuthSeeder::class);
+        
         // Always seed media first
         $this->call(MediaSeeder::class);
         

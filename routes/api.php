@@ -35,4 +35,14 @@ Route::group(['prefix' => 'v2', 'middleware' => ['auth:api']], function () {
     Route::post('/cases/{case}/entries', 'Api\V2\EntryController@store');
     Route::patch('/cases/{case}/entries/{entry}', 'Api\V2\EntryController@update');
     Route::delete('/cases/{case}/entries/{entry}', 'Api\V2\EntryController@destroy');
+    
+    Route::get('/files/{file}', 'Api\V2\FileController@show');
+    
+    // Pages API routes
+    Route::get('/projects/{project}/pages', 'Api\V2\PageController@index');
+    Route::post('/projects/{project}/pages', 'Api\V2\PageController@store');
+    Route::get('/projects/{project}/pages/{page}', 'Api\V2\PageController@show');
+    Route::patch('/projects/{project}/pages/{page}', 'Api\V2\PageController@update');
+    Route::delete('/projects/{project}/pages/{page}', 'Api\V2\PageController@destroy');
+    Route::patch('/projects/{project}/pages/order', 'Api\V2\PageController@updateOrder');
 });
