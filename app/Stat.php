@@ -1,14 +1,17 @@
 <?php
 
-namespace App\Models;
+namespace App;
 
-use App\Cases;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Stat extends Model
 {
-    use HasFactory;
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'stats';
 
     /**
      * The attributes that are mass assignable.
@@ -16,13 +19,17 @@ class Stat extends Model
      * @var array
      */
     protected $fillable = [
-        'case_id',
-        'android_usage_stats',
-        'android_event_stats',
-        'ios_activations',
-        'ios_screen_time',
+        'userId',
+        'projectId',
+        'participantId',
         'timestamp',
         'timezone',
+        'iosScreenTime',
+        'iosActivations',
+        'androidUsageStats',
+        'androidEventStats',
+        'iosStats',
+        'deviceID',
     ];
 
     /**
@@ -31,16 +38,77 @@ class Stat extends Model
      * @var array
      */
     protected $casts = [
-        'android_usage_stats' => 'array',
-        'android_event_stats' => 'array',
+        'androidUsageStats' => 'array',
+        'androidEventStats' => 'array',
+        'iosStats' => 'array',
         'timestamp' => 'integer',
+        'iosScreenTime' => 'integer',
+        'iosActivations' => 'integer',
     ];
 
     /**
-     * Get the case that owns the stats.
+     * Get the project that owns the stat.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function project()
+    {
+        return $this->belongsTo(Project::class, 'projectId');
+    }
+
+    /**
+     * Get the user that owns the stat.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'userId', 'email');
+    }
+
+    /**
+     * Get the case associated with the stat.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function case()
     {
-        return $this->belongsTo(Cases::class, 'case_id');
+        return $this->belongsTo(Cases::class, 'participantId', 'name');
     }
-}
+
+    /**
+     * Scope a query to only include stats for a specific project.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  int  $projectId
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeForProject($query, $projectId)
+    {
+        return $query->where('projectId', $projectId);
+    }
+
+    /**
+     * Scope a query to only include stats for a specific participant.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  string  $participantId
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeForParticipant($query, $participantId)
+    {
+        return $query->where('participantId', $participantId);
+    }
+
+    /**
+     * Get stats within a date range.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  int  $startTimestamp
+     * @param  int  $endTimestamp
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeInDateRange($query, $startTimestamp, $endTimestamp)
+    {
+        return $query->whereBetween('timestamp', [$startTimestamp, $endTimestamp]);
+    }}

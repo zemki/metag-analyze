@@ -8,7 +8,9 @@
       "Bash(npm run:*)",
       "Bash(./vendor/bin/phpunit:*)",
       "Bash(git fetch:*)",
-      "Bash(php artisan make:migration:*)"
+      "Bash(php artisan make:migration:*)",
+      "Bash(ls:*)",
+      "Bash(php artisan:*)"
     ],
     "deny": []
   }
