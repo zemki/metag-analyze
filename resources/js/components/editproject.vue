@@ -1,9 +1,21 @@
 <template>
-  <div class="p-8 space-y-8 bg-white rounded-lg shadow-lg">
+  <div class="p-6 space-y-6 bg-white">
     <!-- Header -->
     <div class="pb-6 border-b border-gray-200">
-      <h3 class="text-2xl font-bold text-gray-900">{{ trans('Edit Project') }}</h3>
-      <p class="mt-2 text-sm text-gray-600">{{ trans('You can edit your project details here.') }}</p>
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-2xl font-bold text-gray-900">{{ trans('Edit Project') }}</h3>
+          <p class="mt-2 text-sm text-gray-600">{{ trans('You can edit your project details here.') }}</p>
+        </div>
+        <div v-if="isMartProject" class="flex items-center">
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+            </svg>
+            MART Project
+          </span>
+        </div>
+      </div>
     </div>
 
     <!-- Project Name -->
@@ -128,8 +140,314 @@
       </p>
     </div>
 
-    <!-- Inputs Section -->
-    <div class="space-y-4">
+    <!-- MART Questionnaire Section -->
+    <div v-if="isMartProject" class="space-y-6">
+      <div class="pb-6 border-b border-gray-200">
+        <h3 class="text-lg font-medium text-gray-900">{{ trans('Questionnaire Builder') }}</h3>
+        <p class="mt-2 text-sm text-gray-600">{{ trans('Manage questions for your mobile app questionnaire.') }}</p>
+      </div>
+      
+      <!-- Questionnaire Name -->
+      <div class="space-y-2">
+        <label for="questionnaire-name" class="block text-sm font-medium text-gray-700">{{ trans('Questionnaire Name') }} *</label>
+        <input
+            type="text"
+            id="questionnaire-name"
+            v-model="projectData.questionnaireName"
+            :disabled="!editable"
+            class="block w-full px-4 py-3 rounded-md shadow-sm transition duration-150"
+            :class="[
+            editable
+              ? 'border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200'
+              : 'bg-gray-50 border-gray-200',
+            {'border-red-500': !projectData.questionnaireName?.trim() && editable}
+          ]"
+            placeholder="Enter questionnaire name"
+        />
+      </div>
+      
+      <!-- MART Questions -->
+      <div class="space-y-4">
+        <div class="flex justify-between items-center">
+          <h4 class="text-md font-medium text-gray-900">{{ trans('Questions') }}</h4>
+          <button
+              v-if="editable"
+              type="button"
+              @click="addMartQuestion"
+              class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            {{ trans('Add Question') }}
+          </button>
+        </div>
+        
+        <!-- MART Question Items -->
+        <div v-if="projectData.inputs.length === 0" class="text-center py-8 text-gray-500">
+          {{ trans('No questions added yet. Click "Add Question" to get started.') }}
+        </div>
+        
+        <div v-for="(input, index) in projectData.inputs" :key="index"
+             class="border border-gray-300 rounded-lg p-4 space-y-4">
+          <!-- Question Header -->
+          <div class="flex justify-between items-start">
+            <span class="text-sm font-medium text-gray-700">{{ trans('Question') }} {{ index + 1 }}</span>
+            <button
+                v-if="editable"
+                type="button"
+                @click="removeMartQuestion(index)"
+                class="text-red-600 hover:text-red-900"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+              </svg>
+            </button>
+          </div>
+          
+          <!-- Question Text -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700">{{ trans('Question Text') }} *</label>
+            <textarea
+                v-model="input.name"
+                :disabled="!editable"
+                rows="2"
+                class="mt-1 block w-full px-4 py-3 rounded-md shadow-sm transition duration-150"
+                :class="[
+                editable
+                  ? 'border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200'
+                  : 'bg-gray-100 border-gray-200',
+                {'border-red-500': input.name.trim() === '' && editable}
+              ]"
+                placeholder="Enter your question"
+            ></textarea>
+          </div>
+          
+          <!-- Mandatory Checkbox -->
+          <div class="flex items-center">
+            <input
+                type="checkbox"
+                :id="'mandatory-' + index"
+                v-model="input.mandatory"
+                :disabled="!editable"
+                class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
+            />
+            <label :for="'mandatory-' + index" class="ml-2 block text-sm text-gray-700">
+              {{ trans('Required question') }}
+            </label>
+          </div>
+          
+          <!-- Question Type -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700">{{ trans('Question Type') }} *</label>
+            <select
+                v-model="input.type"
+                :disabled="!editable"
+                class="mt-1 block w-full px-4 py-3 rounded-md shadow-sm transition duration-150"
+                :class="[
+                editable
+                  ? 'border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200'
+                  : 'bg-gray-100 border-gray-200',
+                {'border-red-500': input.type.trim() === '' && editable}
+              ]"
+            >
+              <option disabled value="">{{ trans('Select type...') }}</option>
+              <option value="text">{{ trans('Text Field') }}</option>
+              <option value="textarea">{{ trans('Text Area') }}</option>
+              <option value="number">{{ trans('Number') }}</option>
+              <option value="range">{{ trans('Range/Slider') }}</option>
+              <option value="radio">{{ trans('Single Choice') }}</option>
+              <option value="checkbox">{{ trans('Multiple Choice') }}</option>
+            </select>
+          </div>
+          
+          <!-- Range/Slider Options -->
+          <div v-if="input.type === 'range'" class="grid grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">{{ trans('Min Value') }}</label>
+              <input
+                  type="number"
+                  v-model.number="input.minValue"
+                  :disabled="!editable"
+                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">{{ trans('Max Value') }}</label>
+              <input
+                  type="number"
+                  v-model.number="input.maxValue"
+                  :disabled="!editable"
+                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">{{ trans('Steps') }}</label>
+              <input
+                  type="number"
+                  v-model.number="input.steps"
+                  :disabled="!editable"
+                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              />
+            </div>
+          </div>
+          
+          <!-- Choice Options -->
+          <div v-if="input.type === 'radio' || input.type === 'checkbox'" class="space-y-3">
+            <label class="block text-sm font-medium text-gray-700">{{ trans('Options') }}</label>
+            <div v-for="(option, oIndex) in input.options" :key="oIndex"
+                 class="flex items-center space-x-2">
+              <input
+                  type="text"
+                  v-model="option.text"
+                  :disabled="!editable"
+                  class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder="Enter option text"
+              />
+              <button
+                  v-if="editable && input.options.length > 1"
+                  @click="removeMartOption(index, oIndex)"
+                  class="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors duration-150"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+            <button
+                v-if="editable"
+                @click="addMartOption(index)"
+                class="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-500 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors duration-150"
+            >
+              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              {{ trans('Add Option') }}
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- MART Pages Section -->
+      <div class="pt-8 space-y-6">
+        <div class="pb-6 border-b border-gray-200">
+          <h3 class="text-lg font-medium text-gray-900">{{ trans('Pages Builder') }}</h3>
+          <p class="mt-2 text-sm text-gray-600">{{ trans('Manage instruction pages with HTML content for your mobile app.') }}</p>
+        </div>
+        
+        <!-- Pages List -->
+        <div class="space-y-4">
+          <div class="flex justify-between items-center">
+            <h4 class="text-md font-medium text-gray-900">{{ trans('Pages') }}</h4>
+            <button
+                v-if="editable"
+                type="button"
+                @click="addMartPage"
+                class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+              {{ trans('Add Page') }}
+            </button>
+          </div>
+          
+          <!-- Page Items -->
+          <div v-if="projectData.pages.length === 0" class="text-center py-8 text-gray-500">
+            {{ trans('No pages added yet. Click "Add Page" to get started.') }}
+          </div>
+          
+          <div v-for="(page, index) in projectData.pages" :key="index" class="border border-gray-300 rounded-lg p-4 space-y-4">
+            <!-- Page Header -->
+            <div class="flex justify-between items-start">
+              <span class="text-sm font-medium text-gray-700">{{ trans('Page') }} {{ index + 1 }}</span>
+              <button
+                  v-if="editable"
+                  type="button"
+                  @click="removeMartPage(index)"
+                  class="text-red-600 hover:text-red-900"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+              </button>
+            </div>
+            
+            <!-- Page Name -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700">{{ trans('Page Name') }} *</label>
+              <input
+                  type="text"
+                  v-model="page.name"
+                  :disabled="!editable"
+                  class="mt-1 block w-full px-4 py-3 rounded-md shadow-sm transition duration-150"
+                  :class="[
+                  editable
+                    ? 'border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200'
+                    : 'bg-gray-100 border-gray-200',
+                  {'border-red-500': page.name?.trim() === '' && editable}
+                ]"
+                  placeholder="Enter page name"
+              />
+            </div>
+            
+            <!-- Page Content -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700">{{ trans('Page Content (HTML)') }} *</label>
+              <textarea
+                  v-model="page.content"
+                  :disabled="!editable"
+                  rows="6"
+                  class="mt-1 block w-full px-4 py-3 rounded-md shadow-sm transition duration-150"
+                  :class="[
+                  editable
+                    ? 'border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200'
+                    : 'bg-gray-100 border-gray-200',
+                  {'border-red-500': page.content?.trim() === '' && editable}
+                ]"
+                  placeholder="Enter HTML content for the page"
+              ></textarea>
+              <p class="text-xs text-gray-500 mt-1">{{ trans('You can use HTML tags for formatting (e.g., &lt;h1&gt;, &lt;p&gt;, &lt;strong&gt;, &lt;br&gt;, etc.)') }}</p>
+            </div>
+            
+            <!-- Button Text -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700">{{ trans('Button Text') }} *</label>
+              <input
+                  type="text"
+                  v-model="page.buttonText"
+                  :disabled="!editable"
+                  class="mt-1 block w-full px-4 py-3 rounded-md shadow-sm transition duration-150"
+                  :class="[
+                  editable
+                    ? 'border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200'
+                    : 'bg-gray-100 border-gray-200',
+                  {'border-red-500': page.buttonText?.trim() === '' && editable}
+                ]"
+                  placeholder="Continue"
+              />
+            </div>
+            
+            <!-- Show on First App Start -->
+            <div class="flex items-center">
+              <input
+                  type="checkbox"
+                  :id="'page-first-start-' + index"
+                  v-model="page.showOnFirstAppStart"
+                  :disabled="!editable"
+                  class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
+              />
+              <label :for="'page-first-start-' + index" class="ml-2 block text-sm text-gray-700">
+                {{ trans('Show this page on first app start') }}
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Standard Inputs Section -->
+    <div v-else class="space-y-4">
       <div class="flex items-center justify-between">
         <label class="block text-sm font-medium text-gray-700">{{ trans('Number of Inputs') }} (0-3)</label>
         <div class="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
@@ -157,7 +475,7 @@
         </div>
       </div>
 
-      <!-- Dynamic Inputs -->
+      <!-- Standard Dynamic Inputs -->
       <div v-for="(input, index) in projectData.inputs" :key="index"
            class="p-6 border border-gray-200 rounded-lg space-y-4 bg-gray-50">
         <div class="space-y-4">
@@ -316,7 +634,7 @@ export default {
     }
   },
 
-  emits: ['update:editable'],
+  emits: ['update:editable', 'project-updated'],
 
   data() {
     return {
@@ -331,8 +649,23 @@ export default {
         useEntity: true,
         inputs: [],
         media: [],
+        questionnaireName: "",
+        pages: [],
       },
     };
+  },
+
+  computed: {
+    isMartProject() {
+      try {
+        const inputsData = JSON.parse(this.project.inputs || '[]');
+        return Array.isArray(inputsData) && 
+          inputsData.length > 0 && 
+          inputsData[0].type === 'mart';
+      } catch (error) {
+        return false;
+      }
+    }
   },
 
   watch: {
@@ -379,7 +712,7 @@ export default {
       this.projectData.name = this.project.name || '';
       this.projectData.description = this.project.description || '';
       this.projectData.entityName = this.project.entity_name || (this.isLegacyProject ? 'media' : 'entity');
-      
+
       // Handle use_entity - convert database value (1/0) to boolean
       if (this.isLegacyProject) {
         this.projectData.useEntity = true; // Legacy projects always use entity
@@ -397,26 +730,82 @@ export default {
       // Initialize inputs
       try {
         const inputsData = JSON.parse(this.project.inputs || '[]');
-        this.projectData.inputs = Array.isArray(inputsData) ? inputsData.map(input => {
-          const inputObj = {
-            name: input.name || '',
-            type: input.type || '',
-            mandatory: input.mandatory !== undefined ? input.mandatory : true,
-          };
+        
+        // Check if this is a MART project
+        const isMartProject = Array.isArray(inputsData) && 
+          inputsData.length > 0 && 
+          inputsData[0].type === 'mart';
+          
+        if (isMartProject) {
+          // For MART projects, extract config and questions
+          const martConfig = inputsData.find(input => input.type === 'mart');
+          const martQuestions = inputsData.filter(input => input.type !== 'mart');
+          
+          // Extract questionnaire name from MART config
+          this.projectData.questionnaireName = martConfig?.questionnaireName || '';
+          
+          // Extract pages from MART config
+          this.projectData.pages = martConfig?.projectOptions?.pages || [];
+          
+          this.projectData.inputs = martQuestions.map(input => {
+            const inputObj = {
+              name: input.name || '',
+              type: this.mapMetagTypeToMartType(input.type) || input.martMetadata?.originalType || input.type || '',
+              mandatory: input.mandatory !== undefined ? input.mandatory : true,
+            };
+            
 
-          // Handle answers based on input type
-          if (this.isChoiceType(input.type)) {
-            // For choice types, ensure we have at least one empty answer if none exist
-            inputObj.answers = Array.isArray(input.answers) && input.answers.some(a => a.trim() !== '')
-              ? input.answers.filter(a => a.trim() !== '')
-              : [''];
-          } else {
-            // For non-choice types, initialize an empty array
-            inputObj.answers = [];
-          }
+            // Handle MART-specific properties based on the MART type
+            const martType = inputObj.type;
+            
+            if (martType === 'range') {
+              inputObj.minValue = input.martMetadata?.minValue || input.minValue || 0;
+              inputObj.maxValue = input.martMetadata?.maxValue || input.maxValue || 10;
+              inputObj.steps = input.martMetadata?.steps || input.steps || 1;
+            }
+            
+            if (martType === 'radio' || martType === 'checkbox') {
+              // For MART choice types, convert from legacy answers to options structure
+              if (Array.isArray(input.answers) && input.answers.length > 0) {
+                inputObj.options = input.answers.map((answer, idx) => ({ text: answer, value: idx }));
+              } else {
+                inputObj.options = [{ text: '', value: 0 }];
+              }
+            } else if (this.isChoiceType(input.type)) {
+              // For legacy MetaG choice types, keep answers structure
+              inputObj.answers = Array.isArray(input.answers) && input.answers.some(a => a.trim() !== '')
+                ? input.answers.filter(a => a.trim() !== '')
+                : [''];
+            } else {
+              // For non-choice types, initialize an empty array
+              inputObj.answers = [];
+            }
 
-          return inputObj;
-        }) : [];
+            return inputObj;
+          });
+        } else {
+          // For standard projects, process all inputs as before
+          this.projectData.inputs = Array.isArray(inputsData) ? inputsData.map(input => {
+            const inputObj = {
+              name: input.name || '',
+              type: input.type || '',
+              mandatory: input.mandatory !== undefined ? input.mandatory : true,
+            };
+
+            // Handle answers based on input type
+            if (this.isChoiceType(input.type)) {
+              // For choice types, ensure we have at least one empty answer if none exist
+              inputObj.answers = Array.isArray(input.answers) && input.answers.some(a => a.trim() !== '')
+                ? input.answers.filter(a => a.trim() !== '')
+                : [''];
+            } else {
+              // For non-choice types, initialize an empty array
+              inputObj.answers = [];
+            }
+
+            return inputObj;
+          }) : [];
+        }
       } catch (error) {
         console.error('Error parsing inputs:', error);
         this.projectData.inputs = [];
@@ -504,9 +893,89 @@ export default {
       }
     },
 
+    // MART Project Methods
+    addMartQuestion() {
+      this.projectData.inputs.push({
+        name: '',
+        type: '',
+        mandatory: false,
+        minValue: 0,
+        maxValue: 10,
+        steps: 1,
+        options: [{ text: '', value: 0 }]
+      });
+    },
+
+    removeMartQuestion(index) {
+      this.projectData.inputs.splice(index, 1);
+    },
+
+    addMartOption(questionIndex) {
+      const question = this.projectData.inputs[questionIndex];
+      if (!question.options) {
+        question.options = [];
+      }
+      question.options.push({ text: '', value: question.options.length });
+    },
+
+    removeMartOption(questionIndex, optionIndex) {
+      const question = this.projectData.inputs[questionIndex];
+      if (question.options && question.options.length > 1) {
+        question.options.splice(optionIndex, 1);
+        // Renumber the values
+        question.options.forEach((opt, idx) => {
+          opt.value = idx;
+        });
+      }
+    },
+
+    // MART Page Management Methods
+    addMartPage() {
+      this.projectData.pages.push({
+        name: '',
+        content: '',
+        buttonText: 'Continue',
+        showOnFirstAppStart: false
+      });
+    },
+
+    removeMartPage(index) {
+      this.projectData.pages.splice(index, 1);
+    },
+
     // Utility Methods
     isChoiceType(type) {
       return ['multiple choice', 'one choice'].includes(type);
+    },
+
+    isMartChoiceType(type) {
+      return ['radio', 'checkbox'].includes(type);
+    },
+
+    // Map MetaG types back to MART types for editing
+    mapMetagTypeToMartType(metagType) {
+      const reverseMapping = {
+        'text': 'text',
+        'scale': 'range', // Default scale to range, but martMetadata.originalType takes precedence
+        'one choice': 'radio',
+        'multiple choice': 'checkbox'
+      };
+      
+      return reverseMapping[metagType] || 'text';
+    },
+
+    // Map MART types to MetaG types for saving (same as createproject.vue)
+    mapMartTypeToMetagType(martType) {
+      const mapping = {
+        'text': 'text',
+        'textarea': 'text',
+        'number': 'scale',
+        'range': 'scale',
+        'radio': 'one choice',
+        'checkbox': 'multiple choice'
+      };
+      
+      return mapping[martType] || 'text';
     },
 
     showSnackbarMessage(message) {
@@ -527,25 +996,57 @@ export default {
       if (!this.projectData.name.trim()) return false;
       if (!this.projectData.description.trim()) return false;
 
-      for (const input of this.projectData.inputs) {
-        if (!input.name.trim() || !input.type) return false;
+      // MART project specific validation
+      if (this.isMartProject) {
+        if (!this.projectData.questionnaireName?.trim()) return false;
+        
+        for (const input of this.projectData.inputs) {
+          if (!input.name.trim() || !input.type) return false;
 
-        // For choice types, validate that there's at least one non-empty answer
-        if (this.isChoiceType(input.type)) {
-          // Make sure answers is an array
-          if (!Array.isArray(input.answers)) {
-            input.answers = [''];
+          // Validate MART choice types
+          if (this.isMartChoiceType(input.type)) {
+            if (!Array.isArray(input.options) || input.options.length < 2) {
+              return false;
+            }
+            if (!input.options.every(opt => opt.text && opt.text.trim() !== '')) {
+              return false;
+            }
+          }
+          
+          // Validate range type
+          if (input.type === 'range') {
+            if (input.minValue >= input.maxValue) return false;
+          }
+        }
+        
+        // Validate pages
+        for (const page of this.projectData.pages) {
+          if (!page.name?.trim() || !page.content?.trim() || !page.buttonText?.trim()) {
             return false;
           }
+        }
+      } else {
+        // Standard project validation
+        for (const input of this.projectData.inputs) {
+          if (!input.name.trim() || !input.type) return false;
 
-          // Make sure there's at least one non-empty answer
-          if (!input.answers.some(a => a && a.trim() !== '')) {
-            return false;
-          }
-        } else {
-          // For non-choice types, ensure answers is an empty array
-          if (!Array.isArray(input.answers)) {
-            input.answers = [];
+          // For choice types, validate that there's at least one non-empty answer
+          if (this.isChoiceType(input.type)) {
+            // Make sure answers is an array
+            if (!Array.isArray(input.answers)) {
+              input.answers = [''];
+              return false;
+            }
+
+            // Make sure there's at least one non-empty answer
+            if (!input.answers.some(a => a && a.trim() !== '')) {
+              return false;
+            }
+          } else {
+            // For non-choice types, ensure answers is an empty array
+            if (!Array.isArray(input.answers)) {
+              input.answers = [];
+            }
           }
         }
       }
@@ -572,23 +1073,88 @@ export default {
         submitData.entityName = this.projectData.entityName?.trim() || 'entity';
         submitData.useEntity = this.projectData.useEntity !== false; // Default to true
 
-        submitData.inputs = this.projectData.inputs.map(input => {
-          // Ensure each input has an answers array
-          const processedInput = { ...input };
+        // Handle inputs differently for MART vs standard projects
+        const originalInputsData = JSON.parse(this.project.inputs || '[]');
+        const isMartProject = Array.isArray(originalInputsData) && 
+          originalInputsData.length > 0 && 
+          originalInputsData[0].type === 'mart';
 
-          // If it's a choice type, filter out empty answers
-          if (this.isChoiceType(input.type) && Array.isArray(input.answers)) {
-            processedInput.answers = input.answers.filter(a => a && a.trim() !== '');
-          } else {
-            // For non-choice types, initialize an empty array
-            processedInput.answers = [];
+        if (isMartProject) {
+          // For MART projects, preserve the MART config and update only the questions
+          const martConfig = originalInputsData.find(input => input.type === 'mart');
+          
+          // Update questionnaire name and pages in MART config
+          if (martConfig) {
+            martConfig.questionnaireName = this.projectData.questionnaireName;
+            
+            // Update pages in projectOptions
+            if (!martConfig.projectOptions) {
+              martConfig.projectOptions = {};
+            }
+            martConfig.projectOptions.pages = this.projectData.pages.map((page, index) => ({
+              name: page.name,
+              content: page.content,
+              showOnFirstAppStart: page.showOnFirstAppStart,
+              buttonText: page.buttonText,
+              sortOrder: index
+            }));
           }
+          
+          const processedQuestions = this.projectData.inputs.map(input => {
+            const processedInput = { ...input };
 
-          return processedInput;
-        });
+            // Convert MART type back to MetaG type for storage
+            processedInput.type = this.mapMartTypeToMetagType(input.type);
 
-        // Stringify inputs array
-        submitData.inputs = JSON.stringify(submitData.inputs);
+            // Handle MART choice types with options
+            if (this.isMartChoiceType(input.type) && Array.isArray(input.options)) {
+              // Convert options back to answers array for MetaG compatibility
+              processedInput.answers = input.options
+                .filter(opt => opt.text && opt.text.trim() !== '')
+                .map(opt => opt.text.trim());
+              processedInput.numberofanswer = processedInput.answers.length;
+              delete processedInput.options; // Remove MART options structure
+            } else if (this.isChoiceType(processedInput.type) && Array.isArray(input.answers)) {
+              // For legacy choice types, filter out empty answers
+              processedInput.answers = input.answers.filter(a => a && a.trim() !== '');
+            } else {
+              // For non-choice types, ensure clean structure
+              delete processedInput.answers;
+              delete processedInput.options;
+            }
+
+            // Store MART metadata for future editing
+            processedInput.martMetadata = {
+              originalType: input.type,
+              minValue: input.minValue,
+              maxValue: input.maxValue,
+              steps: input.steps
+            };
+            
+            return processedInput;
+          });
+          
+          // Reconstruct the full inputs array with MART config + questions
+          submitData.inputs = JSON.stringify([martConfig, ...processedQuestions]);
+        } else {
+          // For standard projects, process normally
+          submitData.inputs = this.projectData.inputs.map(input => {
+            // Ensure each input has an answers array
+            const processedInput = { ...input };
+
+            // If it's a choice type, filter out empty answers
+            if (this.isChoiceType(input.type) && Array.isArray(input.answers)) {
+              processedInput.answers = input.answers.filter(a => a && a.trim() !== '');
+            } else {
+              // For non-choice types, initialize an empty array
+              processedInput.answers = [];
+            }
+            return processedInput;
+          });
+
+          // Stringify inputs array
+          submitData.inputs = JSON.stringify(submitData.inputs);
+        }
 
         // Include media based on project type
         if (this.isLegacyProject || this.projectData.useEntity) {
@@ -601,16 +1167,26 @@ export default {
         }
 
         const response = await window.axios.patch(this.productionUrl+`/projects/${submitData.id}`, submitData);
-        console.log(response);
-        
+
         // Controller returns simple string response
         this.showSnackbarMessage(response.data);
-      
+        
+        // Emit the updated project data to parent component
+        const updatedProject = {
+          ...this.project,
+          name: this.projectData.name.trim(),
+          description: this.projectData.description.trim(),
+          entity_name: this.projectData.entityName?.trim() || 'entity',
+          use_entity: this.projectData.useEntity !== false ? 1 : 0,
+          inputs: submitData.inputs // Already stringified
+        };
+        
+        this.$emit('project-updated', updatedProject);
+
 
       } catch (error) {
         let errorMessage = this.trans('An error occurred while saving.');
-        console.log(error)
-        
+
         if (error.response?.data) {
           if (error.response.data.errors) {
             // Handle validation errors
@@ -620,8 +1196,8 @@ export default {
             errorMessage = error.response.data.message;
           }
         }
-        
-        
+
+
         this.showSnackbarMessage(errorMessage);
 
       } finally {

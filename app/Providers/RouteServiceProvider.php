@@ -36,6 +36,7 @@ class RouteServiceProvider extends ServiceProvider
     {
         $this->mapApiRoutes();
         $this->mapWebRoutes();
+        $this->mapMartApiRoutes();
         //
     }
 
@@ -65,6 +66,20 @@ class RouteServiceProvider extends ServiceProvider
         Route::middleware('web')
             ->namespace($this->namespace)
             ->group(base_path('routes/web.php'));
+    }
+    
+    /**
+     * Define the "mart-api" routes for the application.
+     * These routes are for the MART mobile application integration.
+     *
+     * @return void
+     */
+    protected function mapMartApiRoutes()
+    {
+        Route::prefix('mart-api')
+            ->middleware('api')
+            ->namespace($this->namespace)
+            ->group(base_path('routes/mart_api.php'));
     }
 
     protected function configureRateLimiting()

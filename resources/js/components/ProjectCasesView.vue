@@ -6,8 +6,8 @@
         <!-- Project Info -->
         <div class="flex items-center space-x-4">
           <div>
-            <h1 class="text-2xl font-bold text-gray-900">{{ project.name }}</h1>
-            <p class="text-sm text-gray-600 mt-1">{{ project.description }}</p>
+            <h1 class="text-2xl font-bold text-gray-900">{{ localProject.name }}</h1>
+            <p class="text-sm text-gray-600 mt-1">{{ localProject.description }}</p>
           </div>
         </div>
 
@@ -58,7 +58,7 @@
                   {{ trans('Treemap View') }}
                 </a>
                 <div class="border-t border-gray-100 my-1"></div>
-                <button @click="showProjectSettings = true"
+                <button @click="openProjectSettings"
                         class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                   <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -348,19 +348,44 @@
     />
 
     <!-- Project Settings Modal -->
-    <Modal v-if="showProjectSettings" @close="showProjectSettings = false">
-      <template #header>
-        <h3 class="text-lg font-medium text-gray-900">Project Settings</h3>
-      </template>
-      <div class="p-6">
-        <EditProject
-          :editable="project.isEditable"
-          :project="project"
-          :config="inputsConfig"
-          :project-media="projectMedia"
-        />
+    <div v-if="showProjectSettings" class="fixed inset-0 z-50 overflow-y-auto">
+      <!-- Backdrop -->
+      <div class="fixed inset-0 bg-black bg-opacity-50" @click="showProjectSettings = false"></div>
+      
+      <!-- Modal Container -->
+      <div class="flex min-h-full items-center justify-center p-4">
+        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+          <!-- Header (Fixed) -->
+          <div class="flex items-center justify-between p-6 border-b border-gray-200 shrink-0">
+            <h3 class="text-lg font-medium text-gray-900">Project Settings</h3>
+            <button @click="showProjectSettings = false" class="text-gray-400 hover:text-gray-600">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+          
+          <!-- Content (Scrollable) -->
+          <div class="flex-1 overflow-y-auto">
+            <EditProject
+              :editable="project.isEditable"
+              :project="localProject"
+              :config="inputsConfig"
+              :projectmedia="projectMedia"
+              @project-updated="handleProjectUpdate"
+            />
+          </div>
+          
+          <!-- Footer (Fixed) -->
+          <div class="flex items-center justify-end p-6 border-t border-gray-200 space-x-3 shrink-0">
+            <button @click="showProjectSettings = false" 
+                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+              Close
+            </button>
+          </div>
+        </div>
       </div>
-    </Modal>
+    </div>
   </div>
 </template>
 
@@ -417,6 +442,9 @@ export default {
       casesListHeight: 400, // Initial height in pixels
       isResizing: false,
       
+      // Local project data (mutable copy of prop)
+      localProject: { ...this.project },
+      
       // Cases data
       cases: [],
       loading: false,
@@ -450,7 +478,13 @@ export default {
       return `/projects/${this.project.id}`;
     }
   },
+  watch: {
+    // Remove automatic prop syncing to prevent overriding our updates
+  },
   mounted() {
+    // Initialize local project copy
+    this.localProject = { ...this.project };
+    
     this.loadCases();
     this.debouncedSearch = debounce(this.loadCases, 300);
     
@@ -470,6 +504,19 @@ export default {
     document.removeEventListener('mousemove', this.handleResize);
   },
   methods: {
+    openProjectSettings() {
+      this.showProjectSettings = true;
+      this.actionsDropdownOpen = false; // Close the dropdown
+    },
+
+    handleProjectUpdate(updatedProject) {
+      // Update the local project object with the new data
+      Object.assign(this.localProject, updatedProject);
+      
+      // Optionally close the modal after successful save
+      // this.showProjectSettings = false;
+    },
+
     async loadCases() {
       this.loading = true;
       try {

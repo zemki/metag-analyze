@@ -215,6 +215,14 @@ class Project extends Model
     }
 
     /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function pages()
+    {
+        return $this->hasMany(MartPage::class)->ordered();
+    }
+
+    /**
      * @return string
      */
     public function path()

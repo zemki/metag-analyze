@@ -236,8 +236,75 @@ class Cases extends Model
         }
         $this->user()->associate($user);
         $this->save();
+        
+        // Auto-create planned notifications for MART projects with repeating questionnaires
+        $this->createAutoNotificationsForMartProject($user);
 
         return $user;
+    }
+    
+    /**
+     * Create automatic planned notifications for MART projects with repeating questionnaires
+     */
+    private function createAutoNotificationsForMartProject($user)
+    {
+        $project = $this->project;
+        $inputs = json_decode($project->inputs, true);
+        
+        if (!$inputs || !is_array($inputs)) {
+            return;
+        }
+        
+        // Find MART configuration
+        $martConfig = null;
+        foreach ($inputs as $input) {
+            if (isset($input['type']) && $input['type'] === 'mart') {
+                $martConfig = $input;
+                break;
+            }
+        }
+        
+        if (!$martConfig || !isset($martConfig['projectOptions'])) {
+            return;
+        }
+        
+        $options = $martConfig['projectOptions'];
+        
+        // Check if this is a repeating questionnaire with notification config
+        if (isset($options['questionnaireType']) && 
+            $options['questionnaireType'] === 'repeating' &&
+            isset($options['notificationConfig']) &&
+            $options['notificationConfig']['enabled']) {
+            
+            $notificationConfig = $options['notificationConfig'];
+            
+            // Create the planning string in the format expected by the system
+            $frequency = $this->mapFrequencyToText($notificationConfig['frequency']);
+            $planningText = $frequency . ' at 09:00'; // Default time, can be customized
+            
+            // Create planned notification
+            $user->notify(new \App\Notifications\researcherNotificationToUser([
+                'title' => 'Study Reminder',
+                'message' => $notificationConfig['text'] ?? 'You have a new questionnaire available',
+                'case' => ['id' => $this->id],
+                'planning' => $planningText
+            ]));
+        }
+    }
+    
+    /**
+     * Map frequency values to text format expected by notification system
+     */
+    private function mapFrequencyToText($frequency)
+    {
+        $mapping = [
+            'daily' => 'Every day',
+            'every-2-days' => 'Every 2 days',
+            'every-3-days' => 'Every 3 days',
+            'weekly' => 'Every week'
+        ];
+        
+        return $mapping[$frequency] ?? 'Every day';
     }
 
     /**

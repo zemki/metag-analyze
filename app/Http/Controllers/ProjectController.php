@@ -62,6 +62,9 @@ class ProjectController extends Controller
             abort(403);
         }
         $data['breadcrumb'] = [url($project->path()) => strlen($project->name) > 20 ? substr($project->name, 0, 20) . '...' : $project->name];
+        
+        // Add isEditable property to the project object
+        $project->isEditable = $project->isEditable();
         $data[self::PROJECT] = $project;
         
         // Optimized query with pagination and eager loading
