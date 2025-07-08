@@ -177,7 +177,13 @@ class ProjectCasesController extends Controller
                 }
 
                 $user = User::createIfDoesNotExists(User::firstOrNew(['email' => $singleEmail]), request('sendanywayemail'), request('sendanywayemailsubject'), request('sendanywayemailmessage'));
-                $case = $project->addCase($caseName, request('duration'));
+                
+                // For MART projects, use a default duration since duration is not applicable
+                $duration = $project->isMartProject() 
+                    ? 'value:0|days:0|lastDay:' . Carbon::now()->addYear()->format('Y-m-d')
+                    : request('duration');
+                    
+                $case = $project->addCase($caseName, $duration);
                 $case->addUser($user);
                 $message .= $user->email . " has been invited. \n";
             }
@@ -207,11 +213,19 @@ class ProjectCasesController extends Controller
         if (request('backendCase')) {
             return;
         }
-        request()->validate([
+        
+        // Base validation rules
+        $rules = [
             'name' => 'required',
             'email' => 'required',
-            'duration' => 'required',
-        ]);
+        ];
+        
+        // Only require duration for non-MART projects
+        if (!$project->isMartProject()) {
+            $rules['duration'] = 'required';
+        }
+        
+        request()->validate($rules);
 
         $emails = Helper::multiexplode([';', ',', ' '], $email);
 
