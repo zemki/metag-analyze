@@ -223,6 +223,25 @@ class Project extends Model
     }
 
     /**
+     * Check if this is a MART project
+     * @return bool
+     */
+    public function isMartProject()
+    {
+        $inputs = json_decode($this->inputs, true);
+        
+        if (is_array($inputs)) {
+            foreach ($inputs as $input) {
+                if (isset($input['type']) && $input['type'] === 'mart') {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+
+    /**
      * @return string
      */
     public function path()

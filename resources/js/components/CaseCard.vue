@@ -13,6 +13,9 @@
           <h3 class="text-lg font-semibold text-gray-900 truncate">
             {{ caseData.name }}
           </h3>
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
+            ID: {{ caseData.id }}
+          </span>
           <span
             v-if="caseData.backend"
             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800"
@@ -113,6 +116,11 @@ export default {
       return null;
     },
     startInfo() {
+      // For MART projects, show simplified info
+      if (this.caseData.project && this.caseData.project.is_mart_project) {
+        return `Created on: ${this.formatDate(this.caseData.created_at)}`;
+      }
+      
       if (!this.caseData.start_day && !this.caseData.first_day) {
         const duration = this.getDuration(this.caseData.duration);
         return `Case starts when user logs in and lasts ${duration} days`;
@@ -126,6 +134,11 @@ export default {
       }
     },
     endInfo() {
+      // For MART projects, duration is handled by the mobile app
+      if (this.caseData.project && this.caseData.project.is_mart_project) {
+        return 'Duration managed by mobile app';
+      }
+      
       if (this.caseData.backend) {
         return 'No end date';
       }
@@ -137,6 +150,14 @@ export default {
     statusBadge() {
       if (this.caseData.backend) {
         return null;
+      }
+
+      // For MART projects, show a simplified status
+      if (this.caseData.project && this.caseData.project.is_mart_project) {
+        return {
+          text: 'Active',
+          class: 'bg-green-100 text-green-800'
+        };
       }
 
       const now = new Date();

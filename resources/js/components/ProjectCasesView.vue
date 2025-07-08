@@ -158,6 +158,9 @@
               <div class="flex-1 min-w-0">
                 <div class="flex items-center space-x-3">
                   <h3 class="text-sm font-medium text-gray-900 truncate">{{ caseItem.name }}</h3>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
+                    ID: {{ caseItem.id }}
+                  </span>
                   <span v-if="caseItem.backend"
                         class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
                     Backend

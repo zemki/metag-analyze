@@ -183,9 +183,14 @@
       <div class="py-2 bg-white">
         <div class="px-4 sm:flex sm:justify-between sm:items-baseline">
           <div class="sm:w-0 sm:flex-1">
-            <h1 id="message-heading" class="text-lg font-medium text-gray-900">
-              {{ selectedCase.name }}
-            </h1>
+            <div class="flex items-center space-x-3">
+              <h1 id="message-heading" class="text-lg font-medium text-gray-900">
+                {{ selectedCase.name }}
+              </h1>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                ID: {{ selectedCase.id }}
+              </span>
+            </div>
             <p class="mt-1 text-sm text-gray-500 truncate">
               {{
                 selectedCase.user
@@ -195,9 +200,6 @@
             </p>
           </div>
           <div class="flex justify-end sm:mt-0 sm:flex-shrink-0">
-            <p class="flex w-full text-sm text-gray-500 word-break">
-              ID {{ selectedCase.id }}
-            </p>
             <button
               v-if="showCase && selectedCase.backend"
               type="button"
