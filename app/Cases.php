@@ -387,6 +387,12 @@ class Cases extends Model
     #[Pure]
     public function isBackend(): bool
     {
+        // For MART projects, cases are never considered "backend" 
+        // since they're designed for mobile app usage
+        if ($this->project && $this->project->isMartProject()) {
+            return false;
+        }
+        
         return Helper::get_string_between($this->duration, 'value:', '|') == 0;
     }
 

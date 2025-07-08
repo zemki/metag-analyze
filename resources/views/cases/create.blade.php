@@ -20,6 +20,7 @@
         </div>
     </div>
 
+    @if(!$project->isMartProject())
     <div class="flex full">
         <div class="w-1/3">
             <label for="duration" class="block text-sm font-medium text-gray-700">{{__('Duration')}} *</label>
@@ -54,6 +55,8 @@
         </div>
 
     </div>
+    @endif
+    @if(!$project->isMartProject())
     <div class="relative flex items-start my-2">
         <div class="flex items-center h-5">
             <input v-model="newcase.duration.starts_with_login" :disabled="newcase.backendcase" name="loginStart"
@@ -72,6 +75,7 @@
             placeholder="{{__('Select date')}}" :min="moment().subtract(1,'day').format('YYYY-MM-DD')">
     </div>
     <input type="hidden" :value="newcase.duration.value" name="duration">
+    @endif
     <div class="relative block my-2">
 
         <label for="user" class="block text-sm font-medium text-gray-700">{{__('User(s)')}} *</label>

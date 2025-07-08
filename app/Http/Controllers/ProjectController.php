@@ -197,6 +197,9 @@ class ProjectController extends Controller
             $case->is_consultable = $case->isConsultable();
             $case->consultable = $case->isConsultable() && ! $case->notYetStarted();
             $case->backend = $case->isBackend();
+            
+            // Add project MART status for frontend
+            $case->project = (object) ['is_mart_project' => $case->project->isMartProject()];
 
             // Optimize entry processing
             $case->entries->each(function ($entry) use ($case) {
@@ -534,6 +537,9 @@ class ProjectController extends Controller
             // Add entity information for frontend compatibility
             $projects[$key]['entity_name'] = $project->entity_name ?? 'media';
             $projects[$key]['use_entity'] = $project->use_entity ?? true;
+            
+            // Add MART project detection for frontend
+            $projects[$key]['is_mart_project'] = $project->isMartProject();
         }
 
         return $projects;
