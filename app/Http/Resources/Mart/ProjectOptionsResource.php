@@ -51,6 +51,7 @@ class ProjectOptionsResource extends JsonResource
                     'showProgressBar' => $projectOptions['showProgressBar'] ?? true,
                     'showNotifications' => $projectOptions['showNotifications'] ?? true,
                     'notificationText' => $projectOptions['notificationText'] ?? 'You have a new questionnaire available',
+                    'notificationConfig' => $projectOptions['notificationConfig'] ?? null,
                     'collectDeviceInfos' => $projectOptions['collectDeviceInfos'] ?? true,
                     'collectIosStats' => $projectOptions['collectIosStats'] ?? false,
                     'collectAndroidStats' => $projectOptions['collectAndroidStats'] ?? false,

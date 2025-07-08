@@ -14,20 +14,20 @@ class DatabaseSeeder extends Seeder
 
         $this->call(RolesTableSeeder::class);
         $this->call(UserRoleTableSeeder::class);
-        
+
         // Seed MART authentication user
         $this->call(MartAuthSeeder::class);
-        
+
         // Always seed media first
         $this->call(MediaSeeder::class);
-        
+
         // Ask user which seeder to run
         $choice = $this->command->choice(
             'Which data seeder would you like to run?',
             ['Interactive (original)', 'Realistic (new)', 'Both'],
             2 // Default to 'Realistic'
         );
-        
+
         switch ($choice) {
             case 'Interactive (original)':
                 $this->call(ProjectCaseUserEntrySeeder::class);
