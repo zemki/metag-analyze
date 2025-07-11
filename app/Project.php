@@ -153,7 +153,7 @@ class Project extends Model
         $item = null;
         foreach (json_decode($this->inputs) as $input) {
             if ($question === $input->name) {
-                $item = $input->numberofanswer;
+                $item = property_exists($input, 'numberofanswer') ? $input->numberofanswer : null;
                 break;
             }
         }
@@ -173,7 +173,7 @@ class Project extends Model
         $inputs = json_decode($this->inputs);
         foreach ($inputs as $input) {
             if ($question === $input->name) {
-                $item = $input->answers;
+                $item = property_exists($input, 'answers') ? $input->answers : null;
                 break;
             }
         }
