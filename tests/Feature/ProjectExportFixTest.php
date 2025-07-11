@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Cases;
 use App\Entry;
+use App\Media;
 use App\Project;
 use App\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -114,5 +115,65 @@ class ProjectExportFixTest extends TestCase
         
         // Should return the array when property exists
         $this->assertEquals(['A', 'B'], $project->getAnswersByQuestion('Has Answers'));
+    }
+
+    /** @test */
+    public function export_handles_missing_input_values_and_media()
+    {
+        $user = User::factory()->researcher()->create([
+            'email_verified_at' => now(),
+        ]);
+
+        // Create a project with multiple input types
+        $inputs = [
+            ['name' => 'Text Question', 'type' => 'text', 'mandatory' => true],
+            ['name' => 'Scale Question', 'type' => 'scale', 'mandatory' => false],
+            ['name' => 'Choice Question', 'type' => 'one choice', 'mandatory' => true, 'numberofanswer' => 2, 'answers' => ['Yes', 'No']]
+        ];
+
+        $project = Project::factory()->create([
+            'created_by' => $user->id,
+            'inputs' => json_encode($inputs)
+        ]);
+
+        $project->invited()->attach($user->id);
+
+        $case = Cases::factory()->create([
+            'project_id' => $project->id
+        ]);
+
+        // Create a media record
+        $media = Media::factory()->create();
+
+        // Create entries with missing values (testing column alignment)
+        Entry::factory()->create([
+            'case_id' => $case->id,
+            'media_id' => $media->id,
+            'begin' => now()->subHour()->format('Y-m-d H:i:s.u'),
+            'end' => now()->format('Y-m-d H:i:s.u'),
+            'inputs' => json_encode([
+                'Text Question' => 'Some text',
+                // Missing 'Scale Question' and 'Choice Question'
+            ])
+        ]);
+
+        Entry::factory()->create([
+            'case_id' => $case->id,
+            'media_id' => $media->id,
+            'begin' => now()->subHour()->format('Y-m-d H:i:s.u'),
+            'end' => now()->format('Y-m-d H:i:s.u'),
+            'inputs' => json_encode([
+                'Scale Question' => 5,
+                'Choice Question' => ['Yes']
+                // Missing 'Text Question'
+            ])
+        ]);
+
+        // Export should work without column misalignment
+        $response = $this->actingAs($user)
+            ->get("/projects/{$project->id}/export");
+
+        $response->assertStatus(200);
+        $response->assertHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     }
 }
