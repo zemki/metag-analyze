@@ -311,7 +311,15 @@ class ProjectCasesController extends Controller
     private function getProjectInputHeadings(Project $project): array
     {
         $headings = [];
-        foreach (json_decode($project->inputs) as $input) {
+        $inputs = json_decode($project->inputs);
+        
+        // Skip MART configuration object if present
+        foreach ($inputs as $input) {
+            // Skip MART configuration object
+            if (property_exists($input, 'type') && $input->type === 'mart') {
+                continue;
+            }
+            
             $isMultipleOrOneChoice = property_exists($input, 'numberofanswer') && $input->numberofanswer > 0;
             if ($isMultipleOrOneChoice) {
                 for ($i = 0; $i < $input->numberofanswer; $i++) {

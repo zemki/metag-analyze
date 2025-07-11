@@ -52,11 +52,12 @@ class RegisterController extends Controller
         return Validator::make($data, [
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => 'required|string|min:6|regex:/^(?=.*[a-zA-Z])(?=.*[0-9]).+$/',
-            'altoken' => [new ValidAltcha],
+            'altcha' => ['required', new ValidAltcha],
         ],
             [
                 // Custom error messages
                 'password.regex' => __('Be sure your password contains at least 1 letter and 1 number.'),
+                'altoken.required' => __('Please complete the captcha verification.'),
             ]);
     }
 
