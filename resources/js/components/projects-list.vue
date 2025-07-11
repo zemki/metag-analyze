@@ -187,7 +187,7 @@
 </template>
 <script>
 import Modal from "./global/modal.vue";
-import { emitter } from '../app';
+import { emitter } from '@/emitter';
 
 export default {
   name: "ProjectsList",
@@ -300,7 +300,7 @@ export default {
       this.loading = true;
       this.message = "";
       const self = this;
-      
+
       window.axios
           .get("projects/" + self.duplicateProjectId + "/duplicate")
           .then((response) => {

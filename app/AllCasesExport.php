@@ -45,7 +45,11 @@ class AllCasesExport implements FromCollection, WithHeadings, WithMapping
                     $tempValuesArray = $this->printValuesInArray($project, $jsonInputs, $tempValuesArray);
                 }
                 $tempValuesArray[self::ENTRY_ID] = $entry->id;
-                $tempValuesArray['media'] = Media::where('id', $entry->media_id)->first()->name;
+                
+                // Handle missing media safely
+                $media = $entry->media_id ? Media::where('id', $entry->media_id)->first() : null;
+                $tempValuesArray['media'] = $media ? $media->name : '';
+                
                 $tempValuesArray['start'] = $entry->begin;
                 $tempValuesArray['end'] = $entry->end;
                 $tempValuesArray['user_id'] = $case->user_id;
@@ -111,19 +115,24 @@ class AllCasesExport implements FromCollection, WithHeadings, WithMapping
         foreach ($project->getProjectInputNames() as $name) {
             $projectInputNames[$name] = $project->getAnswersByQuestion($name);
         }
-        foreach ($jsonInputs as $key => $input) {
-            if ($key === 'firstValue') {
+        
+        // Process ALL project input names to ensure all columns are filled
+        foreach ($project->getProjectInputNames() as $inputName) {
+            if ($inputName === 'firstValue') {
                 continue;
             }
 
             $index = [];
-            $numberOfAnswersByQuestion = $project->getNumberOfAnswersByQuestion($key);
+            $numberOfAnswersByQuestion = $project->getNumberOfAnswersByQuestion($inputName);
             $questionIsMultipleOrOneChoice = $numberOfAnswersByQuestion > 0;
+            
+            // Get the input value from jsonInputs, or use empty string if not present
+            $input = $jsonInputs[$inputName] ?? '';
 
             if ($questionIsMultipleOrOneChoice) {
-                $this->formatMultipleAndOneChoiceValues($tempValuesArray, $input, $index, $projectInputNames, $key, $numberOfAnswersByQuestion);
+                $this->formatMultipleAndOneChoiceValues($tempValuesArray, $input, $index, $projectInputNames, $inputName, $numberOfAnswersByQuestion);
             } else {
-                $tempValuesArray[$key] = $input;
+                $tempValuesArray[$inputName] = $input;
             }
         }
 
@@ -135,7 +144,7 @@ class AllCasesExport implements FromCollection, WithHeadings, WithMapping
      */
     private function formatMultipleAndOneChoiceValues(&$tempValuesArray, $input, array $index, $projectInputNames, $key, $numberOfAnswersByQuestion): void
     {
-        if (is_null($input)) {
+        if (is_null($input) || $input === '') {
             // print empty value
             for ($i = 0; $i < $numberOfAnswersByQuestion; $i++) {
                 $tempValuesArray[$key][$i] = [''];

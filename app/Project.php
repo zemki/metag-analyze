@@ -38,7 +38,15 @@ class Project extends Model
     public static function getProjectInputHeadings(Project $project): array
     {
         $headings = [];
-        foreach (json_decode($project->inputs) as $input) {
+        $inputs = json_decode($project->inputs);
+        
+        // Skip MART configuration object if present
+        foreach ($inputs as $input) {
+            // Skip MART configuration object
+            if (property_exists($input, 'type') && $input->type === 'mart') {
+                continue;
+            }
+            
             $isMultipleOrOneChoice = property_exists($input, 'numberofanswer') && $input->numberofanswer > 0;
             if ($isMultipleOrOneChoice) {
                 for ($i = 0; $i < $input->numberofanswer; $i++) {
@@ -137,6 +145,10 @@ class Project extends Model
         }
         $inputNames = [];
         foreach (json_decode($this->inputs) as $input) {
+            // Skip MART configuration object
+            if (property_exists($input, 'type') && $input->type === 'mart') {
+                continue;
+            }
             array_push($inputNames, $input->name);
         }
 
@@ -154,7 +166,7 @@ class Project extends Model
         $item = null;
         foreach (json_decode($this->inputs) as $input) {
             if ($question === $input->name) {
-                $item = $input->numberofanswer;
+                $item = property_exists($input, 'numberofanswer') ? $input->numberofanswer : null;
                 break;
             }
         }
@@ -174,7 +186,7 @@ class Project extends Model
         $inputs = json_decode($this->inputs);
         foreach ($inputs as $input) {
             if ($question === $input->name) {
-                $item = $input->answers;
+                $item = property_exists($input, 'answers') ? $input->answers : null;
                 break;
             }
         }
