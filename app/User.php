@@ -2,10 +2,10 @@
 
 namespace App;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use App\Mail\VerificationEmail;
 use App\Notifications\notifyUserforNewCaseWhenAlreadyRegistered;
-use Filament\Models\Contracts\FilamentUser;
-use Filament\Models\Contracts\HasName;
 use Helper;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,7 +17,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Mail;
 
-class User extends Authenticatable implements FilamentUser, HasName, MustVerifyEmail
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable, SoftDeletes;
 
@@ -57,15 +57,6 @@ class User extends Authenticatable implements FilamentUser, HasName, MustVerifyE
         'password', 'remember_token',
     ];
 
-    public function getFilamentName(): string
-    {
-        return $this->email;
-    }
-
-    public function canAccessFilament(): bool
-    {
-        return in_array($this->email, config('utilities.adminemails'));
-    }
 
     public static function boot()
     {
@@ -189,7 +180,7 @@ class User extends Authenticatable implements FilamentUser, HasName, MustVerifyE
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function case()
     {
@@ -197,7 +188,7 @@ class User extends Authenticatable implements FilamentUser, HasName, MustVerifyE
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function actions()
     {
@@ -210,7 +201,7 @@ class User extends Authenticatable implements FilamentUser, HasName, MustVerifyE
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     * @return HasOne
      */
     public function latestCase()
     {
@@ -231,7 +222,7 @@ class User extends Authenticatable implements FilamentUser, HasName, MustVerifyE
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function projects()
     {
@@ -239,7 +230,7 @@ class User extends Authenticatable implements FilamentUser, HasName, MustVerifyE
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     * @return HasOne
      */
     public function profile()
     {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use DateTime;
 use App\Cases;
 use App\Helpers\Helper;
 use App\Project;
@@ -120,8 +121,8 @@ class ApiController extends Controller
 
             // Determine which API version to use
             $forceApiV2 = env('FORCE_API_V2', false);
-            $projectDate = new \DateTime($userHasACase->project->created_at ?? 'now');
-            $cutoffDate = new \DateTime(config('app.api_v2_cutoff_date', '2025-03-21'));
+            $projectDate = new DateTime($userHasACase->project->created_at ?? 'now');
+            $cutoffDate = new DateTime(config('app.api_v2_cutoff_date', '2025-03-21'));
 
             // Use API V2 if forced or if project was created after cutoff date
             $useApiV2 = $forceApiV2 || ($projectDate >= $cutoffDate);

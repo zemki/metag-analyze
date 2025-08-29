@@ -46,7 +46,7 @@ class VerificationController extends Controller
     }
 
     /**
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @return Factory|View
      */
     public function showresetpassword(Request $request)
     {

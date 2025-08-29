@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Api\V2;
 
+use Exception;
+use Log;
+use Illuminate\Http\JsonResponse;
 use App\Cases;
 use App\Files;
 use App\Http\Controllers\Controller;
@@ -13,7 +16,7 @@ class FileController extends Controller
      * Get a specific file by ID for mobile app audio playback
      *
      * @param Files $file
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function show(Files $file)
     {
@@ -58,8 +61,8 @@ class FileController extends Controller
                 'size' => $file->size
             ]);
             
-        } catch (\Exception $e) {
-            \Log::error('FileController@show error: ' . $e->getMessage());
+        } catch (Exception $e) {
+            Log::error('FileController@show error: ' . $e->getMessage());
             
             return response()->json([
                 'error' => 'Failed to retrieve file'

@@ -10,7 +10,23 @@
       "Bash(git fetch:*)",
       "Bash(php artisan make:migration:*)",
       "Bash(ls:*)",
-      "Bash(php artisan:*)"
+      "Bash(php artisan:*)",
+      "Bash(php artisan:*)",
+      "Bash(vendor/bin/pest:*)",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_evaluate",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_resize",
+      "mcp__playwright__browser_type",
+      "mcp__playwright__browser_press_key",
+      "mcp__playwright__browser_console_messages",
+      "mcp__playwright__browser_hover",
+      "mcp__playwright__browser_snapshot",
+      "Bash(composer update:*)",
+      "WebFetch(domain:filamentphp.com)",
+      "WebSearch",
+      "Bash(composer install:*)"
     ],
     "deny": []
   }
