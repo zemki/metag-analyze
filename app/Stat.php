@@ -2,6 +2,8 @@
 
 namespace App;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class Stat extends Model
@@ -49,7 +51,7 @@ class Stat extends Model
     /**
      * Get the project that owns the stat.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function project()
     {
@@ -59,7 +61,7 @@ class Stat extends Model
     /**
      * Get the user that owns the stat.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function user()
     {
@@ -69,7 +71,7 @@ class Stat extends Model
     /**
      * Get the case associated with the stat.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function case()
     {
@@ -79,9 +81,9 @@ class Stat extends Model
     /**
      * Scope a query to only include stats for a specific project.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param Builder $query
      * @param  int  $projectId
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return Builder
      */
     public function scopeForProject($query, $projectId)
     {
@@ -91,9 +93,9 @@ class Stat extends Model
     /**
      * Scope a query to only include stats for a specific participant.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param Builder $query
      * @param  string  $participantId
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return Builder
      */
     public function scopeForParticipant($query, $participantId)
     {
@@ -103,10 +105,10 @@ class Stat extends Model
     /**
      * Get stats within a date range.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param Builder $query
      * @param  int  $startTimestamp
      * @param  int  $endTimestamp
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return Builder
      */
     public function scopeInDateRange($query, $startTimestamp, $endTimestamp)
     {

@@ -38,8 +38,12 @@ class MartAuthSeeder extends Seeder
 
             $this->command->info('MART API user created successfully!');
             $this->command->info('Email: mart@metag-analyze.test');
+            $this->command->info('Password: mart_secure_password_2025');
             $this->command->info('Bearer Token: ' . $token);
             $this->command->info('Use this token in Authorization header: Bearer ' . $token);
+            $this->command->info('');
+            $this->command->info('To make this user an admin, add this email to your .env file:');
+            $this->command->info('ADMINS=mart@metag-analyze.test');
         } else {
             // Update existing user's token
             $martUser->api_token = $hashedToken;

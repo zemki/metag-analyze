@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Auth;
 
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Response;
 use App\Http\Controllers\Controller;
 use App\Notifications\EmailChangeNotification;
 use App\User;
@@ -46,7 +48,7 @@ class EmailChangeController extends Controller
     /**
      * Changes the user Email Address for a new one
      *
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
     public function change(Request $request)
     {
@@ -65,7 +67,7 @@ class EmailChangeController extends Controller
      * Verifies and completes the Email change
      *
      * @param  string  $email
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\Response
+     * @return RedirectResponse|Response
      */
     public function verify(Request $request, User $user)
     {

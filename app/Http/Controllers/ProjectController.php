@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use DateTime;
 use App\AllCasesExport;
-use App\Files;
+use App\Cases;
+use App\Enums\CaseStatus;
 use App\Mail\VerificationEmail;
 use App\Media;
 use App\Project;
@@ -17,7 +19,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
-use Log;
 
 class ProjectController extends Controller
 {
@@ -62,26 +63,26 @@ class ProjectController extends Controller
             abort(403);
         }
         $data['breadcrumb'] = [url($project->path()) => strlen($project->name) > 20 ? substr($project->name, 0, 20) . '...' : $project->name];
-        
+
         // Add isEditable property to the project object
         $project->isEditable = $project->isEditable();
         $data[self::PROJECT] = $project;
-        
+
         // Optimized query with pagination and eager loading
         $data['casesWithEntries'] = $project->cases()
             ->with([
                 'user:id,email',
                 'user.profile:user_id,name',
-                'entries' => function($query) {
+                'entries' => function ($query) {
                     $query->select('id', 'case_id', 'media_id', 'begin', 'end', 'inputs')
-                          ->with('media:id,name');
+                        ->with('media:id,name');
                 },
-                'files:id,case_id,path'
+                'files:id,case_id,path',
             ])
             ->select('id', 'name', 'duration', 'user_id', 'created_at', 'project_id')
             ->orderBy('created_at', 'desc')
             ->paginate(50)
-            ->through(function ($case) {
+            ->through(function ($case) use ($project) {
                 // Cache computed values to avoid repeated calculations
                 $case->first_day = $case->firstDay();
                 $case->start_day = $case->startDay();
@@ -91,14 +92,22 @@ class ProjectController extends Controller
                 $case->consultable = $case->isConsultable() && ! $case->notYetStarted();
                 $case->backend = $case->isBackend();
 
+                // Attach project data for frontend access
+                $case->project = (object) [
+                    'id' => $project->id,
+                    'is_mart_project' => $project->isMartProject(),
+                    'use_entity' => $project->use_entity ?? true,
+                    'entity_name' => $project->entity_name ?? 'media',
+                ];
+
                 // Optimize entry processing
-                $case->entries->each(function ($entry) {
+                $case->entries->each(function ($entry) use ($case) {
                     $entry->media_name = $entry->media ? $entry->media->name : '';
-                    
+
                     if ($entry->inputs) {
                         $inputs = is_string($entry->inputs) ? json_decode($entry->inputs, true) : $entry->inputs;
                         $entry->inputs = $inputs;
-                        
+
                         // Only process file entries if they exist
                         if (isset($inputs['file'])) {
                             $fileObject = $case->files->where('id', $inputs['file'])->first();
@@ -108,7 +117,7 @@ class ProjectController extends Controller
                                 // Note: File decryption moved to on-demand loading for performance
                             }
                         }
-                        
+
                         if (isset($inputs['firstValue']['media_id'])) {
                             // This should also be optimized with eager loading if frequently used
                             $entry->mediaforFirstValue = Media::where('id', $inputs['firstValue']['media_id'])->value('name') ?: '';
@@ -119,7 +128,6 @@ class ProjectController extends Controller
                 return $case;
             });
 
-        // Keep legacy data for backward compatibility but mark as deprecated
         $data[self::CASES] = $project->cases()->select('id', 'name', 'duration', 'user_id', 'created_at')->get();
         $data['casesWithUsers'] = $project->cases()->with(['user:id,email', 'user.profile:user_id,name'])->select('id', 'name', 'user_id')->get();
 
@@ -133,9 +141,9 @@ class ProjectController extends Controller
     }
 
     /**
-     * Get paginated cases for a project via AJAX
+     * Get paginated cases for a project
      */
-    public function getCasesAjax(Project $project, Request $request)
+    public function getCases(Project $project, Request $request)
     {
         if (auth()->user()->notOwnerNorInvited($project) && ! auth()->user()->isAdmin()) {
             return response()->json(['error' => 'Unauthorized'], 403);
@@ -145,36 +153,36 @@ class ProjectController extends Controller
             ->with([
                 'user:id,email',
                 'user.profile:user_id,name',
-                'entries' => function($query) {
+                'entries' => function ($query) {
                     $query->select('id', 'case_id', 'media_id', 'begin', 'end', 'inputs')
-                          ->with('media:id,name');
+                        ->with('media:id,name');
                 },
-                'files:id,case_id,path'
+                'files:id,case_id,path',
             ])
             ->select('id', 'name', 'duration', 'user_id', 'created_at', 'project_id');
 
         // Apply search filter
         if ($request->filled('search')) {
             $search = $request->input('search');
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'LIKE', "%{$search}%")
-                  ->orWhereHas('user', function($userQuery) use ($search) {
-                      $userQuery->where('email', 'LIKE', "%{$search}%");
-                  });
+                    ->orWhereHas('user', function ($userQuery) use ($search) {
+                        $userQuery->where('email', 'LIKE', "%{$search}%");
+                    });
             });
         }
 
-        // Apply status filter
+        // Apply status filter (keep existing SQL for performance, but use enum values)
         if ($request->filled('status')) {
             $status = $request->input('status');
             switch ($status) {
-                case 'active':
+                case CaseStatus::ACTIVE->value:
                     $query->whereRaw("STR_TO_DATE(SUBSTRING_INDEX(SUBSTRING_INDEX(duration, 'lastDay:', -1), '|', 1), '%d.%m.%Y') >= CURDATE()");
                     break;
-                case 'completed':
+                case CaseStatus::COMPLETED->value:
                     $query->whereRaw("STR_TO_DATE(SUBSTRING_INDEX(SUBSTRING_INDEX(duration, 'lastDay:', -1), '|', 1), '%d.%m.%Y') < CURDATE()");
                     break;
-                case 'backend':
+                case CaseStatus::BACKEND->value:
                     $query->whereRaw("SUBSTRING_INDEX(SUBSTRING_INDEX(duration, 'value:', -1), '|', 1) = '0'");
                     break;
             }
@@ -189,26 +197,32 @@ class ProjectController extends Controller
         $cases = $query->paginate($perPage);
 
         // Process cases with computed properties
-        $cases->getCollection()->transform(function ($case) {
+        $cases->getCollection()->transform(function ($case) use ($project) {
             $case->first_day = $case->firstDay();
             $case->start_day = $case->startDay();
             $case->duration_string = Helper::get_string_between($case->duration, 'duration:', '|');
             $case->last_day = $case->lastDay() ?: 'Case not started by the user';
+            $case->status = $case->getStatus()->value;
             $case->is_consultable = $case->isConsultable();
-            $case->consultable = $case->isConsultable() && ! $case->notYetStarted();
+            $case->consultable = $case->isAccessible(); // Use new accessibility logic
             $case->backend = $case->isBackend();
-            
-            // Add project MART status for frontend
-            $case->project = (object) ['is_mart_project' => $case->project->isMartProject()];
+
+            // Attach project data for frontend access
+            $case->project = (object) [
+                'id' => $project->id,
+                'is_mart_project' => $project->isMartProject(),
+                'use_entity' => $project->use_entity ?? true,
+                'entity_name' => $project->entity_name ?? 'media',
+            ];
 
             // Optimize entry processing
             $case->entries->each(function ($entry) use ($case) {
                 $entry->media_name = $entry->media ? $entry->media->name : '';
-                
+
                 if ($entry->inputs) {
                     $inputs = is_string($entry->inputs) ? json_decode($entry->inputs, true) : $entry->inputs;
                     $entry->inputs = $inputs;
-                    
+
                     // Only process file entries if they exist
                     if (isset($inputs['file'])) {
                         $fileObject = $case->files->where('id', $inputs['file'])->first();
@@ -217,7 +231,7 @@ class ProjectController extends Controller
                             $entry->file_path = $fileObject->path;
                         }
                     }
-                    
+
                     if (isset($inputs['firstValue']['media_id'])) {
                         $entry->mediaforFirstValue = Media::where('id', $inputs['firstValue']['media_id'])->value('name') ?: '';
                     }
@@ -262,7 +276,7 @@ class ProjectController extends Controller
         } else {
             $inputs = $attributes[self::INPUTS];
         }
-        
+
         // Process each input to ensure answers are properly handled
         foreach ($inputs as &$input) {
             // Check if the input has 'answers' key before attempting to filter
@@ -273,7 +287,7 @@ class ProjectController extends Controller
                 $input['answers'] = [];
             }
         }
-        
+
         $attributes[self::INPUTS] = json_encode($inputs);
 
         // Only update entity_name and use_entity for non-legacy projects
@@ -360,7 +374,7 @@ class ProjectController extends Controller
         } else {
             $decodedAttributes = $attributes[self::INPUTS];
         }
-        
+
         foreach ($decodedAttributes as $input => $value) {
             if (isset($value['answers'])) {
                 $decodedAttributes[$input]['answers'] = array_filter($value['answers'], fn ($v) => ! is_null($v) && $v !== '');
@@ -374,8 +388,8 @@ class ProjectController extends Controller
 
         // Only update entity_name and use_entity for non-legacy projects
         if (request()->has('entityName') || request()->has('useEntity')) {
-            $projectDate = new \DateTime($project->created_at);
-            $cutoffDate = new \DateTime(config('app.api_v2_cutoff_date', '2025-03-21'));
+            $projectDate = new DateTime($project->created_at);
+            $cutoffDate = new DateTime(config('app.api_v2_cutoff_date', '2025-03-21'));
 
             if ($projectDate >= $cutoffDate) {
                 // Set default entity name if not provided
@@ -533,11 +547,11 @@ class ProjectController extends Controller
             $projects[$key]['entries'] = $project->cases->sum('entries_count');
             $projects[$key]['casescount'] = $project->cases()->count();
             $projects[$key]['editable'] = $project->isEditable();
-            
+
             // Add entity information for frontend compatibility
             $projects[$key]['entity_name'] = $project->entity_name ?? 'media';
             $projects[$key]['use_entity'] = $project->use_entity ?? true;
-            
+
             // Add MART project detection for frontend
             $projects[$key]['is_mart_project'] = $project->isMartProject();
         }
@@ -560,30 +574,31 @@ class ProjectController extends Controller
 
         return $invites;
     }
-    
+
     /**
      * Check if a string is valid JSON
      *
-     * @param string $string The string to check
+     * @param  string  $string  The string to check
      * @return bool True if the string is valid JSON, false otherwise
      */
     private function isJson($string)
     {
         json_decode($string);
+
         return json_last_error() === JSON_ERROR_NONE;
     }
 
     /**
      * Display the treemap visualization for a project
      *
-     * @param Project $project
      * @return Factory|View
+     *
      * @throws AuthorizationException
      */
     public function treemap(Project $project)
     {
         // Check authorization
-        if (auth()->user()->notOwnerNorInvited($project) && !auth()->user()->isAdmin()) {
+        if (auth()->user()->notOwnerNorInvited($project) && ! auth()->user()->isAdmin()) {
             abort(403);
         }
 
@@ -591,24 +606,24 @@ class ProjectController extends Controller
         $data['breadcrumb'] = [
             url('/projects') => 'Projects',
             url($project->path()) => strlen($project->name) > 20 ? substr($project->name, 0, 20) . '...' : $project->name,
-            url($project->path() . '/treemap') => 'Treemap Visualization'
+            url($project->path() . '/treemap') => 'Treemap Visualization',
         ];
 
         // Get project data
         $data['project'] = $project;
-        
+
         // Get all cases with their entries
         $data['cases'] = $project->cases()->with(['entries', 'user'])->get();
-        
+
         // Get all entries for this project
         $data['entries'] = $project->cases()
             ->join('entries', 'cases.id', '=', 'entries.case_id')
             ->select('entries.*')
             ->get();
-        
+
         // Get all media/entities used in this project
         $data['media'] = $project->media()->get();
-        
+
         // Prepare data for JavaScript
         $data['projectJson'] = json_encode($project);
         $data['casesJson'] = json_encode($data['cases']);

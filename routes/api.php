@@ -11,7 +11,7 @@
 |
 */
 
-Route::post('login', 'ApiController@login')->middleware('throttle:10,1');
+Route::post('login', 'ApiController@login')->middleware('throttle:10,60');
 
 // V1 API Routes (Legacy - uses 'media' field)
 Route::group(['prefix' => 'v1', 'middleware' => ['auth:api']], function () {

@@ -38,7 +38,8 @@
     </Modal>
 
 
-    <div class="pt-4 pb-4 pl-4 pr-6 sm:pl-6 lg:pl-8 xl:pl-6 xl:pt-6 xl:border-t-0">
+
+    <div class="pb-4 pl-4 pr-6 sm:pl-6 lg:pl-8 xl:pl-6 xl:border-t-0">
       <div class="flex items-center justify-between">
         <div class="flex items-center">
           <h1 class="text-lg font-medium mr-4">{{ trans("Projects") }}</h1>
@@ -110,7 +111,7 @@
                   class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
                 >
                   <svg class="-ml-0.5 mr-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 002-2M9 7a2 2 0 012 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012-2" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                   </svg>
                   Standard Project
                 </span>
@@ -240,6 +241,8 @@ export default {
       loading: false,
       message: ""
     };
+  },
+  mounted() {
   },
   methods: {
     trans(key) {

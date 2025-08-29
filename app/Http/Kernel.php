@@ -2,6 +2,7 @@
 
 namespace App\Http;
 
+use Illuminate\Http\Middleware\HandleCors;
 use App\Http\Middleware\Admin;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\Authorised;
@@ -46,7 +47,7 @@ class Kernel extends HttpKernel
         TrimStrings::class,
         ConvertEmptyStringsToNull::class,
         TrustProxies::class,
-        \Illuminate\Http\Middleware\HandleCors::class,
+        HandleCors::class,
     ];
 
     /**

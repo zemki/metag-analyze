@@ -48,7 +48,7 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified', 'LoggedUser']],
     Route::post('/projects', 'ProjectController@store')->name('projects');
     Route::get('/projects/new', 'ProjectController@create');
     Route::get('/projects/{project}', 'ProjectController@show');
-    Route::get('/projects/{project}/cases-ajax', 'ProjectController@getCasesAjax');
+    Route::get('/projects/{project}/cases', 'ProjectController@getCases');
     Route::patch('/projects/{project}', 'ProjectController@update');
     Route::delete('/projects/{project}', 'ProjectController@destroy')->name('projects.destroy');
 

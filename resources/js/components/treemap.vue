@@ -3,24 +3,30 @@
     <div class="treemap-controls mb-4">
       <div class="flex flex-wrap gap-2">
         <div class="relative">
-          <select v-model="viewMode" @change="updateChart" class="px-3 py-2 pr-8 border rounded-md appearance-none bg-white">
+          <select v-model="viewMode" @change="updateChart" class="px-3 py-2 pr-8 border rounded-md bg-white" style="-webkit-appearance: none; -moz-appearance: none; appearance: none;">
             <option value="project">Project Overview</option>
             <option value="entity">Entity Type</option>
             <option value="temporal">Time Period</option>
             <option value="participant">Participant</option>
           </select>
-          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-              <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
-            </svg>
-          </div>
+
         </div>
-        
+
         <div class="relative">
-          <select v-model="sizeMetric" @change="updateChart" class="px-3 py-2 pr-8 border rounded-md appearance-none bg-white">
+          <select v-model="sizeMetric" @change="updateChart" class="px-3 py-2 pr-8 border rounded-md bg-white" style="-webkit-appearance: none; -moz-appearance: none; appearance: none;">
             <option value="count">Entry Count</option>
             <option value="duration">Duration (s/min/h/d)</option>
             <option value="participants">Unique Participants</option>
+          </select>
+
+        </div>
+
+        <div v-if="viewMode === 'temporal'" class="relative">
+          <select v-model="temporalGrouping" @change="updateChart" class="px-3 py-2 pr-8 border rounded-md bg-white" style="-webkit-appearance: none; -moz-appearance: none; appearance: none;">
+            <option value="year-month">Year & Month</option>
+            <option value="month-week">Month & Week</option>
+            <option value="week-day">Week & Day</option>
+            <option value="day-hour">Day & Hour</option>
           </select>
           <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
             <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
@@ -29,21 +35,14 @@
           </div>
         </div>
 
-        <select v-if="viewMode === 'temporal'" v-model="temporalGrouping" @change="updateChart" class="px-3 py-2 border rounded-md">
-          <option value="year-month">Year & Month</option>
-          <option value="month-week">Month & Week</option>
-          <option value="week-day">Week & Day</option>
-          <option value="day-hour">Day & Hour</option>
-        </select>
-        
         <button @click="drillUp" v-if="currentLevel > 0" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
           ← Back
         </button>
       </div>
     </div>
-    
+
     <div :id="'treemap-' + chartId" class="treemap-container"></div>
-    
+
     <div v-if="isLoading" class="flex justify-center items-center h-96">
       <div class="text-gray-500">Loading visualization...</div>
     </div>
@@ -95,13 +94,13 @@ export default {
   mounted() {
     this.$nextTick(() => {
       this.initChart();
-      
+
       // Lazy load the data after initial render
       setTimeout(() => {
         this.updateChart();
         this.isLoading = false;
       }, 100);
-      
+
       // Make component accessible globally for export
       window.treemapComponent = this;
     });
@@ -141,7 +140,7 @@ export default {
               }
               return value;
             };
-            
+
             return `<div class="p-2">
               <b>${this.name}</b><br/>
               ${this.entries ? `<span style="color: #666">Entries:</span> ${this.entries}<br/>` : ''}
@@ -162,14 +161,14 @@ export default {
             formatter: function() {
               const chart = this.series.chart;
               let value = this.point.value;
-              
+
               // Format value based on selected metric
               if (chart.userOptions.currentSizeMetric === 'duration') {
                 value = chart.userOptions.formatDuration(value);
               } else if (typeof value === 'number') {
                 value = value.toLocaleString();
               }
-              
+
               return `${this.point.name}<br/>${value}`;
             },
             style: {
@@ -238,21 +237,21 @@ export default {
         }
       });
     },
-    
+
     updateChart() {
       const data = this.prepareData();
       this.chart.series[0].setData(data);
-      this.chart.setTitle({ 
-        text: `Research Data Overview - ${this.viewMode.charAt(0).toUpperCase() + this.viewMode.slice(1)} View` 
+      this.chart.setTitle({
+        text: `Research Data Overview - ${this.viewMode.charAt(0).toUpperCase() + this.viewMode.slice(1)} View`
       });
-      
+
       // Update the chart's user options to track current metric
       this.chart.userOptions.currentSizeMetric = this.sizeMetric;
-      
+
       // Force redraw to update data labels
       this.chart.redraw();
     },
-    
+
     prepareData() {
       switch (this.viewMode) {
         case 'project':
@@ -267,12 +266,12 @@ export default {
           return [];
       }
     },
-    
+
     prepareProjectView() {
       const data = [];
       const projectName = this.project.name;
       const projectId = 'project-' + this.project.id;
-      
+
       // Root level - Project
       const projectNode = {
         id: projectId,
@@ -285,12 +284,12 @@ export default {
         durationSeconds: this.calculateTotalDuration(this.entries)
       };
       data.push(projectNode);
-      
+
       // Second level - Cases
       this.cases.forEach((caseItem, index) => {
         const caseEntries = this.entries.filter(e => e.case_id === caseItem.id);
         const caseId = projectId + '-case-' + caseItem.id;
-        
+
         const caseNode = {
           id: caseId,
           name: caseItem.name,
@@ -302,15 +301,15 @@ export default {
           drilldown: true
         };
         data.push(caseNode);
-        
+
         // Third level - Entries grouped by entity/media
         if (this.currentLevel > 0 && this.drilldownPath[0] === caseId) {
           const entityGroups = _.groupBy(caseEntries, 'media_id');
-          
+
           Object.entries(entityGroups).forEach(([mediaId, groupEntries]) => {
             const media = this.media.find(m => m.id == mediaId);
             const entityName = media ? media.name : `${this.entityName} ${mediaId}`;
-            
+
             data.push({
               id: caseId + '-entity-' + mediaId,
               name: entityName,
@@ -323,14 +322,14 @@ export default {
           });
         }
       });
-      
+
       return data;
     },
-    
+
     prepareEntityView() {
       const data = [];
       const rootId = 'entity-root';
-      
+
       // Root node
       data.push({
         id: rootId,
@@ -339,18 +338,18 @@ export default {
         value: this.getMetricValue(this.entries, 'root'),
         color: '#50B432'
       });
-      
+
       // Group by entity/media
       const entityGroups = _.groupBy(this.entries, 'media_id');
-      
+
       Object.entries(entityGroups).forEach(([mediaId, groupEntries], index) => {
         const media = this.media.find(m => m.id == mediaId);
         const entityName = media ? media.name : `${this.entityName} ${mediaId}`;
         const entityId = rootId + '-' + mediaId;
-        
+
         // Entity level
         const caseGroups = _.groupBy(groupEntries, 'case_id');
-        
+
         data.push({
           id: entityId,
           name: entityName,
@@ -362,12 +361,12 @@ export default {
           durationSeconds: this.calculateTotalDuration(groupEntries),
           drilldown: true
         });
-        
+
         // Drill down to cases
         if (this.currentLevel > 0 && this.drilldownPath[0] === entityId) {
           Object.entries(caseGroups).forEach(([caseId, caseEntries]) => {
             const caseItem = this.cases.find(c => c.id == caseId);
-            
+
             data.push({
               id: entityId + '-case-' + caseId,
               name: caseItem ? caseItem.name : `Case ${caseId}`,
@@ -380,14 +379,14 @@ export default {
           });
         }
       });
-      
+
       return data;
     },
-    
+
     prepareTemporalView() {
       const data = [];
       const rootId = 'temporal-root';
-      
+
       // Root node
       data.push({
         id: rootId,
@@ -396,7 +395,7 @@ export default {
         value: this.getMetricValue(this.entries, 'root'),
         color: '#ED561B'
       });
-      
+
       switch (this.temporalGrouping) {
         case 'year-month':
           this.prepareYearMonthView(data, rootId);
@@ -411,19 +410,19 @@ export default {
           this.prepareDayHourView(data, rootId);
           break;
       }
-      
+
       return data;
     },
-    
+
     prepareYearMonthView(data, rootId) {
       // Group by year first
       const yearGroups = _.groupBy(this.entries, (entry) => {
         return new Date(entry.begin).getFullYear();
       });
-      
+
       Object.entries(yearGroups).sort().forEach(([year, yearEntries], yearIndex) => {
         const yearId = rootId + '-year-' + year;
-        
+
         data.push({
           id: yearId,
           name: year,
@@ -435,17 +434,17 @@ export default {
           durationSeconds: this.calculateTotalDuration(yearEntries),
           drilldown: true
         });
-        
+
         // Drill down to months
         if (this.currentLevel > 0 && this.drilldownPath[0] === yearId) {
           const monthGroups = _.groupBy(yearEntries, (entry) => {
             const date = new Date(entry.begin);
             return date.getMonth();
           });
-          
+
           Object.entries(monthGroups).sort((a, b) => Number(a[0]) - Number(b[0])).forEach(([month, monthEntries]) => {
             const monthName = new Date(2000, month).toLocaleString('default', { month: 'long' });
-            
+
             data.push({
               id: yearId + '-month-' + month,
               name: monthName,
@@ -459,19 +458,19 @@ export default {
         }
       });
     },
-    
+
     prepareMonthWeekView(data, rootId) {
       // Group by month
       const monthGroups = _.groupBy(this.entries, (entry) => {
         const date = new Date(entry.begin);
         return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       });
-      
+
       Object.entries(monthGroups).sort().forEach(([month, monthEntries], index) => {
         const [year, monthNum] = month.split('-');
         const monthName = new Date(year, monthNum - 1).toLocaleString('default', { month: 'long', year: 'numeric' });
         const monthId = rootId + '-month-' + month;
-        
+
         data.push({
           id: monthId,
           name: monthName,
@@ -483,11 +482,11 @@ export default {
           durationSeconds: this.calculateTotalDuration(monthEntries),
           drilldown: true
         });
-        
+
         // Drill down to weeks
         if (this.currentLevel > 0 && this.drilldownPath[0] === monthId) {
           const weekGroups = this.groupByWeekInMonth(monthEntries);
-          
+
           Object.entries(weekGroups).forEach(([week, weekEntries]) => {
             data.push({
               id: monthId + '-week-' + week,
@@ -502,7 +501,7 @@ export default {
         }
       });
     },
-    
+
     prepareWeekDayView(data, rootId) {
       // Group by ISO week
       const weekGroups = _.groupBy(this.entries, (entry) => {
@@ -511,11 +510,11 @@ export default {
         const weekNum = this.getISOWeek(date);
         return `${year}-W${String(weekNum).padStart(2, '0')}`;
       });
-      
+
       Object.entries(weekGroups).sort().forEach(([week, weekEntries], index) => {
         const [year, weekStr] = week.split('-W');
         const weekId = rootId + '-week-' + week;
-        
+
         data.push({
           id: weekId,
           name: `${year} Week ${weekStr}`,
@@ -527,16 +526,16 @@ export default {
           durationSeconds: this.calculateTotalDuration(weekEntries),
           drilldown: true
         });
-        
+
         // Drill down to days
         if (this.currentLevel > 0 && this.drilldownPath[0] === weekId) {
           const dayGroups = _.groupBy(weekEntries, (entry) => {
             const date = new Date(entry.begin);
             return date.getDay();
           });
-          
+
           const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-          
+
           Object.entries(dayGroups).sort((a, b) => Number(a[0]) - Number(b[0])).forEach(([day, dayEntries]) => {
             data.push({
               id: weekId + '-day-' + day,
@@ -551,24 +550,24 @@ export default {
         }
       });
     },
-    
+
     prepareDayHourView(data, rootId) {
       // Group by day
       const dayGroups = _.groupBy(this.entries, (entry) => {
         const date = new Date(entry.begin);
         return date.toISOString().split('T')[0];
       });
-      
+
       Object.entries(dayGroups).sort().forEach(([day, dayEntries], index) => {
         const dayDate = new Date(day);
-        const dayName = dayDate.toLocaleDateString('default', { 
+        const dayName = dayDate.toLocaleDateString('default', {
           weekday: 'short',
           year: 'numeric',
           month: 'short',
           day: 'numeric'
         });
         const dayId = rootId + '-day-' + day;
-        
+
         data.push({
           id: dayId,
           name: dayName,
@@ -580,17 +579,17 @@ export default {
           durationSeconds: this.calculateTotalDuration(dayEntries),
           drilldown: true
         });
-        
+
         // Drill down to hours
         if (this.currentLevel > 0 && this.drilldownPath[0] === dayId) {
           const hourGroups = _.groupBy(dayEntries, (entry) => {
             return new Date(entry.begin).getHours();
           });
-          
+
           Object.entries(hourGroups).sort((a, b) => Number(a[0]) - Number(b[0])).forEach(([hour, hourEntries]) => {
             const hourNum = Number(hour);
             const hourName = `${hourNum === 0 ? 12 : hourNum > 12 ? hourNum - 12 : hourNum}:00 ${hourNum >= 12 ? 'PM' : 'AM'}`;
-            
+
             data.push({
               id: dayId + '-hour-' + hour,
               name: hourName,
@@ -604,11 +603,11 @@ export default {
         }
       });
     },
-    
+
     prepareParticipantView() {
       const data = [];
       const rootId = 'participant-root';
-      
+
       // Root node
       data.push({
         id: rootId,
@@ -617,14 +616,14 @@ export default {
         value: this.getMetricValue(this.entries, 'root'),
         color: '#DDDF00'
       });
-      
+
       // Group by participant (case)
       this.cases.forEach((caseItem, index) => {
         const caseEntries = this.entries.filter(e => e.case_id === caseItem.id);
-        
+
         if (caseEntries.length > 0) {
           const caseId = rootId + '-case-' + caseItem.id;
-          
+
           data.push({
             id: caseId,
             name: caseItem.name,
@@ -635,11 +634,11 @@ export default {
             durationSeconds: this.calculateTotalDuration(caseEntries),
             drilldown: true
           });
-          
+
           // Drill down to time periods
           if (this.currentLevel > 0 && this.drilldownPath[0] === caseId) {
             const weekGroups = this.groupByWeek(caseEntries);
-            
+
             Object.entries(weekGroups).forEach(([week, weekEntries], weekIndex) => {
               data.push({
                 id: caseId + '-week-' + week,
@@ -654,10 +653,10 @@ export default {
           }
         }
       });
-      
+
       return data;
     },
-    
+
     getMetricValue(entries, level) {
       switch (this.sizeMetric) {
         case 'count':
@@ -672,7 +671,7 @@ export default {
           return entries.length;
       }
     },
-    
+
     formatDurationForDisplay(seconds) {
       if (seconds < 60) {
         return `${Math.round(seconds)}s`;
@@ -687,14 +686,14 @@ export default {
         return `${days}d`;
       }
     },
-    
+
     calculateTotalDuration(entries) {
       return entries.reduce((total, entry) => {
         const duration = (new Date(entry.end) - new Date(entry.begin)) / 1000; // seconds
         return total + duration;
       }, 0);
     },
-    
+
     groupByWeek(entries) {
       return _.groupBy(entries, (entry) => {
         const date = new Date(entry.begin);
@@ -703,7 +702,7 @@ export default {
         return weekNumber;
       });
     },
-    
+
     groupByWeekInMonth(entries) {
       return _.groupBy(entries, (entry) => {
         const date = new Date(entry.begin);
@@ -712,7 +711,7 @@ export default {
         return weekOfMonth;
       });
     },
-    
+
     getISOWeek(date) {
       const d = new Date(date);
       d.setHours(0, 0, 0, 0);
@@ -720,7 +719,7 @@ export default {
       const week1 = new Date(d.getFullYear(), 0, 4);
       return 1 + Math.round(((d - week1) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
     },
-    
+
     getColor(index) {
       const colors = [
         '#058DC7', '#50B432', '#ED561B', '#DDDF00', '#24CBE5',
@@ -729,20 +728,20 @@ export default {
       ];
       return colors[index % colors.length];
     },
-    
+
     adjustBrightness(color, percent) {
       const num = parseInt(color.replace('#', ''), 16);
       const amt = Math.round(2.55 * percent);
       const R = (num >> 16) + amt;
       const G = (num >> 8 & 0x00FF) + amt;
       const B = (num & 0x0000FF) + amt;
-      
+
       return '#' + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
         (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
         (B < 255 ? B < 1 ? 0 : B : 255))
         .toString(16).slice(1);
     },
-    
+
     drillDown(point) {
       if (point.drilldown) {
         this.currentLevel++;
@@ -750,7 +749,7 @@ export default {
         this.updateChart();
       }
     },
-    
+
     drillUp() {
       if (this.currentLevel > 0) {
         this.currentLevel--;
@@ -758,11 +757,11 @@ export default {
         this.updateChart();
       }
     },
-    
+
     exportChart(format) {
       if (this.chart) {
         const filename = `treemap-${this.viewMode}-${new Date().toISOString().split('T')[0]}`;
-        
+
         this.chart.exportChart({
           type: format === 'pdf' ? 'application/pdf' : 'image/png',
           filename: filename,
@@ -806,11 +805,11 @@ export default {
   .treemap-container {
     height: 500px;
   }
-  
+
   .treemap-controls .flex {
     flex-direction: column;
   }
-  
+
   .treemap-controls select,
   .treemap-controls button {
     width: 100%;

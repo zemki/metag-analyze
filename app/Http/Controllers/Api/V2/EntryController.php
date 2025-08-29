@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api\V2;
 
+use Log;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use App\Cases;
 use App\Entry;
 use App\Files;
@@ -30,7 +32,7 @@ class EntryController extends Controller
     /**
      * Get entries for a specific case
      *
-     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     * @return AnonymousResourceCollection
      */
     public function entriesByCase(Cases $case)
     {
@@ -179,7 +181,7 @@ class EntryController extends Controller
             }
             $entry->delete();
         } catch (Exception $error) {
-            \Log::error('Entry deletion failed', [
+            Log::error('Entry deletion failed', [
                 'entry_id' => $entry->id,
                 'case_id' => $case->id,
                 'error' => $error->getMessage()

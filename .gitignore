@@ -51,3 +51,8 @@ Homestead.json
 
 # AI Documentation (contains sensitive project info)
 CLAUDE.md
+/context/
+.claude/
+/.playwright-mcp
+/context
+/context

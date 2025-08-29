@@ -239,7 +239,7 @@ class ProjectCasesController extends Controller
 
         if (! request('backendCase') && count($invalidEmails) > 0) {
 
-            throw new \Exception(__('Not valid emails: ') . implode(',', $invalidEmails));
+            throw new Exception(__('Not valid emails: ') . implode(',', $invalidEmails));
         }
     }
 
@@ -253,7 +253,7 @@ class ProjectCasesController extends Controller
             $message = $this->createCases($project);
 
             return redirect($project->path())->with(['message' => $message, 'message_type' => 'success']);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
 
             return redirect($project->path() . '/cases/new')
                 ->withErrors(['message' => $e->getMessage()])

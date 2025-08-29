@@ -46,7 +46,7 @@ trait CustomThrottlesLogins
      *
      * @return \Symfony\Component\HttpFoundation\Response
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     protected function sendLockoutResponse(Request $request)
     {
@@ -95,7 +95,7 @@ trait CustomThrottlesLogins
     /**
      * Get the rate limiter instance.
      *
-     * @return \Illuminate\Cache\RateLimiter
+     * @return RateLimiter
      */
     protected function limiter()
     {

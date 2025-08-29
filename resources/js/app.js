@@ -42,11 +42,7 @@ const app = createApp({
     return {
       productionUrl:
         import.meta.env.VITE_ENV_MODE === "production" ? "/metag" : "",
-      newemail: {
-        valid_email: false,
-        email: "",
-        message: "",
-      },
+      showEmailChangeModal: false,
       moment: moment,
       selectedProjectPage: 0,
       disabledDates: [
@@ -345,54 +341,6 @@ const app = createApp({
       }
     },
 
-    sendEmail() {
-      let self = this;
-      var re =
-        /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-      if (re.test(String(this.newemail.email).toLowerCase()))
-        this.newemail.valid_email = true;
-      else this.newemail.valid_email = false;
-
-      if (!this.newemail.valid_email) {
-        // Use refs instead of direct DOM manipulation when possible
-        const newEmailElement =
-          this.$refs.newemail || document.getElementById("newemail");
-        if (
-          newEmailElement &&
-          !newEmailElement.classList.contains("border-red-500")
-        ) {
-          newEmailElement.classList.add("border-red-500");
-        }
-        return;
-      }
-      axios
-        .post("changeemail", { email: self.newemail.email })
-        .then((response) => {
-          // remove the class border-red-500 from the input with id newemail if it's present
-          const newEmailElement = document.getElementById("newemail");
-          if (
-            newEmailElement &&
-            newEmailElement.classList.contains("border-red-500")
-          ) {
-            newEmailElement.classList.remove("border-red-500");
-          }
-
-          self.newemail.message = response.data;
-        })
-        .catch(function (error) {
-          self.newemail.message = error;
-        });
-    },
-    toggleModalChangeEmail() {
-      const body = document.querySelector("body");
-      const modal = document.querySelector(".modal");
-      modal.classList.toggle("opacity-0");
-      modal.classList.toggle("pointer-events-none");
-      body.classList.toggle("modal-active");
-
-      this.newemail.email = "";
-      this.newemail.message = "";
-    },
     handleSelectedCase(currentCase) {
       this.selectedCase = currentCase;
     },
