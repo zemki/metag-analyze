@@ -56,7 +56,7 @@
       >
         {{ trans("Inputs") }}
       </h1>
-      <div v-for="(value, index) in JSON.parse(projectInputs)" :key="index">
+      <div v-for="(value, index) in (typeof projectInputs === 'string' ? JSON.parse(projectInputs) : projectInputs)" :key="index">
         <label
           v-if="value.type !== 'audio recording'"
           class="pb-2 text-base font-bold tracking-wide text-gray-700 uppercase"
@@ -784,7 +784,9 @@ export default {
         editentry.inputs = props.projectInputs;
         
         // Process the inputs to match expected format
-        const projectInputsArray = JSON.parse(props.projectInputs);
+        const projectInputsArray = typeof props.projectInputs === 'string' 
+          ? JSON.parse(props.projectInputs) 
+          : props.projectInputs;
         const processedInputs = {};
         
         projectInputsArray.forEach(input => {

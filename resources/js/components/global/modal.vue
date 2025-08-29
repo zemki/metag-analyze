@@ -46,6 +46,12 @@ export default {
         },
     },
     emits: ['confirm', 'cancel', 'update:visible'],
+    mounted() {
+        document.addEventListener('keydown', this.handleKeydown);
+    },
+    beforeUnmount() {
+        document.removeEventListener('keydown', this.handleKeydown);
+    },
     methods: {
         confirm() {
             this.$emit('confirm');
@@ -54,6 +60,12 @@ export default {
         cancel() {
             this.$emit('cancel');
             this.$emit('update:visible', false);
+        },
+        handleKeydown(event) {
+            if (this.visible && event.key === 'Escape') {
+                event.preventDefault();
+                this.cancel();
+            }
         },
     },
 };

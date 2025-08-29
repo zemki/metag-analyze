@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen flex flex-col bg-gray-50">
+  <div class="min-h-screen flex flex-col bg-gray-50">
     <!-- Top Header Bar -->
     <header class="flex-shrink-0 bg-white border-b border-gray-200 px-6 py-4">
       <div class="flex items-center justify-between">
@@ -20,7 +20,7 @@
             </svg>
             {{ trans('Create Case') }}
           </a>
-          
+
           <!-- More Actions Dropdown -->
           <div class="relative">
             <button @click="actionsDropdownOpen = !actionsDropdownOpen" type="button"
@@ -30,9 +30,9 @@
               </svg>
               Actions
             </button>
-            
+
             <!-- Dropdown Menu -->
-            <div v-if="actionsDropdownOpen" 
+            <div v-if="actionsDropdownOpen"
                  @click.stop
                  class="absolute right-0 z-10 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5">
               <div class="py-1">
@@ -228,8 +228,8 @@
             <div class="text-sm text-gray-700">
               Showing {{ pagination.from || 0 }} to {{ pagination.to || 0 }} of {{ pagination.total || 0 }} cases
             </div>
-            <PaginationControls 
-              :pagination="pagination" 
+            <PaginationControls
+              :pagination="pagination"
               @page-changed="changePage"
               size="small"
             />
@@ -273,7 +273,7 @@
                   Created {{ formatDate(selectedCase.created_at) }}
                 </div>
               </div>
-              
+
               <!-- Case Actions -->
               <div class="flex items-center space-x-2">
                 <button v-if="selectedCase.consultable && selectedCase.entries?.length > 0"
@@ -337,7 +337,7 @@
     </div>
 
     <!-- Click outside to close dropdown -->
-    <div v-if="actionsDropdownOpen" 
+    <div v-if="actionsDropdownOpen"
          @click="actionsDropdownOpen = false"
          class="fixed inset-0 z-0"></div>
 
@@ -354,7 +354,7 @@
     <div v-if="showProjectSettings" class="fixed inset-0 z-50 overflow-y-auto">
       <!-- Backdrop -->
       <div class="fixed inset-0 bg-black bg-opacity-50" @click="showProjectSettings = false"></div>
-      
+
       <!-- Modal Container -->
       <div class="flex min-h-full items-center justify-center p-4">
         <div class="relative bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
@@ -367,7 +367,7 @@
               </svg>
             </button>
           </div>
-          
+
           <!-- Content (Scrollable) -->
           <div class="flex-1 overflow-y-auto">
             <EditProject
@@ -378,10 +378,10 @@
               @project-updated="handleProjectUpdate"
             />
           </div>
-          
+
           <!-- Footer (Fixed) -->
           <div class="flex items-center justify-end p-6 border-t border-gray-200 space-x-3 shrink-0">
-            <button @click="showProjectSettings = false" 
+            <button @click="showProjectSettings = false"
                     class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
               Close
             </button>
@@ -444,10 +444,10 @@ export default {
       showProjectSettings: false,
       casesListHeight: 400, // Initial height in pixels
       isResizing: false,
-      
+
       // Local project data (mutable copy of prop)
       localProject: { ...this.project },
-      
+
       // Cases data
       cases: [],
       loading: false,
@@ -464,7 +464,7 @@ export default {
         total: 0
       },
       totalCasesCount: 0,
-      
+
       // Dialog
       dialog: {
         show: false,
@@ -487,17 +487,17 @@ export default {
   mounted() {
     // Initialize local project copy
     this.localProject = { ...this.project };
-    
+
     this.loadCases();
     this.debouncedSearch = debounce(this.loadCases, 300);
-    
+
     // DEBUG: Let's see what we receive
     // console.log('ProjectCasesView DEBUG:', {
     //   projectInputs: this.projectInputs,
     //   project: this.project,
     //   'project.inputs': this.project?.inputs
     // });
-    
+
     // Handle window resize and mouse events
     document.addEventListener('mouseup', this.stopResize);
     document.addEventListener('mousemove', this.handleResize);
@@ -515,7 +515,7 @@ export default {
     handleProjectUpdate(updatedProject) {
       // Update the local project object with the new data
       Object.assign(this.localProject, updatedProject);
-      
+
       // Optionally close the modal after successful save
       // this.showProjectSettings = false;
     },
@@ -537,7 +537,7 @@ export default {
           params.append('status', this.statusFilter);
         }
 
-        const response = await fetch(`/projects/${this.project.id}/cases-ajax?${params}`, {
+        const response = await fetch(`/projects/${this.project.id}/cases?${params}`, {
           headers: {
             'Accept': 'application/json',
             'X-Requested-With': 'XMLHttpRequest'
@@ -571,7 +571,7 @@ export default {
               } else if (entry.media && typeof entry.media === 'string') {
                 entry.media_name = entry.media;
               }
-              
+
               // Fix inputs display - parse JSON strings
               if (entry.inputs && typeof entry.inputs === 'string') {
                 try {
@@ -586,7 +586,7 @@ export default {
             });
           }
         });
-        
+
       } catch (error) {
         console.error('Error loading cases:', error);
         this.cases = [];
@@ -602,17 +602,17 @@ export default {
         this.loading = false;
       }
     },
-    
+
     changePage(page) {
       this.pagination.current_page = page;
       this.loadCases();
     },
-    
+
     toggleSortOrder() {
       this.sortOrder = this.sortOrder === 'desc' ? 'asc' : 'desc';
       this.loadCases();
     },
-    
+
     handleSelectedCase(selectedCase) {
       // Add project data to selectedCase for compatibility
       if (selectedCase && !selectedCase.project) {
@@ -620,7 +620,7 @@ export default {
       }
       this.selectedCase = selectedCase;
     },
-    
+
     getUserDisplayName(caseData) {
       if (caseData.user) {
         if (caseData.user.profile?.name) {
@@ -630,35 +630,51 @@ export default {
       }
       return 'No user assigned';
     },
-    
+
     getStatusBadge(caseData) {
       if (caseData.backend) {
         return null;
       }
-
-      const now = new Date();
-      const lastDay = this.parseDate(caseData.last_day);
-
-      if (!lastDay || caseData.last_day === 'Case not started by the user') {
-        return {
-          text: 'Pending',
-          class: 'bg-yellow-100 text-yellow-800'
-        };
-      }
-
-      if (lastDay < now) {
-        return {
-          text: 'Completed',
-          class: 'bg-gray-100 text-gray-800'
-        };
-      } else {
-        return {
-          text: 'Active',
-          class: 'bg-green-100 text-green-800'
-        };
+      
+      // Use backend-provided status if available, otherwise fallback to date parsing
+      const status = caseData.status || this.calculateStatusFromDate(caseData);
+      
+      switch (status) {
+        case 'pending':
+          return {
+            text: 'Pending',
+            class: 'bg-yellow-100 text-yellow-800'
+          };
+        case 'active':
+          return {
+            text: 'Active',
+            class: 'bg-green-100 text-green-800'
+          };
+        case 'completed':
+          return {
+            text: 'Completed',
+            class: 'bg-gray-100 text-gray-800'
+          };
+        case 'backend':
+          return null; // Backend cases don't show status badge
+        default:
+          return null;
       }
     },
     
+    calculateStatusFromDate(caseData) {
+      const now = new Date();
+      const lastDay = this.parseDate(caseData.last_day);
+      if (!lastDay || caseData.last_day === 'Case not started by the user') {
+        return 'pending';
+      }
+      if (lastDay < now) {
+        return 'completed';
+      } else {
+        return 'active';
+      }
+    },
+
     parseDate(dateString) {
       if (!dateString || dateString === 'Case not started by the user') return null;
       try {
@@ -675,7 +691,7 @@ export default {
         return null;
       }
     },
-    
+
     formatDate(dateString) {
       if (!dateString) return 'Unknown';
       try {
@@ -684,11 +700,11 @@ export default {
         return dateString;
       }
     },
-    
+
     exportCase(caseItem) {
       window.open(`/cases/${caseItem.id}/export`, '_blank');
     },
-    
+
     confirmDeleteCase(caseItem) {
       this.dialog.show = true;
       this.dialog.title = this.trans('Confirm Case deletion');
@@ -699,7 +715,7 @@ export default {
         this.dialog.show = false;
       };
     },
-    
+
     async deleteCase(caseItem) {
       try {
         const response = await fetch(`/cases/${caseItem.id}`, {
@@ -715,14 +731,14 @@ export default {
           // Remove from local list
           this.cases = this.cases.filter(c => c.id !== caseItem.id);
           this.totalCasesCount--;
-          
+
           // Clear selection if deleted case was selected
           if (this.selectedCase?.id === caseItem.id) {
             this.selectedCase = null;
           }
-          
+
           this.dialog.show = false;
-          
+
           // Show success message (you might want to implement a toast notification)
           console.log('Case deleted successfully');
         } else {
@@ -733,7 +749,7 @@ export default {
         alert('Error deleting case. Please try again.');
       }
     },
-    
+
     // Resize functionality
     startResize(event) {
       this.isResizing = true;
@@ -743,20 +759,20 @@ export default {
       document.body.style.userSelect = 'none';
       event.preventDefault();
     },
-    
+
     handleResize(event) {
       if (!this.isResizing) return;
-      
+
       const deltaY = event.clientY - this.startY;
       let newHeight = this.startHeight + deltaY;
-      
+
       // Constrain height between 200px and 80% of window height
       const maxHeight = window.innerHeight * 0.8;
       newHeight = Math.max(200, Math.min(maxHeight, newHeight));
-      
+
       this.casesListHeight = newHeight;
     },
-    
+
     stopResize() {
       if (this.isResizing) {
         this.isResizing = false;
@@ -764,7 +780,7 @@ export default {
         document.body.style.userSelect = '';
       }
     },
-    
+
     // Translation helper
     trans(key) {
       if (typeof window.trans === 'undefined' || typeof window.trans[key] === 'undefined') {

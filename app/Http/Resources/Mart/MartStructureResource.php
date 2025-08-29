@@ -7,6 +7,14 @@ use App\Http\Resources\Mart\MartPageResource;
 
 class MartStructureResource extends JsonResource
 {
+    protected $schedules;
+    
+    public function __construct($resource, $schedules = null)
+    {
+        parent::__construct($resource);
+        $this->schedules = $schedules;
+    }
+    
     public function toArray($request)
     {
         $project = $this->resource;
@@ -47,7 +55,7 @@ class MartStructureResource extends JsonResource
             });
             
             return [
-                'projectOptions' => new ProjectOptionsResource($project, $martConfig),
+                'projectOptions' => new ProjectOptionsResource($project, $martConfig, $this->schedules),
                 'questionSheets' => [$questionSheet],
                 'scales' => $scales,
                 'pages' => $pageResources
@@ -66,7 +74,7 @@ class MartStructureResource extends JsonResource
             }
             
             return [
-                'projectOptions' => new ProjectOptionsResource($project),
+                'projectOptions' => new ProjectOptionsResource($project, null, $this->schedules),
                 'questionSheets' => [$questionSheet],
                 'scales' => $scales,
                 'pages' => [] // Standard projects don't have pages

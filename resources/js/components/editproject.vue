@@ -63,7 +63,7 @@
     </div>
 
     <!-- Entity Name Field -->
-    <div class="space-y-2" v-if="!isLegacyProject">
+    <div class="space-y-2" v-if="!isLegacyProject && !isMartProject">
       <label for="entityName" class="block text-sm font-medium text-gray-700">{{ trans('Entity Field Name') }}</label>
       <input
           type="text"
@@ -78,7 +78,7 @@
     </div>
 
     <!-- Entity/Media Section -->
-    <div class="space-y-4">
+    <div class="space-y-4" v-if="!isMartProject">
       <div class="flex items-center justify-between">
         <div class="flex items-center">
           <label class="block text-sm font-medium text-gray-700">{{ isLegacyProject ? trans('Media') : (projectData.entityName || trans('Entity')) }}</label>

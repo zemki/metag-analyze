@@ -26,6 +26,8 @@ class researcherNotificationToUser extends Notification implements ShouldQueue
 
     private mixed $planning = false;
 
+    private mixed $questionnaireId = null;
+
     /**
      * Create a new notification instance.
      *
@@ -37,6 +39,7 @@ class researcherNotificationToUser extends Notification implements ShouldQueue
         $this->message = $details['message'];
         $this->cases = $details['case'];
         $this->planning = $details['planning'] ?? false;
+        $this->questionnaireId = $details['questionnaire_id'] ?? null;
     }
 
     /**
@@ -78,14 +81,21 @@ class researcherNotificationToUser extends Notification implements ShouldQueue
     /**
      * Get the array representation of the notification.
      */
-    #[ArrayShape(['title' => 'string', 'message' => 'string', 'case' => 'mixed', 'planning' => 'mixed'])]
+    #[ArrayShape(['title' => 'string', 'message' => 'string', 'case' => 'mixed', 'planning' => 'mixed', 'questionnaire_id' => 'mixed'])]
     public function toArray(): array
     {
-        return [
+        $data = [
             'title' => $this->title,
             'message' => $this->message,
             'case' => $this->cases['id'],
             'planning' => $this->planning,
         ];
+        
+        // Include questionnaire_id if available
+        if ($this->questionnaireId !== null) {
+            $data['questionnaire_id'] = $this->questionnaireId;
+        }
+        
+        return $data;
     }
 }

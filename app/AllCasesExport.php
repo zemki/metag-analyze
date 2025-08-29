@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Illuminate\Support\Collection;
 use Illuminate\Support\Arr;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromCollection;
@@ -174,7 +175,7 @@ class AllCasesExport implements FromCollection, WithHeadings, WithMapping
     }
 
     /**
-     * @return Project[]|\Illuminate\Support\Collection|\LaravelIdea\Helper\App\_IH_Project_C
+     * @return Project[]|Collection|\LaravelIdea\Helper\App\_IH_Project_C
      */
     public function collection()
     {

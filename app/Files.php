@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use File;
 use Helper;
 use Illuminate\Database\Eloquent\Model;
@@ -100,7 +101,7 @@ class Files extends Model
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function case()
     {
