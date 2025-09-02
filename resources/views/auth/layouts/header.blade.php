@@ -25,6 +25,9 @@
                        ?>;
     </script>
 
+    
+    @stack('styles')
+    
     <style>
         @yield('pagespecificcss')
     </style>

@@ -14,8 +14,8 @@
         <!-- Action Buttons -->
         <div class="flex items-center space-x-3">
           <a :href="urlToCreateCase + '/cases/new'"
-             class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+             class="inline-flex items-center px-2 py-1.5 text-xs font-medium text-white bg-blue-600 border border-transparent rounded hover:bg-blue-700 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-blue-500 whitespace-nowrap">
+            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
             {{ trans('Create Case') }}
@@ -38,8 +38,10 @@
               <div class="py-1">
                 <a :href="urlToCreateCase + '/notifications'"
                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                  <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5z" />
+                  <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 32 32">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16,2h0A10,10,0,0,1,26,12v8a2,2,0,0,1-2,2H8a2,2,0,0,1-2-2V12A10,10,0,0,1,16,2Z" />
+                    <rect width="32" height="4" rx="2" y="20" fill="currentColor" stroke="none"/>
+                    <path d="M16,32h0a4,4,0,0,1-4-4V26h8v2A4,4,0,0,1,16,32Z" fill="currentColor" stroke="none"/>
                   </svg>
                   {{ trans('Notification Center') }}
                 </a>
@@ -316,7 +318,7 @@
         <div v-else class="h-full flex items-center justify-center bg-gray-50">
           <div class="text-center">
             <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 48 48">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M34 40h10v-4a6 6 0 00-10.712-3.714M34 40H14m20 0v-4a9.971 9.971 0 00-.712-3.714M14 40H4v-4a6 6 0 0110.713-3.714M14 40v-4c0-1.313.253-2.566.713-3.714m0 0A9.971 9.971 0 0122 30c4.21 0 7.863 2.613 9.288 6.286M30 14a6 6 0 11-12 0 6 6 0 0112 0zm12-2a4 4 0 11-8 0 4 4 0 018 0zm-28 0a4 4 0 11-8 0 4 4 0 018 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             <h3 class="mt-4 text-lg font-medium text-gray-900">Select a case to view details</h3>
             <p class="mt-2 text-sm text-gray-500">
@@ -328,7 +330,7 @@
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
-                Create your first case
+                {{ totalCasesCount > 0 ? 'Create another case' : 'Create your first case' }}
               </a>
             </div>
           </div>

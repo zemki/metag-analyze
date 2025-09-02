@@ -46,7 +46,7 @@
     "@mdi/font": "^3.9.97",
     "@vitejs/plugin-vue": "^5.2.1",
     "alpinejs": "^3.13.3",
-    "altcha": "^1.4.2",
+    "altcha": "^2.2.1",
     "es6-promise": "^4.2.8",
     "highcharts": "^9.3.2",
     "moment": "^2.29.4",

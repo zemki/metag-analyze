@@ -18,6 +18,21 @@
       </div>
     </div>
 
+    <!-- Editing Disabled Warning -->
+    <div v-if="!editable" class="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+      <div class="flex">
+        <svg class="w-5 h-5 text-yellow-600 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.996-.833-2.768 0L3.046 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+        </svg>
+        <div>
+          <h4 class="text-sm font-medium text-yellow-800 mb-1">{{ trans('Project Editing Disabled') }}</h4>
+          <p class="text-sm text-yellow-700">
+            {{ trans('This project cannot be edited because it has existing cases with data. To maintain data integrity and prevent inconsistencies, project structure is locked once cases are created.') }}
+          </p>
+        </div>
+      </div>
+    </div>
+
     <!-- Project Name -->
     <div class="space-y-2">
       <label for="name" class="block text-sm font-medium text-gray-700">{{ trans('Project Name') }} *</label>
