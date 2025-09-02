@@ -1,5 +1,6 @@
 @extends('auth.layouts.app')
 
+
 @section('content')
     <div class="flex items-center justify-center min-h-screen bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
         <div class="max-w-md w-full space-y-8">
@@ -28,14 +29,10 @@
                                class="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                                placeholder="{{ __('Password') }}">
                     </div>
-                    <div class="pt-2" v-pre>
-
-                        <div class="bg-blue-50 border-l-4 border-blue-400 text-blue-700 p-4" role="alert">
-                            <p class="font-bold">Temporary bug:</p>
-                            <p>In case you see two altcha boxes, please check both of them.</p>
-                        </div>
-                        <!-- Only one altcha-widget should be here -->
-                        <altcha-widget challengeurl="{{url('/altcha-challenge')}}" class="p-1"></altcha-widget>
+                    <div class="pt-2">
+                        <!-- ALTCHA widget outside Vue's control -->
+                        <div id="altcha-container"></div>
+                        <input type="hidden" name="altcha" id="altcha" value="">
                     </div>
                 </div>
 
@@ -77,26 +74,58 @@
 @endsection
 @section('pagespecificscripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            console.log('DOM fully loaded and parsed');
-            // Simple event handler for altcha verification
-            const altchaWidget = document.getElementById('altcha-widget');
-            const altokenInput = document.getElementById('altoken');
-
-            if (altchaWidget && altokenInput) {
-                console.log('Altcha widget and altoken input found');
-                altchaWidget.addEventListener('statechange', function (ev) {
-                    if (ev.detail.state === 'verified') {
-                        altokenInput.value = ev.detail.payload;
-                        console.log('Altcha verified, token set successfully');
-                    }else{
-                        altokenInput.value = '';
-                        console.log('Altcha not verified, token cleared');
+        // Wait for Vue app to mount, then create ALTCHA widget
+        window.addEventListener('load', function() {
+            console.log('Page fully loaded, creating ALTCHA widget');
+            
+            setTimeout(function() {
+                const container = document.getElementById('altcha-container');
+                const altchaInput = document.getElementById('altcha');
+                const hasErrors = document.querySelector('.bg-red-50'); // Check if there are validation errors
+                
+                if (container && altchaInput) {
+                    // Create ALTCHA widget element
+                    const widget = document.createElement('altcha-widget');
+                    
+                    // If there are validation errors, force a fresh challenge by adding timestamp
+                    let challengeUrl = '{{url('/altcha-challenge')}}';
+                    if (hasErrors) {
+                        console.log('Validation errors detected, forcing fresh ALTCHA challenge');
+                        altchaInput.value = ''; // Clear the hidden input
+                        challengeUrl += '?t=' + Date.now(); // Force fresh challenge
                     }
-                });
-            }else {
-                console.error('Altcha widget or altoken input not found');
-            }
+                    
+                    widget.setAttribute('challengeurl', challengeUrl);
+                    widget.setAttribute('class', 'p-1');
+                    
+                    // Clear container and add widget
+                    container.innerHTML = '';
+                    container.appendChild(widget);
+                    
+                    console.log('ALTCHA widget created');
+                    
+                    // Set up event handler
+                    widget.addEventListener('statechange', function(ev) {
+                        if (ev.detail.state === 'verified') {
+                            altchaInput.value = ev.detail.payload;
+                            console.log('ALTCHA verified, token set');
+                        } else if (ev.detail.state === 'unverified' || ev.detail.state === '') {
+                            altchaInput.value = '';
+                            console.log('ALTCHA cleared/reset');
+                        }
+                    });
+                    
+                    // If there are errors, also reset after a brief moment
+                    if (hasErrors) {
+                        setTimeout(function() {
+                            widget.reset();
+                            console.log('ALTCHA force reset after errors');
+                        }, 500);
+                    }
+                } else {
+                    console.error('ALTCHA container or input not found');
+                }
+            }, 1000); // Wait longer for Vue to fully mount
         });
     </script>
 @endsection

@@ -2,16 +2,13 @@
 
 namespace App\Notifications;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\URL;
 
-class EmailChangeNotification extends Notification implements ShouldQueue
+class EmailChangeNotification extends Notification
 {
-    use Queueable;
 
     /**
      * The user Email
