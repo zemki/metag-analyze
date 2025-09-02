@@ -213,8 +213,8 @@
 
           <div v-else class="flex items-center justify-center py-8">
             <div class="text-center">
-              <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 48 48">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v6a2 2 0 002 2h6a2 2 0 002-2v-7m0 0V9a2 2 0 00-2-2H9.5a2 2 0 00-2 2v4.5" />
+              <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
               <h3 class="mt-2 text-sm font-medium text-gray-900">No cases found</h3>
               <p class="mt-1 text-sm text-gray-500">
@@ -315,24 +315,22 @@
         </div>
 
         <!-- Empty State -->
-        <div v-else class="h-full flex items-center justify-center bg-gray-50">
-          <div class="text-center">
-            <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 48 48">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        <div v-else class="h-full flex items-center justify-center bg-gray-50 pb-16">
+          <div class="text-center max-w-md mx-auto px-4">
+            <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            <h3 class="mt-4 text-lg font-medium text-gray-900">Select a case to view details</h3>
-            <p class="mt-2 text-sm text-gray-500">
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Select a case to view details</h3>
+            <p class="text-sm text-gray-500 mb-6">
               Choose a case from the list above to see its entries and data
             </p>
-            <div class="mt-6">
-              <a :href="urlToCreateCase + '/cases/new'"
-                 class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                {{ totalCasesCount > 0 ? 'Create another case' : 'Create your first case' }}
-              </a>
-            </div>
+            <a :href="urlToCreateCase + '/cases/new'"
+               class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              {{ totalCasesCount > 0 ? 'Create another case' : 'Create your first case' }}
+            </a>
           </div>
         </div>
       </div>
@@ -373,10 +371,12 @@
           <!-- Content (Scrollable) -->
           <div class="flex-1 overflow-y-auto">
             <EditProject
+              ref="editProject"
               :editable="project.isEditable"
               :project="localProject"
               :config="inputsConfig"
               :projectmedia="projectMedia"
+              :show-buttons="false"
               @project-updated="handleProjectUpdate"
             />
           </div>
@@ -384,8 +384,17 @@
           <!-- Footer (Fixed) -->
           <div class="flex items-center justify-end p-6 border-t border-gray-200 space-x-3 shrink-0">
             <button @click="showProjectSettings = false"
-                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
-              Close
+                    class="px-6 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors duration-150">
+              Cancel
+            </button>
+            <button @click="saveProjectChanges"
+                    :disabled="isLoading"
+                    class="inline-flex items-center px-6 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150">
+              <svg v-if="isLoading" class="w-5 h-5 mr-2 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Save Changes
             </button>
           </div>
         </div>
@@ -446,6 +455,7 @@ export default {
       showProjectSettings: false,
       casesListHeight: 400, // Initial height in pixels
       isResizing: false,
+      isLoading: false,
 
       // Local project data (mutable copy of prop)
       localProject: { ...this.project },
@@ -520,6 +530,22 @@ export default {
 
       // Optionally close the modal after successful save
       // this.showProjectSettings = false;
+    },
+
+    async saveProjectChanges() {
+      // Trigger save from the EditProject component
+      const editProjectComponent = this.$refs.editProject;
+      if (editProjectComponent && typeof editProjectComponent.save === 'function') {
+        this.isLoading = true;
+        try {
+          await editProjectComponent.save();
+          this.showProjectSettings = false; // Close modal on successful save
+        } catch (error) {
+          console.error('Failed to save project changes:', error);
+        } finally {
+          this.isLoading = false;
+        }
+      }
     },
 
     async loadCases() {
