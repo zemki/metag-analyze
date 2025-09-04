@@ -28,7 +28,7 @@ class QuestionSheetResource extends JsonResource
                     'scaleId' => $index + 1,
                     'text' => $question['name'] ?? '',
                     'options' => [
-                        'randomizationGroup' => 1
+                        'randomizationGroupId' => 1
                     ]
                 ];
             }
@@ -45,7 +45,7 @@ class QuestionSheetResource extends JsonResource
                         'scaleId' => $index + 1,
                         'text' => $input['name'] ?? '',
                         'options' => [
-                            'randomizationGroup' => 1
+                            'randomizationGroupId' => 1
                         ]
                     ];
                 }
@@ -56,7 +56,7 @@ class QuestionSheetResource extends JsonResource
         
         return [
             'projectId' => $this->id,
-            'sheetId' => 1,
+            'questionnaireId' => 1,
             'name' => $questionnaireName,
             'items' => $items
         ];

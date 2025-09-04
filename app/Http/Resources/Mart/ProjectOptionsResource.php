@@ -63,25 +63,22 @@ class ProjectOptionsResource extends JsonResource
                 'projectName' => $this->name,
                 'options' => [
                     'startDateAndTime' => [
-                        'date' => $projectOptions['startDateAndTime']['date'] ?? null,
+                        'date' => $this->formatDateForMobile($projectOptions['startDateAndTime']['date'] ?? null),
                         'time' => $projectOptions['startDateAndTime']['time'] ?? '00:00'
                     ],
                     'endDateAndTime' => [
-                        'date' => $projectOptions['endDateAndTime']['date'] ?? null,
+                        'date' => $this->formatDateForMobile($projectOptions['endDateAndTime']['date'] ?? null),
                         'time' => $projectOptions['endDateAndTime']['time'] ?? '23:59'
                     ],
-                    'showProgressBar' => $projectOptions['showProgressBar'] ?? true,
-                    'showNotifications' => $projectOptions['showNotifications'] ?? true,
-                    'notificationText' => $projectOptions['notificationText'] ?? 'You have a new questionnaire available',
-                    'notificationConfig' => $projectOptions['notificationConfig'] ?? null,
                     'collectDeviceInfos' => $projectOptions['collectDeviceInfos'] ?? true,
-                    'collectIosStats' => $projectOptions['collectIosStats'] ?? false,
+                    'iOSStatsQuestionnaire' => $projectOptions['iOSStatsQuestionnaire'] ?? null,
+                    'androidStatsQuestionnaire' => $projectOptions['androidStatsQuestionnaire'] ?? null,
                     'collectAndroidStats' => $projectOptions['collectAndroidStats'] ?? false,
                     'initialHoursOfAndroidStats' => $projectOptions['initialHoursOfAndroidStats'] ?? 24,
                     'overlapAndroidStatsHours' => $projectOptions['overlapAndroidStatsHours'] ?? 2,
                     'pages' => $this->pages()->pluck('id')->toArray(),
-                    'pagesToShowInMenu' => $this->pages()->where('show_on_first_app_start', false)->pluck('id')->toArray(),
-                    'pagesToShowOnFirstAppStart' => $this->pages()->where('show_on_first_app_start', true)->pluck('id')->toArray(),
+                    'pagesToShowInMenu' => $this->pages()->pluck('id')->toArray(), // All pages shown in menu for now
+                    'pagesToShowOnFirstAppStart' => $this->pages()->where('show_on_first_app_start', true)->orderBy('sort_order')->pluck('id')->toArray(),
                     // Add questionnaire schedules
                     'singleQuestionnaires' => $singleQuestionnaires,
                     'repeatingQuestionnaires' => $repeatingQuestionnaires,
@@ -117,5 +114,28 @@ class ProjectOptionsResource extends JsonResource
                 ]
             ];
         }
+    }
+    
+    /**
+     * Format date from YYYY-MM-DD to DD.MM.YYYY for mobile
+     */
+    private function formatDateForMobile($date)
+    {
+        if (!$date) {
+            return null;
+        }
+        
+        // If already in DD.MM.YYYY format, return as is
+        if (preg_match('/^\d{2}\.\d{2}\.\d{4}$/', $date)) {
+            return $date;
+        }
+        
+        // Convert from YYYY-MM-DD to DD.MM.YYYY
+        $timestamp = strtotime($date);
+        if ($timestamp) {
+            return date('d.m.Y', $timestamp);
+        }
+        
+        return $date;
     }
 }

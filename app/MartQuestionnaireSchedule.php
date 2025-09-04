@@ -107,7 +107,7 @@ class MartQuestionnaireSchedule extends Model
         $data = [
             'questionnaireId' => $this->questionnaire_id,
             'type' => $this->type,
-            'startDateAndTime' => $this->start_date_time,
+            'startDateAndTime' => $this->formatDateTimeForMobile($this->start_date_time),
             'showProgressBar' => $this->show_progress_bar,
             'showNotifications' => $this->show_notifications,
         ];
@@ -117,7 +117,7 @@ class MartQuestionnaireSchedule extends Model
         }
 
         if ($this->isRepeating()) {
-            $data['endDateAndTime'] = $this->end_date_time;
+            $data['endDateAndTime'] = $this->formatDateTimeForMobile($this->end_date_time);
             $data['minBreakBetweenQuestionnaire'] = $this->min_break_between;
             $data['dailyIntervalDuration'] = $this->daily_interval_duration;
             $data['maxDailySubmits'] = $this->max_daily_submits;
@@ -131,5 +131,30 @@ class MartQuestionnaireSchedule extends Model
         }
 
         return $data;
+    }
+    
+    /**
+     * Format date and time for mobile API.
+     */
+    private function formatDateTimeForMobile($dateTime)
+    {
+        if (!$dateTime) {
+            return null;
+        }
+        
+        // If it's already an array with date and time, format the date
+        if (is_array($dateTime)) {
+            if (isset($dateTime['date'])) {
+                $date = $dateTime['date'];
+                // Convert from YYYY-MM-DD to DD.MM.YYYY
+                if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+                    $timestamp = strtotime($date);
+                    $dateTime['date'] = date('d.m.Y', $timestamp);
+                }
+            }
+            return $dateTime;
+        }
+        
+        return $dateTime;
     }
 }
