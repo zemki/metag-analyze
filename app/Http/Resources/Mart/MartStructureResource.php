@@ -56,7 +56,7 @@ class MartStructureResource extends JsonResource
             
             return [
                 'projectOptions' => new ProjectOptionsResource($project, $martConfig, $this->schedules),
-                'questionSheets' => [$questionSheet],
+                'questionnaires' => [$questionSheet],
                 'scales' => $scales,
                 'pages' => $pageResources
             ];
@@ -75,7 +75,7 @@ class MartStructureResource extends JsonResource
             
             return [
                 'projectOptions' => new ProjectOptionsResource($project, null, $this->schedules),
-                'questionSheets' => [$questionSheet],
+                'questionnaires' => [$questionSheet],
                 'scales' => $scales,
                 'pages' => [] // Standard projects don't have pages
             ];
