@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Notifications\VerificationEmail;
 use App\Notifications\researcherNotificationToUser;
+use App\Notifications\VerificationEmail;
 use App\Project;
 use App\User;
 use DB;

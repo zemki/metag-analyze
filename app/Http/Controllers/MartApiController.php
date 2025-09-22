@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\JsonResponse;
 use App\Cases;
 use App\Entry;
 use App\Http\Resources\Mart\MartStructureResource;
@@ -10,6 +9,7 @@ use App\MartQuestionnaireSchedule;
 use App\Project;
 use App\Stat;
 use App\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -22,7 +22,7 @@ class MartApiController extends Controller
     {
         // Get questionnaire schedules for this project
         $schedules = MartQuestionnaireSchedule::forProject($project->id)->get();
-        
+
         // Pass schedules to the resource
         return new MartStructureResource($project, $schedules);
     }
@@ -66,7 +66,7 @@ class MartApiController extends Controller
         }
 
         // Only allow submissions to pending or active cases
-        if (!in_array($caseStatus, [\App\Enums\CaseStatus::PENDING, \App\Enums\CaseStatus::ACTIVE])) {
+        if (! in_array($caseStatus, [\App\Enums\CaseStatus::PENDING, \App\Enums\CaseStatus::ACTIVE])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Case is not accepting submissions',
@@ -76,7 +76,7 @@ class MartApiController extends Controller
 
         // PHASE 2: Project Data Conformity Validation
         $project = Project::find($request->projectId);
-        if (!$project) {
+        if (! $project) {
             return response()->json([
                 'success' => false,
                 'message' => 'Project not found',
@@ -85,7 +85,7 @@ class MartApiController extends Controller
 
         // Validate answers against project structure
         $validationResult = $this->validateAnswersAgainstProject($request->answers, $project, $request->sheetId);
-        if (!$validationResult['valid']) {
+        if (! $validationResult['valid']) {
             return response()->json([
                 'success' => false,
                 'message' => 'Answer validation failed',
@@ -97,7 +97,7 @@ class MartApiController extends Controller
         $entityId = null;
         $project = Project::find($request->projectId);
 
-        if ($project && !$project->isMartProject()) {
+        if ($project && ! $project->isMartProject()) {
             if ($request->has('mediaId') && $request->mediaId) {
                 // Use provided media ID if valid
                 $mediaExists = DB::table('media')->where('id', $request->mediaId)->exists();
@@ -119,7 +119,7 @@ class MartApiController extends Controller
 
         // Transform MART answers to MetaG inputs format
         $transformedInputs = $this->transformMartAnswersToMetagInputs($request->answers);
-        
+
         // Include MART metadata in the inputs
         $martMetadata = [
             'questionnaire_id' => $request->questionnaireId,
@@ -128,11 +128,11 @@ class MartApiController extends Controller
             'timezone' => $request->timezone,
             'timestamp' => $request->timestamp,
         ];
-        
+
         if ($request->has('timestampInherited')) {
             $martMetadata['timestamp_inherited'] = $request->timestampInherited;
         }
-        
+
         // Merge MART metadata with answers
         $allInputs = array_merge($transformedInputs, ['_mart_metadata' => $martMetadata]);
 
@@ -313,16 +313,16 @@ class MartApiController extends Controller
     {
         $errors = [];
         $inputs = json_decode($project->inputs, true);
-        
-        if (!is_array($inputs)) {
+
+        if (! is_array($inputs)) {
             return ['valid' => false, 'errors' => ['Project has no valid input structure']];
         }
-        
+
         // Find MART configuration and questions
         $isMartProject = false;
         $martConfig = null;
         $questions = [];
-        
+
         foreach ($inputs as $input) {
             if (isset($input['type']) && $input['type'] === 'mart') {
                 $isMartProject = true;
@@ -331,43 +331,44 @@ class MartApiController extends Controller
                 $questions[] = $input;
             }
         }
-        
-        if (!$isMartProject) {
+
+        if (! $isMartProject) {
             // For standard projects, validation is less strict
             return ['valid' => true, 'errors' => []];
         }
-        
+
         // Validate each answer
         foreach ($answers as $questionId => $answer) {
-            $questionIndex = (int)$questionId - 1; // Questions are 1-indexed in API, 0-indexed in array
-            
-            if (!isset($questions[$questionIndex])) {
+            $questionIndex = (int) $questionId - 1; // Questions are 1-indexed in API, 0-indexed in array
+
+            if (! isset($questions[$questionIndex])) {
                 $errors[] = "Question $questionId does not exist in project";
+
                 continue;
             }
-            
+
             $question = $questions[$questionIndex];
             $validationResult = $this->validateSingleAnswer($answer, $question, $questionId);
-            
-            if (!$validationResult['valid']) {
+
+            if (! $validationResult['valid']) {
                 $errors = array_merge($errors, $validationResult['errors']);
             }
         }
-        
+
         // Check for missing required questions
         foreach ($questions as $index => $question) {
             $questionId = $index + 1;
-            if (!array_key_exists($questionId, $answers)) {
+            if (! array_key_exists($questionId, $answers)) {
                 $errors[] = "Required question $questionId is missing";
             }
         }
-        
+
         return [
             'valid' => empty($errors),
-            'errors' => $errors
+            'errors' => $errors,
         ];
     }
-    
+
     /**
      * Validate a single answer against its question constraints
      */
@@ -375,49 +376,49 @@ class MartApiController extends Controller
     {
         $errors = [];
         $type = $question['martMetadata']['originalType'] ?? $question['type'] ?? 'text';
-        
+
         switch ($type) {
             case 'radio':
             case 'one choice':
                 // Must be a single integer within valid range
-                if (!is_int($answer)) {
+                if (! is_int($answer)) {
                     $errors[] = "Question $questionId: Answer must be a single integer for radio/choice questions";
                 } else {
                     $validOptions = array_keys($question['answers'] ?? []);
-                    if (!in_array($answer, $validOptions)) {
+                    if (! in_array($answer, $validOptions)) {
                         $errors[] = "Question $questionId: Answer $answer is not a valid option. Valid options: " . implode(', ', $validOptions);
                     }
                 }
                 break;
-                
+
             case 'checkbox':
             case 'multiple choice':
                 // Must be an array of integers
-                if (!is_array($answer)) {
+                if (! is_array($answer)) {
                     $errors[] = "Question $questionId: Answer must be an array for checkbox/multiple choice questions";
                 } else {
                     $validOptions = array_keys($question['answers'] ?? []);
                     foreach ($answer as $value) {
-                        if (!is_int($value) || !in_array($value, $validOptions)) {
+                        if (! is_int($value) || ! in_array($value, $validOptions)) {
                             $errors[] = "Question $questionId: Answer value $value is not valid. Valid options: " . implode(', ', $validOptions);
                         }
                     }
                 }
                 break;
-                
+
             case 'range':
                 // Must be a number within min/max range and respect steps
-                if (!is_numeric($answer)) {
+                if (! is_numeric($answer)) {
                     $errors[] = "Question $questionId: Answer must be a number for range questions";
                 } else {
                     $minValue = $question['martMetadata']['minValue'] ?? 0;
                     $maxValue = $question['martMetadata']['maxValue'] ?? 10;
                     $steps = $question['martMetadata']['steps'] ?? 1;
-                    
+
                     if ($answer < $minValue || $answer > $maxValue) {
                         $errors[] = "Question $questionId: Answer $answer is out of range ($minValue-$maxValue)";
                     }
-                    
+
                     // Check if answer respects step increments
                     if ($steps > 1) {
                         $remainder = ($answer - $minValue) % $steps;
@@ -427,40 +428,40 @@ class MartApiController extends Controller
                     }
                 }
                 break;
-                
+
             case 'number':
             case 'scale':
                 // Must be a number within min/max range
-                if (!is_numeric($answer)) {
+                if (! is_numeric($answer)) {
                     $errors[] = "Question $questionId: Answer must be a number";
                 } else {
                     $minValue = $question['martMetadata']['minValue'] ?? 1;
                     $maxValue = $question['martMetadata']['maxValue'] ?? 10;
-                    
+
                     if ($answer < $minValue || $answer > $maxValue) {
                         $errors[] = "Question $questionId: Answer $answer is out of range ($minValue-$maxValue)";
                     }
                 }
                 break;
-                
+
             case 'textarea':
             case 'text':
                 // Must be a string
-                if (!is_string($answer)) {
+                if (! is_string($answer)) {
                     $errors[] = "Question $questionId: Answer must be a string for text questions";
-                } else if (empty(trim($answer)) && ($question['required'] ?? true)) {
+                } elseif (empty(trim($answer)) && ($question['required'] ?? true)) {
                     $errors[] = "Question $questionId: Text answer cannot be empty";
                 }
                 break;
-                
+
             default:
                 // Unknown type - allow anything but warn
                 break;
         }
-        
+
         return [
             'valid' => empty($errors),
-            'errors' => $errors
+            'errors' => $errors,
         ];
     }
 }

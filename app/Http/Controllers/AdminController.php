@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Notifications\CustomVerifyEmail;
-use Illuminate\Http\JsonResponse;
 use App\Action;
 use App\Cases;
 use App\Entry;
+use App\Notifications\CustomVerifyEmail;
 use App\Project;
 use App\User;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 
 class AdminController extends Controller
 {

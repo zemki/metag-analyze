@@ -2,14 +2,13 @@
 
 namespace App;
 
-use App\Notifications\researcherNotificationToUser;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Enums\CaseStatus;
 use App\Helpers\Helper;
-use DB;
+use App\Notifications\researcherNotificationToUser;
 use File;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Notifications\DatabaseNotificationCollection;
 use JetBrains\PhpStorm\Pure;
 
@@ -239,34 +238,35 @@ class Cases extends Model
         }
         $this->user()->associate($user);
         $this->save();
-        
+
         // Auto-create planned notifications for MART projects with repeating questionnaires
         $this->createAutoNotificationsForMartProject($user);
 
         return $user;
     }
-    
+
     /**
      * Create automatic planned notifications for MART projects with repeating questionnaires
      */
     private function createAutoNotificationsForMartProject($user)
     {
         $project = $this->project;
-        
+
         // First, try to use new questionnaire schedules system
         $schedules = MartQuestionnaireSchedule::forProject($project->id)->get();
         if ($schedules->isNotEmpty()) {
             $this->createNotificationsFromSchedules($user, $schedules);
+
             return;
         }
-        
+
         // Fallback to legacy notification config for backward compatibility
         $inputs = json_decode($project->inputs, true);
-        
-        if (!$inputs || !is_array($inputs)) {
+
+        if (! $inputs || ! is_array($inputs)) {
             return;
         }
-        
+
         // Find MART configuration
         $martConfig = null;
         foreach ($inputs as $input) {
@@ -275,35 +275,35 @@ class Cases extends Model
                 break;
             }
         }
-        
-        if (!$martConfig || !isset($martConfig['projectOptions'])) {
+
+        if (! $martConfig || ! isset($martConfig['projectOptions'])) {
             return;
         }
-        
+
         $options = $martConfig['projectOptions'];
-        
+
         // Check if this is a repeating questionnaire with notification config (legacy)
-        if (isset($options['questionnaireType']) && 
+        if (isset($options['questionnaireType']) &&
             $options['questionnaireType'] === 'repeating' &&
             isset($options['notificationConfig']) &&
             $options['notificationConfig']['enabled']) {
-            
+
             $notificationConfig = $options['notificationConfig'];
-            
+
             // Create the planning string in the format expected by the system
             $frequency = $this->mapFrequencyToText($notificationConfig['frequency']);
             $planningText = $frequency . ' at 09:00'; // Default time, can be customized
-            
+
             // Create planned notification (legacy format)
             $user->notify(new researcherNotificationToUser([
                 'title' => 'Study Reminder',
                 'message' => $notificationConfig['text'] ?? 'You have a new questionnaire available',
                 'case' => ['id' => $this->id],
-                'planning' => $planningText
+                'planning' => $planningText,
             ]));
         }
     }
-    
+
     /**
      * Create notifications from new questionnaire schedules system
      */
@@ -313,19 +313,19 @@ class Cases extends Model
             if ($schedule->type === 'repeating' && $schedule->show_notifications) {
                 // Create the planning string in the format expected by the system
                 $planningText = 'Every day at ' . ($schedule->daily_start_time ?? '09:00');
-                
+
                 // Create planned notification with questionnaire ID
                 $user->notify(new researcherNotificationToUser([
                     'title' => $schedule->name ?? 'Study Reminder',
                     'message' => $schedule->notification_text ?? 'You have a new questionnaire available',
                     'case' => ['id' => $this->id],
                     'questionnaire_id' => $schedule->questionnaire_id, // Add questionnaire tracking
-                    'planning' => $planningText
+                    'planning' => $planningText,
                 ]));
             }
         }
     }
-    
+
     /**
      * Map frequency values to text format expected by notification system
      */
@@ -335,9 +335,9 @@ class Cases extends Model
             'daily' => 'Every day',
             'every-2-days' => 'Every 2 days',
             'every-3-days' => 'Every 3 days',
-            'weekly' => 'Every week'
+            'weekly' => 'Every week',
         ];
-        
+
         return $mapping[$frequency] ?? 'Every day';
     }
 
@@ -421,12 +421,12 @@ class Cases extends Model
     #[Pure]
     public function isBackend(): bool
     {
-        // For MART projects, cases are never considered "backend" 
+        // For MART projects, cases are never considered "backend"
         // since they're designed for mobile app usage
         if ($this->project && $this->project->isMartProject()) {
             return false;
         }
-        
+
         return Helper::get_string_between($this->duration, 'value:', '|') == 0;
     }
 
@@ -461,21 +461,21 @@ class Cases extends Model
         if ($this->isBackend()) {
             return CaseStatus::BACKEND;
         }
-        
+
         $now = strtotime(date('Y-m-d H:i:s'));
         $lastDay = $this->lastDay();
         $firstDay = $this->firstDay();
-        
+
         // If no lastDay set or before firstDay, it's pending
         if (empty($lastDay) || ($firstDay && $now < strtotime($firstDay))) {
             return CaseStatus::PENDING;
         }
-        
+
         // If past lastDay, it's completed
         if ($now > strtotime($lastDay)) {
             return CaseStatus::COMPLETED;
         }
-        
+
         // Otherwise it's active
         return CaseStatus::ACTIVE;
     }
@@ -488,12 +488,12 @@ class Cases extends Model
     public function isAccessible(): bool
     {
         $status = $this->getStatus();
-        
+
         if ($this->project && $this->project->isMartProject()) {
             // MART projects: only completed cases are accessible
             return $status === CaseStatus::COMPLETED;
         }
-        
+
         // Standard projects: active cases are accessible (existing logic)
         return $status === CaseStatus::ACTIVE;
     }

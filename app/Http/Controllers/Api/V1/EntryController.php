@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Log;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use App\Cases;
 use App\Entry;
 use App\Files;
@@ -15,7 +13,9 @@ use Exception;
 use File;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Routing\ResponseFactory;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
+use Log;
 
 class EntryController extends Controller
 {
@@ -87,7 +87,7 @@ class EntryController extends Controller
 
         if (request()->hasHeader('x-file-token') && request()->header('x-file-token') !== '0' && request()->header('x-file-token') !== '') {
             $appToken = request()->header('x-file-token');
-            $clientFileTokenIsSameWithServer = !hash_equals(Crypt::decryptString($case->file_token), $appToken);
+            $clientFileTokenIsSameWithServer = ! hash_equals(Crypt::decryptString($case->file_token), $appToken);
             if ($clientFileTokenIsSameWithServer) {
                 return response('You are not authorized!', 403);
             } else {
@@ -202,7 +202,7 @@ class EntryController extends Controller
             Log::error('Entry deletion failed', [
                 'entry_id' => $entry->id,
                 'case_id' => $case->id,
-                'error' => $error->getMessage()
+                'error' => $error->getMessage(),
             ]);
 
             return response(['error' => 'Unable to delete entry'], 500);

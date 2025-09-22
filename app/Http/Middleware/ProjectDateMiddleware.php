@@ -2,17 +2,17 @@
 
 namespace App\Http\Middleware;
 
-use Illuminate\Http\Request;
 use App\Project;
 use Carbon\Carbon;
 use Closure;
+use Illuminate\Http\Request;
 
 class ProjectDateMiddleware
 {
     /**
      * Handle an incoming request.
      *
-     * @param Request $request
+     * @param  Request  $request
      * @return mixed
      */
     public function handle($request, Closure $next)

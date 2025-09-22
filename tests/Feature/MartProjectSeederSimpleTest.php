@@ -2,18 +2,18 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use App\User;
-use App\Project;
-use App\MartPage;
 use App\Cases;
 use App\Entry;
+use App\MartPage;
+use App\Project;
+use App\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class MartProjectSeederSimpleTest extends TestCase
 {
     use RefreshDatabase;
-    
+
     /**
      * Test that we can create a user correctly
      *
@@ -28,14 +28,14 @@ class MartProjectSeederSimpleTest extends TestCase
                 'deviceID' => 'TEST_DEVICE_123',
             ]
         );
-        
+
         $this->assertDatabaseHas('users', [
-            'email' => 'test@example.com'
+            'email' => 'test@example.com',
         ]);
-        
+
         $this->assertNotNull($user->id);
     }
-    
+
     /**
      * Test that we can create a MART project correctly
      *
@@ -48,7 +48,7 @@ class MartProjectSeederSimpleTest extends TestCase
             'password' => bcrypt('password'),
             'deviceID' => 'TEST_DEVICE_123',
         ]);
-        
+
         $project = Project::create([
             'name' => 'Test MART Project',
             'description' => 'A test MART project',
@@ -67,10 +67,10 @@ class MartProjectSeederSimpleTest extends TestCase
                                 'content' => '<h1>Welcome</h1>',
                                 'buttonText' => 'Continue',
                                 'showOnFirstAppStart' => true,
-                                'sortOrder' => 0
-                            ]
-                        ]
-                    ]
+                                'sortOrder' => 0,
+                            ],
+                        ],
+                    ],
                 ],
                 [
                     'name' => 'How do you feel?',
@@ -82,19 +82,19 @@ class MartProjectSeederSimpleTest extends TestCase
                         'originalType' => 'radio',
                         'minValue' => null,
                         'maxValue' => null,
-                        'steps' => null
-                    ]
-                ]
-            ])
+                        'steps' => null,
+                    ],
+                ],
+            ]),
         ]);
-        
+
         $this->assertDatabaseHas('projects', [
-            'name' => 'Test MART Project'
+            'name' => 'Test MART Project',
         ]);
-        
+
         $this->assertTrue($project->isMartProject());
     }
-    
+
     /**
      * Test that we can create MartPage records
      *
@@ -107,7 +107,7 @@ class MartProjectSeederSimpleTest extends TestCase
             'password' => bcrypt('password'),
             'deviceID' => 'TEST_DEVICE_123',
         ]);
-        
+
         $project = Project::create([
             'name' => 'Test MART Project',
             'description' => 'A test MART project',
@@ -120,27 +120,27 @@ class MartProjectSeederSimpleTest extends TestCase
                     'type' => 'mart',
                     'questionnaireName' => 'Test Questionnaire',
                     'projectOptions' => [
-                        'pages' => []
-                    ]
-                ]
-            ])
+                        'pages' => [],
+                    ],
+                ],
+            ]),
         ]);
-        
+
         $page = MartPage::create([
             'project_id' => $project->id,
             'name' => 'Welcome',
             'content' => '<h1>Welcome to the study</h1>',
             'button_text' => 'Continue',
             'show_on_first_app_start' => true,
-            'sort_order' => 0
+            'sort_order' => 0,
         ]);
-        
+
         $this->assertDatabaseHas('mart_pages', [
             'project_id' => $project->id,
-            'name' => 'Welcome'
+            'name' => 'Welcome',
         ]);
     }
-    
+
     /**
      * Test that we can create Cases and Entries
      *
@@ -153,7 +153,7 @@ class MartProjectSeederSimpleTest extends TestCase
             'password' => bcrypt('password'),
             'deviceID' => 'TEST_DEVICE_123',
         ]);
-        
+
         $project = Project::create([
             'name' => 'Test MART Project',
             'description' => 'A test MART project',
@@ -165,43 +165,43 @@ class MartProjectSeederSimpleTest extends TestCase
                 [
                     'type' => 'mart',
                     'questionnaireName' => 'Test Questionnaire',
-                    'projectOptions' => ['pages' => []]
-                ]
-            ])
+                    'projectOptions' => ['pages' => []],
+                ],
+            ]),
         ]);
-        
+
         $case = Cases::create([
             'project_id' => $project->id,
             'user_id' => $user->id,
             'name' => 'Test_Participant_001',
-            'duration' => 'value:45min'
+            'duration' => 'value:45min',
         ]);
-        
+
         $entry = Entry::create([
             'case_id' => $case->id,
             'begin' => '2025-07-17 10:00:00',
             'end' => '2025-07-17 10:03:00',
             'inputs' => json_encode([
                 'How do you feel?' => 'Good',
-                'Stress level' => 5
+                'Stress level' => 5,
             ]),
-            'media_id' => null
+            'media_id' => null,
         ]);
-        
+
         $this->assertDatabaseHas('cases', [
             'project_id' => $project->id,
-            'name' => 'Test_Participant_001'
+            'name' => 'Test_Participant_001',
         ]);
-        
+
         $this->assertDatabaseHas('entries', [
-            'case_id' => $case->id
+            'case_id' => $case->id,
         ]);
-        
+
         $entryData = json_decode($entry->inputs, true);
         $this->assertEquals('Good', $entryData['How do you feel?']);
         $this->assertEquals(5, $entryData['Stress level']);
     }
-    
+
     /**
      * Test database constraints and requirements
      *
@@ -211,7 +211,7 @@ class MartProjectSeederSimpleTest extends TestCase
     {
         // Test that users table doesn't have 'name' column
         $this->expectException(\Illuminate\Database\QueryException::class);
-        
+
         User::create([
             'email' => 'test@example.com',
             'password' => bcrypt('password'),

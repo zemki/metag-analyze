@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Api\V2;
 use App\Http\Controllers\Controller;
 use App\MartPage;
 use App\Project;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class PageController extends Controller
 {
@@ -22,7 +22,7 @@ class PageController extends Controller
         return response()->json([
             'success' => true,
             'data' => $pages,
-            'message' => 'Pages retrieved successfully'
+            'message' => 'Pages retrieved successfully',
         ]);
     }
 
@@ -38,13 +38,13 @@ class PageController extends Controller
             'content' => 'required|string',
             'show_on_first_app_start' => 'boolean',
             'button_text' => 'required|string|max:255',
-            'sort_order' => 'integer|min:0'
+            'sort_order' => 'integer|min:0',
         ]);
 
         $attributes['project_id'] = $project->id;
 
         // If no sort_order provided, set to last
-        if (!isset($attributes['sort_order'])) {
+        if (! isset($attributes['sort_order'])) {
             $attributes['sort_order'] = $project->pages()->count();
         }
 
@@ -53,7 +53,7 @@ class PageController extends Controller
         return response()->json([
             'success' => true,
             'data' => $page,
-            'message' => 'Page created successfully'
+            'message' => 'Page created successfully',
         ], 201);
     }
 
@@ -68,14 +68,14 @@ class PageController extends Controller
         if ($page->project_id !== $project->id) {
             return response()->json([
                 'success' => false,
-                'message' => 'Page not found for this project'
+                'message' => 'Page not found for this project',
             ], 404);
         }
 
         return response()->json([
             'success' => true,
             'data' => $page,
-            'message' => 'Page retrieved successfully'
+            'message' => 'Page retrieved successfully',
         ]);
     }
 
@@ -90,7 +90,7 @@ class PageController extends Controller
         if ($page->project_id !== $project->id) {
             return response()->json([
                 'success' => false,
-                'message' => 'Page not found for this project'
+                'message' => 'Page not found for this project',
             ], 404);
         }
 
@@ -99,7 +99,7 @@ class PageController extends Controller
             'content' => 'string',
             'show_on_first_app_start' => 'boolean',
             'button_text' => 'string|max:255',
-            'sort_order' => 'integer|min:0'
+            'sort_order' => 'integer|min:0',
         ]);
 
         $page->update($attributes);
@@ -107,7 +107,7 @@ class PageController extends Controller
         return response()->json([
             'success' => true,
             'data' => $page,
-            'message' => 'Page updated successfully'
+            'message' => 'Page updated successfully',
         ]);
     }
 
@@ -122,7 +122,7 @@ class PageController extends Controller
         if ($page->project_id !== $project->id) {
             return response()->json([
                 'success' => false,
-                'message' => 'Page not found for this project'
+                'message' => 'Page not found for this project',
             ], 404);
         }
 
@@ -130,7 +130,7 @@ class PageController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Page deleted successfully'
+            'message' => 'Page deleted successfully',
         ]);
     }
 
@@ -144,12 +144,12 @@ class PageController extends Controller
         $request->validate([
             'pages' => 'required|array',
             'pages.*.id' => 'required|integer|exists:pages,id',
-            'pages.*.sort_order' => 'required|integer|min:0'
+            'pages.*.sort_order' => 'required|integer|min:0',
         ]);
 
         foreach ($request->pages as $pageData) {
             $page = MartPage::find($pageData['id']);
-            
+
             // Ensure page belongs to project
             if ($page && $page->project_id === $project->id) {
                 $page->update(['sort_order' => $pageData['sort_order']]);
@@ -158,7 +158,7 @@ class PageController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Page order updated successfully'
+            'message' => 'Page order updated successfully',
         ]);
     }
 }

@@ -44,7 +44,7 @@ class ProjectCasesController extends Controller
         }
         $data['entries']['media'] = $mediaValues;
         $data['entries']['availablemedia'] = $availableMedia;
-        //$data['entries']['inputs'] = $inputValues;
+        // $data['entries']['inputs'] = $inputValues;
         $data['entries']['availableinputs'] = $availableInputs;
         $data['case'] = $case;
         $data['project'] = $project;
@@ -83,7 +83,7 @@ class ProjectCasesController extends Controller
                         array_push($inputEntry['inputs'], (object) $tempEntryInputs);
                     }
                 } elseif (strlen($answer) > 1) {
-                    //text & file
+                    // text & file
                     $tempEntryInputs['id'] = $entry['id'];
                     $tempEntryInputs['name'] = $question !== 'file' ? $answer : 'file';
                     foreach ($data['availableInputs'] as $key => $availableInput) {
@@ -177,12 +177,12 @@ class ProjectCasesController extends Controller
                 }
 
                 $user = User::createIfDoesNotExists(User::firstOrNew(['email' => $singleEmail]), request('sendanywayemail'), request('sendanywayemailsubject'), request('sendanywayemailmessage'));
-                
+
                 // For MART projects, use a default duration since duration is not applicable
-                $duration = $project->isMartProject() 
+                $duration = $project->isMartProject()
                     ? 'value:0|days:0|lastDay:' . Carbon::now()->addYear()->format('Y-m-d')
                     : request('duration');
-                    
+
                 $case = $project->addCase($caseName, $duration);
                 $case->addUser($user);
                 $message .= $user->email . " has been invited. \n";
@@ -213,18 +213,18 @@ class ProjectCasesController extends Controller
         if (request('backendCase')) {
             return;
         }
-        
+
         // Base validation rules
         $rules = [
             'name' => 'required',
             'email' => 'required',
         ];
-        
+
         // Only require duration for non-MART projects
-        if (!$project->isMartProject()) {
+        if (! $project->isMartProject()) {
             $rules['duration'] = 'required';
         }
-        
+
         request()->validate($rules);
 
         $emails = Helper::multiexplode([';', ',', ' '], $email);
@@ -312,14 +312,14 @@ class ProjectCasesController extends Controller
     {
         $headings = [];
         $inputs = json_decode($project->inputs);
-        
+
         // Skip MART configuration object if present
         foreach ($inputs as $input) {
             // Skip MART configuration object
             if (property_exists($input, 'type') && $input->type === 'mart') {
                 continue;
             }
-            
+
             $isMultipleOrOneChoice = property_exists($input, 'numberofanswer') && $input->numberofanswer > 0;
             if ($isMultipleOrOneChoice) {
                 for ($i = 0; $i < $input->numberofanswer; $i++) {

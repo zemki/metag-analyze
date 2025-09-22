@@ -26,7 +26,10 @@
       "Bash(composer update:*)",
       "WebFetch(domain:filamentphp.com)",
       "WebSearch",
-      "Bash(composer install:*)"
+      "Bash(composer install:*)",
+      "Bash(curl:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.anthropic.com)"
     ],
     "deny": []
   }

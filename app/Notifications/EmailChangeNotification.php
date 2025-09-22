@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\URL;
 
 class EmailChangeNotification extends Notification
 {
-
     /**
      * The user Email
      *

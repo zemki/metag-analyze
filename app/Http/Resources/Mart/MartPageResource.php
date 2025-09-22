@@ -14,9 +14,9 @@ class MartPageResource extends JsonResource
             'content' => $this->content,
             'options' => [
                 'showOnFirstAppStart' => $this->show_on_first_app_start,
-                'buttonText' => $this->button_text
+                'buttonText' => $this->button_text,
             ],
-            'sortOrder' => $this->sort_order
+            'sortOrder' => $this->sort_order,
         ];
     }
 }

@@ -2,8 +2,8 @@
 
 namespace App;
 
-use Illuminate\Support\Collection;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -42,15 +42,15 @@ class AllCasesExport implements FromCollection, WithHeadings, WithMapping
                 if ($ifCaseHasAdditionalInputs) {
                     [$jsonInputs, $tempValuesArray] = $this->formatAssociativeNamesAccordingToHeadings($entry, $tempValuesArray);
 
-                    //$tempValuesArray[self::ENTRY_ID] = $entry->id;
+                    // $tempValuesArray[self::ENTRY_ID] = $entry->id;
                     $tempValuesArray = $this->printValuesInArray($project, $jsonInputs, $tempValuesArray);
                 }
                 $tempValuesArray[self::ENTRY_ID] = $entry->id;
-                
+
                 // Handle missing media safely
                 $media = $entry->media_id ? Media::where('id', $entry->media_id)->first() : null;
                 $tempValuesArray['media'] = $media ? $media->name : '';
-                
+
                 $tempValuesArray['start'] = $entry->begin;
                 $tempValuesArray['end'] = $entry->end;
                 $tempValuesArray['user_id'] = $case->user_id;
@@ -116,7 +116,7 @@ class AllCasesExport implements FromCollection, WithHeadings, WithMapping
         foreach ($project->getProjectInputNames() as $name) {
             $projectInputNames[$name] = $project->getAnswersByQuestion($name);
         }
-        
+
         // Process ALL project input names to ensure all columns are filled
         foreach ($project->getProjectInputNames() as $inputName) {
             if ($inputName === 'firstValue') {
@@ -126,7 +126,7 @@ class AllCasesExport implements FromCollection, WithHeadings, WithMapping
             $index = [];
             $numberOfAnswersByQuestion = $project->getNumberOfAnswersByQuestion($inputName);
             $questionIsMultipleOrOneChoice = $numberOfAnswersByQuestion > 0;
-            
+
             // Get the input value from jsonInputs, or use empty string if not present
             $input = $jsonInputs[$inputName] ?? '';
 

@@ -2,10 +2,10 @@
 
 namespace App\Providers;
 
-use Exception;
 use App\Helpers\Helper;
 use App\Models\User;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
