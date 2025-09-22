@@ -115,7 +115,7 @@ If you prefer manual setup or are on Windows.
    ```
 
 4. **Configure Database**
-   
+
    Edit `.env` file with your database credentials:
    ```env
    DB_CONNECTION=mysql
@@ -135,23 +135,38 @@ If you prefer manual setup or are on Windows.
    exit;
    ```
 
-6. **Run Migrations**
+6. **Configure Firebase (Required for Push Notifications)**
+
+   **⚠️ Important**: Firebase is required for mobile push notifications.
+
+   Follow the detailed setup guide: [FIREBASE_SETUP.md](./FIREBASE_SETUP.md)
+
+   Quick summary:
+   - Create Firebase project
+   - Download service account JSON file
+   - Add to `.env`:
+     ```env
+     FIREBASE_CREDENTIALS=./your-firebase-adminsdk.json
+     FIREBASE_URL=https://your-project-id-default-rtdb.firebaseio.com/
+     ```
+
+7. **Run Migrations**
    ```bash
    php artisan migrate
    ```
 
-7. **Install Frontend Dependencies**
+8. **Install Frontend Dependencies**
    ```bash
    npm install
    npm run build
    ```
 
-8. **Set Up Storage Link**
+9. **Set Up Storage Link**
    ```bash
    php artisan storage:link
    ```
 
-9. **Configure Site URL (Herd/Valet)**
+10. **Configure Site URL (Herd/Valet)**
    
    **For Herd:**
    - Open Herd preferences
@@ -164,7 +179,7 @@ If you prefer manual setup or are on Windows.
    # Access at http://metag-analyze.test
    ```
 
-10. **Generate API Documentation** (Optional)
+11. **Generate API Documentation** (Optional)
     ```bash
     php artisan l5-swagger:generate
     ```
