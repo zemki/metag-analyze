@@ -90,12 +90,12 @@ class researcherNotificationToUser extends Notification implements ShouldQueue
             'case' => $this->cases['id'],
             'planning' => $this->planning,
         ];
-        
+
         // Include questionnaire_id if available
         if ($this->questionnaireId !== null) {
             $data['questionnaire_id'] = $this->questionnaireId;
         }
-        
+
         return $data;
     }
 }

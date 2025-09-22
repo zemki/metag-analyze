@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Auth;
 
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Response;
 use App\Http\Controllers\Controller;
 use App\Notifications\EmailChangeNotification;
 use App\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
 
@@ -82,7 +82,7 @@ class EmailChangeController extends Controller
             'email' => $request->email,
         ]);
 
-        //log the action
+        // log the action
         $user->first()->addAction('Email change from ' . $oldEmail . ' to ' . $user->email, 'from email link');
 
         // And finally return the view telling the change has been done

@@ -26,14 +26,14 @@ class ProjectDuplicationTest extends TestCase
             'created_by' => $user->id,
             'name' => 'Original Project',
             'inputs' => json_encode([
-                ['name' => 'Test Question', 'type' => 'text', 'mandatory' => true]
-            ])
+                ['name' => 'Test Question', 'type' => 'text', 'mandatory' => true],
+            ]),
         ]);
 
         // Create case and entries for original project
         $originalCase = Cases::factory()->create([
             'project_id' => $originalProject->id,
-            'name' => 'Original Case'
+            'name' => 'Original Case',
         ]);
 
         $media = Media::factory()->create(['name' => 'Test Media']);
@@ -43,7 +43,7 @@ class ProjectDuplicationTest extends TestCase
             'media_id' => $media->id,
             'inputs' => json_encode(['Test Question' => 'Original Answer']),
             'begin' => now()->subHour()->format('Y-m-d H:i:s.u'),
-            'end' => now()->format('Y-m-d H:i:s.u')
+            'end' => now()->format('Y-m-d H:i:s.u'),
         ]);
 
         // Count initial data (parent TestCase might create some)
@@ -100,23 +100,23 @@ class ProjectDuplicationTest extends TestCase
         // Create project with media
         $project = Project::factory()->create([
             'created_by' => $user->id,
-            'name' => 'Test Project'
+            'name' => 'Test Project',
         ]);
 
         $media1 = Media::factory()->create(['name' => 'Media 1']);
         $media2 = Media::factory()->create(['name' => 'Media 2']);
-        
+
         // Attach media to project
         $project->media()->attach([$media1->id, $media2->id]);
 
         // Create case with entries
         $case = Cases::factory()->create([
-            'project_id' => $project->id
+            'project_id' => $project->id,
         ]);
 
         Entry::factory()->create([
             'case_id' => $case->id,
-            'media_id' => $media1->id
+            'media_id' => $media1->id,
         ]);
 
         // Duplicate project

@@ -8,7 +8,7 @@ class PlaywrightUserSeeder extends Seeder
 {
     /**
      * Run the database seeds.
-     * 
+     *
      * Creates a dedicated user for Playwright testing with known credentials.
      *
      * @return void

@@ -2,9 +2,9 @@
 
 namespace App;
 
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Stat extends Model
 {
@@ -81,7 +81,7 @@ class Stat extends Model
     /**
      * Scope a query to only include stats for a specific project.
      *
-     * @param Builder $query
+     * @param  Builder  $query
      * @param  int  $projectId
      * @return Builder
      */
@@ -93,7 +93,7 @@ class Stat extends Model
     /**
      * Scope a query to only include stats for a specific participant.
      *
-     * @param Builder $query
+     * @param  Builder  $query
      * @param  string  $participantId
      * @return Builder
      */
@@ -105,7 +105,7 @@ class Stat extends Model
     /**
      * Get stats within a date range.
      *
-     * @param Builder $query
+     * @param  Builder  $query
      * @param  int  $startTimestamp
      * @param  int  $endTimestamp
      * @return Builder
@@ -113,4 +113,5 @@ class Stat extends Model
     public function scopeInDateRange($query, $startTimestamp, $endTimestamp)
     {
         return $query->whereBetween('timestamp', [$startTimestamp, $endTimestamp]);
-    }}
+    }
+}

@@ -53,11 +53,11 @@ class CheckAndDeleteUnverifiedUsers extends Command
         if ($this->confirm('You want to receive the csv file?', false)) {
             Mail::to(config('utilities.adminemails'))->send(new UnverifiedUsersReport($filePath));
 
-            //send the csv file to the admin
+            // send the csv file to the admin
             $this->info('Sending the report...');
         }
 
-        //remove the csv file
+        // remove the csv file
         unlink($filePath);
     }
 

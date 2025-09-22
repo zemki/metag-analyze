@@ -132,16 +132,16 @@ class MartQuestionnaireSchedule extends Model
 
         return $data;
     }
-    
+
     /**
      * Format date and time for mobile API.
      */
     private function formatDateTimeForMobile($dateTime)
     {
-        if (!$dateTime) {
+        if (! $dateTime) {
             return null;
         }
-        
+
         // If it's already an array with date and time, format the date
         if (is_array($dateTime)) {
             if (isset($dateTime['date'])) {
@@ -152,9 +152,10 @@ class MartQuestionnaireSchedule extends Model
                     $dateTime['date'] = date('d.m.Y', $timestamp);
                 }
             }
+
             return $dateTime;
         }
-        
+
         return $dateTime;
     }
 }
