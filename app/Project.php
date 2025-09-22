@@ -2,11 +2,11 @@
 
 namespace App;
 
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Project extends Model
 {
@@ -42,14 +42,14 @@ class Project extends Model
     {
         $headings = [];
         $inputs = json_decode($project->inputs);
-        
+
         // Skip MART configuration object if present
         foreach ($inputs as $input) {
             // Skip MART configuration object
             if (property_exists($input, 'type') && $input->type === 'mart') {
                 continue;
             }
-            
+
             $isMultipleOrOneChoice = property_exists($input, 'numberofanswer') && $input->numberofanswer > 0;
             if ($isMultipleOrOneChoice) {
                 for ($i = 0; $i < $input->numberofanswer; $i++) {
@@ -239,12 +239,13 @@ class Project extends Model
 
     /**
      * Check if this is a MART project
+     *
      * @return bool
      */
     public function isMartProject()
     {
         $inputs = json_decode($this->inputs, true);
-        
+
         if (is_array($inputs)) {
             foreach ($inputs as $input) {
                 if (isset($input['type']) && $input['type'] === 'mart') {
@@ -252,7 +253,7 @@ class Project extends Model
                 }
             }
         }
-        
+
         return false;
     }
 

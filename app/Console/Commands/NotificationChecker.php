@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
-use App\MartQuestionnaireSchedule;
-use App\Entry;
 use App\Cases;
+use App\Entry;
+use App\MartQuestionnaireSchedule;
 use App\Notifications\researcherNotificationToUser;
 use DB;
 use Illuminate\Console\Command;
@@ -113,7 +113,7 @@ class NotificationChecker extends Command
             ->where('questionnaire_id', $questionnaireId)
             ->first();
 
-        if (!$schedule) {
+        if (! $schedule) {
             return false; // No schedule found, don't send
         }
 
@@ -161,18 +161,18 @@ class NotificationChecker extends Command
         $user = $case->user;
         $user->profile->last_notification_at = date('Y-m-d H:i:s');
         $user->profile->save();
-        
+
         // Include questionnaire_id in notification if available
         $notificationData = [
-            'title' => $notification->data->title, 
-            'message' => $notification->data->message, 
-            'case' => $case
+            'title' => $notification->data->title,
+            'message' => $notification->data->message,
+            'case' => $case,
         ];
-        
+
         if (isset($notification->data->questionnaire_id)) {
             $notificationData['questionnaire_id'] = $notification->data->questionnaire_id;
         }
-        
+
         $user->notify(new researcherNotificationToUser($notificationData));
         $this->info('Notification sent to ' . $user->email . (isset($notification->data->questionnaire_id) ? " (questionnaire: {$notification->data->questionnaire_id})" : ''));
         $notificationSent++;

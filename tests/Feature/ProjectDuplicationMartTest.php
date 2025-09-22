@@ -2,12 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Cases;
-use App\Entry;
+use App\MartPage;
 use App\Media;
 use App\Project;
 use App\User;
-use App\MartPage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -27,7 +25,7 @@ class ProjectDuplicationMartTest extends TestCase
             [
                 'name' => 'Regular Question',
                 'type' => 'text',
-                'mandatory' => true
+                'mandatory' => true,
             ],
             [
                 'type' => 'mart',
@@ -35,9 +33,9 @@ class ProjectDuplicationMartTest extends TestCase
                 'repeating_questionnaire_days' => [7, 14, 21],
                 'notification_settings' => [
                     'enabled' => true,
-                    'time' => '10:00'
-                ]
-            ]
+                    'time' => '10:00',
+                ],
+            ],
         ];
 
         $originalProject = Project::factory()->create([
@@ -45,7 +43,7 @@ class ProjectDuplicationMartTest extends TestCase
             'name' => 'Original MART Project',
             'inputs' => json_encode($martInputs),
             'entity_name' => 'participant',
-            'use_entity' => false
+            'use_entity' => false,
         ]);
 
         // Verify original is a MART project
@@ -89,13 +87,13 @@ class ProjectDuplicationMartTest extends TestCase
             [
                 'name' => 'Question 1',
                 'type' => 'text',
-                'mandatory' => true
+                'mandatory' => true,
             ],
             [
                 'name' => 'Question 2',
                 'type' => 'scale',
-                'mandatory' => false
-            ]
+                'mandatory' => false,
+            ],
         ];
 
         $originalProject = Project::factory()->create([
@@ -103,7 +101,7 @@ class ProjectDuplicationMartTest extends TestCase
             'name' => 'Regular Project',
             'inputs' => json_encode($regularInputs),
             'entity_name' => 'media',
-            'use_entity' => true
+            'use_entity' => true,
         ]);
 
         // Verify original is NOT a MART project
@@ -147,8 +145,8 @@ class ProjectDuplicationMartTest extends TestCase
             'created_by' => $user->id,
             'name' => 'MART Project with Pages',
             'inputs' => json_encode([
-                ['type' => 'mart', 'questionnaire_days' => [1, 2, 3]]
-            ])
+                ['type' => 'mart', 'questionnaire_days' => [1, 2, 3]],
+            ]),
         ]);
 
         // Create MART pages for original project
@@ -158,7 +156,7 @@ class ProjectDuplicationMartTest extends TestCase
             'content' => 'Welcome to the study',
             'show_on_first_app_start' => true,
             'button_text' => 'Start',
-            'sort_order' => 1
+            'sort_order' => 1,
         ]);
 
         $page2 = MartPage::create([
@@ -167,7 +165,7 @@ class ProjectDuplicationMartTest extends TestCase
             'content' => 'Study instructions',
             'show_on_first_app_start' => false,
             'button_text' => 'Continue',
-            'sort_order' => 2
+            'sort_order' => 2,
         ]);
 
         // Verify original project has MART pages
@@ -205,30 +203,30 @@ class ProjectDuplicationMartTest extends TestCase
             [
                 'name' => 'Text Question',
                 'type' => 'text',
-                'mandatory' => true
+                'mandatory' => true,
             ],
             [
                 'name' => 'Scale Question',
                 'type' => 'scale',
-                'mandatory' => false
+                'mandatory' => false,
             ],
             [
                 'name' => 'Choice Question',
                 'type' => 'one choice',
                 'answers' => ['Option A', 'Option B', 'Option C'],
-                'mandatory' => true
+                'mandatory' => true,
             ],
             [
                 'type' => 'mart',
                 'questionnaire_days' => [1, 7, 14],
-                'repeating_questionnaire_days' => [21]
-            ]
+                'repeating_questionnaire_days' => [21],
+            ],
         ];
 
         $originalProject = Project::factory()->create([
             'created_by' => $user->id,
             'name' => 'Mixed Input Project',
-            'inputs' => json_encode($mixedInputs)
+            'inputs' => json_encode($mixedInputs),
         ]);
 
         // Duplicate the project
@@ -268,8 +266,8 @@ class ProjectDuplicationMartTest extends TestCase
             'created_by' => $owner->id,
             'name' => 'Private MART Project',
             'inputs' => json_encode([
-                ['type' => 'mart', 'questionnaire_days' => [1, 2, 3]]
-            ])
+                ['type' => 'mart', 'questionnaire_days' => [1, 2, 3]],
+            ]),
         ]);
 
         // Try to duplicate as unauthorized user
@@ -281,12 +279,12 @@ class ProjectDuplicationMartTest extends TestCase
 
         // Verify duplication occurred
         $this->assertEquals(2, Project::where('name', 'Private MART Project')->count());
-        
+
         // The duplicated project maintains the original creator
         $duplicatedProject = Project::where('name', 'Private MART Project')
             ->where('id', '!=', $project->id)
             ->first();
-        
+
         // The duplicate method doesn't change created_by, so it remains the original owner
         $this->assertEquals($owner->id, $duplicatedProject->created_by);
     }
@@ -307,8 +305,8 @@ class ProjectDuplicationMartTest extends TestCase
             'created_by' => $owner->id,
             'name' => 'Shared MART Project',
             'inputs' => json_encode([
-                ['type' => 'mart', 'questionnaire_days' => [1, 2, 3]]
-            ])
+                ['type' => 'mart', 'questionnaire_days' => [1, 2, 3]],
+            ]),
         ]);
 
         // Invite user to project
@@ -345,10 +343,10 @@ class ProjectDuplicationMartTest extends TestCase
             'created_by' => $user->id,
             'name' => 'MART Project with Media',
             'inputs' => json_encode([
-                ['type' => 'mart', 'questionnaire_days' => [1, 2, 3]]
+                ['type' => 'mart', 'questionnaire_days' => [1, 2, 3]],
             ]),
             'use_entity' => true,
-            'entity_name' => 'location'
+            'entity_name' => 'location',
         ]);
 
         // Create and attach media
@@ -385,10 +383,10 @@ class ProjectDuplicationMartTest extends TestCase
             'created_by' => $user->id,
             'name' => 'MART No Entity Project',
             'inputs' => json_encode([
-                ['type' => 'mart', 'questionnaire_days' => [1, 2, 3]]
+                ['type' => 'mart', 'questionnaire_days' => [1, 2, 3]],
             ]),
             'use_entity' => false,
-            'entity_name' => 'participant'
+            'entity_name' => 'participant',
         ]);
 
         // Even if media was somehow attached (shouldn't happen with use_entity=false)

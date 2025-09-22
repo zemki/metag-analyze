@@ -18,7 +18,7 @@ class MartPage extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'content', 'show_on_first_app_start', 'button_text', 'project_id', 'sort_order'
+        'name', 'content', 'show_on_first_app_start', 'button_text', 'project_id', 'sort_order',
     ];
 
     /**
