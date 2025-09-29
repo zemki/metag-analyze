@@ -75,9 +75,11 @@ php artisan reverb:start            # WebSocket server
 - Response key: `questionnaires` NOT `questionSheets`
 - ID fields: `questionnaireId` NOT `sheetId`
 - Randomization: `randomizationGroupId` NOT `randomizationGroup`
-- iOS Stats: `iOSStatsQuestionnaire` NOT `collectIosStats`
+- iOS Stats: `iOSDataDonationQuestionnaire` NOT `collectIosStats`
 - Omit `name` field from scales
-- Default values in root `options` NOT in `rangeOptions`
+- Default values in `rangeOptions` NOT in root `options`
+- Android Stats: `androidDataDonationQuestionnaire` NOT `collectAndroidStats`
+- Stats Submit: `lastDataDonationSubmit` NOT `lastStatsSubmit`
 
 ### API Testing
 ```bash

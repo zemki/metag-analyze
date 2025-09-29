@@ -18,13 +18,19 @@ class MartApiController extends Controller
     /**
      * Get project structure for mobile app
      */
-    public function getProjectStructure(Project $project)
+    public function getProjectStructure(Request $request, Project $project)
     {
         // Get questionnaire schedules for this project
         $schedules = MartQuestionnaireSchedule::forProject($project->id)->get();
 
-        // Pass schedules to the resource
-        return new MartStructureResource($project, $schedules);
+        // Get participant_id from query parameter if provided
+        $participantId = $request->query('participant_id');
+
+        // Pass schedules and participant_id to the resource
+        $resource = new MartStructureResource($project, $schedules);
+        $resource->setParticipantId($participantId);
+
+        return $resource;
     }
 
     /**
@@ -123,6 +129,8 @@ class MartApiController extends Controller
         // Include MART metadata in the inputs
         $martMetadata = [
             'questionnaire_id' => $request->questionnaireId,
+            'participant_id' => $request->participantId,  // Store participant ID
+            'user_id' => $request->userId,               // Store user ID
             'sheet_id' => $request->sheetId,
             'duration' => $request->questionnaireDuration,
             'timezone' => $request->timezone,
