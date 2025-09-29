@@ -1,167 +1,70 @@
-# System Architecture
-
-## Overview
-
-Metag-Analyze is a mobile experience sampling platform built with Laravel 11 and Vue 3. It enables researchers to conduct ESM (Experience Sampling Method) studies through mobile data collection with the MART app integration.
+# Architecture
 
 ## Technology Stack
 
 ### Backend
-- **Framework**: Laravel 11
-- **PHP Version**: 8.3+
-- **Database**: MySQL 8.0+
-- **Cache/Queue**: Redis
-- **WebSockets**: Laravel Reverb
-- **Push Notifications**: Firebase Cloud Messaging (FCM)
+- **Laravel 11** - PHP web framework
+- **PHP 8.3+** - Server-side language
+- **MySQL 8.0+** - Primary database
+- **Redis** - Cache and queue backend
+- **Laravel Reverb** - WebSocket server
+- **Firebase FCM** - Push notifications
 
 ### Frontend
-- **Framework**: Vue 3 with Composition API
-- **Build Tool**: Vite
-- **CSS Framework**: Tailwind CSS
-- **State Management**: Vuex 4
-- **Charts**: Highcharts, Chart.js
+- **Vue 3** - JavaScript framework with Composition API
+- **Vite** - Build tool and dev server
+- **Tailwind CSS** - Utility-first styling
+- **Vuex 4** - State management
+- **Highcharts/Chart.js** - Data visualization
 
 ### Mobile Integration
-- **API**: RESTful JSON API
-- **Authentication**: Bearer Token
-- **Protocol**: MART API specification
+- **MART API** - RESTful JSON API
+- **Bearer Token** - Authentication
+- **Firebase** - Push notifications
 
-## Directory Structure
+## System Design
+
+### Core Components
+
+**Projects**
+- Research studies with custom questions
+- ESM scheduling configuration
+- Duration and participant management
+
+**Cases**
+- Study participants or data units
+- Token-based mobile authentication
+- Status tracking (pending/active/completed)
+
+**Entries**
+- Participant responses with timestamps
+- JSON data storage for flexibility
+- Media attachment support
+
+**Schedules**
+- Repeating/single questionnaires
+- Time window configuration
+- Notification settings
+
+### Data Flow
 
 ```
-metag-analyze/
-├── app/                    # Laravel application
-│   ├── Console/           # Artisan commands
-│   ├── Exceptions/        # Exception handlers
-│   ├── Http/
-│   │   ├── Controllers/   # Request handlers
-│   │   ├── Middleware/    # HTTP middleware
-│   │   └── Resources/     # API resource transformers
-│   ├── Models/            # Eloquent models (Note: directly in app/)
-│   ├── Notifications/     # Notification classes
-│   └── Providers/         # Service providers
-│
-├── config/                # Configuration files
-├── database/
-│   ├── migrations/        # Database migrations
-│   ├── seeds/            # Database seeders
-│   └── factories/        # Model factories
-│
-├── public/               # Public assets
-├── resources/
-│   ├── js/              # Vue.js application
-│   │   ├── components/  # Reusable Vue components
-│   │   └── store/      # Vuex store modules
-│   ├── sass/           # SCSS stylesheets
-│   └── views/          # Blade templates
-│
-├── routes/              # Application routes
-│   ├── web.php         # Web routes
-│   ├── api.php         # API v1 routes
-│   └── mart_api.php    # MART mobile API routes
-│
-├── storage/            # Generated files & uploads
-└── tests/              # Test suites
-    ├── Feature/        # Feature tests
-    └── Unit/          # Unit tests
+Mobile App → MART API → Validation → Database → Response
+     ↑                                    ↓
+     └──────────── Push Notifications ←──┘
 ```
 
-## Core Components
+## Database Schema
 
-### Models (Eloquent ORM)
+### Core Entities
 
-Located directly in `app/` directory:
-
-- **Project.php** - Research projects
-- **Cases.php** - Participants/cases within projects
-- **Entry.php** - Data entries from participants
-- **User.php** - System users and researchers
-- **Media.php** - Uploaded files and media
-- **MartQuestionnaireSchedule.php** - ESM scheduling
-
-### Controllers
-
-Key controllers in `app/Http/Controllers/`:
-
-- **ProjectController** - Project CRUD operations
-- **ProjectCasesController** - Case management within projects
-- **MartApiController** - Mobile API endpoints
-- **AdminController** - Administrative functions
-- **UserController** - User management
-
-### API Resources
-
-Transform models for API responses (`app/Http/Resources/Mart/`):
-
-- **MartStructureResource** - Complete project structure
-- **QuestionSheetResource** - Questionnaire formatting
-- **ScaleResource** - Question type definitions
-- **ProjectOptionsResource** - Project metadata
-
-## Request Flow
-
-### Web Application Flow
-```
-Browser → Routes (web.php) → Controller → Model → Database
-                     ↓                      ↓
-                    View ← ─ ─ ─ ─ ─ Response Data
-```
-
-### Mobile API Flow
-```
-Mobile App → Routes (mart_api.php) → MartApiController
-                          ↓
-                    Validation
-                          ↓
-                 Model Operations
-                          ↓
-                  API Resources
-                          ↓
-                   JSON Response
-```
-
-## Authentication & Authorization
-
-### Web Authentication
-- Session-based authentication
-- Laravel's built-in auth scaffolding
-- Role-based access control (admin, researcher, user)
-
-### API Authentication
-- Token-based authentication (Bearer tokens)
-- Tokens stored in `api_token` field
-- Middleware: `auth:api`
-
-### Roles & Permissions
-- **Admin**: Full system access
-- **Researcher**: Project creation and management
-- **User**: Case participation and data entry
-
-## Database Design
-
-### Core Tables
-
-1. **projects** - Research studies
-   - Custom input fields (JSON)
-   - Study configuration
-   - Duration settings
-
-2. **cases** - Study participants
-   - Links to projects
-   - Assignment to users
-   - Status tracking
-
-3. **entries** - Collected data
-   - Timestamps
-   - Response data (JSON)
-   - Media references
-
-4. **mart_questionnaire_schedules** - ESM scheduling
-   - Repeating/single questionnaires
-   - Time windows
-   - Notification settings
+- **Projects**: Research studies with custom questions and ESM scheduling
+- **Cases**: Study participants with token-based authentication
+- **Entries**: Participant responses with timestamps and metadata
+- **Schedules**: Questionnaire timing and notification configuration
 
 ### Relationships
+
 ```
 Project → has many → Cases → has many → Entries
    ↓                    ↓
@@ -170,161 +73,168 @@ has many            belongs to
 Schedules             User
 ```
 
-## Frontend Architecture
+### JSON Structures
 
-### Vue 3 Application Structure
-
+**Project Questions** (projects.inputs):
+```json
+[{
+  "id": "q1",
+  "type": "radio",
+  "text": "How are you feeling?",
+  "required": true,
+  "options": [
+    {"value": 0, "text": "Very bad"},
+    {"value": 1, "text": "Bad"},
+    {"value": 2, "text": "Neutral"},
+    {"value": 3, "text": "Good"},
+    {"value": 4, "text": "Very good"}
+  ]
+}]
 ```
-resources/js/
-├── app.js              # Main entry point
-├── components/         # Reusable components
-│   ├── forms/         # Form components
-│   ├── charts/        # Data visualizations
-│   └── ui/           # UI elements
-├── store/            # Vuex modules
-└── bootstrap.js     # Initial setup
+
+**Entry Data** (entries.inputs):
+```json
+{
+  "answers": {
+    "q1": 3,
+    "q2": "Working from home"
+  },
+  "metadata": {
+    "questionnaireId": 1,
+    "submittedAt": "2025-01-15T14:30:00Z",
+    "duration": 120000,
+    "timezone": "Europe/Berlin"
+  }
+}
 ```
 
-### Component Communication
-- Props for parent-to-child data
-- Events for child-to-parent communication
-- Vuex for global state management
+### Key Indexes
 
-### Key Components
-- **ProjectOverview** - Project dashboard
-- **CaseManager** - Case listing and management
-- **DataEntry** - Entry forms and submission
-- **ChartComponents** - Data visualization
+- `cases.project_id` - Project queries
+- `cases.token` - Mobile authentication
+- `entries.case_id` - Participant data
+- `entries.submitted_at` - Time-based queries
+- `users.api_token` - API authentication
+
+## API Architecture
+
+### Endpoints
+
+**Web Application**
+- Session-based authentication
+- Server-side rendering with Blade
+- Vue components for interactivity
+
+**MART Mobile API**
+- Token authentication
+- JSON request/response
+- Versioned endpoints (`/mart-api/`)
+
+### Authentication
+
+**Web Users**
+- Email/password login
+- Session cookies
+- CSRF protection
+
+**Mobile Clients**
+- Bearer token in headers
+- Token per case/participant
+- Expiration handling
 
 ## Background Processing
 
 ### Queue System
-- Default: `sync` (immediate processing)
-- Production: Redis queue with workers
-- Jobs processed by `php artisan queue:work`
+- Redis-backed queues
+- Supervisor process management
+- Job retry mechanisms
 
 ### Scheduled Tasks
-- Notification sending
+- Notification dispatch
 - Data cleanup
-- Report generation
 - Configured in `app/Console/Kernel.php`
 
-## File Storage
+*Note: Report generation is handled on-demand via the web interface, not as a scheduled task.*
 
-### Storage Structure
-```
-storage/
-├── app/           # Application files
-│   ├── public/   # Publicly accessible files
-│   └── uploads/  # User uploads
-├── logs/         # Application logs
-└── framework/    # Cache, sessions, views
-```
+## Security
 
-### Media Handling
-- Files uploaded to `storage/app/uploads/`
-- Public access via symbolic link
-- Database references in `media` table
-
-## API Versioning
-
-### Version Strategy
-- v1: Legacy endpoints (`/api/`)
-- v2: Current mobile API (`/api/v2/`)
-- MART: Specialized mobile API (`/mart-api/`)
-
-### Version Control
-- `API_V2_CUTOFF_DATE` environment variable
-- `FORCE_API_V2` flag for testing
-- Backward compatibility maintained
-
-## Security Measures
-
-### Protection Mechanisms
-- CSRF protection for web routes
-- Rate limiting on API endpoints
+### Protection Layers
+- CSRF tokens for web forms
+- Rate limiting on APIs
 - ALTCHA spam protection
 - IP blocking capability
-- SQL injection prevention via Eloquent
-- XSS protection in Blade templates
+- SQL injection prevention (Eloquent)
+- XSS protection (Blade escaping)
 
 ### Environment Security
-- Sensitive data in `.env` file
-- Never commit `.env` or credentials
-- Use different keys per environment
+- Sensitive data in `.env`
+- Firebase credentials separate
+- Different keys per environment
 
-## Testing Strategy
+## Performance Optimization
 
-### Test Structure
-```
-tests/
-├── Feature/           # Integration tests
-│   ├── MartApiTest.php
-│   ├── ProjectControllerTest.php
-│   └── Auth/
-└── Unit/             # Unit tests
-    └── UserTest.php
-```
+### Database
+- Eager loading relationships
+- Query result caching
+- Indexed foreign keys
+- Paginated results
 
-### Running Tests
-```bash
-vendor/bin/pest         # Run all tests
-vendor/bin/pest --filter TestName  # Specific test
-```
+### Application
+- Config/route/view caching
+- OpCache for PHP
+- CDN for static assets
+- Redis for session/cache
 
-## Deployment Considerations
-
-### Server Requirements
-- PHP 8.3+ with extensions
-- MySQL 8.0+
-- Redis for queues/cache
-- Supervisor for queue workers
-- SSL certificate for HTTPS
-
-### Optimization
-```bash
-php artisan config:cache   # Cache configuration
-php artisan route:cache    # Cache routes
-php artisan view:cache     # Cache views
-npm run build             # Production assets
-```
+### Scaling Strategies
+- Horizontal scaling ready
+- Queue distribution
+- Read/write splitting capability
+- Microservice boundaries defined
 
 ## Development Workflow
 
-### Local Development
-1. Use Laravel Herd or Valet for serving
-2. Run `npm run dev` for asset watching
-3. Use `.env.testing` for test database
-4. Enable debug mode in `.env`
+### Local Setup
+- Laravel Herd/Valet for serving
+- Hot reload with Vite
+- Separate test database
+- Debug mode enabled
 
-### Code Style
-- PSR-12 for PHP code
-- Vue style guide for components
-- Run `npm run lint:check` for validation
+### Testing
+```bash
+vendor/bin/pest           # Run all tests
+vendor/bin/pest --filter  # Specific test
+npm run test:unit        # Frontend tests
+```
 
-## Monitoring & Debugging
+### Code Quality
+```bash
+npm run build           # Production build
+npm run lint:check      # Code linting
+npm run format:check    # Format validation
+```
+
+## Monitoring
 
 ### Logging
-- Daily rotating logs in `storage/logs/`
-- Configurable log channels
-- Laravel Telescope for debugging (dev only)
+- Daily rotating logs
+- Configurable channels
+- Error tracking ready
 
-### Performance
-- Database query optimization with indexes
-- Eager loading to prevent N+1 queries
-- Cache frequently accessed data
-- CDN for static assets (production)
+### Performance Metrics
+- Query performance logging
+- API response times
+- Queue processing stats
 
-## Future Considerations
+## Key Design Decisions
 
-### Scalability
-- Horizontal scaling with load balancer
-- Database replication for read/write splitting
-- Queue distribution across workers
-- Microservices for heavy processing
+### Models in app/
+Legacy structure maintained for compatibility - models reside directly in `app/` rather than `app/Models/`.
 
-### Planned Improvements
-- GraphQL API implementation
-- Real-time collaboration features
-- Advanced analytics dashboard
-- Mobile app direct integration
+### JSON for Flexibility
+Project inputs and entry data use JSON columns for schema flexibility without migrations.
+
+### Token per Case
+Each case gets its own token rather than user-based auth, enabling participant-specific access.
+
+### Vue 3 + Inertia
+Modern reactive UI while maintaining Laravel's routing and controller structure.
