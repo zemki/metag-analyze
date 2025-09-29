@@ -29,7 +29,8 @@
       "Bash(composer install:*)",
       "Bash(curl:*)",
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:www.anthropic.com)"
+      "WebFetch(domain:www.anthropic.com)",
+      "Read(//Users/belli/code/mesortgithub/DOCS/**)"
     ],
     "deny": []
   }
