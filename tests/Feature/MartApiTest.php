@@ -113,7 +113,8 @@ class MartApiTest extends TestCase
     {
         // Test the resource directly to avoid authentication issues
         $controller = new \App\Http\Controllers\MartApiController;
-        $resource = $controller->getProjectStructure($this->project);
+        $request = \Illuminate\Http\Request::create('/test');
+        $resource = $controller->getProjectStructure($request, $this->project);
         $structureArray = $resource->toArray(null);
 
         // Check project options exist and are properly serialized
@@ -153,8 +154,8 @@ class MartApiTest extends TestCase
         $this->assertEquals(2, $single['questionnaireId']);
         $this->assertEquals('single', $single['type']);
 
-        // Check question sheets and scales exist
-        $this->assertArrayHasKey('questionSheets', $structureArray);
+        // Check questionnaires and scales exist
+        $this->assertArrayHasKey('questionnaires', $structureArray);
         $this->assertArrayHasKey('scales', $structureArray);
         $this->assertArrayHasKey('pages', $structureArray);
     }
@@ -172,8 +173,8 @@ class MartApiTest extends TestCase
             'questionnaireStarted' => now()->timestamp * 1000,
             'questionnaireDuration' => 300000,
             'answers' => [
-                '1' => 7,
-                '2' => ['Working', 'Socializing'],
+                '1' => 2,
+                '2' => [0, 1],  // Use indices instead of strings
                 '3' => 'Feeling productive today',
             ],
             'timestamp' => now()->timestamp * 1000,
@@ -191,12 +192,52 @@ class MartApiTest extends TestCase
         $entry = Entry::where('case_id', $this->case->id)->first();
         $this->assertNotNull($entry);
 
-        // Verify MART metadata was stored
+        // Verify MART metadata was stored including participant data
         $inputs = json_decode($entry->inputs, true);
         $this->assertArrayHasKey('_mart_metadata', $inputs);
         $this->assertEquals(1, $inputs['_mart_metadata']['questionnaire_id']);
+        $this->assertEquals('test@example.com', $inputs['_mart_metadata']['user_id']);
+        $this->assertEquals('Participant_001', $inputs['_mart_metadata']['participant_id']);
         $this->assertEquals(300000, $inputs['_mart_metadata']['duration']);
         $this->assertEquals('Europe/Berlin', $inputs['_mart_metadata']['timezone']);
+    }
+
+    /** @test */
+    public function it_returns_participant_data_when_participant_id_provided()
+    {
+        // First create an entry for a participant
+        $request = new \Illuminate\Http\Request([
+            'projectId' => $this->project->id,
+            'questionnaireId' => 1,
+            'userId' => 'participant@test.com',
+            'participantId' => $this->case->name,
+            'sheetId' => 1,
+            'questionnaireStarted' => now()->timestamp * 1000,
+            'questionnaireDuration' => 180000,
+            'answers' => ['1' => 3, '2' => [1, 2], '3' => 'Test submission'],
+            'timestamp' => now()->timestamp * 1000,
+            'timezone' => 'Europe/Berlin',
+        ]);
+
+        $controller = new \App\Http\Controllers\MartApiController;
+        $controller->submitEntry($request, $this->case);
+
+        // Now test structure endpoint with participant_id
+        $structureRequest = \Illuminate\Http\Request::create('/test', 'GET', ['participant_id' => $this->case->name]);
+        $resource = $controller->getProjectStructure($structureRequest, $this->project);
+        $structureArray = $resource->toArray(null);
+
+        // Check that participant data sections are included
+        $this->assertArrayHasKey('deviceInfos', $structureArray);
+        $this->assertArrayHasKey('repeatingSubmits', $structureArray);
+        $this->assertArrayHasKey('singleSubmits', $structureArray);
+        $this->assertArrayHasKey('lastDataDonationSubmit', $structureArray);
+        $this->assertArrayHasKey('lastAndroidStatsSubmit', $structureArray);
+
+        // Check that submissions contain our test data
+        $this->assertNotEmpty($structureArray['repeatingSubmits']);
+        $this->assertEquals(1, $structureArray['repeatingSubmits'][0]['questionnaireId']);
+        $this->assertIsNumeric($structureArray['repeatingSubmits'][0]['timestamp']);
     }
 
     /** @test */
@@ -257,7 +298,8 @@ class MartApiTest extends TestCase
     {
         // Test the resource directly to verify mobile format
         $controller = new \App\Http\Controllers\MartApiController;
-        $resource = $controller->getProjectStructure($this->project);
+        $request = \Illuminate\Http\Request::create('/test');
+        $resource = $controller->getProjectStructure($request, $this->project);
         $structureArray = $resource->toArray(null);
 
         // Get project options as array

@@ -47,11 +47,11 @@ class ScaleResource extends JsonResource
                 case 'range':
                     $scaleOptions = [
                         'type' => 'range',
-                        'defaultValue' => $this->martMetadata['defaultValue'] ?? ($this->martMetadata['minValue'] ?? 1),
                         'rangeOptions' => [
                             'minValue' => $this->martMetadata['minValue'] ?? 1,
                             'maxValue' => $this->martMetadata['maxValue'] ?? 10,
                             'steps' => $this->martMetadata['steps'] ?? 1,
+                            'defaultValue' => $this->martMetadata['defaultValue'] ?? ($this->martMetadata['minValue'] ?? 1),
                         ],
                     ];
                     break;
