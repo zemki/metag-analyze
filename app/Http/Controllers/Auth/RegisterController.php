@@ -55,9 +55,8 @@ class RegisterController extends Controller
             'altcha' => ['required', new ValidAltcha],
         ],
             [
-                // Custom error messages
                 'password.regex' => __('Be sure your password contains at least 1 letter and 1 number.'),
-                'altoken.required' => __('Please complete the captcha verification.'),
+                'altcha.required' => __('Please complete the captcha verification.'),
             ]);
     }
 

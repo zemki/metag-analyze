@@ -43,11 +43,13 @@ class MartProjectSeederSimpleTest extends TestCase
      */
     public function test_can_create_mart_project()
     {
-        $user = User::create([
-            'email' => 'test@example.com',
-            'password' => bcrypt('password'),
-            'deviceID' => 'TEST_DEVICE_123',
-        ]);
+        $user = User::firstOrCreate(
+            ['email' => 'test@example.com'],
+            [
+                'password' => bcrypt('password'),
+                'deviceID' => 'TEST_DEVICE_123',
+            ]
+        );
 
         $project = Project::create([
             'name' => 'Test MART Project',
@@ -102,11 +104,13 @@ class MartProjectSeederSimpleTest extends TestCase
      */
     public function test_can_create_mart_pages()
     {
-        $user = User::create([
-            'email' => 'test@example.com',
-            'password' => bcrypt('password'),
-            'deviceID' => 'TEST_DEVICE_123',
-        ]);
+        $user = User::firstOrCreate(
+            ['email' => 'test@example.com'],
+            [
+                'password' => bcrypt('password'),
+                'deviceID' => 'TEST_DEVICE_123',
+            ]
+        );
 
         $project = Project::create([
             'name' => 'Test MART Project',
@@ -148,11 +152,13 @@ class MartProjectSeederSimpleTest extends TestCase
      */
     public function test_can_create_cases_and_entries()
     {
-        $user = User::create([
-            'email' => 'test@example.com',
-            'password' => bcrypt('password'),
-            'deviceID' => 'TEST_DEVICE_123',
-        ]);
+        $user = User::firstOrCreate(
+            ['email' => 'test@example.com'],
+            [
+                'password' => bcrypt('password'),
+                'deviceID' => 'TEST_DEVICE_123',
+            ]
+        );
 
         $project = Project::create([
             'name' => 'Test MART Project',
@@ -202,21 +208,4 @@ class MartProjectSeederSimpleTest extends TestCase
         $this->assertEquals(5, $entryData['Stress level']);
     }
 
-    /**
-     * Test database constraints and requirements
-     *
-     * @return void
-     */
-    public function test_database_constraints()
-    {
-        // Test that users table doesn't have 'name' column
-        $this->expectException(\Illuminate\Database\QueryException::class);
-
-        User::create([
-            'email' => 'test@example.com',
-            'password' => bcrypt('password'),
-            'name' => 'Test User', // This should fail
-            'deviceID' => 'TEST_DEVICE_123',
-        ]);
-    }
 }

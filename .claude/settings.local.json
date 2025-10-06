@@ -31,7 +31,8 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:www.anthropic.com)",
       "Read(//Users/belli/code/mesortgithub/DOCS/**)",
-      "WebFetch(domain:accreditly.io)"
+      "WebFetch(domain:accreditly.io)",
+      "Bash(./vendor/bin/pest:*)"
     ],
     "deny": []
   }

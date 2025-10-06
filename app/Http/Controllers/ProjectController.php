@@ -449,18 +449,17 @@ class ProjectController extends Controller
         $isMartProject = $originalMartProject !== null;
 
         // Start main DB transaction
-        $mainDbTransaction = DB::connection('mysql')->beginTransaction();
-        $martDbTransaction = null;
+        DB::connection('mysql')->beginTransaction();
 
         // Only start MART transaction if this is a MART project
         if ($isMartProject) {
-            $martDbTransaction = DB::connection('mart')->beginTransaction();
+            DB::connection('mart')->beginTransaction();
         }
 
         try {
-            // Replicate main project
             $copy = $project->replicate();
             $copy->save();
+            $copy->refresh();
             $copy->media()->sync($project->media()->get());
 
             if ($isMartProject) {
@@ -505,17 +504,17 @@ class ProjectController extends Controller
             }
 
             // Commit transactions
-            $mainDbTransaction->commit();
-            if ($martDbTransaction) {
-                $martDbTransaction->commit();
+            DB::connection('mysql')->commit();
+            if ($isMartProject) {
+                DB::connection('mart')->commit();
             }
 
             return response('Project duplicated', 200);
         } catch (\Exception $e) {
             // Rollback transactions on error
-            $mainDbTransaction->rollBack();
-            if ($martDbTransaction) {
-                $martDbTransaction->rollBack();
+            DB::connection('mysql')->rollBack();
+            if ($isMartProject) {
+                DB::connection('mart')->rollBack();
             }
 
             return response()->json([

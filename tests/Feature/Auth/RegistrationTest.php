@@ -32,41 +32,36 @@ class RegistrationTest extends TestCase
     public function test_registration_with_missing_altcha_token()
     {
         $userData = [
-            'email' => 'missing_token_test@example.com', // Unique email
+            'email' => 'missing_token_test@example.com',
             'password' => 'password123',
-            // No altcha token
         ];
 
         $response = $this->post('/register', $userData);
 
-        // Should redirect back with errors
-        $response->assertSessionHasErrors('altoken');
+        $response->assertSessionHasErrors('altcha');
 
-        // Ensure user wasn't created
         $this->assertDatabaseMissing('users', [
             'email' => 'missing_token_test@example.com',
         ]);
     }
 
     /**
-     * Test submission of form with empty (null) altoken.
+     * Test submission of form with empty (null) altcha token.
      *
      * @return void
      */
     public function test_null_altcha_token_handling()
     {
         $userData = [
-            'email' => 'null_token_test@example.com', // Unique email
+            'email' => 'null_token_test@example.com',
             'password' => 'password123',
-            'altoken' => null, // Explicitly null
+            'altcha' => null,
         ];
 
         $response = $this->post('/register', $userData);
 
-        // Check for required field error
-        $response->assertSessionHasErrors(['altoken' => 'Please complete the captcha verification.']);
+        $response->assertSessionHasErrors(['altcha' => 'Please complete the captcha verification.']);
 
-        // Ensure user wasn't created
         $this->assertDatabaseMissing('users', [
             'email' => 'null_token_test@example.com',
         ]);

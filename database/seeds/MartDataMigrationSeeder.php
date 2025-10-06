@@ -1,5 +1,7 @@
 <?php
 
+namespace Database\Seeders;
+
 use App\Mart\MartAnswer;
 use App\Mart\MartDeviceInfo;
 use App\Mart\MartEntry;
