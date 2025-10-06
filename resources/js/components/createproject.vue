@@ -1333,7 +1333,7 @@ export default {
         const projectId = projectResponse.data.id || projectResponse.data.project?.id;
 
         if (!projectId) {
-          this.martProject.response = 'Project created but ID not returned. Please refresh the page.';
+          window.location.href = this.productionUrl + '/projects';
           return;
         }
 
