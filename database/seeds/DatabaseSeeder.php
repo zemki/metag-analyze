@@ -1,7 +1,5 @@
 <?php
 
-use Database\Seeders\MartProjectSeeder;
-use Database\Seeders\MartDataMigrationSeeder;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -41,20 +39,20 @@ class DatabaseSeeder extends Seeder
                 $this->call(RealisticDataSeeder::class);
                 break;
             case 'MART Projects':
-                $this->call(MartProjectSeeder::class);
+                $this->call('MartProjectSeeder');
                 break;
             case 'Combined (Realistic + MART)':
                 $this->command->info('Running Combined Data Seeder...');
                 $this->command->info('Creating realistic standard projects...');
                 $this->call(RealisticDataSeeder::class);
                 $this->command->info('Creating MART/ESM projects...');
-                $this->call(MartProjectSeeder::class);
+                $this->call('MartProjectSeeder');
                 $this->command->info('Combined seeding completed!');
                 break;
             case 'All':
                 $this->call(ProjectCaseUserEntrySeeder::class);
                 $this->call(RealisticDataSeeder::class);
-                $this->call(MartProjectSeeder::class);
+                $this->call('MartProjectSeeder');
                 break;
         }
     }
