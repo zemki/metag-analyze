@@ -55,14 +55,16 @@ jobs:
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
       - name: Copy .env file
-        run: cp .env.testing .env
+        run: cp .env.example .env
 
       - name: Set Environment Variables
         run: php artisan key:generate
 
-      - name: Update database password for CI
+      - name: Configure database for CI
         run: |
           sed -i 's/DB_PASSWORD=/DB_PASSWORD=root/' .env
+          sed -i 's/DB_DATABASE=metagtesting/DB_DATABASE=metagtesting/' .env
+          sed -i 's/MART_DB_DATABASE=metagtesting_mart/MART_DB_DATABASE=metagtesting_mart/' .env
 
       - name: Create MART database
         run: mysql -h127.0.0.1 -uroot -proot -e "CREATE DATABASE IF NOT EXISTS metagtesting_mart;"
