@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - mart-integration
   pull_request:
 
 jobs:
