@@ -3,6 +3,9 @@
 namespace App\Http\Resources\Mart;
 
 use App\Entry;
+use App\Mart\MartDeviceInfo;
+use App\Mart\MartEntry;
+use App\Mart\MartStat;
 use App\User;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\DB;
@@ -46,25 +49,40 @@ class MartStructureResource extends JsonResource
         }
 
         if ($isMartProject && $martConfig) {
-            // Handle MART project
-            $questionSheet = new QuestionSheetResource($project, $questions, $martConfig);
-
-            // Create scales from MART questions
+            // Handle MART project with multiple questionnaires per schedule
+            $questionnaires = [];
             $scales = [];
-            foreach ($questions as $index => $question) {
-                $question['projectId'] = $project->id;
-                $scales[] = new ScaleResource((object) $question, $index, true); // true = isMartProject
+            $scaleIndex = 0;
+
+            // Build questionnaires from schedules
+            if ($this->schedules && $this->schedules->isNotEmpty()) {
+                foreach ($this->schedules as $schedule) {
+                    $scheduleQuestions = $schedule->questions ?? [];
+
+                    if (!empty($scheduleQuestions)) {
+                        // Create questionnaire for this schedule
+                        $questionnaires[] = new QuestionSheetResource($project, $scheduleQuestions, $martConfig, $schedule->questionnaire_id);
+
+                        // Create scales for this schedule's questions
+                        foreach ($scheduleQuestions as $question) {
+                            $question['projectId'] = $project->id;
+                            $scales[] = new ScaleResource((object) $question, $scaleIndex, true); // true = isMartProject
+                            $scaleIndex++;
+                        }
+                    }
+                }
             }
 
-            // Get pages for MART project
-            $pages = $project->pages()->orderBy('sort_order')->get();
+            // Get pages for MART project from MART database
+            $martProject = $project->martProject();
+            $pages = $martProject ? $martProject->pages()->orderBy('sort_order')->get() : collect();
             $pageResources = $pages->map(function ($page) {
                 return new MartPageResource($page);
             });
 
             $response = [
                 'projectOptions' => new ProjectOptionsResource($project, $martConfig, $this->schedules),
-                'questionnaires' => [$questionSheet],
+                'questionnaires' => $questionnaires,
                 'scales' => $scales,
                 'pages' => $pageResources,
             ];
@@ -115,77 +133,71 @@ class MartStructureResource extends JsonResource
     }
 
     /**
-     * Get device info for participant from User model
+     * Get device info for participant from MART database
      */
     private function getDeviceInfo($participantId)
     {
-        // Find user by participant_id from entries
-        $entry = Entry::join('cases', 'entries.case_id', '=', 'cases.id')
-            ->where('cases.name', $participantId)
-            ->first(['entries.inputs']);
+        // Query MART database for device info
+        $deviceInfos = MartDeviceInfo::forParticipant($participantId)->get();
 
-        if (!$entry) {
-            return [];
-        }
-
-        $inputs = json_decode($entry->inputs, true);
-        $userId = $inputs['_mart_metadata']['user_id'] ?? null;
-
-        if (!$userId) {
-            return [];
-        }
-
-        $user = User::where('email', $userId)->first();
-        if (!$user || !$user->deviceID) {
-            return [];
-        }
-
-        $deviceInfo = json_decode($user->deviceID, true);
-        return [$deviceInfo]; // Return as array
+        return $deviceInfos->map(function ($deviceInfo) {
+            return [
+                'os' => $deviceInfo->os,
+                'osVersion' => $deviceInfo->os_version,
+                'model' => $deviceInfo->model,
+                'manufacturer' => $deviceInfo->manufacturer,
+                'lastUpdated' => $deviceInfo->last_updated ? $deviceInfo->last_updated->toISOString() : null,
+            ];
+        })->toArray();
     }
 
     /**
-     * Get all questionnaire submissions for participant
+     * Get all questionnaire submissions for participant from MART database
      */
     private function getSubmissions($participantId)
     {
-        $submissions = [];
+        // Query MART database for entries
+        $entries = MartEntry::forParticipant($participantId)->get();
 
-        // Get all entries for this participant
-        $entries = Entry::join('cases', 'entries.case_id', '=', 'cases.id')
-            ->where('cases.name', $participantId)
-            ->get(['entries.inputs']);
-
-        foreach ($entries as $entry) {
-            $inputs = json_decode($entry->inputs, true);
-            $metadata = $inputs['_mart_metadata'] ?? null;
-
-            if ($metadata && isset($metadata['questionnaire_id']) && isset($metadata['timestamp'])) {
-                $submissions[] = [
-                    'questionnaireId' => $metadata['questionnaire_id'],
-                    'timestamp' => $metadata['timestamp']
-                ];
-            }
-        }
-
-        return $submissions;
+        return $entries->map(function ($entry) {
+            return [
+                'questionnaireId' => $entry->questionnaire_id,
+                'timestamp' => $entry->timestamp,
+            ];
+        })->toArray();
     }
 
     /**
      * Get last data donation questionnaire submission (manual iOS/Android stats)
+     * Now queries MART database
      */
     private function getLastDataDonationSubmit($participantId)
     {
-        // Stats table is broken, return null for now
-        return null;
+        // Get last stat submission with iOS or Android stats from MART database
+        $stat = MartStat::forParticipant($participantId)
+            ->where(function ($query) {
+                $query->whereNotNull('ios_stats')
+                    ->orWhereNotNull('android_usage_stats')
+                    ->orWhereNotNull('android_event_stats');
+            })
+            ->orderBy('timestamp', 'desc')
+            ->first();
+
+        return $stat ? $stat->timestamp : null;
     }
 
     /**
      * Get last automatic Android stats submission timestamp
+     * Now queries MART database
      */
     private function getLastAndroidStatsSubmit($participantId)
     {
-        // Stats table is broken, return null for now
-        return null;
+        // Get last Android stats submission from MART database
+        $stat = MartStat::forParticipant($participantId)
+            ->whereNotNull('android_usage_stats')
+            ->orderBy('timestamp', 'desc')
+            ->first();
+
+        return $stat ? $stat->timestamp : null;
     }
 }

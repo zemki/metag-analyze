@@ -66,4 +66,15 @@ class Entry extends Model
     {
         return $this->belongsTo(Media::class, 'media_id');
     }
+
+    /**
+     * Get the MART entry from the MART database (cross-DB query).
+     * Returns null if this entry has no associated MART data.
+     *
+     * @return \App\Mart\MartEntry|null
+     */
+    public function martEntry()
+    {
+        return \App\Mart\MartEntry::where('main_entry_id', $this->id)->first();
+    }
 }

@@ -2,12 +2,17 @@
 
 use App\Cases;
 use App\Entry;
-use App\MartPage;
-use App\MartQuestionnaireSchedule;
+use App\Mart\MartAnswer;
+use App\Mart\MartEntry;
+use App\Mart\MartPage;
+use App\Mart\MartProject;
+use App\Mart\MartQuestion;
+use App\Mart\MartSchedule;
 use App\Project;
 use App\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class MartProjectSeeder extends Seeder
@@ -37,6 +42,7 @@ class MartProjectSeeder extends Seeder
                 [
                     'password' => bcrypt('admin123'),
                     'deviceID' => 'ADMIN_' . Str::random(10),
+                    'email_verified_at' => now(),
                 ]
             );
         }
@@ -525,11 +531,31 @@ class MartProjectSeeder extends Seeder
     }
 
     /**
-     * Create entries following specific patterns for easy consultation
+     * Create entries following specific patterns for easy consultation (both main and MART DB)
      */
     private function createPatternedEntries($case, $entryCount, $pattern)
     {
         $startDate = $case->created_at;
+
+        // Get MART project and schedules
+        $martProject = MartProject::where('main_project_id', $case->project_id)->first();
+        if (!$martProject) {
+            return;
+        }
+
+        // Get the demo schedule
+        $schedule = MartSchedule::where('mart_project_id', $martProject->id)
+            ->where('questionnaire_id', 1)
+            ->first();
+
+        if (!$schedule) {
+            return;
+        }
+
+        // Get questions for this schedule
+        $questions = MartQuestion::where('schedule_id', $schedule->id)
+            ->orderBy('position')
+            ->get();
 
         for ($i = 0; $i < $entryCount; $i++) {
             $entryDate = $startDate->copy()
@@ -538,16 +564,60 @@ class MartProjectSeeder extends Seeder
                 ->addMinutes(rand(0, 59));
 
             $inputs = $this->generatePatternedInputs($pattern, $i, $entryDate);
+            $durationMinutes = rand(2, 5);
+            $endDate = $entryDate->copy()->addMinutes($durationMinutes);
 
-            $entry = Entry::create([
-                'case_id' => $case->id,
-                'begin' => $entryDate->format('Y-m-d H:i:s'),
-                'end' => $entryDate->copy()->addMinutes(rand(2, 5))->format('Y-m-d H:i:s'),
-                'inputs' => json_encode($inputs),
-                'media_id' => null,
-                'created_at' => $entryDate,
-                'updated_at' => $entryDate,
-            ]);
+            // Use cross-DB transaction
+            DB::connection('mysql')->beginTransaction();
+            DB::connection('mart')->beginTransaction();
+
+            try {
+                // Create Entry in main DB
+                $entry = Entry::create([
+                    'case_id' => $case->id,
+                    'begin' => $entryDate->format('Y-m-d H:i:s'),
+                    'end' => $endDate->format('Y-m-d H:i:s'),
+                    'inputs' => json_encode($inputs),
+                    'media_id' => null,
+                    'created_at' => $entryDate,
+                    'updated_at' => $entryDate,
+                ]);
+
+                // Create MartEntry in MART DB
+                $martEntry = MartEntry::create([
+                    'main_entry_id' => $entry->id,
+                    'schedule_id' => $schedule->id,
+                    'questionnaire_id' => $schedule->questionnaire_id,
+                    'participant_id' => $case->name,
+                    'user_id' => 'demo@example.com',
+                    'started_at' => $entryDate,
+                    'completed_at' => $endDate,
+                    'duration_ms' => $durationMinutes * 60 * 1000,
+                    'timezone' => 'Europe/Berlin',
+                    'timestamp' => $entryDate->timestamp * 1000,
+                ]);
+
+                // Create MartAnswer records for each question
+                foreach ($questions as $question) {
+                    $answerValue = $inputs[$question->text] ?? null;
+
+                    if ($answerValue !== null) {
+                        MartAnswer::create([
+                            'entry_id' => $martEntry->id,
+                            'question_uuid' => $question->uuid,
+                            'question_version' => $question->version,
+                            'answer_value' => is_array($answerValue) ? json_encode($answerValue) : $answerValue,
+                        ]);
+                    }
+                }
+
+                DB::connection('mysql')->commit();
+                DB::connection('mart')->commit();
+            } catch (\Exception $e) {
+                DB::connection('mysql')->rollBack();
+                DB::connection('mart')->rollBack();
+                throw $e;
+            }
         }
     }
 
@@ -724,17 +794,20 @@ class MartProjectSeeder extends Seeder
     }
 
     /**
-     * Create MART pages for a project
+     * Create MART pages for a project in MART database
      */
     private function createMartPages($project)
     {
+        // Get or create MartProject
+        $martProject = MartProject::firstOrCreate(['main_project_id' => $project->id]);
+
         $inputs = json_decode($project->inputs, true);
         $martConfig = collect($inputs)->firstWhere('type', 'mart');
 
         if ($martConfig && isset($martConfig['projectOptions']['pages'])) {
             foreach ($martConfig['projectOptions']['pages'] as $pageData) {
                 MartPage::create([
-                    'project_id' => $project->id,
+                    'mart_project_id' => $martProject->id,
                     'name' => $pageData['name'],
                     'content' => $pageData['content'],
                     'button_text' => $pageData['buttonText'],
@@ -746,140 +819,218 @@ class MartProjectSeeder extends Seeder
     }
 
     /**
-     * Create questionnaire schedules for a MART project
+     * Create questionnaire schedules for a MART project in MART database
      */
     private function createQuestionnaireSchedules($project, $type)
     {
+        // Get or create MartProject
+        $martProject = MartProject::firstOrCreate(['main_project_id' => $project->id]);
+
         $startDate = Carbon::now()->startOfDay();
         $endDate = Carbon::now()->addMonths(3)->endOfDay();
+
+        // Extract questions from project to assign to schedules
+        $questions = $this->extractQuestionsFromProject($project);
 
         switch ($type) {
             case 'wellbeing':
                 // Create a repeating questionnaire for daily wellbeing check-ins
-                MartQuestionnaireSchedule::create([
-                    'project_id' => $project->id,
+                $schedule = MartSchedule::create([
+                    'mart_project_id' => $martProject->id,
                     'questionnaire_id' => 1,
                     'name' => 'Daily Wellbeing Check-in',
                     'type' => 'repeating',
-                    'start_date_time' => [
-                        'date' => $startDate->format('Y-m-d'),
-                        'time' => '09:00',
+                    'timing_config' => [
+                        'start_date_time' => [
+                            'date' => $startDate->format('Y-m-d'),
+                            'time' => '09:00',
+                        ],
+                        'end_date_time' => [
+                            'date' => $endDate->format('Y-m-d'),
+                            'time' => '21:00',
+                        ],
+                        'daily_interval_duration' => 4, // Every 4 hours
+                        'min_break_between' => 180, // 3 hours minimum
+                        'max_daily_submits' => 6,
+                        'daily_start_time' => '09:00',
+                        'daily_end_time' => '21:00',
+                        'quest_available_at' => 'randomTimeWithinInterval',
                     ],
-                    'end_date_time' => [
-                        'date' => $endDate->format('Y-m-d'),
-                        'time' => '21:00',
+                    'notification_config' => [
+                        'show_progress_bar' => true,
+                        'show_notifications' => true,
+                        'notification_text' => 'Time for your wellbeing check-in!',
                     ],
-                    'show_progress_bar' => true,
-                    'show_notifications' => true,
-                    'notification_text' => 'Time for your wellbeing check-in!',
-                    'daily_interval_duration' => 4, // Every 4 hours
-                    'min_break_between' => 180, // 3 hours minimum
-                    'max_daily_submits' => 6,
-                    'daily_start_time' => '09:00',
-                    'daily_end_time' => '21:00',
-                    'quest_available_at' => 'randomTimeWithinInterval',
                 ]);
+
+                // Create individual MartQuestion records
+                $this->createQuestionsForSchedule($schedule, $questions);
                 break;
 
             case 'workplace':
                 // Create a repeating questionnaire for workplace stress
-                MartQuestionnaireSchedule::create([
-                    'project_id' => $project->id,
+                $schedule1 = MartSchedule::create([
+                    'mart_project_id' => $martProject->id,
                     'questionnaire_id' => 1,
                     'name' => 'Workplace Stress Monitor',
                     'type' => 'repeating',
-                    'start_date_time' => [
-                        'date' => $startDate->format('Y-m-d'),
-                        'time' => '08:00',
+                    'timing_config' => [
+                        'start_date_time' => [
+                            'date' => $startDate->format('Y-m-d'),
+                            'time' => '08:00',
+                        ],
+                        'end_date_time' => [
+                            'date' => $endDate->format('Y-m-d'),
+                            'time' => '18:00',
+                        ],
+                        'daily_interval_duration' => 3, // Every 3 hours
+                        'min_break_between' => 120, // 2 hours minimum
+                        'max_daily_submits' => 4,
+                        'daily_start_time' => '08:00',
+                        'daily_end_time' => '18:00',
+                        'quest_available_at' => 'startOfInterval',
                     ],
-                    'end_date_time' => [
-                        'date' => $endDate->format('Y-m-d'),
-                        'time' => '18:00',
+                    'notification_config' => [
+                        'show_progress_bar' => true,
+                        'show_notifications' => true,
+                        'notification_text' => 'Quick stress check - how are you doing?',
                     ],
-                    'show_progress_bar' => true,
-                    'show_notifications' => true,
-                    'notification_text' => 'Quick stress check - how are you doing?',
-                    'daily_interval_duration' => 3, // Every 3 hours
-                    'min_break_between' => 120, // 2 hours minimum
-                    'max_daily_submits' => 4,
-                    'daily_start_time' => '08:00',
-                    'daily_end_time' => '18:00',
-                    'quest_available_at' => 'startOfInterval',
                 ]);
+                $this->createQuestionsForSchedule($schedule1, $questions);
 
                 // Add a single questionnaire for end-of-week reflection
-                MartQuestionnaireSchedule::create([
-                    'project_id' => $project->id,
+                $schedule2 = MartSchedule::create([
+                    'mart_project_id' => $martProject->id,
                     'questionnaire_id' => 2,
                     'name' => 'Weekly Reflection',
                     'type' => 'single',
-                    'start_date_time' => [
-                        'date' => Carbon::now()->next('Friday')->format('Y-m-d'),
-                        'time' => '17:00',
+                    'timing_config' => [
+                        'start_date_time' => [
+                            'date' => Carbon::now()->next('Friday')->format('Y-m-d'),
+                            'time' => '17:00',
+                        ],
+                        'show_after_repeating' => [
+                            'repeatingQuestId' => 1,
+                            'showAfterAmount' => 10,
+                        ],
                     ],
-                    'show_progress_bar' => true,
-                    'show_notifications' => true,
-                    'notification_text' => 'Time for your weekly reflection',
-                    'show_after_repeating' => [
-                        'repeatingQuestId' => 1,
-                        'showAfterAmount' => 10,
+                    'notification_config' => [
+                        'show_progress_bar' => true,
+                        'show_notifications' => true,
+                        'notification_text' => 'Time for your weekly reflection',
                     ],
                 ]);
+                $this->createQuestionsForSchedule($schedule2, $questions);
                 break;
 
             case 'social':
                 // Create a repeating questionnaire for social media usage
-                MartQuestionnaireSchedule::create([
-                    'project_id' => $project->id,
+                $schedule = MartSchedule::create([
+                    'mart_project_id' => $martProject->id,
                     'questionnaire_id' => 1,
                     'name' => 'Social Media & Mood Check',
                     'type' => 'repeating',
-                    'start_date_time' => [
-                        'date' => $startDate->format('Y-m-d'),
-                        'time' => '10:00',
+                    'timing_config' => [
+                        'start_date_time' => [
+                            'date' => $startDate->format('Y-m-d'),
+                            'time' => '10:00',
+                        ],
+                        'end_date_time' => [
+                            'date' => $endDate->format('Y-m-d'),
+                            'time' => '22:00',
+                        ],
+                        'daily_interval_duration' => 6, // Every 6 hours
+                        'min_break_between' => 300, // 5 hours minimum
+                        'max_daily_submits' => 3,
+                        'daily_start_time' => '10:00',
+                        'daily_end_time' => '22:00',
+                        'quest_available_at' => 'randomTimeWithinInterval',
                     ],
-                    'end_date_time' => [
-                        'date' => $endDate->format('Y-m-d'),
-                        'time' => '22:00',
+                    'notification_config' => [
+                        'show_progress_bar' => true,
+                        'show_notifications' => true,
+                        'notification_text' => 'How has social media affected your mood?',
                     ],
-                    'show_progress_bar' => true,
-                    'show_notifications' => true,
-                    'notification_text' => 'How has social media affected your mood?',
-                    'daily_interval_duration' => 6, // Every 6 hours
-                    'min_break_between' => 300, // 5 hours minimum
-                    'max_daily_submits' => 3,
-                    'daily_start_time' => '10:00',
-                    'daily_end_time' => '22:00',
-                    'quest_available_at' => 'randomTimeWithinInterval',
                 ]);
+                $this->createQuestionsForSchedule($schedule, $questions);
                 break;
 
             case 'demo':
                 // Create a demo questionnaire with more frequent prompts for testing
-                MartQuestionnaireSchedule::create([
-                    'project_id' => $project->id,
+                $schedule = MartSchedule::create([
+                    'mart_project_id' => $martProject->id,
                     'questionnaire_id' => 1,
                     'name' => 'Demo Experience Survey',
                     'type' => 'repeating',
-                    'start_date_time' => [
-                        'date' => $startDate->format('Y-m-d'),
-                        'time' => '00:00',
+                    'timing_config' => [
+                        'start_date_time' => [
+                            'date' => $startDate->format('Y-m-d'),
+                            'time' => '00:00',
+                        ],
+                        'end_date_time' => [
+                            'date' => $endDate->format('Y-m-d'),
+                            'time' => '23:59',
+                        ],
+                        'daily_interval_duration' => 2, // Every 2 hours for demo
+                        'min_break_between' => 60, // 1 hour minimum
+                        'max_daily_submits' => 12,
+                        'daily_start_time' => '00:00',
+                        'daily_end_time' => '23:59',
+                        'quest_available_at' => 'startOfInterval',
                     ],
-                    'end_date_time' => [
-                        'date' => $endDate->format('Y-m-d'),
-                        'time' => '23:59',
+                    'notification_config' => [
+                        'show_progress_bar' => true,
+                        'show_notifications' => false, // No notifications for demo
                     ],
-                    'show_progress_bar' => true,
-                    'show_notifications' => false, // No notifications for demo
-                    'daily_interval_duration' => 2, // Every 2 hours for demo
-                    'min_break_between' => 60, // 1 hour minimum
-                    'max_daily_submits' => 12,
-                    'daily_start_time' => '00:00',
-                    'daily_end_time' => '23:59',
-                    'quest_available_at' => 'startOfInterval',
                 ]);
+                $this->createQuestionsForSchedule($schedule, $questions);
                 break;
         }
+    }
+
+    /**
+     * Create individual MartQuestion records for a schedule
+     */
+    private function createQuestionsForSchedule($schedule, $questions)
+    {
+        foreach ($questions as $position => $questionData) {
+            // Map question types from old format to new format
+            $type = $this->mapQuestionType($questionData['type'] ?? 'text');
+
+            // Build config from question data
+            $config = [];
+            if (isset($questionData['martMetadata'])) {
+                $config = $questionData['martMetadata'];
+            }
+            if (isset($questionData['answers']) && !empty($questionData['answers'])) {
+                $config['options'] = $questionData['answers'];
+            }
+
+            MartQuestion::create([
+                'schedule_id' => $schedule->id,
+                'position' => $position + 1,
+                'text' => $questionData['name'] ?? "Question " . ($position + 1),
+                'type' => $type,
+                'config' => $config,
+                'is_mandatory' => $questionData['mandatory'] ?? true,
+                'version' => 1,
+            ]);
+        }
+    }
+
+    /**
+     * Map old question types to new types
+     */
+    private function mapQuestionType($oldType)
+    {
+        $mapping = [
+            'one choice' => 'multiple choice',  // Will be handled as single-select in config
+            'multiple choice' => 'multiple choice',
+            'scale' => 'scale',
+            'text' => 'text',
+        ];
+
+        return $mapping[$oldType] ?? 'text';
     }
 
     /**
@@ -909,12 +1060,32 @@ class MartProjectSeeder extends Seeder
     }
 
     /**
-     * Create ESM entries for a case
+     * Create ESM entries for a case (both main DB and MART DB)
      */
     private function createEsmEntries($case, $responseCount, $type)
     {
         $startDate = $case->created_at;
         $studyDuration = $this->getStudyDuration($type); // Get duration based on study type
+
+        // Get MART project and schedules
+        $martProject = MartProject::where('main_project_id', $case->project_id)->first();
+        if (!$martProject) {
+            return;
+        }
+
+        // Get the first repeating schedule (questionnaire_id = 1)
+        $schedule = MartSchedule::where('mart_project_id', $martProject->id)
+            ->where('questionnaire_id', 1)
+            ->first();
+
+        if (!$schedule) {
+            return;
+        }
+
+        // Get questions for this schedule
+        $questions = MartQuestion::where('schedule_id', $schedule->id)
+            ->orderBy('position')
+            ->get();
 
         for ($i = 0; $i < $responseCount; $i++) {
             $entryDate = $startDate->copy()->addDays(rand(0, $studyDuration - 1))
@@ -922,16 +1093,60 @@ class MartProjectSeeder extends Seeder
                 ->addMinutes(rand(0, 59));
 
             $inputs = $this->generateRealisticInputs($type, $i);
+            $durationMinutes = rand(2, 5);
+            $endDate = $entryDate->copy()->addMinutes($durationMinutes);
 
-            $entry = Entry::create([
-                'case_id' => $case->id,
-                'begin' => $entryDate->format('Y-m-d H:i:s'),
-                'end' => $entryDate->copy()->addMinutes(rand(2, 5))->format('Y-m-d H:i:s'),
-                'inputs' => json_encode($inputs),
-                'media_id' => null, // MART projects don't use media
-                'created_at' => $entryDate,
-                'updated_at' => $entryDate,
-            ]);
+            // Use cross-DB transaction
+            DB::connection('mysql')->beginTransaction();
+            DB::connection('mart')->beginTransaction();
+
+            try {
+                // Create Entry in main DB
+                $entry = Entry::create([
+                    'case_id' => $case->id,
+                    'begin' => $entryDate->format('Y-m-d H:i:s'),
+                    'end' => $endDate->format('Y-m-d H:i:s'),
+                    'inputs' => json_encode($inputs),
+                    'media_id' => null, // MART projects don't use media
+                    'created_at' => $entryDate,
+                    'updated_at' => $entryDate,
+                ]);
+
+                // Create MartEntry in MART DB
+                $martEntry = MartEntry::create([
+                    'main_entry_id' => $entry->id,
+                    'schedule_id' => $schedule->id,
+                    'questionnaire_id' => $schedule->questionnaire_id,
+                    'participant_id' => $case->name,
+                    'user_id' => 'seeded@example.com',
+                    'started_at' => $entryDate,
+                    'completed_at' => $endDate,
+                    'duration_ms' => $durationMinutes * 60 * 1000,
+                    'timezone' => 'Europe/Berlin',
+                    'timestamp' => $entryDate->timestamp * 1000,
+                ]);
+
+                // Create MartAnswer records for each question
+                foreach ($questions as $question) {
+                    $answerValue = $inputs[$question->text] ?? null;
+
+                    if ($answerValue !== null) {
+                        MartAnswer::create([
+                            'entry_id' => $martEntry->id,
+                            'question_uuid' => $question->uuid,
+                            'question_version' => $question->version,
+                            'answer_value' => is_array($answerValue) ? json_encode($answerValue) : $answerValue,
+                        ]);
+                    }
+                }
+
+                DB::connection('mysql')->commit();
+                DB::connection('mart')->commit();
+            } catch (\Exception $e) {
+                DB::connection('mysql')->rollBack();
+                DB::connection('mart')->rollBack();
+                throw $e;
+            }
         }
     }
 
@@ -1068,5 +1283,25 @@ class MartProjectSeeder extends Seeder
         $endDate = $startDate->copy()->addDays(7);
 
         return "duration:{$minutes}min|firstDay:{$startDate->format('d.m.Y')}|lastDay:{$endDate->format('d.m.Y')}|value:{$minutes}min";
+    }
+
+    /**
+     * Extract questions from project inputs and return as array
+     */
+    private function extractQuestionsFromProject($project)
+    {
+        $inputs = json_decode($project->inputs, true);
+        $questions = [];
+
+        if (is_array($inputs)) {
+            foreach ($inputs as $input) {
+                // Skip MART configuration object
+                if (!isset($input['type']) || $input['type'] !== 'mart') {
+                    $questions[] = $input;
+                }
+            }
+        }
+
+        return $questions;
     }
 }

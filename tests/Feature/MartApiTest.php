@@ -3,7 +3,11 @@
 namespace Tests\Feature;
 
 use App\Entry;
-use App\MartPage;
+use App\Mart\MartPage;
+use App\Mart\MartProject;
+use App\Mart\MartQuestion;
+use App\Mart\MartSchedule;
+use App\MartPage as OldMartPage;
 use App\MartQuestionnaireSchedule;
 use App\Project;
 use App\User;
@@ -42,58 +46,97 @@ class MartApiTest extends TestCase
                         'collectDeviceInfos' => true,
                     ],
                 ],
-                [
-                    'name' => 'How are you feeling?',
-                    'type' => 'scale',
-                    'mandatory' => true,
-                ],
-                [
-                    'name' => 'What are you doing?',
-                    'type' => 'multiple choice',
-                    'mandatory' => false,
-                    'answers' => ['Working', 'Relaxing', 'Socializing', 'Other'],
-                ],
-                [
-                    'name' => 'Any thoughts?',
-                    'type' => 'text',
-                    'mandatory' => false,
-                ],
             ]),
         ]);
 
-        // Create questionnaire schedules
-        MartQuestionnaireSchedule::create([
-            'project_id' => $this->project->id,
+        // Create MART project in MART database
+        $martProject = MartProject::create(['main_project_id' => $this->project->id]);
+
+        // Create questionnaire schedules in MART database with separate questions
+        $schedule1 = MartSchedule::create([
+            'mart_project_id' => $martProject->id,
             'questionnaire_id' => 1,
             'name' => 'Daily Check-in',
             'type' => 'repeating',
-            'start_date_time' => ['date' => '2025-01-01', 'time' => '09:00'],
-            'end_date_time' => ['date' => '2025-12-31', 'time' => '21:00'],
-            'show_progress_bar' => true,
-            'show_notifications' => true,
-            'notification_text' => 'Time for your check-in!',
-            'daily_interval_duration' => 4,
-            'min_break_between' => 180,
-            'max_daily_submits' => 6,
-            'daily_start_time' => '09:00',
-            'daily_end_time' => '21:00',
-            'quest_available_at' => 'randomTimeWithinInterval',
+            'timing_config' => [
+                'start_date_time' => ['date' => '2025-01-01', 'time' => '09:00'],
+                'end_date_time' => ['date' => '2025-12-31', 'time' => '21:00'],
+                'daily_interval_duration' => 4,
+                'min_break_between' => 180,
+                'max_daily_submits' => 6,
+                'daily_start_time' => '09:00',
+                'daily_end_time' => '21:00',
+                'quest_available_at' => 'randomTimeWithinInterval',
+            ],
+            'notification_config' => [
+                'show_progress_bar' => true,
+                'show_notifications' => true,
+                'notification_text' => 'Time for your check-in!',
+            ],
         ]);
 
-        MartQuestionnaireSchedule::create([
-            'project_id' => $this->project->id,
+        // Create questions for schedule 1
+        MartQuestion::create([
+            'schedule_id' => $schedule1->id,
+            'position' => 1,
+            'text' => 'How are you feeling?',
+            'type' => 'scale',
+            'config' => [
+                'minValue' => 1,
+                'maxValue' => 10,
+                'steps' => 1,
+            ],
+            'is_mandatory' => true,
+            'version' => 1,
+        ]);
+
+        MartQuestion::create([
+            'schedule_id' => $schedule1->id,
+            'position' => 2,
+            'text' => 'What are you doing?',
+            'type' => 'multiple choice',
+            'config' => [
+                'options' => [
+                    0 => 'Working',
+                    1 => 'Relaxing',
+                    2 => 'Socializing',
+                    3 => 'Other',
+                ],
+            ],
+            'is_mandatory' => false,
+            'version' => 1,
+        ]);
+
+        // Create schedule 2
+        $schedule2 = MartSchedule::create([
+            'mart_project_id' => $martProject->id,
             'questionnaire_id' => 2,
             'name' => 'Weekly Reflection',
             'type' => 'single',
-            'start_date_time' => ['date' => '2025-01-07', 'time' => '17:00'],
-            'show_progress_bar' => true,
-            'show_notifications' => true,
-            'notification_text' => 'Weekly reflection time',
+            'timing_config' => [
+                'start_date_time' => ['date' => '2025-01-07', 'time' => '17:00'],
+            ],
+            'notification_config' => [
+                'show_progress_bar' => true,
+                'show_notifications' => true,
+                'notification_text' => 'Weekly reflection time',
+            ],
         ]);
 
-        // Create MART pages
+        // Create question for schedule 2
+        MartQuestion::create([
+            'schedule_id' => $schedule2->id,
+            'position' => 1,
+            'text' => 'Any thoughts?',
+            'type' => 'text',
+            'config' => [],
+            'is_mandatory' => false,
+            'version' => 1,
+        ]);
+
+        // Create MART pages in MART database
         MartPage::create([
-            'project_id' => $this->project->id,
+            'mart_project_id' => $martProject->id,
             'name' => 'Welcome',
             'content' => '<h1>Welcome to the study</h1>',
             'button_text' => 'Continue',
@@ -158,6 +201,26 @@ class MartApiTest extends TestCase
         $this->assertArrayHasKey('questionnaires', $structureArray);
         $this->assertArrayHasKey('scales', $structureArray);
         $this->assertArrayHasKey('pages', $structureArray);
+
+        // Verify we have 2 questionnaires (one per schedule)
+        $questionnaires = $structureArray['questionnaires'];
+        $this->assertCount(2, $questionnaires);
+
+        // Verify first questionnaire (repeating) has correct structure
+        $questionnaire1 = is_object($questionnaires[0]) && method_exists($questionnaires[0], 'toArray')
+            ? $questionnaires[0]->toArray(null)
+            : $questionnaires[0];
+        $this->assertEquals(1, $questionnaire1['questionnaireId']);
+        $this->assertArrayHasKey('items', $questionnaire1);
+        $this->assertCount(2, $questionnaire1['items']); // 2 questions
+
+        // Verify second questionnaire (single) has correct structure
+        $questionnaire2 = is_object($questionnaires[1]) && method_exists($questionnaires[1], 'toArray')
+            ? $questionnaires[1]->toArray(null)
+            : $questionnaires[1];
+        $this->assertEquals(2, $questionnaire2['questionnaireId']);
+        $this->assertArrayHasKey('items', $questionnaire2);
+        $this->assertCount(1, $questionnaire2['items']); // 1 question
     }
 
     /** @test */
@@ -175,7 +238,6 @@ class MartApiTest extends TestCase
             'answers' => [
                 '1' => 2,
                 '2' => [0, 1],  // Use indices instead of strings
-                '3' => 'Feeling productive today',
             ],
             'timestamp' => now()->timestamp * 1000,
             'timezone' => 'Europe/Berlin',
@@ -188,18 +250,21 @@ class MartApiTest extends TestCase
         $this->assertTrue($responseData['success']);
         $this->assertEquals('Entry created successfully', $responseData['message']);
 
-        // Verify entry was created
+        // Verify entry was created in main DB
         $entry = Entry::where('case_id', $this->case->id)->first();
         $this->assertNotNull($entry);
 
-        // Verify MART metadata was stored including participant data
-        $inputs = json_decode($entry->inputs, true);
-        $this->assertArrayHasKey('_mart_metadata', $inputs);
-        $this->assertEquals(1, $inputs['_mart_metadata']['questionnaire_id']);
-        $this->assertEquals('test@example.com', $inputs['_mart_metadata']['user_id']);
-        $this->assertEquals('Participant_001', $inputs['_mart_metadata']['participant_id']);
-        $this->assertEquals(300000, $inputs['_mart_metadata']['duration']);
-        $this->assertEquals('Europe/Berlin', $inputs['_mart_metadata']['timezone']);
+        // Verify MART entry was created in MART DB
+        $martEntry = $entry->martEntry();
+        $this->assertNotNull($martEntry);
+        $this->assertEquals(1, $martEntry->questionnaire_id);
+        $this->assertEquals('test@example.com', $martEntry->user_id);
+        $this->assertEquals('Participant_001', $martEntry->participant_id);
+        $this->assertEquals(300000, $martEntry->duration_ms);
+        $this->assertEquals('Europe/Berlin', $martEntry->timezone);
+
+        // Verify MART answers were created
+        $this->assertCount(2, $martEntry->answers);
     }
 
     /** @test */
@@ -214,7 +279,7 @@ class MartApiTest extends TestCase
             'sheetId' => 1,
             'questionnaireStarted' => now()->timestamp * 1000,
             'questionnaireDuration' => 180000,
-            'answers' => ['1' => 3, '2' => [1, 2], '3' => 'Test submission'],
+            'answers' => ['1' => 3, '2' => [1, 2]],
             'timestamp' => now()->timestamp * 1000,
             'timezone' => 'Europe/Berlin',
         ]);
@@ -263,11 +328,13 @@ class MartApiTest extends TestCase
         $this->assertTrue($responseData['success']);
         $this->assertEquals('Device information stored successfully', $responseData['message']);
 
-        // Verify device info was stored in user
-        $this->user->refresh();
-        $deviceInfo = json_decode($this->user->deviceID, true);
-        $this->assertEquals('android', $deviceInfo['os']);
-        $this->assertEquals('Pixel 7', $deviceInfo['model']);
+        // Verify device info was stored in MART database
+        $deviceInfo = \App\Mart\MartDeviceInfo::where('participant_id', 'Participant_001')
+            ->where('user_id', 'test@example.com')
+            ->first();
+        $this->assertNotNull($deviceInfo);
+        $this->assertEquals('android', $deviceInfo->os);
+        $this->assertEquals('Pixel 7', $deviceInfo->model);
     }
 
     /** @test */

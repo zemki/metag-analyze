@@ -59,6 +59,14 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified', 'LoggedUser']],
     Route::get('/projects/{project}/duplicate', 'ProjectController@duplicate');
 
     /**
+     * MART Schedule Routes
+     */
+    Route::get('/projects/{project}/schedules', 'MartScheduleController@index');
+    Route::post('/projects/{project}/schedules', 'MartScheduleController@store');
+    Route::put('/schedules/{schedule}/questions', 'MartScheduleController@updateQuestions');
+    Route::get('/schedules/{schedule}/history', 'MartScheduleController@history');
+
+    /**
      * Case Routes
      * Case is dependant of project, so we concatenate with it
      */
