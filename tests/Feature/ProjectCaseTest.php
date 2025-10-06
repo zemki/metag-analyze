@@ -29,7 +29,6 @@ class ProjectCaseTest extends TestCase
     /** @test */
     public function a_project_can_have_cases()
     {
-
         $this->actingAs($this->user);
 
         $this->post($this->project->path() . '/cases', [
@@ -38,8 +37,12 @@ class ProjectCaseTest extends TestCase
             'email' => $this->user->email,
         ]);
 
-        $this->get($this->project->path())->assertSee('Test case');
+        $this->assertDatabaseHas('cases', [
+            'name' => 'Test case',
+            'project_id' => $this->project->id,
+        ]);
 
+        $this->get($this->project->path())->assertOk();
     }
 
     /** @test */

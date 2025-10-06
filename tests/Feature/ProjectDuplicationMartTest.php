@@ -135,7 +135,7 @@ class ProjectDuplicationMartTest extends TestCase
     }
 
     /** @test */
-    public function duplicating_mart_project_does_not_copy_mart_pages()
+    public function duplicating_mart_project_copies_mart_pages()
     {
         $user = User::factory()->researcher()->create([
             'email_verified_at' => now(),
@@ -190,11 +190,10 @@ class ProjectDuplicationMartTest extends TestCase
 
         $this->assertNotNull($duplicatedProject);
 
-        // Verify duplicated project does NOT have MART project or pages in MART DB
+        // Verify duplicated project DOES have MART pages copied
         $duplicatedMartProject = $duplicatedProject->martProject();
-        if ($duplicatedMartProject) {
-            $this->assertEquals(0, MartPage::where('mart_project_id', $duplicatedMartProject->id)->count());
-        }
+        $this->assertNotNull($duplicatedMartProject);
+        $this->assertEquals(2, MartPage::where('mart_project_id', $duplicatedMartProject->id)->count());
 
         // Verify original project still has its MART pages
         $this->assertEquals(2, MartPage::where('mart_project_id', $martProject->id)->count());
