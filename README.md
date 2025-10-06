@@ -1,6 +1,12 @@
 <div align="center" style="display: flex; align-items: center; justify-content: center;">
-<img src="public/images/logo.png" alt="img Metag" width="100"/>    
+<img src="public/images/logo.png" alt="img Metag" width="100"/>
 <h2 style="margin-right: 10px;">Metag Analyze</h2>
+</div>
+
+<div align="center">
+
+[![Backend Tests](https://github.com/zemki/metag-analyze/actions/workflows/backend_tests.yml/badge.svg)](https://github.com/zemki/metag-analyze/actions/workflows/backend_tests.yml)
+
 </div>
 
 MeTag Analyze is the backend for the MeTag app, put together they both form a research software for research projects using media diaries.
