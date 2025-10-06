@@ -4,6 +4,8 @@ namespace App\Console\Commands;
 
 use App\Cases;
 use App\Entry;
+use App\Mart\MartProject;
+use App\Mart\MartSchedule;
 use App\MartQuestionnaireSchedule;
 use App\Notifications\researcherNotificationToUser;
 use DB;
@@ -109,7 +111,14 @@ class NotificationChecker extends Command
     private function shouldSendQuestionnaireNotification(Cases $case, $notification): bool
     {
         $questionnaireId = $notification->data->questionnaire_id;
-        $schedule = MartQuestionnaireSchedule::where('project_id', $case->project_id)
+
+        // Get MART project and schedule from MART database
+        $martProject = $case->project->martProject();
+        if (! $martProject) {
+            return false; // No MART project, don't send
+        }
+
+        $schedule = MartSchedule::forProject($martProject->id)
             ->where('questionnaire_id', $questionnaireId)
             ->first();
 
@@ -119,30 +128,32 @@ class NotificationChecker extends Command
 
         // Check if we're within the daily time window
         $currentTime = date('H:i');
-        $startTime = $schedule->daily_start_time ?? '00:00';
-        $endTime = $schedule->daily_end_time ?? '23:59';
+        $startTime = $schedule->timing_config['daily_start_time'] ?? '00:00';
+        $endTime = $schedule->timing_config['daily_end_time'] ?? '23:59';
 
         if ($currentTime < $startTime || $currentTime > $endTime) {
             return false; // Outside daily window
         }
 
         // Check daily submission limits for repeating questionnaires
-        if ($schedule->type === 'repeating' && $schedule->max_daily_submits) {
+        $maxDailySubmits = $schedule->timing_config['max_daily_submits'] ?? null;
+        if ($schedule->type === 'repeating' && $maxDailySubmits) {
             $todayStart = date('Y-m-d 00:00:00');
             $todayEntries = Entry::where('case_id', $case->id)
                 ->where('created_at', '>=', $todayStart)
                 ->whereJsonContains('inputs->_mart_metadata->questionnaire_id', $questionnaireId)
                 ->count();
 
-            if ($todayEntries >= $schedule->max_daily_submits) {
+            if ($todayEntries >= $maxDailySubmits) {
                 return false; // Daily limit reached
             }
         }
 
         // Check minimum break between questionnaires
-        if ($schedule->min_break_between && $case->user->profile->last_notification_at) {
+        $minBreakBetween = $schedule->timing_config['min_break_between'] ?? null;
+        if ($minBreakBetween && $case->user->profile->last_notification_at) {
             $lastNotificationTime = strtotime($case->user->profile->last_notification_at);
-            $minBreakSeconds = $schedule->min_break_between * 60; // Convert minutes to seconds
+            $minBreakSeconds = $minBreakBetween * 60; // Convert minutes to seconds
             $timeSinceLastNotification = time() - $lastNotificationTime;
 
             if ($timeSinceLastNotification < $minBreakSeconds) {

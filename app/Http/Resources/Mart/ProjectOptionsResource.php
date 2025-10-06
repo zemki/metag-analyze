@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Mart;
 
+use App\Mart\MartSchedule;
 use App\MartQuestionnaireSchedule;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -22,7 +23,12 @@ class ProjectOptionsResource extends JsonResource
     {
         // Get questionnaire schedules if not provided
         if ($this->schedules === null) {
-            $this->schedules = MartQuestionnaireSchedule::forProject($this->id)->get();
+            $martProject = $this->martProject();
+            if ($martProject) {
+                $this->schedules = MartSchedule::forProject($martProject->id)->get();
+            } else {
+                $this->schedules = collect();
+            }
         }
 
         // Separate schedules by type

@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Cases;
 use App\Entry;
-use App\MartPage;
+use App\Mart\MartPage;
+use App\Mart\MartProject;
+use App\Mart\MartSchedule;
 use App\Project;
 use App\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -47,9 +49,17 @@ class MartProjectSeederTest extends TestCase
         $this->assertEquals('mart', $inputs[0]['type']);
         $this->assertEquals('Daily Wellbeing Check-in', $inputs[0]['questionnaireName']);
 
-        // Check pages were created
-        $pages = MartPage::where('project_id', $wellbeingProject->id)->get();
+        // Check MART project was created in MART DB
+        $martProject = $wellbeingProject->martProject();
+        $this->assertNotNull($martProject);
+
+        // Check pages were created in MART DB
+        $pages = MartPage::where('mart_project_id', $martProject->id)->get();
         $this->assertCount(2, $pages);
+
+        // Check schedules were created in MART DB
+        $schedules = MartSchedule::forProject($martProject->id)->get();
+        $this->assertGreaterThan(0, $schedules->count());
 
         // Check no cases/entries were created (ESM data = false)
         $this->assertEquals(0, Cases::count());
@@ -73,7 +83,7 @@ class MartProjectSeederTest extends TestCase
         // Assert cases were created (5 per project)
         $this->assertEquals(15, Cases::count());
 
-        // Assert entries were created
+        // Assert entries were created in main DB
         $this->assertGreaterThan(0, Entry::count());
 
         // Check that entries have proper structure
@@ -81,6 +91,11 @@ class MartProjectSeederTest extends TestCase
         $this->assertNotNull($entry);
         $inputs = json_decode($entry->inputs, true);
         $this->assertIsArray($inputs);
+
+        // Check MART entry was created in MART DB
+        $martEntry = $entry->martEntry();
+        $this->assertNotNull($martEntry, 'MART entry should exist in MART database');
+        $this->assertEquals($entry->id, $martEntry->main_entry_id);
 
         // For wellbeing project, check entry structure
         $wellbeingProject = Project::where('name', 'Daily Wellbeing Tracker')->first();
@@ -91,6 +106,11 @@ class MartProjectSeederTest extends TestCase
         $this->assertArrayHasKey('How are you feeling right now?', $entryInputs);
         $this->assertArrayHasKey('Rate your current stress level', $entryInputs);
         $this->assertArrayHasKey('What are you doing right now?', $entryInputs);
+
+        // Check MART answers were created
+        $wellbeingMartEntry = $wellbeingEntry->martEntry();
+        $this->assertNotNull($wellbeingMartEntry);
+        $this->assertGreaterThan(0, $wellbeingMartEntry->answers->count());
     }
 
     /**
@@ -130,8 +150,12 @@ class MartProjectSeederTest extends TestCase
         $this->assertEquals(0, $questions[1]['martMetadata']['minValue']);
         $this->assertEquals(10, $questions[1]['martMetadata']['maxValue']);
 
-        // Check pages
-        $pages = MartPage::where('project_id', $wellbeing->id)->orderBy('sort_order')->get();
+        // Check MART project exists
+        $martProject = $wellbeing->martProject();
+        $this->assertNotNull($martProject);
+
+        // Check pages in MART DB
+        $pages = MartPage::where('mart_project_id', $martProject->id)->orderBy('sort_order')->get();
         $this->assertCount(2, $pages);
         $this->assertEquals('Welcome', $pages[0]->name);
         $this->assertEquals('Instructions', $pages[1]->name);
@@ -160,8 +184,15 @@ class MartProjectSeederTest extends TestCase
             $this->assertTrue($project->isMartProject());
             $this->assertFalse($project->use_entity);
 
-            // Check has pages
-            $this->assertGreaterThan(0, MartPage::where('project_id', $project->id)->count());
+            // Check MART project exists
+            $martProject = $project->martProject();
+            $this->assertNotNull($martProject, "MART project should exist for {$project->name}");
+
+            // Check has pages in MART DB
+            $this->assertGreaterThan(0, MartPage::where('mart_project_id', $martProject->id)->count());
+
+            // Check has schedules in MART DB
+            $this->assertGreaterThan(0, MartSchedule::forProject($martProject->id)->count());
         }
     }
 
