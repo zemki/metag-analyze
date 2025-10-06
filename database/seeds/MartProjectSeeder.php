@@ -1,5 +1,7 @@
 <?php
 
+namespace Database\Seeders;
+
 use App\Cases;
 use App\Entry;
 use App\Mart\MartAnswer;
