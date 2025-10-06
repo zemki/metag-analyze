@@ -2,7 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\MartPage;
+use App\Mart\MartPage;
+use App\Mart\MartProject;
 use App\Media;
 use App\Project;
 use App\User;
@@ -149,9 +150,14 @@ class ProjectDuplicationMartTest extends TestCase
             ]),
         ]);
 
-        // Create MART pages for original project
+        // Create MART project in MART DB
+        $martProject = MartProject::create([
+            'main_project_id' => $originalProject->id,
+        ]);
+
+        // Create MART pages in MART DB
         $page1 = MartPage::create([
-            'project_id' => $originalProject->id,
+            'mart_project_id' => $martProject->id,
             'name' => 'Welcome Page',
             'content' => 'Welcome to the study',
             'show_on_first_app_start' => true,
@@ -160,7 +166,7 @@ class ProjectDuplicationMartTest extends TestCase
         ]);
 
         $page2 = MartPage::create([
-            'project_id' => $originalProject->id,
+            'mart_project_id' => $martProject->id,
             'name' => 'Instructions',
             'content' => 'Study instructions',
             'show_on_first_app_start' => false,
@@ -168,8 +174,8 @@ class ProjectDuplicationMartTest extends TestCase
             'sort_order' => 2,
         ]);
 
-        // Verify original project has MART pages
-        $this->assertEquals(2, $originalProject->pages()->count());
+        // Verify original project has MART pages in MART DB
+        $this->assertEquals(2, MartPage::where('mart_project_id', $martProject->id)->count());
 
         // Duplicate the project
         $response = $this->actingAs($user)
@@ -184,11 +190,14 @@ class ProjectDuplicationMartTest extends TestCase
 
         $this->assertNotNull($duplicatedProject);
 
-        // Verify duplicated project does NOT have MART pages
-        $this->assertEquals(0, $duplicatedProject->pages()->count());
+        // Verify duplicated project does NOT have MART project or pages in MART DB
+        $duplicatedMartProject = $duplicatedProject->martProject();
+        if ($duplicatedMartProject) {
+            $this->assertEquals(0, MartPage::where('mart_project_id', $duplicatedMartProject->id)->count());
+        }
 
-        // Verify original project still has its pages
-        $this->assertEquals(2, $originalProject->pages()->count());
+        // Verify original project still has its MART pages
+        $this->assertEquals(2, MartPage::where('mart_project_id', $martProject->id)->count());
     }
 
     /** @test */

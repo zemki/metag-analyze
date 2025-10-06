@@ -5,6 +5,12 @@ namespace App\Http\Controllers;
 use App\Cases;
 use App\Entry;
 use App\Http\Resources\Mart\MartStructureResource;
+use App\Mart\MartAnswer;
+use App\Mart\MartDeviceInfo;
+use App\Mart\MartEntry;
+use App\Mart\MartProject;
+use App\Mart\MartSchedule;
+use App\Mart\MartStat;
 use App\MartQuestionnaireSchedule;
 use App\Project;
 use App\Stat;
@@ -20,8 +26,20 @@ class MartApiController extends Controller
      */
     public function getProjectStructure(Request $request, Project $project)
     {
-        // Get questionnaire schedules for this project
-        $schedules = MartQuestionnaireSchedule::forProject($project->id)->get();
+        // Get MART project from MART database
+        $martProject = $project->martProject();
+
+        if (! $martProject) {
+            return response()->json([
+                'success' => false,
+                'message' => 'MART project not found',
+            ], 404);
+        }
+
+        // Get questionnaire schedules from MART database with questions
+        $schedules = MartSchedule::forProject($martProject->id)
+            ->with('questions')
+            ->get();
 
         // Get participant_id from query parameter if provided
         $participantId = $request->query('participant_id');
@@ -89,8 +107,8 @@ class MartApiController extends Controller
             ], 404);
         }
 
-        // Validate answers against project structure
-        $validationResult = $this->validateAnswersAgainstProject($request->answers, $project, $request->sheetId);
+        // Validate answers against project structure (from MART DB)
+        $validationResult = $this->validateAnswersAgainstProject($request->answers, $project, $request->questionnaireId);
         if (! $validationResult['valid']) {
             return response()->json([
                 'success' => false,
@@ -123,44 +141,97 @@ class MartApiController extends Controller
             }
         }
 
-        // Transform MART answers to MetaG inputs format
-        $transformedInputs = $this->transformMartAnswersToMetagInputs($request->answers);
-
-        // Include MART metadata in the inputs
-        $martMetadata = [
-            'questionnaire_id' => $request->questionnaireId,
-            'participant_id' => $request->participantId,  // Store participant ID
-            'user_id' => $request->userId,               // Store user ID
-            'sheet_id' => $request->sheetId,
-            'duration' => $request->questionnaireDuration,
-            'timezone' => $request->timezone,
-            'timestamp' => $request->timestamp,
-        ];
-
-        if ($request->has('timestampInherited')) {
-            $martMetadata['timestamp_inherited'] = $request->timestampInherited;
+        // Get MART project and schedule from MART DB
+        $martProject = $project->martProject();
+        if (! $martProject) {
+            return response()->json([
+                'success' => false,
+                'message' => 'MART project not found',
+            ], 404);
         }
 
-        // Merge MART metadata with answers
-        $allInputs = array_merge($transformedInputs, ['_mart_metadata' => $martMetadata]);
+        $schedule = MartSchedule::forProject($martProject->id)
+            ->where('questionnaire_id', $request->questionnaireId)
+            ->with('questions')
+            ->first();
 
-        // Transform to Entry format
-        $entryData = [
-            'begin' => date('Y-m-d H:i:s', $request->questionnaireStarted / 1000),
-            'end' => date('Y-m-d H:i:s', ($request->questionnaireStarted + $request->questionnaireDuration) / 1000),
-            'case_id' => $case->id,
-            'media_id' => $entityId, // Use resolved entity ID or null
-            'inputs' => json_encode($allInputs),
-        ];
+        if (! $schedule) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Questionnaire schedule not found',
+            ], 404);
+        }
 
-        // Create entry
-        $entry = Entry::create($entryData);
+        // Cross-DB transaction handling
+        // Note: Laravel doesn't support true cross-DB transactions, so we handle this manually
+        DB::connection('mysql')->beginTransaction();
+        DB::connection('mart')->beginTransaction();
 
-        return response()->json([
-            'success' => true,
-            'entry_id' => $entry->id,
-            'message' => 'Entry created successfully',
-        ]);
+        try {
+            // Step 1: Create entry in main database
+            $entryData = [
+                'begin' => date('Y-m-d H:i:s', $request->questionnaireStarted / 1000),
+                'end' => date('Y-m-d H:i:s', ($request->questionnaireStarted + $request->questionnaireDuration) / 1000),
+                'case_id' => $case->id,
+                'media_id' => $entityId,
+                'inputs' => json_encode([]), // No longer store answers here
+            ];
+
+            $entry = Entry::create($entryData);
+
+            // Step 2: Create MART entry in MART database
+            $martEntryData = [
+                'main_entry_id' => $entry->id,
+                'schedule_id' => $schedule->id,
+                'questionnaire_id' => $request->questionnaireId,
+                'participant_id' => $request->participantId,
+                'user_id' => $request->userId,
+                'started_at' => date('Y-m-d H:i:s', $request->questionnaireStarted / 1000),
+                'completed_at' => date('Y-m-d H:i:s', ($request->questionnaireStarted + $request->questionnaireDuration) / 1000),
+                'duration_ms' => $request->questionnaireDuration,
+                'timezone' => $request->timezone,
+                'timestamp' => $request->timestamp,
+            ];
+
+            $martEntry = MartEntry::create($martEntryData);
+
+            // Step 3: Create MART answers for each question
+            $questions = $schedule->questions->keyBy('position');
+
+            foreach ($request->answers as $questionPosition => $answerValue) {
+                // Convert position to int for comparison
+                $positionInt = (int) $questionPosition;
+                $question = $questions->get($positionInt);
+
+                if ($question) {
+                    MartAnswer::create([
+                        'entry_id' => $martEntry->id,
+                        'question_uuid' => $question->uuid,
+                        'question_version' => $question->version,
+                        'answer_value' => is_array($answerValue) ? json_encode($answerValue) : $answerValue,
+                    ]);
+                }
+            }
+
+            // Commit both transactions
+            DB::connection('mysql')->commit();
+            DB::connection('mart')->commit();
+
+            return response()->json([
+                'success' => true,
+                'entry_id' => $entry->id,
+                'message' => 'Entry created successfully',
+            ]);
+        } catch (\Exception $e) {
+            // Rollback both transactions on error
+            DB::connection('mysql')->rollBack();
+            DB::connection('mart')->rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create entry: '.$e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -180,6 +251,7 @@ class MartApiController extends Controller
 
     /**
      * Store device information from mobile app
+     * Now stores in MART database
      */
     public function storeDeviceInfo(Request $request)
     {
@@ -202,27 +274,31 @@ class MartApiController extends Controller
             return $user; // Return the error response
         }
 
-        // Store device info in a structured format
-        $deviceInfo = [
-            'os' => $request->os,
-            'osVersion' => $request->osVersion,
-            'model' => $request->model,
-            'manufacturer' => $request->manufacturer,
-            'lastUpdated' => now()->toISOString(),
-        ];
-
-        // Update user's deviceID with structured device info
-        $user->deviceID = json_encode($deviceInfo);
-        $user->save();
+        // Update or create device info in MART database
+        $deviceInfo = MartDeviceInfo::updateOrCreate(
+            [
+                'participant_id' => $request->participantId,
+                'user_id' => $request->userId,
+            ],
+            [
+                'os' => $request->os,
+                'os_version' => $request->osVersion,
+                'model' => $request->model,
+                'manufacturer' => $request->manufacturer,
+                'last_updated' => now(),
+            ]
+        );
 
         return response()->json([
             'success' => true,
             'message' => 'Device information stored successfully',
+            'device_info_id' => $deviceInfo->id,
         ]);
     }
 
     /**
      * Submit usage statistics from mobile app
+     * Now stores in MART database
      */
     public function submitStats(Request $request)
     {
@@ -244,38 +320,54 @@ class MartApiController extends Controller
             return $user; // Return the error response
         }
 
-        // Prepare stats data
+        // Get MART project
+        $project = Project::find($request->projectId);
+        $martProject = $project->martProject();
+
+        if (! $martProject) {
+            return response()->json([
+                'success' => false,
+                'message' => 'MART project not found',
+            ], 404);
+        }
+
+        // Get device ID from MART database
+        $deviceInfo = MartDeviceInfo::forParticipant($request->participantId)
+            ->forUser($request->userId)
+            ->first();
+
+        // Prepare stats data for MART database
         $statsData = [
-            'userId' => $request->userId,
-            'projectId' => $request->projectId,
-            'participantId' => $request->participantId,
+            'mart_project_id' => $martProject->id,
+            'user_id' => $request->userId,
+            'participant_id' => $request->participantId,
             'timestamp' => $request->timestamp,
             'timezone' => $request->timezone,
-            'deviceID' => $user->deviceID,
+            'device_id' => $deviceInfo ? $deviceInfo->id : null,
         ];
 
         // Add platform-specific stats
         if ($request->has('androidUsageStats')) {
-            $statsData['androidUsageStats'] = $request->androidUsageStats;
+            $statsData['android_usage_stats'] = $request->androidUsageStats;
         }
 
         if ($request->has('androidEventStats')) {
-            $statsData['androidEventStats'] = $request->androidEventStats;
+            $statsData['android_event_stats'] = $request->androidEventStats;
         }
 
         if ($request->has('iOSStats')) {
-            $statsData['iosStats'] = $request->iOSStats;
+            $statsData['ios_stats'] = $request->iOSStats;
             // Extract specific iOS fields if present
             if (isset($request->iOSStats['screenTime'])) {
-                $statsData['iosScreenTime'] = $request->iOSStats['screenTime'];
+                $statsData['ios_screen_time'] = $request->iOSStats['screenTime'];
             }
             if (isset($request->iOSStats['pickupCount'])) {
-                $statsData['iosActivations'] = $request->iOSStats['pickupCount'];
+                $statsData['ios_activations'] = $request->iOSStats['pickupCount'];
             }
         }
 
-        // Create stats entry
-        $stat = Stat::create($statsData);
+        // Create stats entry in MART database
+        $stat = MartStat::create($statsData);
 
         return response()->json([
             'success' => true,
@@ -316,47 +408,53 @@ class MartApiController extends Controller
 
     /**
      * Validate answers against project structure and constraints
+     * Now validates against MART DB schedules, not project.inputs
      */
-    private function validateAnswersAgainstProject(array $answers, Project $project, int $sheetId): array
+    private function validateAnswersAgainstProject(array $answers, Project $project, int $questionnaireId): array
     {
         $errors = [];
-        $inputs = json_decode($project->inputs, true);
 
-        if (! is_array($inputs)) {
-            return ['valid' => false, 'errors' => ['Project has no valid input structure']];
+        // Get MART project
+        $martProject = $project->martProject();
+        if (! $martProject) {
+            return ['valid' => false, 'errors' => ['MART project not found']];
         }
 
-        // Find MART configuration and questions
-        $isMartProject = false;
-        $martConfig = null;
-        $questions = [];
+        // Find the schedule for this questionnaire
+        $schedule = MartSchedule::forProject($martProject->id)
+            ->where('questionnaire_id', $questionnaireId)
+            ->with('questions')
+            ->first();
 
-        foreach ($inputs as $input) {
-            if (isset($input['type']) && $input['type'] === 'mart') {
-                $isMartProject = true;
-                $martConfig = $input;
-            } else {
-                $questions[] = $input;
-            }
+        if (! $schedule) {
+            return ['valid' => false, 'errors' => ["Questionnaire $questionnaireId not found in MART database"]];
         }
 
-        if (! $isMartProject) {
-            // For standard projects, validation is less strict
-            return ['valid' => true, 'errors' => []];
+        // Get questions for this schedule
+        $questions = $schedule->questions;
+
+        if ($questions->isEmpty()) {
+            return ['valid' => false, 'errors' => ['Schedule has no questions']];
+        }
+
+        // Build question map (position => question) for validation
+        $questionMap = [];
+        foreach ($questions as $question) {
+            $questionMap[$question->position] = $question;
         }
 
         // Validate each answer
-        foreach ($answers as $questionId => $answer) {
-            $questionIndex = (int) $questionId - 1; // Questions are 1-indexed in API, 0-indexed in array
+        foreach ($answers as $questionPosition => $answer) {
+            // Convert position to int for comparison
+            $positionInt = (int) $questionPosition;
 
-            if (! isset($questions[$questionIndex])) {
-                $errors[] = "Question $questionId does not exist in project";
-
+            if (! isset($questionMap[$positionInt])) {
+                $errors[] = "Question at position $questionPosition does not exist in schedule";
                 continue;
             }
 
-            $question = $questions[$questionIndex];
-            $validationResult = $this->validateSingleAnswer($answer, $question, $questionId);
+            $question = $questionMap[$positionInt];
+            $validationResult = $this->validateSingleAnswer($answer, $question, $positionInt);
 
             if (! $validationResult['valid']) {
                 $errors = array_merge($errors, $validationResult['errors']);
@@ -364,10 +462,10 @@ class MartApiController extends Controller
         }
 
         // Check for missing required questions
-        foreach ($questions as $index => $question) {
-            $questionId = $index + 1;
-            if (! array_key_exists($questionId, $answers)) {
-                $errors[] = "Required question $questionId is missing";
+        foreach ($questions as $question) {
+            // Check both string and int keys for compatibility
+            if ($question->is_mandatory && ! isset($answers[$question->position]) && ! isset($answers[(string) $question->position])) {
+                $errors[] = "Required question at position {$question->position} ('{$question->text}') is missing";
             }
         }
 
@@ -379,91 +477,75 @@ class MartApiController extends Controller
 
     /**
      * Validate a single answer against its question constraints
+     * Updated to work with MartQuestion model from MART DB
      */
-    private function validateSingleAnswer($answer, array $question, int $questionId): array
+    private function validateSingleAnswer($answer, $question, int $questionPosition): array
     {
         $errors = [];
-        $type = $question['martMetadata']['originalType'] ?? $question['type'] ?? 'text';
+        $type = $question->type;
+        $config = $question->config ?? [];
 
         switch ($type) {
-            case 'radio':
             case 'one choice':
                 // Must be a single integer within valid range
                 if (! is_int($answer)) {
-                    $errors[] = "Question $questionId: Answer must be a single integer for radio/choice questions";
+                    $errors[] = "Question $questionPosition: Answer must be a single integer for one choice questions";
                 } else {
-                    $validOptions = array_keys($question['answers'] ?? []);
+                    $validOptions = isset($config['options']) ? array_keys($config['options']) : [];
                     if (! in_array($answer, $validOptions)) {
-                        $errors[] = "Question $questionId: Answer $answer is not a valid option. Valid options: " . implode(', ', $validOptions);
+                        $errors[] = "Question $questionPosition: Answer $answer is not a valid option. Valid options: ".implode(', ', $validOptions);
                     }
                 }
                 break;
 
-            case 'checkbox':
             case 'multiple choice':
                 // Must be an array of integers
                 if (! is_array($answer)) {
-                    $errors[] = "Question $questionId: Answer must be an array for checkbox/multiple choice questions";
+                    $errors[] = "Question $questionPosition: Answer must be an array for multiple choice questions";
                 } else {
-                    $validOptions = array_keys($question['answers'] ?? []);
+                    $validOptions = isset($config['options']) ? array_keys($config['options']) : [];
                     foreach ($answer as $value) {
                         if (! is_int($value) || ! in_array($value, $validOptions)) {
-                            $errors[] = "Question $questionId: Answer value $value is not valid. Valid options: " . implode(', ', $validOptions);
+                            $errors[] = "Question $questionPosition: Answer value $value is not valid. Valid options: ".implode(', ', $validOptions);
                         }
                     }
                 }
                 break;
 
-            case 'range':
-                // Must be a number within min/max range and respect steps
-                if (! is_numeric($answer)) {
-                    $errors[] = "Question $questionId: Answer must be a number for range questions";
-                } else {
-                    $minValue = $question['martMetadata']['minValue'] ?? 0;
-                    $maxValue = $question['martMetadata']['maxValue'] ?? 10;
-                    $steps = $question['martMetadata']['steps'] ?? 1;
-
-                    if ($answer < $minValue || $answer > $maxValue) {
-                        $errors[] = "Question $questionId: Answer $answer is out of range ($minValue-$maxValue)";
-                    }
-
-                    // Check if answer respects step increments
-                    if ($steps > 1) {
-                        $remainder = ($answer - $minValue) % $steps;
-                        if ($remainder !== 0) {
-                            $errors[] = "Question $questionId: Answer $answer does not match step increments of $steps";
-                        }
-                    }
-                }
-                break;
-
-            case 'number':
             case 'scale':
                 // Must be a number within min/max range
                 if (! is_numeric($answer)) {
-                    $errors[] = "Question $questionId: Answer must be a number";
+                    $errors[] = "Question $questionPosition: Answer must be a number for scale questions";
                 } else {
-                    $minValue = $question['martMetadata']['minValue'] ?? 1;
-                    $maxValue = $question['martMetadata']['maxValue'] ?? 10;
+                    $minValue = $config['minValue'] ?? 1;
+                    $maxValue = $config['maxValue'] ?? 10;
 
                     if ($answer < $minValue || $answer > $maxValue) {
-                        $errors[] = "Question $questionId: Answer $answer is out of range ($minValue-$maxValue)";
+                        $errors[] = "Question $questionPosition: Answer $answer is out of range ($minValue-$maxValue)";
+                    }
+
+                    // Check if answer respects step increments if defined
+                    if (isset($config['steps']) && $config['steps'] > 1) {
+                        $steps = $config['steps'];
+                        $remainder = ($answer - $minValue) % $steps;
+                        if ($remainder !== 0) {
+                            $errors[] = "Question $questionPosition: Answer $answer does not match step increments of $steps";
+                        }
                     }
                 }
                 break;
 
-            case 'textarea':
             case 'text':
                 // Must be a string
                 if (! is_string($answer)) {
-                    $errors[] = "Question $questionId: Answer must be a string for text questions";
-                } elseif (empty(trim($answer)) && ($question['required'] ?? true)) {
-                    $errors[] = "Question $questionId: Text answer cannot be empty";
+                    $errors[] = "Question $questionPosition: Answer must be a string for text questions";
+                } elseif (empty(trim($answer)) && $question->is_mandatory) {
+                    $errors[] = "Question $questionPosition: Text answer cannot be empty for mandatory question";
                 }
                 break;
 
             default:
-                // Unknown type - allow anything but warn
+                // Unknown type - allow anything
                 break;
         }
 

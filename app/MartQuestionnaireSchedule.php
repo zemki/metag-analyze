@@ -34,6 +34,9 @@ class MartQuestionnaireSchedule extends Model
         'daily_end_time',
         'quest_available_at',
         'show_after_repeating',
+        'questions',
+        'questions_version',
+        'questions_history',
     ];
 
     /**
@@ -49,6 +52,9 @@ class MartQuestionnaireSchedule extends Model
         'min_break_between' => 'integer',
         'max_daily_submits' => 'integer',
         'questionnaire_id' => 'integer',
+        'questions' => 'array',
+        'questions_history' => 'array',
+        'questions_version' => 'integer',
     ];
 
     /**
@@ -131,6 +137,27 @@ class MartQuestionnaireSchedule extends Model
         }
 
         return $data;
+    }
+
+    /**
+     * Update questions and increment version.
+     */
+    public function updateQuestions(array $newQuestions): bool
+    {
+        // Save current version to history if questions exist
+        if ($this->questions) {
+            $history = $this->questions_history ?? [];
+            $history[] = [
+                'version' => $this->questions_version,
+                'questions' => $this->questions,
+                'changed_at' => now()->toIso8601String(),
+            ];
+            $this->questions_history = $history;
+            $this->questions_version++;
+        }
+
+        $this->questions = $newQuestions;
+        return $this->save();
     }
 
     /**

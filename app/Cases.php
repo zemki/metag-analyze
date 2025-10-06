@@ -252,12 +252,15 @@ class Cases extends Model
     {
         $project = $this->project;
 
-        // First, try to use new questionnaire schedules system
-        $schedules = MartQuestionnaireSchedule::forProject($project->id)->get();
-        if ($schedules->isNotEmpty()) {
-            $this->createNotificationsFromSchedules($user, $schedules);
+        // First, try to use new questionnaire schedules system from MART database
+        $martProject = $project->martProject();
+        if ($martProject) {
+            $schedules = \App\Mart\MartSchedule::forProject($martProject->id)->get();
+            if ($schedules->isNotEmpty()) {
+                $this->createNotificationsFromSchedules($user, $schedules);
 
-            return;
+                return;
+            }
         }
 
         // Fallback to legacy notification config for backward compatibility
@@ -307,19 +310,22 @@ class Cases extends Model
     /**
      * Create notifications from new questionnaire schedules system
      */
-    private function createNotificationsFromSchedules($user, $schedules)
+    public function createNotificationsFromSchedules($user, $schedules)
     {
         foreach ($schedules as $schedule) {
-            if ($schedule->type === 'repeating' && $schedule->show_notifications) {
+            $notificationConfig = $schedule->notification_config ?? [];
+            $timingConfig = $schedule->timing_config ?? [];
+
+            if ($schedule->type === 'repeating' && ($notificationConfig['show_notifications'] ?? false)) {
                 // Create the planning string in the format expected by the system
-                $planningText = 'Every day at ' . ($schedule->daily_start_time ?? '09:00');
+                $planningText = 'Every day at '.($timingConfig['daily_start_time'] ?? '09:00');
 
                 // Create planned notification with questionnaire ID
                 $user->notify(new researcherNotificationToUser([
                     'title' => $schedule->name ?? 'Study Reminder',
-                    'message' => $schedule->notification_text ?? 'You have a new questionnaire available',
+                    'message' => $notificationConfig['notification_text'] ?? 'You have a new questionnaire available',
                     'case' => ['id' => $this->id],
-                    'questionnaire_id' => $schedule->questionnaire_id, // Add questionnaire tracking
+                    'questionnaire_id' => $schedule->questionnaire_id,
                     'planning' => $planningText,
                 ]));
             }

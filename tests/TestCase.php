@@ -19,6 +19,34 @@ abstract class TestCase extends BaseTestCase
 
     public Cases $case;
 
+    /**
+     * Begin a database transaction on both default and MART connections
+     */
+    public function beginDatabaseTransaction()
+    {
+        $database = $this->app->make('db');
+
+        foreach ($this->connectionsToTransact() as $name) {
+            $connection = $database->connection($name);
+            $connection->beginTransaction();
+        }
+
+        $this->beforeApplicationDestroyed(function () use ($database) {
+            foreach ($this->connectionsToTransact() as $name) {
+                $connection = $database->connection($name);
+                $connection->rollBack();
+            }
+        });
+    }
+
+    /**
+     * The database connections that should have transactions.
+     */
+    protected function connectionsToTransact()
+    {
+        return ['mysql', 'mart'];
+    }
+
     protected function setUp(): void
     {
         parent::setUp();

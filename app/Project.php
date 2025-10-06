@@ -26,7 +26,14 @@ class Project extends Model
         parent::boot();
         static::deleting(function ($project) {
             $project->invited()->detach();
-            // if the user created the project
+
+            // Delete MART data if exists (cascade handles related tables)
+            $martProject = \App\Mart\MartProject::where('main_project_id', $project->id)->first();
+            if ($martProject) {
+                $martProject->delete();
+            }
+
+            // if the user created the project, delete main DB data
             if ($project->created_by === auth()->user()->id && $project->cases->count() > 0) {
                 foreach ($project->cases as $case) {
                     foreach ($case->entries as $entry) {
@@ -198,10 +205,20 @@ class Project extends Model
     }
 
     /**
+     * Check if the project can be edited.
+     * MART projects are always editable (questions support versioning).
+     * Non-MART projects are locked once cases exist.
+     *
      * @return bool
      */
     public function isEditable()
     {
+        // MART projects are always editable (questions support versioning)
+        if ($this->isMartProject()) {
+            return true;
+        }
+
+        // Non-MART projects are locked once cases exist
         return $this->cases()->count() === 0;
     }
 
@@ -255,6 +272,27 @@ class Project extends Model
         }
 
         return false;
+    }
+
+    /**
+     * Get the MART project from the MART database (cross-DB query).
+     * Returns null if this is not a MART project or no MART data exists.
+     *
+     * @return \App\Mart\MartProject|null
+     */
+    public function martProject()
+    {
+        return \App\Mart\MartProject::where('main_project_id', $this->id)->first();
+    }
+
+    /**
+     * Check if this project has MART data in the MART database.
+     *
+     * @return bool
+     */
+    public function hasMartData()
+    {
+        return $this->martProject() !== null;
     }
 
     /**

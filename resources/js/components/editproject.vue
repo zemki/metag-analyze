@@ -155,201 +155,30 @@
       </p>
     </div>
 
-    <!-- MART Questionnaire Section -->
+    <!-- MART Project Sections -->
     <div v-if="isMartProject" class="space-y-6">
-      <div class="pb-6 border-b border-gray-200">
-        <h3 class="text-lg font-medium text-gray-900">{{ trans('Questionnaire Builder') }}</h3>
-        <p class="mt-2 text-sm text-gray-600">{{ trans('Manage questions for your mobile app questionnaire.') }}</p>
-      </div>
-      
-      <!-- Questionnaire Name -->
-      <div class="space-y-2">
-        <label for="questionnaire-name" class="block text-sm font-medium text-gray-700">{{ trans('Questionnaire Name') }} *</label>
-        <input
-            type="text"
-            id="questionnaire-name"
-            v-model="projectData.questionnaireName"
-            :disabled="!editable"
-            class="block w-full px-4 py-3 rounded-md shadow-sm transition duration-150"
-            :class="[
-            editable
-              ? 'border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200'
-              : 'bg-gray-50 border-gray-200',
-            {'border-red-500': !projectData.questionnaireName?.trim() && editable}
-          ]"
-            placeholder="Enter questionnaire name"
+      <!-- Questionnaire Schedules Section (PRIMARY) -->
+      <div class="pt-8 space-y-6">
+        <div class="pb-4 border-b border-gray-200">
+          <h3 class="text-lg font-medium text-gray-900">{{ trans('Questionnaire Schedules') }}</h3>
+          <p class="mt-2 text-sm text-gray-600">
+            {{ trans('Manage questionnaire schedules with unique questions for each schedule. Questions are always editable with automatic version tracking.') }}
+          </p>
+        </div>
+
+        <MartScheduleManager
+            :project-id="project.id"
+            :editable="editable"
         />
       </div>
-      
-      <!-- MART Questions -->
-      <div class="space-y-4">
-        <div class="flex justify-between items-center">
-          <h4 class="text-md font-medium text-gray-900">{{ trans('Questions') }}</h4>
-          <button
-              v-if="editable"
-              type="button"
-              @click="addMartQuestion"
-              class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-            </svg>
-            {{ trans('Add Question') }}
-          </button>
-        </div>
-        
-        <!-- MART Question Items -->
-        <div v-if="projectData.inputs.length === 0" class="text-center py-8 text-gray-500">
-          {{ trans('No questions added yet. Click "Add Question" to get started.') }}
-        </div>
-        
-        <div v-for="(input, index) in projectData.inputs" :key="index"
-             class="border border-gray-300 rounded-lg p-4 space-y-4">
-          <!-- Question Header -->
-          <div class="flex justify-between items-start">
-            <span class="text-sm font-medium text-gray-700">{{ trans('Question') }} {{ index + 1 }}</span>
-            <button
-                v-if="editable"
-                type="button"
-                @click="removeMartQuestion(index)"
-                class="text-red-600 hover:text-red-900"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-              </svg>
-            </button>
-          </div>
-          
-          <!-- Question Text -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700">{{ trans('Question Text') }} *</label>
-            <textarea
-                v-model="input.name"
-                :disabled="!editable"
-                rows="2"
-                class="mt-1 block w-full px-4 py-3 rounded-md shadow-sm transition duration-150"
-                :class="[
-                editable
-                  ? 'border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200'
-                  : 'bg-gray-100 border-gray-200',
-                {'border-red-500': input.name.trim() === '' && editable}
-              ]"
-                placeholder="Enter your question"
-            ></textarea>
-          </div>
-          
-          <!-- Mandatory Checkbox -->
-          <div class="flex items-center">
-            <input
-                type="checkbox"
-                :id="'mandatory-' + index"
-                v-model="input.mandatory"
-                :disabled="!editable"
-                class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
-            />
-            <label :for="'mandatory-' + index" class="ml-2 block text-sm text-gray-700">
-              {{ trans('Required question') }}
-            </label>
-          </div>
-          
-          <!-- Question Type -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700">{{ trans('Question Type') }} *</label>
-            <select
-                v-model="input.type"
-                :disabled="!editable"
-                class="mt-1 block w-full px-4 py-3 rounded-md shadow-sm transition duration-150"
-                :class="[
-                editable
-                  ? 'border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200'
-                  : 'bg-gray-100 border-gray-200',
-                {'border-red-500': input.type.trim() === '' && editable}
-              ]"
-            >
-              <option disabled value="">{{ trans('Select type...') }}</option>
-              <option value="text">{{ trans('Text Field') }}</option>
-              <option value="textarea">{{ trans('Text Area') }}</option>
-              <option value="number">{{ trans('Number') }}</option>
-              <option value="range">{{ trans('Range/Slider') }}</option>
-              <option value="radio">{{ trans('Single Choice') }}</option>
-              <option value="checkbox">{{ trans('Multiple Choice') }}</option>
-            </select>
-          </div>
-          
-          <!-- Range/Slider Options -->
-          <div v-if="input.type === 'range'" class="grid grid-cols-3 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700">{{ trans('Min Value') }}</label>
-              <input
-                  type="number"
-                  v-model.number="input.minValue"
-                  :disabled="!editable"
-                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700">{{ trans('Max Value') }}</label>
-              <input
-                  type="number"
-                  v-model.number="input.maxValue"
-                  :disabled="!editable"
-                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700">{{ trans('Steps') }}</label>
-              <input
-                  type="number"
-                  v-model.number="input.steps"
-                  :disabled="!editable"
-                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-            </div>
-          </div>
-          
-          <!-- Choice Options -->
-          <div v-if="input.type === 'radio' || input.type === 'checkbox'" class="space-y-3">
-            <label class="block text-sm font-medium text-gray-700">{{ trans('Options') }}</label>
-            <div v-for="(option, oIndex) in input.options" :key="oIndex"
-                 class="flex items-center space-x-2">
-              <input
-                  type="text"
-                  v-model="option.text"
-                  :disabled="!editable"
-                  class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="Enter option text"
-              />
-              <button
-                  v-if="editable && input.options.length > 1"
-                  @click="removeMartOption(index, oIndex)"
-                  class="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors duration-150"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-              </button>
-            </div>
-            <button
-                v-if="editable"
-                @click="addMartOption(index)"
-                class="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-500 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors duration-150"
-            >
-              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-              </svg>
-              {{ trans('Add Option') }}
-            </button>
-          </div>
-        </div>
-      </div>
-      
+
       <!-- MART Pages Section -->
       <div class="pt-8 space-y-6">
         <div class="pb-6 border-b border-gray-200">
-          <h3 class="text-lg font-medium text-gray-900">{{ trans('Pages Builder') }}</h3>
-          <p class="mt-2 text-sm text-gray-600">{{ trans('Manage instruction pages with HTML content for your mobile app.') }}</p>
+          <h3 class="text-lg font-medium text-gray-900">{{ trans('Instruction Pages') }}</h3>
+          <p class="mt-2 text-sm text-gray-600">{{ trans('Manage instruction pages with HTML content shown in the mobile app.') }}</p>
         </div>
-        
+
         <!-- Pages List -->
         <div class="space-y-4">
           <div class="flex justify-between items-center">
@@ -366,12 +195,12 @@
               {{ trans('Add Page') }}
             </button>
           </div>
-          
+
           <!-- Page Items -->
           <div v-if="projectData.pages.length === 0" class="text-center py-8 text-gray-500">
             {{ trans('No pages added yet. Click "Add Page" to get started.') }}
           </div>
-          
+
           <div v-for="(page, index) in projectData.pages" :key="index" class="border border-gray-300 rounded-lg p-4 space-y-4">
             <!-- Page Header -->
             <div class="flex justify-between items-start">
@@ -387,7 +216,7 @@
                 </svg>
               </button>
             </div>
-            
+
             <!-- Page Name -->
             <div>
               <label class="block text-sm font-medium text-gray-700">{{ trans('Page Name') }} *</label>
@@ -405,7 +234,7 @@
                   placeholder="Enter page name"
               />
             </div>
-            
+
             <!-- Page Content -->
             <div>
               <label class="block text-sm font-medium text-gray-700">{{ trans('Page Content (HTML)') }} *</label>
@@ -424,7 +253,7 @@
               ></textarea>
               <p class="text-xs text-gray-500 mt-1">{{ trans('You can use HTML tags for formatting (e.g., &lt;h1&gt;, &lt;p&gt;, &lt;strong&gt;, &lt;br&gt;, etc.)') }}</p>
             </div>
-            
+
             <!-- Button Text -->
             <div>
               <label class="block text-sm font-medium text-gray-700">{{ trans('Button Text') }} *</label>
@@ -442,7 +271,7 @@
                   placeholder="Continue"
               />
             </div>
-            
+
             <!-- Show on First App Start -->
             <div class="flex items-center">
               <input
@@ -460,7 +289,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Standard Inputs Section -->
     <div v-else class="space-y-4">
       <div class="flex items-center justify-between">
@@ -628,8 +457,14 @@
 </template>
 
 <script>
+import MartScheduleManager from './mart/MartScheduleManager.vue';
+
 export default {
   name: 'EditProject',
+
+  components: {
+    MartScheduleManager
+  },
 
   props: {
     editable: {
@@ -910,42 +745,6 @@ export default {
       const answers = this.projectData.inputs[questionIndex].answers;
       if (answers.length > 1) {
         answers.splice(answerIndex, 1);
-      }
-    },
-
-    // MART Project Methods
-    addMartQuestion() {
-      this.projectData.inputs.push({
-        name: '',
-        type: '',
-        mandatory: false,
-        minValue: 0,
-        maxValue: 10,
-        steps: 1,
-        options: [{ text: '', value: 0 }]
-      });
-    },
-
-    removeMartQuestion(index) {
-      this.projectData.inputs.splice(index, 1);
-    },
-
-    addMartOption(questionIndex) {
-      const question = this.projectData.inputs[questionIndex];
-      if (!question.options) {
-        question.options = [];
-      }
-      question.options.push({ text: '', value: question.options.length });
-    },
-
-    removeMartOption(questionIndex, optionIndex) {
-      const question = this.projectData.inputs[questionIndex];
-      if (question.options && question.options.length > 1) {
-        question.options.splice(optionIndex, 1);
-        // Renumber the values
-        question.options.forEach((opt, idx) => {
-          opt.value = idx;
-        });
       }
     },
 

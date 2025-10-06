@@ -68,7 +68,73 @@ php artisan reverb:start            # WebSocket server
 - PHP 8.3+, MySQL 8.0+, Node.js 18+
 - Test database separate from development
 
+## MART Database Separation (UPDATED: 2025-09-30)
+
+### Dual-Database Architecture
+MART data is now stored in a separate database for better scalability and isolation:
+
+**Main Database (`mysql`):**
+- Projects, Cases, Entries (metadata only), Users, Roles, etc.
+- Entry model has `mart_entry_id` column linking to MART DB
+
+**MART Database (`mart`):**
+- MartProject, MartSchedule, MartQuestion, MartQuestionHistory
+- MartEntry, MartAnswer, MartPage, MartStat, MartDeviceInfo
+- All MART-specific data with UUID-based question tracking
+
+### IMPORTANT: Cross-Database Patterns
+
+```php
+// Getting MART project from main project
+$martProject = $project->martProject(); // Returns MartProject or null
+if ($martProject) {
+    $schedules = MartSchedule::forProject($martProject->id)->get();
+}
+
+// Getting MART entry from main entry
+$martEntry = $entry->martEntry(); // Returns MartEntry or null
+
+// Cross-DB transactions
+$mainDbTransaction = DB::connection('mysql')->beginTransaction();
+$martDbTransaction = DB::connection('mart')->beginTransaction();
+try {
+    // ... operations ...
+    $mainDbTransaction->commit();
+    $martDbTransaction->commit();
+} catch (\Exception $e) {
+    $mainDbTransaction->rollBack();
+    $martDbTransaction->rollBack();
+}
+
+// Always check if MART data exists before querying
+if ($project->hasMartData()) {
+    // Query MART DB
+}
+```
+
+### Key MART Models (in app/Mart/)
+- **MartProject** - Links to main projects via `main_project_id`
+- **MartSchedule** - Questionnaire schedules with timing/notification config
+- **MartQuestion** - Individual questions with UUIDs (stable across edits)
+- **MartEntry** - Submission metadata, links to main entries
+- **MartAnswer** - Individual answers linked to question UUIDs
+
 ## MART API Specifics
+
+### Multiple Questionnaires Per Project (UPDATED: 2025-09-30)
+- Each MART project can have unlimited questionnaire schedules (single and repeating)
+- Each schedule has questions stored in `mart_questions` table (MART DB)
+- Questions have UUIDs for stable tracking across versions
+- Questions are always editable with automatic version tracking via MartQuestionHistory
+- Each submission tracks question UUID and version for accurate data analysis
+- Frontend UI complete: Schedule manager with add/edit/history functionality
+- See `MART_SEPARATION_PROGRESS.md` for implementation details
+
+### Frontend Components (Multiple Questionnaires)
+- `resources/js/components/mart/MartScheduleManager.vue` - Main schedule list/manager
+- `resources/js/components/mart/AddEditScheduleDialog.vue` - Create/edit schedules and questions
+- `resources/js/components/mart/VersionHistoryModal.vue` - View question version history
+- Integrated into `resources/js/components/editproject.vue` for MART projects only
 
 ### IMPORTANT: Data Format Requirements
 - Date format: DD.MM.YYYY (e.g., "31.03.2025")
@@ -76,10 +142,12 @@ php artisan reverb:start            # WebSocket server
 - ID fields: `questionnaireId` NOT `sheetId`
 - Randomization: `randomizationGroupId` NOT `randomizationGroup`
 - iOS Stats: `iOSDataDonationQuestionnaire` NOT `collectIosStats`
-- Omit `name` field from scales
-- Default values in `rangeOptions` NOT in root `options`
 - Android Stats: `androidDataDonationQuestionnaire` NOT `collectAndroidStats`
 - Stats Submit: `lastDataDonationSubmit` NOT `lastStatsSubmit`
+- Omit `name` field from scales
+- Default values in `rangeOptions` NOT in root `options`
+- Page structure: Include both `id` and `pageId` fields
+- Participant data: Optional fields added when `participant_id` provided
 
 ### API Testing
 ```bash

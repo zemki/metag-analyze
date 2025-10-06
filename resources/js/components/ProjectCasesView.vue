@@ -85,6 +85,36 @@
           <span class="text-sm text-gray-500">{{ totalCasesCount }} total</span>
         </div>
 
+        <!-- Status Legend -->
+        <div class="px-6 py-2 border-b border-gray-200 bg-gray-50">
+          <div class="flex items-center gap-1 text-xs">
+            <span class="text-gray-600 font-medium mr-2">Status Guide:</span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded bg-yellow-100 text-yellow-800">
+              Pending
+            </span>
+            <span class="text-gray-400 mx-0.5">-</span>
+            <span class="text-gray-500 text-xs">Case not yet started by user</span>
+            <span class="text-gray-300 mx-2">|</span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded bg-green-100 text-green-800">
+              Active
+            </span>
+            <span class="text-gray-400 mx-0.5">-</span>
+            <span class="text-gray-500 text-xs">Case currently in progress</span>
+            <span class="text-gray-300 mx-2">|</span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded bg-gray-100 text-gray-800">
+              Completed
+            </span>
+            <span class="text-gray-400 mx-0.5">-</span>
+            <span class="text-gray-500 text-xs">Case has ended</span>
+            <span class="text-gray-300 mx-2">|</span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded bg-purple-100 text-purple-800">
+              Backend
+            </span>
+            <span class="text-gray-400 mx-0.5">-</span>
+            <span class="text-gray-500 text-xs">Backend-only case</span>
+          </div>
+        </div>
+
         <!-- Search and Filters -->
         <div class="px-6 py-3 border-b border-gray-200 bg-white">
           <div class="flex flex-wrap gap-4 items-center">

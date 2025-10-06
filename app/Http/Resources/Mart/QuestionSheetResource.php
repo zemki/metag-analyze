@@ -10,11 +10,14 @@ class QuestionSheetResource extends JsonResource
 
     protected $martConfig;
 
-    public function __construct($resource, $questions = null, $martConfig = null)
+    protected $questionnaireId;
+
+    public function __construct($resource, $questions = null, $martConfig = null, $questionnaireId = 1)
     {
         parent::__construct($resource);
         $this->questions = $questions;
         $this->martConfig = $martConfig;
+        $this->questionnaireId = $questionnaireId;
     }
 
     public function toArray($request)
@@ -57,7 +60,7 @@ class QuestionSheetResource extends JsonResource
 
         return [
             'projectId' => $this->id,
-            'questionnaireId' => 1,
+            'questionnaireId' => $this->questionnaireId,
             'name' => $questionnaireName,
             'items' => $items,
         ];
