@@ -1,5 +1,7 @@
 <?php
 
+use Database\Seeders\MartProjectSeeder;
+use Database\Seeders\MartDataMigrationSeeder;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
