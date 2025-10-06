@@ -168,3 +168,4 @@ curl -X POST "https://metag-analyze.test/mart-api/cases/5/submit" \
 - Per-questionnaire settings: showProgressBar, showNotifications, notificationText
 - Bearer token authentication required for all API calls
 - Test database separate from development database
+- never run npm run build - i will compile the npm run dev
