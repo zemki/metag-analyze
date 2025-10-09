@@ -28,13 +28,21 @@ class StagingMartSeeder extends Seeder
         $this->command->newLine();
 
         // Step 1: Get number of users
-        $userCount = (int) $this->command->ask('How many users do you want to create?', 1);
+        $userCount = null;
+        while ($userCount === null || !is_numeric($userCount) || $userCount < 1) {
+            $input = $this->command->ask('How many users do you want to create?', '1');
+            if (is_numeric($input) && $input >= 1) {
+                $userCount = (int) $input;
+            } else {
+                $this->command->error('Please enter a valid number (1 or greater)');
+            }
+        }
 
         $users = [];
         for ($i = 0; $i < $userCount; $i++) {
             $this->command->info("User " . ($i + 1) . ":");
             $email = $this->command->ask('  Email address');
-            $password = $this->command->ask('  Password (default: password123)', 'password123');
+            $password = $this->command->ask('  Password (default: password)', 'password');
 
             // Create or update user
             $user = User::firstOrCreate(
@@ -71,7 +79,15 @@ class StagingMartSeeder extends Seeder
         }
 
         // Step 2: Get number of MART projects
-        $projectCount = (int) $this->command->ask('How many MART projects do you want to create?', 1);
+        $projectCount = null;
+        while ($projectCount === null || !is_numeric($projectCount) || $projectCount < 1) {
+            $input = $this->command->ask('How many MART projects do you want to create?', '1');
+            if (is_numeric($input) && $input >= 1) {
+                $projectCount = (int) $input;
+            } else {
+                $this->command->error('Please enter a valid number (1 or greater)');
+            }
+        }
 
         $projects = [];
         for ($i = 0; $i < $projectCount; $i++) {
