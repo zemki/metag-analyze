@@ -39,6 +39,10 @@ class StagingMartSeeder extends Seeder
         }
 
         $users = [];
+        $allProjects = [];
+        $allCases = [];
+        $globalProjectCounter = 1;
+
         for ($i = 0; $i < $userCount; $i++) {
             $this->command->info("User " . ($i + 1) . ":");
             $email = $this->command->ask('  Email address');
@@ -69,73 +73,69 @@ class StagingMartSeeder extends Seeder
                 $this->command->info("  ✓ User created with researcher role");
             }
 
-            $users[] = [
-                'user' => $user,
-                'email' => $email,
-                'password' => $password,
-            ];
-
-            $this->command->newLine();
-        }
-
-        // Step 2: Get number of MART projects
-        $projectCount = null;
-        while ($projectCount === null || !is_numeric($projectCount) || $projectCount < 1) {
-            $input = $this->command->ask('How many MART projects do you want to create?', '1');
-            if (is_numeric($input) && $input >= 1) {
-                $projectCount = (int) $input;
-            } else {
-                $this->command->error('Please enter a valid number (1 or greater)');
+            // Ask how many projects for this user
+            $projectCount = null;
+            while ($projectCount === null || !is_numeric($projectCount) || $projectCount < 1) {
+                $input = $this->command->ask('  How many MART projects for this user?', '1');
+                if (is_numeric($input) && $input >= 1) {
+                    $projectCount = (int) $input;
+                } else {
+                    $this->command->error('  Please enter a valid number (1 or greater)');
+                }
             }
-        }
 
-        $projects = [];
-        for ($i = 0; $i < $projectCount; $i++) {
-            $projectNumber = $i + 1;
-            $this->command->info("Project $projectNumber:");
-            $projectName = $this->command->ask('  Project name', "Staging MART Project $projectNumber");
+            // Create projects for this user
+            $userProjects = [];
+            for ($j = 0; $j < $projectCount; $j++) {
+                $projectNumber = $j + 1;
+                $this->command->info("  Project $projectNumber for {$email}:");
+                $projectName = $this->command->ask('    Project name', "Staging MART Project $globalProjectCounter");
 
-            // Use first user as project owner
-            $owner = $users[0]['user'];
+                $project = $this->createStagingMartProject($user, $projectName, $globalProjectCounter);
+                $this->command->info("    ✓ Project created (ID: {$project->id})");
 
-            $project = $this->createStagingMartProject($owner, $projectName, $projectNumber);
-            $this->command->info("  ✓ Project created (ID: {$project->id})");
+                $userProjects[] = $project;
+                $allProjects[] = $project;
+                $globalProjectCounter++;
+            }
 
-            $projects[] = $project;
-            $this->command->newLine();
-        }
-
-        // Step 3: Create cases (link users to projects)
-        $this->command->info('Creating cases (linking users to projects)...');
-        $cases = [];
-        $participantCounter = 1;
-
-        foreach ($projects as $project) {
-            foreach ($users as $userData) {
+            // Create case for this user in each of their projects
+            $participantCounter = 1;
+            foreach ($userProjects as $project) {
                 $participantName = 'participant-' . str_pad($participantCounter, 3, '0', STR_PAD_LEFT);
 
                 $case = Cases::create([
                     'project_id' => $project->id,
-                    'user_id' => $userData['user']->id,
+                    'user_id' => $user->id,
                     'name' => $participantName,
                     'duration' => 'startDay:' . now()->format('d.m.Y') . '|lastDay:' . now()->addMonths(3)->format('d.m.Y'),
                     'created_at' => now(),
                 ]);
 
-                $cases[] = [
+                $allCases[] = [
                     'case' => $case,
-                    'user_email' => $userData['email'],
+                    'user_email' => $email,
                     'project_name' => $project->name,
                 ];
 
                 $participantCounter++;
             }
+
+            $users[] = [
+                'user' => $user,
+                'email' => $email,
+                'password' => $password,
+                'projects' => $userProjects,
+            ];
+
+            $this->command->newLine();
         }
-        $this->command->info("✓ Created " . count($cases) . " cases");
+
+        $this->command->info("✓ Created " . count($allCases) . " cases across " . count($allProjects) . " projects");
         $this->command->newLine();
 
-        // Step 4: Display summary
-        $this->displaySummary($users, $projects, $cases);
+        // Display summary
+        $this->displaySummary($users, $allProjects, $allCases);
     }
 
     /**
@@ -301,6 +301,7 @@ class StagingMartSeeder extends Seeder
             $this->command->line("  • Email: {$userData['email']}");
             $this->command->line("    Password: {$userData['password']}");
             $this->command->line("    User ID: {$userData['user']->id}");
+            $this->command->line("    Projects owned: " . count($userData['projects']));
         }
         $this->command->newLine();
 
