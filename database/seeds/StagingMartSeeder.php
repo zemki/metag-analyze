@@ -6,6 +6,7 @@ use App\Mart\MartProject;
 use App\Mart\MartQuestion;
 use App\Mart\MartSchedule;
 use App\Project;
+use App\Role;
 use App\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
@@ -45,13 +46,19 @@ class StagingMartSeeder extends Seeder
                 ]
             );
 
+            // Assign researcher role
+            $researcherRole = Role::where('name', 'researcher')->first();
+            if ($researcherRole) {
+                $user->roles()->sync([$researcherRole->id]);
+            }
+
             // Update password if user already exists
             if (!$user->wasRecentlyCreated) {
                 $user->password = Hash::make($password);
                 $user->save();
                 $this->command->warn("  User already exists - password updated");
             } else {
-                $this->command->info("  ✓ User created");
+                $this->command->info("  ✓ User created with researcher role");
             }
 
             $users[] = [
