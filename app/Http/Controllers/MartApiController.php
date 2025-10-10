@@ -57,6 +57,7 @@ class MartApiController extends Controller
     public function submitEntry(Request $request, Cases $case)
     {
         // Validate request according to martTypes.ts Submit type
+        // Note: answers values can be numbers (scale), arrays (multiple choice), or strings (text)
         $request->validate([
             'projectId' => 'required|numeric',
             'questionnaireId' => 'required|numeric',
@@ -66,6 +67,7 @@ class MartApiController extends Controller
             'questionnaireStarted' => 'required|numeric',
             'questionnaireDuration' => 'required|numeric',
             'answers' => 'required|array',
+            'answers.*' => 'present', // Explicitly allow any type for answer values
             'timestamp' => 'required|numeric',
             'timestampInherited' => 'nullable|numeric',
             'timezone' => 'required|string',
