@@ -23,8 +23,59 @@ class ScaleResource extends JsonResource
             'type' => 'text',
         ];
 
-        if ($this->isMartProject && isset($this->martMetadata)) {
-            // Handle MART project with native MART types
+        // Check if this is a MartQuestion model from MART DB
+        if ($this->isMartProject && isset($this->config)) {
+            // Handle MartQuestion from MART database
+            $questionType = $this->type ?? 'text';
+            $config = is_array($this->config) ? $this->config : json_decode($this->config, true);
+
+            switch ($questionType) {
+                case 'scale':
+                    $scaleOptions = [
+                        'type' => 'number',
+                        'minValue' => $config['minValue'] ?? 1,
+                        'maxValue' => $config['maxValue'] ?? 10,
+                    ];
+                    break;
+
+                case 'one choice':
+                    $options = [];
+                    if (isset($config['options']) && is_array($config['options'])) {
+                        foreach ($config['options'] as $key => $text) {
+                            $options[] = [
+                                'value' => $key,
+                                'text' => $text,
+                            ];
+                        }
+                    }
+                    $scaleOptions = [
+                        'type' => 'radio',
+                        'radioOptions' => $options,
+                    ];
+                    break;
+
+                case 'multiple choice':
+                    $options = [];
+                    if (isset($config['options']) && is_array($config['options'])) {
+                        foreach ($config['options'] as $key => $text) {
+                            $options[] = [
+                                'value' => $key,
+                                'text' => $text,
+                            ];
+                        }
+                    }
+                    $scaleOptions = [
+                        'type' => 'checkbox',
+                        'checkboxOptions' => $options,
+                    ];
+                    break;
+
+                case 'text':
+                    $scaleOptions = ['type' => 'text'];
+                    break;
+            }
+        } elseif ($this->isMartProject && isset($this->martMetadata)) {
+            // Handle MART project with native MART types (old structure)
             $martType = $this->martMetadata['originalType'];
 
             switch ($martType) {

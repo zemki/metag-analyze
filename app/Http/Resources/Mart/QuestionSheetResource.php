@@ -30,7 +30,7 @@ class QuestionSheetResource extends JsonResource
                 $items[] = [
                     'itemId' => $index + 1,
                     'scaleId' => $index + 1,
-                    'text' => $question['name'] ?? '',
+                    'text' => $question['text'] ?? $question['name'] ?? '',
                     'options' => [
                         'randomizationGroupId' => 1,
                     ],
