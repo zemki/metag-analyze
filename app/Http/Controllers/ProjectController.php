@@ -308,6 +308,22 @@ class ProjectController extends Controller
 
         $project = auth()->user()->projects()->create($attributes);
 
+        // If this is a MART project, create the corresponding MART database record
+        if ($project->isMartProject()) {
+            DB::connection('mart')->beginTransaction();
+            try {
+                MartProject::create([
+                    'main_project_id' => $project->id,
+                ]);
+                DB::connection('mart')->commit();
+            } catch (\Exception $e) {
+                DB::connection('mart')->rollBack();
+                // Also delete the main project to maintain consistency
+                $project->delete();
+                throw new \Exception('Failed to create MART project: ' . $e->getMessage());
+            }
+        }
+
         // Handle media and entity synchronization
         // Only process media if useEntity is true or if it's a legacy project (no entity_name field)
         $useEntity = $attributes['use_entity'] ?? true; // Default to true for legacy projects
@@ -324,6 +340,17 @@ class ProjectController extends Controller
         } elseif ($useEntity === false) {
             // If use_entity is false, clear any existing media
             $project->media()->sync([]);
+        }
+
+        // Check if this is an AJAX request (from Vue frontend)
+        if (request()->expectsJson() || request()->ajax()) {
+            // Return JSON response for AJAX requests (e.g., MART project creation)
+            return response()->json([
+                'success' => true,
+                'id' => $project->id,
+                'project' => $project,
+                'message' => 'Project created successfully'
+            ], 201);
         }
 
         // return all the users projects
