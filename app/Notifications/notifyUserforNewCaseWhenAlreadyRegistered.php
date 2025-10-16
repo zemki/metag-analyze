@@ -19,6 +19,7 @@ class notifyUserforNewCaseWhenAlreadyRegistered extends Notification
     {
         $this->message = $details['message'];
         $this->subject = $details['subject'];
+        $this->qrCodeData = $details['qrCodeData'] ?? null;
     }
 
     /**
@@ -40,12 +41,22 @@ class notifyUserforNewCaseWhenAlreadyRegistered extends Notification
      */
     public function toMail($notifiable)
     {
-        return (new MailMessage)
+        $mailMessage = (new MailMessage)
             ->from('noreply@' . strtolower(str_replace(' ', '', env('APP_NAME'))) . '.org', env('APP_NAME'))
             ->subject(strlen($this->subject) > 0 ? $this->subject : 'New Case on ' . env('APP_NAME'))
             ->lineIf(strlen($this->message) == 0, 'You have been added to a new case, please login in ' . env('APP_NAME') . ' to check it out.')
             ->lineIf(strlen($this->message) > 0, $this->message);
 
+        // Add QR code if provided
+        if ($this->qrCodeData) {
+            $durationDays = $this->qrCodeData['duration_days'] ?? 30;
+            $mailMessage->line('For easy mobile login, scan this QR code:')
+                ->line('<img src="' . $this->qrCodeData['qr_image'] . '" alt="QR Code" style="width: 300px; height: 300px; margin: 20px auto; display: block;" />')
+                ->line('QR code expires in ' . $durationDays . ' days')
+                ->line('Or use this link: ' . $this->qrCodeData['qr_url']);
+        }
+
+        return $mailMessage;
     }
 
     /**

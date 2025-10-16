@@ -16,6 +16,7 @@ import CustomDialogue from "./components/global/CustomDialogue.vue";
 import Caseslist from "./components/caseslist.vue";
 import DebugPanel from "./components/debug-panel.vue";
 import Breadcrumb from "./components/breadcrumb.vue";
+import QrCodeManager from "./components/qr-code-manager.vue";
 
 // Create a named export for all components to be used with app.component() in app.js
 export const components = {
@@ -36,5 +37,6 @@ export const components = {
   "custom-dialogue": CustomDialogue,
   "cases-list": Caseslist,
   "debug-panel": DebugPanel,
-  "breadcrumb": Breadcrumb
+  "breadcrumb": Breadcrumb,
+  "qr-code-manager": QrCodeManager
 };

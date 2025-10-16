@@ -12,16 +12,19 @@ class VerificationEmail extends Mailable
     use Queueable, SerializesModels;
 
     protected $user;
+    protected $emailtext;
+    protected $qrCodeData;
 
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct(User $user, $emailtext)
+    public function __construct(User $user, $emailtext, $qrCodeData = null)
     {
         $this->user = $user;
         $this->emailtext = $emailtext;
+        $this->qrCodeData = $qrCodeData;
     }
 
     /**
@@ -33,6 +36,10 @@ class VerificationEmail extends Mailable
     {
         return $this->from('mesoftware@uni-bremen.de')
             ->markdown('email.setpassword')
-            ->with(['user' => $this->user, 'text' => $this->emailtext]);
+            ->with([
+                'user' => $this->user,
+                'text' => $this->emailtext,
+                'qrCodeData' => $this->qrCodeData
+            ]);
     }
 }

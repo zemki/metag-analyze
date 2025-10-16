@@ -141,6 +141,28 @@
         </div>
     </div>
 
+    <div class="relative flex items-start my-2">
+        <div class="flex items-center h-5">
+            <input v-model="newcase.generateqrcode" name="generateQrCode" type="checkbox"
+                class="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500">
+        </div>
+        <div class="ml-3 text-sm">
+            <label for="generateQrCode"
+                class="font-medium text-gray-700">{{__('Generate QR code for easy mobile login (expires with case duration)')}}</label>
+        </div>
+    </div>
+
+    <div class="relative flex items-start my-2" v-if="newcase.generateqrcode">
+        <div class="flex items-center h-5">
+            <input v-model="newcase.sendqrcodeviaemail" name="sendQrCodeViaEmail" type="checkbox"
+                class="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500">
+        </div>
+        <div class="ml-3 text-sm">
+            <label for="sendQrCodeViaEmail"
+                class="font-medium text-gray-700">{{__('Include QR code in registration email')}}</label>
+        </div>
+    </div>
+
     <div class="mt-6">
         <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
             <div class="pt-6">

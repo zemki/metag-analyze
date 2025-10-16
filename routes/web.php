@@ -14,6 +14,9 @@ use App\Http\Controllers\EntryController;
 
 Auth::routes(['verify' => true]);
 
+// QR redirect page (for browser fallback - no auth)
+Route::get('/qr-login', 'QrLoginController@handleQrRedirect');
+
 // Test route for Vue 3
 Route::get('/test-vue3', function () {
     return view('test-vue3');
@@ -70,6 +73,14 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified', 'LoggedUser']],
     Route::delete('/cases/{case}', 'ProjectCasesController@destroy')->name('cases.destroy');
     Route::get('/cases/{case}/files', 'FileCasesController@index');
     Route::delete('/cases/{case}/files/{file}', 'FileCasesController@destroy');
+
+    /**
+     * QR Login Routes (authenticated)
+     */
+    Route::get('/projects/{project}/qr-tokens', 'QrLoginController@listProjectQrTokens');
+    Route::post('/cases/{case}/qr-generate', 'QrLoginController@generateQrForCase');
+    Route::get('/cases/{case}/qr-tokens', 'QrLoginController@listQrTokens');
+    Route::delete('/qr-tokens/{token}', 'QrLoginController@revokeToken');
 
     /**
      * User Routes

@@ -53,6 +53,11 @@
                         {{trans('Invite Collaborator')}}
                     </a>
                 @endif
+
+                <a href="#" @click="selectedProjectPage = 3"
+                   :class="selectedProjectPage == 3 ? 'flex-1 px-4 py-2 text-center text-blue-500 border-b-2 border-blue-500 font-medium' : 'flex-1 px-4 py-2 text-center text-gray-500 border-b-2 border-transparent font-medium hover:text-gray-700 hover:border-gray-300'">
+                    {{trans('QR Codes')}}
+                </a>
             </nav>
         </div>
 
@@ -104,6 +109,11 @@
         <div v-if="selectedProjectPage == 2">
             <project-invites class="mt-4" :invitedlist="{{ json_encode($invites) }}"
                              :project="{{ $project->id }}"></project-invites>
+        </div>
+
+        <!-- QR Codes Tab -->
+        <div v-if="selectedProjectPage == 3">
+            <qr-code-manager :project-id="{{ $project->id }}"></qr-code-manager>
         </div>
     </div>
 

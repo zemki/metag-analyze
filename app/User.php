@@ -113,7 +113,7 @@ class User extends Authenticatable implements FilamentUser, HasName, MustVerifyE
     /**
      * @return mixed
      */
-    public static function createIfDoesNotExists($user, $sendmessage = false, $subject = '', $message = '')
+    public static function createIfDoesNotExists($user, $sendmessage = false, $subject = '', $message = '', $qrCodeData = null)
     {
         if (! $user->exists) {
             $user->email = $user->email;
@@ -122,9 +122,9 @@ class User extends Authenticatable implements FilamentUser, HasName, MustVerifyE
             $user->password_token = Crypt::encryptString(Helper::random_str(30));
             $user->save();
             $user->roles()->sync($role);
-            Mail::to($user->email)->send(new VerificationEmail($user, config('utilities.emailDefaultText')));
+            Mail::to($user->email)->send(new VerificationEmail($user, config('utilities.emailDefaultText'), $qrCodeData));
         } elseif ($sendmessage) {
-            $user->notify(new notifyUserforNewCaseWhenAlreadyRegistered(['subject' => $subject, 'message' => $message]));
+            $user->notify(new notifyUserforNewCaseWhenAlreadyRegistered(['subject' => $subject, 'message' => $message, 'qrCodeData' => $qrCodeData]));
         }
 
         return $user;

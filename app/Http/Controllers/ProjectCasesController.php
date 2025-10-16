@@ -7,6 +7,7 @@ use App\CasesExport;
 use App\Entry;
 use App\Media;
 use App\Project;
+use App\QrLoginToken;
 use App\User;
 use Carbon\Carbon;
 use Crypt;
@@ -156,6 +157,18 @@ class ProjectCasesController extends Controller
         if (request('backendCase')) {
             $user = auth()->user();
             $case = $project->addCase(request('name'), 'value:0|days:0|lastDay:' . Carbon::now()->subDay());
+
+            // Generate temp password for QR login
+            $tempPassword = Helper::random_str(30);
+            $case->forceFill([
+                'temp_password' => Crypt::encryptString($tempPassword),
+            ])->save();
+
+            // Conditionally generate QR code
+            if (request('generateQrCode')) {
+                $this->autoGenerateQrCode($case, $tempPassword);
+            }
+
             $message = __('backend case created.');
 
         } else {
@@ -176,9 +189,80 @@ class ProjectCasesController extends Controller
                     $caseName = str_replace('{email}', $singleEmail, request('name'));
                 }
 
-                $user = User::createIfDoesNotExists(User::firstOrNew(['email' => $singleEmail]), request('sendanywayemail'), request('sendanywayemailsubject'), request('sendanywayemailmessage'));
+                // Generate temp password for QR login
+                $tempPassword = Helper::random_str(30);
+
+                // Generate QR code data if checkbox is checked
+                $qrCodeData = null;
+                $qrCodeForEmail = null;
+
+                if (request('generateQrCode')) {
+                    // Use case duration for QR expiration
+                    $durationDays = $this->extractDaysFromDuration(request('duration'));
+                    $expiresAt = now()->addDays($durationDays);
+
+                    $credentials = [
+                        'email' => $singleEmail,
+                        'password' => $tempPassword,
+                        'expires_at' => $expiresAt->timestamp,
+                    ];
+                    $encryptedToken = Crypt::encryptString(json_encode($credentials));
+                    $deepLinkUrl = config('app.url').'/qr-login?token='.urlencode($encryptedToken);
+
+                    $qrCodeData = [
+                        'qr_url' => $deepLinkUrl,
+                        'encrypted_token' => $encryptedToken,
+                        'expires_at' => $expiresAt,
+                        'duration_days' => $durationDays,
+                    ];
+
+                    // Generate QR image only if sending via email (for performance)
+                    if (request('sendQrCodeViaEmail')) {
+                        $qrImage = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')
+                            ->size(300)
+                            ->margin(2)
+                            ->generate($deepLinkUrl));
+
+                        $qrCodeForEmail = array_merge($qrCodeData, [
+                            'qr_image' => 'data:image/png;base64,'.$qrImage,
+                        ]);
+                    }
+                }
+
+                $user = User::createIfDoesNotExists(
+                    User::firstOrNew(['email' => $singleEmail]),
+                    request('sendanywayemail'),
+                    request('sendanywayemailsubject'),
+                    request('sendanywayemailmessage'),
+                    $qrCodeForEmail
+                );
                 $case = $project->addCase($caseName, request('duration'));
                 $case->addUser($user);
+
+                $case->forceFill([
+                    'temp_password' => Crypt::encryptString($tempPassword),
+                ])->save();
+
+                // Save QR token to database if generated
+                if ($qrCodeData) {
+                    // Regenerate encrypted credential with case_id now that case is created
+                    $credentials = [
+                        'email' => $singleEmail,
+                        'password' => $tempPassword,
+                        'case_id' => $case->id,
+                        'expires_at' => $qrCodeData['expires_at']->timestamp,
+                    ];
+                    $encryptedToken = Crypt::encryptString(json_encode($credentials));
+
+                    QrLoginToken::create([
+                        'case_id' => $case->id,
+                        'encrypted_credential' => $encryptedToken,
+                        'expires_at' => $qrCodeData['expires_at'],
+                        'notify_on_use' => false,
+                        'created_by' => auth()->id(),
+                    ]);
+                }
+
                 $message .= $user->email . " has been invited. \n";
             }
 
@@ -381,5 +465,60 @@ class ProjectCasesController extends Controller
         ];
 
         return $data;
+    }
+
+    /**
+     * Extract number of days from duration string
+     * Format: "value:X|days:Y|..." or "startDay:date|value:X|days:Y|..."
+     *
+     * @param string $duration
+     * @return int Number of days, defaults to 30 if not found or backend case (0 days)
+     */
+    private function extractDaysFromDuration(string $duration): int
+    {
+        // Extract days value from duration string
+        $daysMatch = [];
+        if (preg_match('/days:(\d+)/', $duration, $daysMatch)) {
+            $days = (int) $daysMatch[1];
+            // For backend cases (0 days) or very short durations, use minimum of 30 days
+            return max($days, 30);
+        }
+
+        // Default to 30 days if parsing fails
+        return 30;
+    }
+
+    /**
+     * Auto-generate QR code for a case
+     *
+     * @param Cases $case
+     * @param string $tempPassword
+     * @return void
+     */
+    private function autoGenerateQrCode(Cases $case, string $tempPassword): void
+    {
+        // Use case duration for expiration
+        $durationDays = $this->extractDaysFromDuration($case->duration);
+        $expiresAt = now()->addDays($durationDays);
+
+        // Create credential payload
+        $credentials = [
+            'email' => $case->user->email,
+            'password' => $tempPassword,
+            'case_id' => $case->id,
+            'expires_at' => $expiresAt->timestamp,
+        ];
+
+        // Encrypt credentials
+        $encryptedToken = Crypt::encryptString(json_encode($credentials));
+
+        // Create QR token record
+        QrLoginToken::create([
+            'case_id' => $case->id,
+            'encrypted_credential' => $encryptedToken,
+            'expires_at' => $expiresAt,
+            'notify_on_use' => false,
+            'created_by' => auth()->id(),
+        ]);
     }
 }

@@ -13,6 +13,12 @@
 
 Route::post('login', 'ApiController@login');
 
+// QR Login (no auth required, throttled)
+Route::post('qr-login', 'QrLoginController@loginWithQr')->middleware('throttle:10,1');
+
+// Debug endpoint for QR token (temporary - remove in production)
+Route::post('qr-login/debug', 'QrLoginController@debugQrToken')->middleware('throttle:10,1');
+
 Route::group(['prefix' => 'v1', 'middleware' => ['auth:api']], function () {
     Route::get('/project/{project}', 'ApiController@getProject');
 

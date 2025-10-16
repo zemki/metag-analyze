@@ -90,6 +90,8 @@ const app = createApp({
                 },
                 response: "",
                 sendanywayemail: false,
+                generateqrcode: false,
+                sendqrcodeviaemail: false,
             },
             newproject: {
                 name: "",
