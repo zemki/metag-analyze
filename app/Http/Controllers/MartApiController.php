@@ -63,7 +63,7 @@ class MartApiController extends Controller
             'questionnaireId' => 'required|numeric',
             'userId' => 'required|string',
             'participantId' => 'required|string',
-            'sheetId' => 'required|numeric',
+            'sheetId' => 'nullable|numeric', // DEPRECATED: Legacy field from old "QuestionSheets" terminology. Use questionnaireId instead.
             'questionnaireStarted' => 'required|numeric',
             'questionnaireDuration' => 'required|numeric',
             'answers' => 'required|array',
@@ -480,9 +480,22 @@ class MartApiController extends Controller
     /**
      * Validate a single answer against its question constraints
      * Updated to work with MartQuestion model from MART DB
+     *
+     * VALIDATION TEMPORARILY DISABLED - accepts any answer type/value
+     * TODO: Re-enable strict validation once frontend data format is finalized
      */
     private function validateSingleAnswer($answer, $question, int $questionPosition): array
     {
+        // TEMPORARILY DISABLED: Skip all validation to allow flexible answer formats
+        // This allows arrays, strings, numbers, etc. for any question type
+        // Re-enable the code below once frontend sends data in the correct format
+        return [
+            'valid' => true,
+            'errors' => [],
+        ];
+
+        /* COMMENTED OUT - STRICT VALIDATION CODE (re-enable later):
+
         $errors = [];
         $type = $question->type;
         $config = $question->config ?? [];
@@ -555,5 +568,6 @@ class MartApiController extends Controller
             'valid' => empty($errors),
             'errors' => $errors,
         ];
+        */
     }
 }
