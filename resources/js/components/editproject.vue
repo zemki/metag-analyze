@@ -817,8 +817,6 @@ export default {
 
       // MART project specific validation
       if (this.isMartProject) {
-        if (!this.projectData.questionnaireName?.trim()) return false;
-        
         for (const input of this.projectData.inputs) {
           if (!input.name.trim() || !input.type) return false;
 
