@@ -888,7 +888,7 @@ export default {
 
         // Always include entityName and useEntity for compatibility
         submitData.entityName = this.projectData.entityName?.trim() || 'entity';
-        submitData.useEntity = this.projectData.useEntity !== false; // Default to true
+        submitData.useEntity = this.projectData.useEntity;
 
         // Handle inputs differently for MART vs standard projects
         const originalInputsData = JSON.parse(this.project.inputs || '[]');

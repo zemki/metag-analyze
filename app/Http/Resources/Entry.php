@@ -27,7 +27,7 @@ class Entry extends JsonResource
             'inputs' => $this->inputs,
             'case_id' => $this->case_id,
             'media_id' => $this->media_id,
-            'media_name' => Media::where('id', $this->media_id)->first()->name,
+            'media_name' => $this->media_id ? Media::where('id', $this->media_id)->first()?->name : null,
             'place_id' => $this->place_id,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
