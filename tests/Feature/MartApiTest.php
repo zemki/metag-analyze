@@ -75,10 +75,10 @@ class MartApiTest extends TestCase
             ],
         ]);
 
-        // Create questions for schedule 1
+        // Create questions for schedule 1 (positions start from 0)
         MartQuestion::create([
             'schedule_id' => $schedule1->id,
-            'position' => 1,
+            'position' => 0,
             'text' => 'How are you feeling?',
             'type' => 'scale',
             'config' => [
@@ -92,7 +92,7 @@ class MartApiTest extends TestCase
 
         MartQuestion::create([
             'schedule_id' => $schedule1->id,
-            'position' => 2,
+            'position' => 1,
             'text' => 'What are you doing?',
             'type' => 'multiple choice',
             'config' => [
@@ -123,10 +123,10 @@ class MartApiTest extends TestCase
             ],
         ]);
 
-        // Create question for schedule 2
+        // Create question for schedule 2 (position starts from 0)
         MartQuestion::create([
             'schedule_id' => $schedule2->id,
-            'position' => 1,
+            'position' => 0,
             'text' => 'Any thoughts?',
             'type' => 'text',
             'config' => [],

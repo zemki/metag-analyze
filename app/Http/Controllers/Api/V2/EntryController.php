@@ -56,23 +56,43 @@ class EntryController extends Controller
             request()->merge([self::ENTITY_ID => request()->entity]);
         }
 
+        // Check if project uses entity field
+        $project = $case->project;
+        $useEntity = $project->use_entity ?? true;
+
+        // Conditionally require entity_id based on project settings
+        $entityRule = $useEntity ? self::REQUIRED : 'nullable';
+
         $attributes = request()->validate([
             self::BEGIN => self::REQUIRED,
             'end' => self::REQUIRED,
             'case_id' => self::REQUIRED,
-            self::ENTITY_ID => self::REQUIRED,
+            self::ENTITY_ID => $entityRule,
             self::INPUTS => 'nullable',
         ]);
 
-        $isComingFromBackend = is_numeric($attributes[self::ENTITY_ID]);
+        // Only process entity_id if it's provided (when use_entity is true)
+        if (isset($attributes[self::ENTITY_ID]) && $attributes[self::ENTITY_ID] !== null) {
+            $isComingFromBackend = is_numeric($attributes[self::ENTITY_ID]);
 
-        if ($isComingFromBackend) {
-            $attributes[self::INPUTS] = json_encode($attributes[self::INPUTS]);
+            if ($isComingFromBackend) {
+                $attributes[self::INPUTS] = json_encode($attributes[self::INPUTS]);
+            } else {
+                // Create or find the media entry but store as entity_id
+                $attributes[self::ENTITY_ID] = Media::firstOrCreate(['name' => $attributes[self::ENTITY_ID]])->id;
+                $attributes[self::INPUTS] = json_encode(request()->inputs);
+            }
+
+            // Convert entity_id to media_id for database column (V2 API compatibility)
+            $attributes['media_id'] = $attributes[self::ENTITY_ID];
+            unset($attributes[self::ENTITY_ID]);
         } else {
-            // Create or find the media entry but store as entity_id
-            $attributes[self::ENTITY_ID] = Media::firstOrCreate(['name' => $attributes[self::ENTITY_ID]])->id;
-            $attributes[self::INPUTS] = json_encode(request()->inputs);
+            // When entity is not used, just encode inputs
+            $attributes[self::INPUTS] = json_encode($attributes[self::INPUTS] ?? request()->inputs);
+            $attributes['media_id'] = null;
+            unset($attributes[self::ENTITY_ID]);
         }
+
         $entry = Entry::create($attributes);
 
         if (request()->hasHeader('x-file-token') && request()->header('x-file-token') !== '0' && request()->header('x-file-token') !== '') {
@@ -113,17 +133,35 @@ class EntryController extends Controller
             request()->merge([self::ENTITY_ID => request()->entity]);
         }
 
+        // Check if project uses entity field
+        $project = $case->project;
+        $useEntity = $project->use_entity ?? true;
+
+        // Conditionally require entity_id based on project settings
+        $entityRule = $useEntity ? self::REQUIRED : 'nullable';
+
         $attributes = request()->validate([
             self::BEGIN => self::REQUIRED,
             'end' => self::REQUIRED,
             'case_id' => self::REQUIRED,
-            self::ENTITY_ID => self::REQUIRED,
+            self::ENTITY_ID => $entityRule,
             self::INPUTS => 'nullable',
         ]);
 
-        if (is_string($attributes[self::ENTITY_ID])) {
-            // Create or find the media entry but store as entity_id
-            $attributes[self::ENTITY_ID] = Media::firstOrCreate(['name' => $attributes[self::ENTITY_ID]])->id;
+        // Only process entity_id if it's provided (when use_entity is true)
+        if (isset($attributes[self::ENTITY_ID]) && $attributes[self::ENTITY_ID] !== null) {
+            if (is_string($attributes[self::ENTITY_ID])) {
+                // Create or find the media entry but store as entity_id
+                $attributes[self::ENTITY_ID] = Media::firstOrCreate(['name' => $attributes[self::ENTITY_ID]])->id;
+            }
+
+            // Convert entity_id to media_id for database column (V2 API compatibility)
+            $attributes['media_id'] = $attributes[self::ENTITY_ID];
+            unset($attributes[self::ENTITY_ID]);
+        } else {
+            // When entity is not used, set to null
+            $attributes['media_id'] = null;
+            unset($attributes[self::ENTITY_ID]);
         }
 
         $oldInputs = $entry->inputs;

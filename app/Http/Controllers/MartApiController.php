@@ -200,10 +200,11 @@ class MartApiController extends Controller
             // Step 3: Create MART answers for each question
             $questions = $schedule->questions->keyBy('position');
 
-            foreach ($request->answers as $questionPosition => $answerValue) {
-                // Convert position to int for comparison
-                $positionInt = (int) $questionPosition;
-                $question = $questions->get($positionInt);
+            foreach ($request->answers as $itemId => $answerValue) {
+                // Convert itemId to position: itemId = position + 1, so position = itemId - 1
+                $itemIdInt = (int) $itemId;
+                $position = $itemIdInt - 1;
+                $question = $questions->get($position);
 
                 if ($question) {
                     MartAnswer::create([
@@ -446,17 +447,19 @@ class MartApiController extends Controller
         }
 
         // Validate each answer
-        foreach ($answers as $questionPosition => $answer) {
-            // Convert position to int for comparison
-            $positionInt = (int) $questionPosition;
+        // Note: Mobile app sends answers keyed by itemId (position + 1), so we need to convert
+        foreach ($answers as $itemId => $answer) {
+            // Convert itemId to position: itemId = position + 1, so position = itemId - 1
+            $itemIdInt = (int) $itemId;
+            $position = $itemIdInt - 1;
 
-            if (! isset($questionMap[$positionInt])) {
-                $errors[] = "Question at position $questionPosition does not exist in schedule";
+            if (! isset($questionMap[$position])) {
+                $errors[] = "Question at position $position (itemId $itemId) does not exist in schedule";
                 continue;
             }
 
-            $question = $questionMap[$positionInt];
-            $validationResult = $this->validateSingleAnswer($answer, $question, $positionInt);
+            $question = $questionMap[$position];
+            $validationResult = $this->validateSingleAnswer($answer, $question, $position);
 
             if (! $validationResult['valid']) {
                 $errors = array_merge($errors, $validationResult['errors']);
@@ -464,10 +467,12 @@ class MartApiController extends Controller
         }
 
         // Check for missing required questions
+        // Mobile app uses itemId (position + 1) as key
         foreach ($questions as $question) {
-            // Check both string and int keys for compatibility
-            if ($question->is_mandatory && ! isset($answers[$question->position]) && ! isset($answers[(string) $question->position])) {
-                $errors[] = "Required question at position {$question->position} ('{$question->text}') is missing";
+            $itemId = $question->position + 1;
+            // Check for both string and int keys for compatibility
+            if ($question->is_mandatory && ! isset($answers[$itemId]) && ! isset($answers[(string) $itemId])) {
+                $errors[] = "Required question at position {$question->position} (itemId $itemId, '{$question->text}') is missing";
             }
         }
 

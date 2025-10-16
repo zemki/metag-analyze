@@ -302,7 +302,7 @@ class ProjectController extends Controller
             unset($attributes['entityName']); // Remove the original key
 
             // Set use_entity flag
-            $attributes['use_entity'] = $attributes['useEntity'] ?? true;
+            $attributes['use_entity'] = $attributes['useEntity'];
             unset($attributes['useEntity']); // Remove the original key
         }
 
@@ -431,7 +431,7 @@ class ProjectController extends Controller
 
                 // Set use_entity flag
                 if (request()->has('useEntity')) {
-                    $attributes['use_entity'] = $attributes['useEntity'] ?? true;
+                    $attributes['use_entity'] = $attributes['useEntity'];
                     unset($attributes['useEntity']); // Remove the original key
                 }
             } else {
