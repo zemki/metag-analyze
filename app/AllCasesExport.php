@@ -106,51 +106,25 @@ class AllCasesExport implements FromCollection, WithHeadings, WithMapping
      */
     private function printValuesInArray($project, $jsonInputs, $tempValuesArray)
     {
-        // build index array to then print the answers in the correct column
-        foreach ($project->getProjectInputNames() as $name) {
-            $projectInputNames[$name] = $project->getAnswersByQuestion($name);
-        }
-        
         // Process ALL project input names to ensure all columns are filled
         foreach ($project->getProjectInputNames() as $inputName) {
-            if ($inputName === 'firstValue') {
+            if ($inputName === 'firstValue' || $inputName === 'file') {
                 continue;
             }
 
-            $index = [];
-            $numberOfAnswersByQuestion = $project->getNumberOfAnswersByQuestion($inputName);
-            $questionIsMultipleOrOneChoice = $numberOfAnswersByQuestion > 0;
-            
             // Get the input value from jsonInputs, or use empty string if not present
             $input = $jsonInputs[$inputName] ?? '';
 
-            if ($questionIsMultipleOrOneChoice) {
-                $this->formatMultipleAndOneChoiceValues($tempValuesArray, $input, $index, $projectInputNames, $inputName, $numberOfAnswersByQuestion);
+            // If input is an array, join it with commas (for multiple choice)
+            // Otherwise, use the value as-is
+            if (is_array($input)) {
+                $tempValuesArray[$inputName] = implode(', ', $input);
             } else {
                 $tempValuesArray[$inputName] = $input;
             }
         }
 
         return $tempValuesArray;
-    }
-
-    /**
-     * This function formats the values of multiple and one choice questions
-     */
-    private function formatMultipleAndOneChoiceValues(&$tempValuesArray, $input, array $index, $projectInputNames, $key, $numberOfAnswersByQuestion): void
-    {
-        if (is_null($input) || $input === '') {
-            // print empty value
-            $tempValuesArray[$key] = '';
-            return;
-        }
-
-        if (! is_array($input)) {
-            $input = [$input];
-        }
-
-        // Join multiple selected answers with a comma and space
-        $tempValuesArray[$key] = implode(', ', $input);
     }
 
     /**
