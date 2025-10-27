@@ -46,23 +46,16 @@ class CasesExport implements FromCollection, WithHeadings, WithMapping
             }
             $tempValuesArray['#'] = $entry->id;
             foreach ($jsonInputs as $key => $input) {
-                if ($key === 'firstValue') {
+                if ($key === 'firstValue' || $key === 'file') {
                     continue;
                 }
-                $numberOfAnswersByQuestion = $project->getNumberOfAnswersByQuestion($key);
-                if ($numberOfAnswersByQuestion > 0) {
-                    // Multiple choice or one choice questions
-                    if ($input != null) {
-                        if (! is_array($input)) {
-                            $input = [$input];
-                        }
-                        // Join multiple selected answers with a comma and space
-                        $tempValuesArray[$key] = implode(', ', $input);
-                    } else {
-                        $tempValuesArray[$key] = '';
-                    }
+
+                // If input is an array, join it with commas (for multiple choice)
+                // Otherwise, use the value as-is
+                if (is_array($input)) {
+                    $tempValuesArray[$key] = implode(', ', $input);
                 } else {
-                    $tempValuesArray[$key] = $input;
+                    $tempValuesArray[$key] = $input ?? '';
                 }
             }
         }
