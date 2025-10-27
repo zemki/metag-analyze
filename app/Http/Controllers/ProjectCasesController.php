@@ -298,22 +298,17 @@ class ProjectCasesController extends Controller
     {
         $headings = [];
         $inputs = json_decode($project->inputs);
-        
+
         // Skip MART configuration object if present
         foreach ($inputs as $input) {
             // Skip MART configuration object
             if (property_exists($input, 'type') && $input->type === 'mart') {
                 continue;
             }
-            
-            $isMultipleOrOneChoice = property_exists($input, 'numberofanswer') && $input->numberofanswer > 0;
-            if ($isMultipleOrOneChoice) {
-                for ($i = 0; $i < $input->numberofanswer; $i++) {
-                    array_push($headings, $input->name);
-                }
-            } else {
-                array_push($headings, $input->name);
-            }
+
+            // Add each input name only once, regardless of type
+            // Multi-choice answers will be comma-separated in a single column
+            array_push($headings, $input->name);
         }
 
         return $headings;
