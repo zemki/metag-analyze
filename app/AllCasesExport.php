@@ -74,13 +74,8 @@ class AllCasesExport implements FromCollection, WithHeadings, WithMapping
         $jsonInputs = json_decode($entry->inputs, true);
         $headings = $this->headings();
         foreach ($headings as $heading) {
-            // print the question as many times as you have answer to question
-            $headingKeys = array_keys($headings, $heading);
-            if (count($headingKeys) > 1) {
-                $tempValuesArray[$heading] = array_map(fn ($key) => $headings[$key], $headingKeys);
-            } else {
-                $tempValuesArray[$heading] = '';
-            }
+            // Initialize all headings with empty string
+            $tempValuesArray[$heading] = '';
         }
 
         return [$jsonInputs, $tempValuesArray];
@@ -146,10 +141,7 @@ class AllCasesExport implements FromCollection, WithHeadings, WithMapping
     {
         if (is_null($input) || $input === '') {
             // print empty value
-            for ($i = 0; $i < $numberOfAnswersByQuestion; $i++) {
-                $tempValuesArray[$key][$i] = [''];
-            }
-
+            $tempValuesArray[$key] = '';
             return;
         }
 
@@ -157,20 +149,8 @@ class AllCasesExport implements FromCollection, WithHeadings, WithMapping
             $input = [$input];
         }
 
-        foreach ($input as $value) {
-            $index[array_search($value, $projectInputNames[$key])] = $value;
-        }
-
-        // print values in the same column in multiple choice or one choice answers
-        for ($i = 0; $i < $numberOfAnswersByQuestion; $i++) {
-            $tempValuesArray[$key][$i] = [];
-            if (array_key_exists($i, $index)) {
-                array_push($tempValuesArray[$key][$i], $index[$i]);
-            } else {
-                array_push($tempValuesArray[$key][$i], '');
-            }
-        }
-
+        // Join multiple selected answers with a comma and space
+        $tempValuesArray[$key] = implode(', ', $input);
     }
 
     /**

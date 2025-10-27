@@ -41,45 +41,25 @@ class CasesExport implements FromCollection, WithHeadings, WithMapping
             }
             $jsonInputs = json_decode($entry->inputs);
             foreach ($this->headings() as $heading) {
-                // print the question as many times as you have answer to question
-                if (count(array_keys($this->headings(), $heading)) > 1) {
-                    $tempValuesArray[$heading] = [];
-                    foreach (array_keys($this->headings(), $heading) as $key) {
-                        array_push($tempValuesArray[$heading], $this->headings()[$key]);
-                    }
-                } else {
-                    $tempValuesArray[$heading] = '';
-                }
+                // Initialize all headings with empty string
+                $tempValuesArray[$heading] = '';
             }
             $tempValuesArray['#'] = $entry->id;
             foreach ($jsonInputs as $key => $input) {
                 if ($key === 'firstValue') {
                     continue;
                 }
-                $index = [];
                 $numberOfAnswersByQuestion = $project->getNumberOfAnswersByQuestion($key);
                 if ($numberOfAnswersByQuestion > 0) {
+                    // Multiple choice or one choice questions
                     if ($input != null) {
                         if (! is_array($input)) {
                             $input = [$input];
                         }
-
-                        foreach ($input as $value) {
-                            $index[array_search($value, $projectInputNames[$key])] = $value;
-                        }
-                        for ($i = 0; $i < $numberOfAnswersByQuestion; $i++) {
-                            $tempValuesArray[$key][$i] = [];
-                            if (array_key_exists($i, $index)) {
-                                array_push($tempValuesArray[$key][$i], $index[$i]);
-                            } else {
-                                array_push($tempValuesArray[$key][$i], '');
-                            }
-                        }
+                        // Join multiple selected answers with a comma and space
+                        $tempValuesArray[$key] = implode(', ', $input);
                     } else {
-                        for ($i = 0; $i < $numberOfAnswersByQuestion; $i++) {
-                            $tempValuesArray[$key][$i] = [];
-                            array_push($tempValuesArray[$key][$i], '');
-                        }
+                        $tempValuesArray[$key] = '';
                     }
                 } else {
                     $tempValuesArray[$key] = $input;
