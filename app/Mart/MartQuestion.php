@@ -45,6 +45,9 @@ class MartQuestion extends Model
         'type',
         'config',
         'is_mandatory',
+        'is_ios_data_collection',
+        'is_android_data_collection',
+        'item_group',
         'version',
     ];
 
@@ -54,6 +57,8 @@ class MartQuestion extends Model
     protected $casts = [
         'config' => 'array',
         'is_mandatory' => 'boolean',
+        'is_ios_data_collection' => 'boolean',
+        'is_android_data_collection' => 'boolean',
         'version' => 'integer',
     ];
 
@@ -124,6 +129,52 @@ class MartQuestion extends Model
         $this->config = $newData['config'] ?? $this->config;
         $this->is_mandatory = $newData['is_mandatory'] ?? $this->is_mandatory;
 
+        return $this->save();
+    }
+
+    /**
+     * Mark this question as the iOS data collection question for its project.
+     * Automatically unmarks any other iOS data collection questions in the same project.
+     *
+     * @return bool
+     */
+    public function markAsIOSDataCollection(): bool
+    {
+        $this->is_ios_data_collection = true;
+        return $this->save();
+    }
+
+    /**
+     * Mark this question as the Android data collection question for its project.
+     * Automatically unmarks any other Android data collection questions in the same project.
+     *
+     * @return bool
+     */
+    public function markAsAndroidDataCollection(): bool
+    {
+        $this->is_android_data_collection = true;
+        return $this->save();
+    }
+
+    /**
+     * Unmark this question as the iOS data collection question.
+     *
+     * @return bool
+     */
+    public function unmarkAsIOSDataCollection(): bool
+    {
+        $this->is_ios_data_collection = false;
+        return $this->save();
+    }
+
+    /**
+     * Unmark this question as the Android data collection question.
+     *
+     * @return bool
+     */
+    public function unmarkAsAndroidDataCollection(): bool
+    {
+        $this->is_android_data_collection = false;
         return $this->save();
     }
 }

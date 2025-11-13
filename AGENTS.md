@@ -169,3 +169,4 @@ curl -X POST "https://metag-analyze.test/mart-api/cases/5/submit" \
 - Bearer token authentication required for all API calls
 - Test database separate from development database
 - never run npm run build - i will compile the npm run dev
+- entity is a replacement for media, but the database still has media as table and fields

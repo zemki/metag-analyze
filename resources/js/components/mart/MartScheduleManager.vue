@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="flex justify-between items-center pb-6 border-b border-gray-200">
       <div>
-        <h3 class="text-lg font-medium text-gray-900">{{ trans('Questionnaire Schedules') }}</h3>
+        <h3 class="text-lg font-medium text-gray-900">{{ trans('Questionnaires') }}</h3>
         <p class="mt-2 text-sm text-gray-600">
           {{ trans('Manage multiple questionnaire schedules with unique questions for each schedule.') }}
         </p>
@@ -17,7 +17,7 @@
         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
         </svg>
-        {{ trans('Add Schedule') }}
+        {{ trans('Add Questionnaire') }}
       </button>
     </div>
 
@@ -34,8 +34,8 @@
       <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
       </svg>
-      <h3 class="mt-2 text-sm font-medium text-gray-900">{{ trans('No schedules yet') }}</h3>
-      <p class="mt-1 text-sm text-gray-500">{{ trans('Get started by creating a new questionnaire schedule.') }}</p>
+      <h3 class="mt-2 text-sm font-medium text-gray-900">{{ trans('No questionnaires yet') }}</h3>
+      <p class="mt-1 text-sm text-gray-500">{{ trans('Get started by creating a new questionnaire.') }}</p>
       <div class="mt-6">
         <button
             v-if="editable"
@@ -46,7 +46,7 @@
           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
           </svg>
-          {{ trans('Add Schedule') }}
+          {{ trans('Add Questionnaire') }}
         </button>
       </div>
     </div>

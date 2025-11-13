@@ -60,8 +60,8 @@
             <svg class="w-12 h-12 mb-3" :class="projectType === 'mart' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
             </svg>
-            <span class="block text-sm font-medium" :class="projectType === 'mart' ? 'text-blue-900' : 'text-gray-900'">ESM Project (Experience Sampling Method)</span>
-            <span class="block text-xs text-center mt-1" :class="projectType === 'mart' ? 'text-blue-700' : 'text-gray-500'">Uses the MART mobile app for advanced questionnaires</span>
+            <span class="block text-sm font-medium" :class="projectType === 'mart' ? 'text-blue-900' : 'text-gray-900'">MART (Mobile Assessment Research Tool) Project</span>
+            <span class="block text-xs text-center mt-1" :class="projectType === 'mart' ? 'text-blue-700' : 'text-gray-500'">Uses the modular MART App for Surveys, Experience Sampling, Android Event Logging, and Data Donations</span>
           </button>
         </div>
       </div>
@@ -473,12 +473,12 @@
           </div>
         </div>
 
-        <!-- Questionnaire Schedules -->
+        <!-- Questionnaires -->
         <div class="pt-8 space-y-6">
           <div class="pb-4 border-b border-gray-200">
-            <h3 class="text-lg font-medium leading-6 text-gray-900">Questionnaire Schedules *</h3>
+            <h3 class="text-lg font-medium leading-6 text-gray-900">Questionnaires *</h3>
             <p class="mt-2 text-sm text-gray-600">
-              Create at least one schedule with questions. Each schedule can have different questions, timing, and notification settings.
+              Create at least one questionnaire with questions. Each questionnaire can have different questions, timing, and notification settings.
             </p>
           </div>
 
@@ -489,8 +489,8 @@
               <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
               </svg>
-              <h3 class="mt-2 text-sm font-medium text-gray-900">No schedules created</h3>
-              <p class="mt-1 text-sm text-gray-500">Get started by creating your first questionnaire schedule.</p>
+              <h3 class="mt-2 text-sm font-medium text-gray-900">No questionnaires created</h3>
+              <p class="mt-1 text-sm text-gray-500">Get started by creating your first questionnaire.</p>
               <div class="mt-6">
                 <button
                     type="button"
@@ -500,7 +500,7 @@
                   <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                   </svg>
-                  Add Schedule
+                  Add Questionnaire
                 </button>
               </div>
             </div>
@@ -508,7 +508,7 @@
             <!-- Schedules List -->
             <div v-else class="space-y-4">
               <div class="flex justify-between items-center">
-                <span class="text-sm font-medium text-gray-700">{{ martProject.schedules.length }} schedule(s) created</span>
+                <span class="text-sm font-medium text-gray-700">{{ martProject.schedules.length }} questionnaire(s) created</span>
                 <button
                     type="button"
                     @click="addMartSchedule"
@@ -517,7 +517,7 @@
                   <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                   </svg>
-                  Add Schedule
+                  Add Questionnaire
                 </button>
               </div>
 
@@ -529,7 +529,7 @@
                     <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
                     </svg>
-                    <h4 class="text-md font-semibold text-gray-900">{{ schedule.name || `Schedule ${scheduleIndex + 1}` }}</h4>
+                    <h4 class="text-md font-semibold text-gray-900">{{ schedule.name || `Questionnaire ${scheduleIndex + 1}` }}</h4>
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                           :class="schedule.type === 'repeating' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'">
                       {{ schedule.type === 'repeating' ? 'Repeating' : 'Single' }}
@@ -571,6 +571,18 @@
                         class="mt-1 block w-full px-4 py-2 rounded-md shadow-sm border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 sm:text-sm"
                         placeholder="e.g., Daily Check-in, Morning Survey"
                     />
+                  </div>
+
+                  <!-- Introductory Text -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700">Introductory Text (optional)</label>
+                    <textarea
+                        v-model="schedule.introductory_text"
+                        rows="3"
+                        class="mt-1 block w-full px-4 py-2 rounded-md shadow-sm border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 sm:text-sm"
+                        placeholder="Text to display at the top of this questionnaire"
+                    ></textarea>
+                    <p class="mt-1 text-xs text-gray-500">This text will be shown at the top of the questionnaire before any questions.</p>
                   </div>
 
                   <!-- Schedule Type -->
@@ -809,6 +821,43 @@
                             Required question
                           </label>
                         </div>
+
+                        <!-- iOS Data Collection -->
+                        <div class="flex items-center">
+                          <input
+                              type="checkbox"
+                              :id="'ios_data_collection_' + scheduleIndex + '_' + qIndex"
+                              v-model="question.isIOSDataCollection"
+                              class="h-3 w-3 text-blue-500 border-gray-300 rounded"
+                          />
+                          <label :for="'ios_data_collection_' + scheduleIndex + '_' + qIndex" class="ml-2 block text-xs text-gray-700">
+                            iOS data collection question
+                          </label>
+                        </div>
+
+                        <!-- Android Data Collection -->
+                        <div class="flex items-center">
+                          <input
+                              type="checkbox"
+                              :id="'android_data_collection_' + scheduleIndex + '_' + qIndex"
+                              v-model="question.isAndroidDataCollection"
+                              class="h-3 w-3 text-blue-500 border-gray-300 rounded"
+                          />
+                          <label :for="'android_data_collection_' + scheduleIndex + '_' + qIndex" class="ml-2 block text-xs text-gray-700">
+                            Android data collection question
+                          </label>
+                        </div>
+
+                        <!-- Item Group -->
+                        <div>
+                          <label class="block text-xs font-medium text-gray-700">Item Group (optional)</label>
+                          <input
+                              type="text"
+                              v-model="question.itemGroup"
+                              class="mt-1 block w-full px-2 py-1 border border-gray-300 rounded-md text-sm"
+                              placeholder="Enter item group name"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -905,6 +954,19 @@
                 />
                 <label :for="'page-first-start-' + index" class="ml-2 block text-sm text-gray-700">
                   Show this page on first app start
+                </label>
+              </div>
+
+              <!-- Mark as Success Page -->
+              <div class="flex items-center">
+                <input
+                    :id="'page-success-' + index"
+                    type="checkbox"
+                    v-model="page.isSuccessPage"
+                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label :for="'page-success-' + index" class="ml-2 block text-sm text-gray-700">
+                  Mark as success page
                 </label>
               </div>
             </div>
@@ -1224,9 +1286,9 @@ export default {
         return;
       }
 
-      // Schedule validation - at least one schedule required
+      // Schedule validation - at least one questionnaire required
       if (this.martProject.schedules.length === 0) {
-        this.martProject.response = 'At least one schedule with questions is required';
+        this.martProject.response = 'At least one questionnaire with questions is required';
         return;
       }
 
@@ -1235,23 +1297,23 @@ export default {
         const schedule = this.martProject.schedules[s];
 
         if (!schedule.name.trim()) {
-          this.martProject.response = `Schedule ${s + 1}: Schedule name is required`;
+          this.martProject.response = `Questionnaire ${s + 1}: Questionnaire name is required`;
           return;
         }
 
         if (!schedule.start_date_time.date) {
-          this.martProject.response = `Schedule ${s + 1}: Start date is required`;
+          this.martProject.response = `Questionnaire ${s + 1}: Start date is required`;
           return;
         }
 
         if (schedule.type === 'repeating' && !schedule.end_date_time.date) {
-          this.martProject.response = `Schedule ${s + 1}: End date is required for repeating schedules`;
+          this.martProject.response = `Questionnaire ${s + 1}: End date is required for repeating questionnaires`;
           return;
         }
 
-        // Validate questions in this schedule
+        // Validate questions in this questionnaire
         if (!schedule.questions || schedule.questions.length === 0) {
-          this.martProject.response = `Schedule ${s + 1}: At least one question is required`;
+          this.martProject.response = `Questionnaire ${s + 1}: At least one question is required`;
           return;
         }
 
@@ -1260,30 +1322,30 @@ export default {
           const question = schedule.questions[q];
 
           if (!question.text.trim()) {
-            this.martProject.response = `Schedule ${s + 1}, Question ${q + 1}: Question text is required`;
+            this.martProject.response = `Questionnaire ${s + 1}, Question ${q + 1}: Question text is required`;
             return;
           }
 
           if (!question.type) {
-            this.martProject.response = `Schedule ${s + 1}, Question ${q + 1}: Question type is required`;
+            this.martProject.response = `Questionnaire ${s + 1}, Question ${q + 1}: Question type is required`;
             return;
           }
 
           // Validate choice questions have options
           if ((question.type === 'radio' || question.type === 'checkbox') &&
               (!question.options || question.options.filter(opt => opt.text && opt.text.trim()).length < 2)) {
-            this.martProject.response = `Schedule ${s + 1}, Question ${q + 1}: At least 2 options are required for choice questions`;
+            this.martProject.response = `Questionnaire ${s + 1}, Question ${q + 1}: At least 2 options are required for choice questions`;
             return;
           }
 
           // Validate range questions
           if (question.type === 'range') {
             if (question.minValue == null || question.maxValue == null) {
-              this.martProject.response = `Schedule ${s + 1}, Question ${q + 1}: Min and max values are required for range questions`;
+              this.martProject.response = `Questionnaire ${s + 1}, Question ${q + 1}: Min and max values are required for range questions`;
               return;
             }
             if (question.minValue >= question.maxValue) {
-              this.martProject.response = `Schedule ${s + 1}, Question ${q + 1}: Max value must be greater than min value`;
+              this.martProject.response = `Questionnaire ${s + 1}, Question ${q + 1}: Max value must be greater than min value`;
               return;
             }
           }
@@ -1326,6 +1388,7 @@ export default {
             name: page.name,
             content: page.content,
             showOnFirstAppStart: page.showOnFirstAppStart,
+            isSuccessPage: page.isSuccessPage,
             buttonText: page.buttonText,
             sortOrder: index
           }))
@@ -1396,6 +1459,9 @@ export default {
               text: q.text,
               type: backendType,
               mandatory: q.mandatory,
+              is_ios_data_collection: q.isIOSDataCollection || false,
+              is_android_data_collection: q.isAndroidDataCollection || false,
+              item_group: q.itemGroup || null,
               config: config
             };
           });
@@ -1456,7 +1522,8 @@ export default {
     addMartSchedule() {
       const scheduleId = this.martProject.schedules.length + 1;
       this.martProject.schedules.push({
-        name: `Schedule ${scheduleId}`,
+        name: `Questionnaire ${scheduleId}`,
+        introductory_text: '',
         type: 'single',
         start_date_time: { date: '', time: '09:00' },
         end_date_time: { date: '', time: '21:00' },
@@ -1487,6 +1554,9 @@ export default {
         text: '',
         type: '',
         mandatory: false,
+        isIOSDataCollection: false,
+        isAndroidDataCollection: false,
+        itemGroup: '',
         minValue: 0,
         maxValue: 10,
         steps: 1,
@@ -1551,7 +1621,8 @@ export default {
         name: '',
         content: '',
         buttonText: 'Continue',
-        showOnFirstAppStart: false
+        showOnFirstAppStart: false,
+        isSuccessPage: false
       });
     },
 

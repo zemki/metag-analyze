@@ -78,14 +78,15 @@ class ProjectOptionsResource extends JsonResource
                         'time' => $projectOptions['endDateAndTime']['time'] ?? '23:59',
                     ],
                     'collectDeviceInfos' => $projectOptions['collectDeviceInfos'] ?? true,
-                    'iOSDataDonationQuestionnaire' => $projectOptions['iOSDataDonationQuestionnaire'] ?? null,
-                    'androidDataDonationQuestionnaire' => $projectOptions['androidDataDonationQuestionnaire'] ?? null,
+                    'iOSDataDonationQuestionnaire' => $this->getIOSDataCollectionQuestionnaireId(),
+                    'androidDataDonationQuestionnaire' => $this->getAndroidDataCollectionQuestionnaireId(),
                     'collectAndroidStats' => $projectOptions['collectAndroidStats'] ?? false,
                     'initialHoursOfAndroidStats' => $projectOptions['initialHoursOfAndroidStats'] ?? 24,
                     'overlapAndroidStatsHours' => $projectOptions['overlapAndroidStatsHours'] ?? 2,
                     'pages' => $this->pages()->pluck('id')->toArray(),
                     'pagesToShowInMenu' => $this->pages()->pluck('id')->toArray(), // All pages shown in menu for now
                     'pagesToShowOnFirstAppStart' => $this->pages()->where('show_on_first_app_start', true)->orderBy('sort_order')->pluck('id')->toArray(),
+                    'successPage' => $this->getSuccessPageId(),
                     // Add questionnaire schedules
                     'singleQuestionnaires' => $singleQuestionnaires,
                     'repeatingQuestionnaires' => $repeatingQuestionnaires,
@@ -144,5 +145,68 @@ class ProjectOptionsResource extends JsonResource
         }
 
         return $date;
+    }
+
+    /**
+     * Get the iOS data collection question ID for this project.
+     * Returns the questionnaire ID of the question marked as iOS data collection.
+     *
+     * @return int|null
+     */
+    private function getIOSDataCollectionQuestionnaireId()
+    {
+        $martProject = $this->martProject();
+        if (! $martProject) {
+            return null;
+        }
+
+        // Find the question marked as iOS data collection across all schedules
+        $schedules = MartSchedule::forProject($martProject->id)->with('questions')->get();
+
+        foreach ($schedules as $schedule) {
+            $iosQuestion = $schedule->questions()->where('is_ios_data_collection', true)->first();
+            if ($iosQuestion) {
+                return $schedule->questionnaire_id;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the Android data collection question ID for this project.
+     * Returns the questionnaire ID of the question marked as Android data collection.
+     *
+     * @return int|null
+     */
+    private function getAndroidDataCollectionQuestionnaireId()
+    {
+        $martProject = $this->martProject();
+        if (! $martProject) {
+            return null;
+        }
+
+        // Find the question marked as Android data collection across all schedules
+        $schedules = MartSchedule::forProject($martProject->id)->with('questions')->get();
+
+        foreach ($schedules as $schedule) {
+            $androidQuestion = $schedule->questions()->where('is_android_data_collection', true)->first();
+            if ($androidQuestion) {
+                return $schedule->questionnaire_id;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the success page ID for this project.
+     *
+     * @return int|null
+     */
+    private function getSuccessPageId()
+    {
+        $successPage = $this->pages()->where('is_success_page', true)->first();
+        return $successPage ? $successPage->id : null;
     }
 }
