@@ -31,15 +31,15 @@ class MartStructureResource extends JsonResource
         $project = $this->resource;
         $inputs = json_decode($project->inputs, true);
 
-        // Check if this is a MART project
-        $isMartProject = false;
+        // Check if this is a MART project using the model method
+        $isMartProject = $project->isMartProject();
         $martConfig = null;
         $questions = [];
 
+        // Extract MART config and separate questions
         if (is_array($inputs)) {
             foreach ($inputs as $input) {
                 if (isset($input['type']) && $input['type'] === 'mart') {
-                    $isMartProject = true;
                     $martConfig = $input;
                 } else {
                     // This is a question/input

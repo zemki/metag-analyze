@@ -25,6 +25,7 @@ class MartSchedule extends Model
         'mart_project_id',
         'questionnaire_id',
         'name',
+        'introductory_text',
         'type',
         'timing_config',
         'notification_config',

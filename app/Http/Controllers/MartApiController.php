@@ -440,26 +440,28 @@ class MartApiController extends Controller
             return ['valid' => false, 'errors' => ['Schedule has no questions']];
         }
 
-        // Build question map (position => question) for validation
+        // Build question map by array index (not DB position!)
+        // Mobile app receives scaleId = index + 1, so itemId corresponds to array index
+        $questionsArray = $questions->sortBy('position')->values()->all();
         $questionMap = [];
-        foreach ($questions as $question) {
-            $questionMap[$question->position] = $question;
+        foreach ($questionsArray as $index => $question) {
+            $questionMap[$index] = $question;
         }
 
         // Validate each answer
-        // Note: Mobile app sends answers keyed by itemId (position + 1), so we need to convert
+        // Note: Mobile app sends answers keyed by itemId (scaleIndex + 1)
         foreach ($answers as $itemId => $answer) {
-            // Convert itemId to position: itemId = position + 1, so position = itemId - 1
+            // Convert itemId to array index: itemId = index + 1, so index = itemId - 1
             $itemIdInt = (int) $itemId;
-            $position = $itemIdInt - 1;
+            $index = $itemIdInt - 1;
 
-            if (! isset($questionMap[$position])) {
-                $errors[] = "Question at position $position (itemId $itemId) does not exist in schedule";
+            if (! isset($questionMap[$index])) {
+                $errors[] = "Question with itemId $itemId (index $index) does not exist in schedule";
                 continue;
             }
 
-            $question = $questionMap[$position];
-            $validationResult = $this->validateSingleAnswer($answer, $question, $position);
+            $question = $questionMap[$index];
+            $validationResult = $this->validateSingleAnswer($answer, $question, $index);
 
             if (! $validationResult['valid']) {
                 $errors = array_merge($errors, $validationResult['errors']);
@@ -467,12 +469,12 @@ class MartApiController extends Controller
         }
 
         // Check for missing required questions
-        // Mobile app uses itemId (position + 1) as key
-        foreach ($questions as $question) {
-            $itemId = $question->position + 1;
+        // Mobile app uses itemId (array index + 1) as key
+        foreach ($questionsArray as $index => $question) {
+            $itemId = $index + 1;
             // Check for both string and int keys for compatibility
             if ($question->is_mandatory && ! isset($answers[$itemId]) && ! isset($answers[(string) $itemId])) {
-                $errors[] = "Required question at position {$question->position} (itemId $itemId, '{$question->text}') is missing";
+                $errors[] = "Required question '{$question->text}' (itemId $itemId) is missing";
             }
         }
 

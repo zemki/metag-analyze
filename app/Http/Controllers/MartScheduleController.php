@@ -53,6 +53,7 @@ class MartScheduleController extends Controller
         $validated = $request->validate([
             'questionnaire_id' => 'required|integer',
             'name' => 'required|string|max:255',
+            'introductory_text' => 'nullable|string',
             'type' => 'required|in:single,repeating',
             'start_date_time' => 'nullable|array',
             'end_date_time' => 'nullable|array',
@@ -71,6 +72,9 @@ class MartScheduleController extends Controller
             'questions.*.type' => 'required|in:scale,text,one choice,multiple choice',
             'questions.*.mandatory' => 'required|boolean',
             'questions.*.config' => 'nullable|array',
+            'questions.*.is_ios_data_collection' => 'nullable|boolean',
+            'questions.*.is_android_data_collection' => 'nullable|boolean',
+            'questions.*.item_group' => 'nullable|string',
         ]);
 
         // Get or create MART project
@@ -106,6 +110,7 @@ class MartScheduleController extends Controller
                 'mart_project_id' => $martProject->id,
                 'questionnaire_id' => $validated['questionnaire_id'],
                 'name' => $validated['name'],
+                'introductory_text' => $validated['introductory_text'] ?? null,
                 'type' => $validated['type'],
                 'timing_config' => $timingConfig,
                 'notification_config' => $notificationConfig,
@@ -120,6 +125,9 @@ class MartScheduleController extends Controller
                     'type' => $questionData['type'],
                     'config' => $questionData['config'] ?? [],
                     'is_mandatory' => $questionData['mandatory'],
+                    'is_ios_data_collection' => $questionData['is_ios_data_collection'] ?? false,
+                    'is_android_data_collection' => $questionData['is_android_data_collection'] ?? false,
+                    'item_group' => $questionData['item_group'] ?? null,
                     'version' => 1,
                 ]);
             }
@@ -173,17 +181,27 @@ class MartScheduleController extends Controller
         $this->authorize('update', $mainProject);
 
         $validated = $request->validate([
+            'introductory_text' => 'nullable|string',
             'questions' => 'required|array',
             'questions.*.uuid' => 'required|string',
             'questions.*.text' => 'required|string',
             'questions.*.type' => 'required|in:scale,text,one choice,multiple choice',
             'questions.*.mandatory' => 'required|boolean',
             'questions.*.config' => 'nullable|array',
+            'questions.*.is_ios_data_collection' => 'nullable|boolean',
+            'questions.*.is_android_data_collection' => 'nullable|boolean',
+            'questions.*.item_group' => 'nullable|string',
         ]);
 
         DB::connection('mart')->beginTransaction();
 
         try {
+            // Update schedule introductory text if provided
+            if (isset($validated['introductory_text'])) {
+                $schedule->introductory_text = $validated['introductory_text'];
+                $schedule->save();
+            }
+
             foreach ($validated['questions'] as $questionData) {
                 $question = MartQuestion::find($questionData['uuid']);
 
@@ -198,6 +216,12 @@ class MartScheduleController extends Controller
                     'config' => $questionData['config'] ?? [],
                     'is_mandatory' => $questionData['mandatory'],
                 ]);
+
+                // Update the new fields directly (these don't need versioning)
+                $question->is_ios_data_collection = $questionData['is_ios_data_collection'] ?? false;
+                $question->is_android_data_collection = $questionData['is_android_data_collection'] ?? false;
+                $question->item_group = $questionData['item_group'] ?? null;
+                $question->save();
             }
 
             DB::connection('mart')->commit();

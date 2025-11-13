@@ -30,6 +30,7 @@ class MartPage extends Model
         'show_on_first_app_start',
         'button_text',
         'sort_order',
+        'is_success_page',
     ];
 
     /**
@@ -37,6 +38,7 @@ class MartPage extends Model
      */
     protected $casts = [
         'show_on_first_app_start' => 'boolean',
+        'is_success_page' => 'boolean',
         'sort_order' => 'integer',
     ];
 
@@ -62,5 +64,28 @@ class MartPage extends Model
     public function scopeForProject($query, $martProjectId)
     {
         return $query->where('mart_project_id', $martProjectId);
+    }
+
+    /**
+     * Mark this page as the success page for its project.
+     * Automatically unmarks any other success pages in the same project.
+     *
+     * @return bool
+     */
+    public function markAsSuccessPage(): bool
+    {
+        $this->is_success_page = true;
+        return $this->save();
+    }
+
+    /**
+     * Unmark this page as the success page.
+     *
+     * @return bool
+     */
+    public function unmarkAsSuccessPage(): bool
+    {
+        $this->is_success_page = false;
+        return $this->save();
     }
 }

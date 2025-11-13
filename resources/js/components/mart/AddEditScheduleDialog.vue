@@ -57,6 +57,18 @@
                 />
               </div>
 
+              <!-- Introductory Text -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700">{{ trans('Introductory Text (optional)') }}</label>
+                <textarea
+                    v-model="formData.introductory_text"
+                    rows="3"
+                    class="mt-1 block w-full px-4 py-3 rounded-md shadow-sm border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
+                    :placeholder="trans('Text to display at the top of this questionnaire')"
+                ></textarea>
+                <p class="mt-1 text-xs text-gray-500">{{ trans('This text will be shown at the top of the questionnaire before any questions.') }}</p>
+              </div>
+
               <!-- Schedule Type -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">{{ trans('Schedule Type') }} *</label>
@@ -233,6 +245,20 @@
               </div>
             </div>
 
+            <!-- Introductory Text (for edit mode) -->
+            <div v-if="isEditMode" class="pt-6 border-t border-gray-200">
+              <div>
+                <label class="block text-sm font-medium text-gray-700">{{ trans('Introductory Text (optional)') }}</label>
+                <textarea
+                    v-model="formData.introductory_text"
+                    rows="3"
+                    class="mt-1 block w-full px-4 py-3 rounded-md shadow-sm border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
+                    :placeholder="trans('Text to display at the top of this questionnaire')"
+                ></textarea>
+                <p class="mt-1 text-xs text-gray-500">{{ trans('This text will be shown at the top of the questionnaire before any questions.') }}</p>
+              </div>
+            </div>
+
             <!-- Questions Builder -->
             <div class="pt-6 border-t border-gray-200">
               <div class="flex justify-between items-center mb-4">
@@ -311,6 +337,43 @@
                     <label :for="'mandatory-' + index" class="ml-2 block text-sm text-gray-700">
                       {{ trans('Required question') }}
                     </label>
+                  </div>
+
+                  <!-- iOS Data Collection -->
+                  <div class="flex items-center">
+                    <input
+                        type="checkbox"
+                        :id="'ios-data-collection-' + index"
+                        v-model="question.isIOSDataCollection"
+                        class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
+                    />
+                    <label :for="'ios-data-collection-' + index" class="ml-2 block text-sm text-gray-700">
+                      {{ trans('iOS data collection question') }}
+                    </label>
+                  </div>
+
+                  <!-- Android Data Collection -->
+                  <div class="flex items-center">
+                    <input
+                        type="checkbox"
+                        :id="'android-data-collection-' + index"
+                        v-model="question.isAndroidDataCollection"
+                        class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
+                    />
+                    <label :for="'android-data-collection-' + index" class="ml-2 block text-sm text-gray-700">
+                      {{ trans('Android data collection question') }}
+                    </label>
+                  </div>
+
+                  <!-- Item Group -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700">{{ trans('Item Group (optional)') }}</label>
+                    <input
+                        type="text"
+                        v-model="question.itemGroup"
+                        class="mt-1 block w-full px-4 py-3 rounded-md shadow-sm border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
+                        :placeholder="trans('Enter item group name')"
+                    />
                   </div>
 
                   <!-- Question Type -->
@@ -446,6 +509,7 @@ export default {
       formData: {
         questionnaire_id: this.nextQuestionnaireId,
         name: '',
+        introductory_text: '',
         type: 'single',
         start_date_time: { date: '', time: '09:00' },
         end_date_time: { date: '', time: '21:00' },
@@ -491,6 +555,7 @@ export default {
 
   mounted() {
     if (this.isEditMode) {
+      this.formData.introductory_text = this.schedule.introductory_text || '';
       this.loadScheduleData();
     }
   },
@@ -514,6 +579,9 @@ export default {
           text: q.text || '',
           type: this.mapBackendTypeToFormType(q.type) || '',
           mandatory: q.is_mandatory !== undefined ? q.is_mandatory : true,
+          isIOSDataCollection: q.is_ios_data_collection || false,
+          isAndroidDataCollection: q.is_android_data_collection || false,
+          itemGroup: q.item_group || '',
           answers: config.options || [],
           config: {
             minValue: config.min || 0,
@@ -553,6 +621,9 @@ export default {
         text: '',
         type: '',
         mandatory: false,
+        isIOSDataCollection: false,
+        isAndroidDataCollection: false,
+        itemGroup: '',
         answers: [],
         config: {
           minValue: 0,
@@ -604,6 +675,9 @@ export default {
             text: q.text,
             type: backendType,
             mandatory: q.mandatory,
+            is_ios_data_collection: q.isIOSDataCollection || false,
+            is_android_data_collection: q.isAndroidDataCollection || false,
+            item_group: q.itemGroup || null,
             config: config
           };
 
@@ -616,9 +690,10 @@ export default {
         });
 
         if (this.isEditMode) {
-          // Update questions only
+          // Update questions and introductory text
           await window.axios.put(`/schedules/${this.schedule.id}/questions`, {
-            questions: processedQuestions
+            questions: processedQuestions,
+            introductory_text: this.formData.introductory_text
           });
         } else {
           // Create new schedule
