@@ -8,6 +8,7 @@ use App\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\DB;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -20,27 +21,10 @@ abstract class TestCase extends BaseTestCase
     public Cases $case;
 
     /**
-     * Begin a database transaction on both default and MART connections
-     */
-    public function beginDatabaseTransaction()
-    {
-        $database = $this->app->make('db');
-
-        foreach ($this->connectionsToTransact() as $name) {
-            $connection = $database->connection($name);
-            $connection->beginTransaction();
-        }
-
-        $this->beforeApplicationDestroyed(function () use ($database) {
-            foreach ($this->connectionsToTransact() as $name) {
-                $connection = $database->connection($name);
-                $connection->rollBack();
-            }
-        });
-    }
-
-    /**
-     * The database connections that should have transactions.
+     * Specify which database connections should be wrapped in transactions.
+     * Only use mysql connection to avoid "Too many connections" errors.
+     *
+     * @return array
      */
     protected function connectionsToTransact()
     {
@@ -68,6 +52,15 @@ abstract class TestCase extends BaseTestCase
             'user_id' => $this->user->id,
             'duration' => 'value:24|days:1',
         ]);
+    }
+
+    protected function tearDown(): void
+    {
+        // Explicitly disconnect to release connections
+        DB::disconnect('mysql');
+        DB::disconnect('mart');
+
+        parent::tearDown();
     }
 
     protected function create_user()

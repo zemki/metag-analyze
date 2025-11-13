@@ -4,12 +4,10 @@ namespace Tests\Feature\Api;
 
 use App\Project;
 use App\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class EmailCheckTest extends TestCase
 {
-    use RefreshDatabase;
 
     protected $martProject;
     protected $projectOwner;

@@ -7,12 +7,10 @@ use App\Mart\MartProject;
 use App\Media;
 use App\Project;
 use App\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ProjectDuplicationMartTest extends TestCase
 {
-    use RefreshDatabase;
 
     /** @test */
     public function duplicating_mart_project_preserves_mart_configuration()

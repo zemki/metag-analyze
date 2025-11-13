@@ -3,12 +3,10 @@
 namespace Tests\Feature;
 
 use App\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class CaseUserTest extends TestCase
 {
-    use RefreshDatabase;
 
     /** @test */
     public function a_case_can_have_user()

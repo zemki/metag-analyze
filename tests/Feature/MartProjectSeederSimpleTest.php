@@ -7,12 +7,10 @@ use App\Entry;
 use App\MartPage;
 use App\Project;
 use App\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class MartProjectSeederSimpleTest extends TestCase
 {
-    use RefreshDatabase;
 
     /**
      * Test that we can create a user correctly

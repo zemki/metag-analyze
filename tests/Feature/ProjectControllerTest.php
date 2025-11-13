@@ -7,12 +7,10 @@ use App\Entry;
 use App\Project;
 use App\Role;
 use App\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ProjectControllerTest extends TestCase
 {
-    use RefreshDatabase;
 
     protected function setUp(): void
     {

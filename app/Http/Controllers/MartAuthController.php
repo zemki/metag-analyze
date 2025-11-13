@@ -36,7 +36,7 @@ class MartAuthController extends Controller
     {
         // Validate input
         $request->validate([
-            'email' => 'required|email|max:255',
+            'email' => ['required', 'max:255', new \App\Rules\StrictEmail],
         ]);
 
         $email = strtolower(trim($request->email));
