@@ -5,13 +5,13 @@ namespace Tests;
 use App\Cases;
 use App\Project;
 use App\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Foundation\Testing\WithFaker;
 
 abstract class TestCase extends BaseTestCase
 {
-    use CreatesApplication,RefreshDatabase,WithFaker;
+    use CreatesApplication, DatabaseTransactions, WithFaker;
 
     public User $user;
 
@@ -44,7 +44,7 @@ abstract class TestCase extends BaseTestCase
      */
     protected function connectionsToTransact()
     {
-        return ['mysql', 'mart'];
+        return ['mysql'];
     }
 
     protected function setUp(): void
