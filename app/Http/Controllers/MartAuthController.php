@@ -32,13 +32,9 @@ class MartAuthController extends Controller
      *
      * @return JsonResponse
      */
-    public function checkEmail(Request $request)
+    public function checkEmail(\App\Http\Requests\MartEmailCheckRequest $request)
     {
-        // Validate input
-        $request->validate([
-            'email' => ['required', 'max:255', new \App\Rules\StrictEmail],
-        ]);
-
+        // Validation happens automatically via MartEmailCheckRequest
         $email = strtolower(trim($request->email));
 
         // Add random delay to prevent timing attacks

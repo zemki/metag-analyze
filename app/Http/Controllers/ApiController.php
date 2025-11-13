@@ -231,14 +231,9 @@ class ApiController extends Controller
      *
      * @return JsonResponse
      */
-    public function checkEmailExists(Request $request)
+    public function checkEmailExists(\App\Http\Requests\EmailCheckRequest $request)
     {
-        // Validate input
-        $request->validate([
-            'email' => ['required', 'max:255', new \App\Rules\StrictEmail],
-            'project_id' => 'required|integer|exists:projects,id',
-        ]);
-
+        // Validation happens automatically via EmailCheckRequest
         // Verify project is a MART project
         $project = Project::findOrFail($request->project_id);
         if (! $project->isMartProject()) {

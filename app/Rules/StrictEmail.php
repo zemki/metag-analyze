@@ -15,8 +15,19 @@ class StrictEmail implements Rule
      */
     public function passes($attribute, $value)
     {
-        // Check for null bytes
-        if (strpos($value, "\0") !== false || strpos($value, '%00') !== false) {
+        // Check for null bytes using multiple methods for robustness across PHP versions
+        // Note: JSON parsing may strip null bytes, so we check multiple ways
+        if (strpos($value, "\0") !== false) {
+            return false;
+        }
+
+        // Check for URL-encoded null bytes
+        if (strpos($value, '%00') !== false) {
+            return false;
+        }
+
+        // Check using preg_match for null bytes and control characters
+        if (preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', $value)) {
             return false;
         }
 
