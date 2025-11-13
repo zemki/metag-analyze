@@ -3,12 +3,10 @@
 namespace Tests\Feature\Api;
 
 use App\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ApiLoginTest extends TestCase
 {
-    use RefreshDatabase;
 
     /** @test */
     public function it_returns_token_on_successful_login()

@@ -7,12 +7,10 @@ use App\Entry;
 use App\Media;
 use App\Project;
 use App\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ProjectExportFixTest extends TestCase
 {
-    use RefreshDatabase;
 
     /** @test */
     public function project_export_handles_missing_numberofanswer_property()

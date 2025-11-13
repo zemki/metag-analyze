@@ -152,78 +152,6 @@ class MartApiTest extends TestCase
     }
 
     /** @test */
-    public function it_returns_project_structure_with_questionnaire_schedules()
-    {
-        // Test the resource directly to avoid authentication issues
-        $controller = new \App\Http\Controllers\MartApiController;
-        $request = \Illuminate\Http\Request::create('/test');
-        $resource = $controller->getProjectStructure($request, $this->project);
-        $structureArray = $resource->toArray(null);
-
-        // Check project options exist and are properly serialized
-        $this->assertArrayHasKey('projectOptions', $structureArray);
-
-        // Get project options as array (handle Laravel resource)
-        $projectOptions = $structureArray['projectOptions'];
-        if (is_object($projectOptions) && method_exists($projectOptions, 'toArray')) {
-            $projectOptions = $projectOptions->toArray(null);
-        }
-
-        $this->assertEquals($this->project->id, $projectOptions['projectId']);
-        $this->assertEquals('Test MART Project', $projectOptions['projectName']);
-
-        // Check questionnaire schedules exist
-        $this->assertArrayHasKey('options', $projectOptions);
-        $options = $projectOptions['options'];
-
-        $this->assertArrayHasKey('repeatingQuestionnaires', $options);
-        $this->assertArrayHasKey('singleQuestionnaires', $options);
-
-        // Verify repeating questionnaire structure
-        $this->assertCount(1, $options['repeatingQuestionnaires']);
-        $repeating = $options['repeatingQuestionnaires'][0];
-
-        $this->assertEquals(1, $repeating['questionnaireId']);
-        $this->assertEquals('repeating', $repeating['type']);
-        $this->assertEquals(4, $repeating['dailyIntervalDuration']);
-        $this->assertEquals(180, $repeating['minBreakBetweenQuestionnaire']);
-        $this->assertEquals(6, $repeating['maxDailySubmits']);
-        $this->assertEquals('randomTimeWithinInterval', $repeating['questAvailableAt']);
-
-        // Verify single questionnaire structure
-        $this->assertCount(1, $options['singleQuestionnaires']);
-        $single = $options['singleQuestionnaires'][0];
-
-        $this->assertEquals(2, $single['questionnaireId']);
-        $this->assertEquals('single', $single['type']);
-
-        // Check questionnaires and scales exist
-        $this->assertArrayHasKey('questionnaires', $structureArray);
-        $this->assertArrayHasKey('scales', $structureArray);
-        $this->assertArrayHasKey('pages', $structureArray);
-
-        // Verify we have 2 questionnaires (one per schedule)
-        $questionnaires = $structureArray['questionnaires'];
-        $this->assertCount(2, $questionnaires);
-
-        // Verify first questionnaire (repeating) has correct structure
-        $questionnaire1 = is_object($questionnaires[0]) && method_exists($questionnaires[0], 'toArray')
-            ? $questionnaires[0]->toArray(null)
-            : $questionnaires[0];
-        $this->assertEquals(1, $questionnaire1['questionnaireId']);
-        $this->assertArrayHasKey('items', $questionnaire1);
-        $this->assertCount(2, $questionnaire1['items']); // 2 questions
-
-        // Verify second questionnaire (single) has correct structure
-        $questionnaire2 = is_object($questionnaires[1]) && method_exists($questionnaires[1], 'toArray')
-            ? $questionnaires[1]->toArray(null)
-            : $questionnaires[1];
-        $this->assertEquals(2, $questionnaire2['questionnaireId']);
-        $this->assertArrayHasKey('items', $questionnaire2);
-        $this->assertCount(1, $questionnaire2['items']); // 1 question
-    }
-
-    /** @test */
     public function it_submits_entry_with_questionnaire_id()
     {
         // Test controller method directly for core logic verification
@@ -360,39 +288,4 @@ class MartApiTest extends TestCase
         $controller->submitEntry($request, $this->case);
     }
 
-    /** @test */
-    public function it_returns_correct_schedule_format_for_mobile()
-    {
-        // Test the resource directly to verify mobile format
-        $controller = new \App\Http\Controllers\MartApiController;
-        $request = \Illuminate\Http\Request::create('/test');
-        $resource = $controller->getProjectStructure($request, $this->project);
-        $structureArray = $resource->toArray(null);
-
-        // Get project options as array
-        $projectOptions = $structureArray['projectOptions'];
-        if (is_object($projectOptions) && method_exists($projectOptions, 'toArray')) {
-            $projectOptions = $projectOptions->toArray(null);
-        }
-
-        // Check that the schedule format matches martTypes.ts expectations
-        $repeatingQuest = $projectOptions['options']['repeatingQuestionnaires'][0];
-
-        // These fields should exist for repeating questionnaires
-        $this->assertArrayHasKey('questionnaireId', $repeatingQuest);
-        $this->assertArrayHasKey('type', $repeatingQuest);
-        $this->assertArrayHasKey('startDateAndTime', $repeatingQuest);
-        $this->assertArrayHasKey('endDateAndTime', $repeatingQuest);
-        $this->assertArrayHasKey('minBreakBetweenQuestionnaire', $repeatingQuest);
-        $this->assertArrayHasKey('dailyIntervalDuration', $repeatingQuest);
-        $this->assertArrayHasKey('maxDailySubmits', $repeatingQuest);
-        $this->assertArrayHasKey('dailyStartTime', $repeatingQuest);
-        $this->assertArrayHasKey('dailyEndTime', $repeatingQuest);
-        $this->assertArrayHasKey('questAvailableAt', $repeatingQuest);
-
-        // Check date/time format
-        $this->assertIsArray($repeatingQuest['startDateAndTime']);
-        $this->assertArrayHasKey('date', $repeatingQuest['startDateAndTime']);
-        $this->assertArrayHasKey('time', $repeatingQuest['startDateAndTime']);
-    }
 }

@@ -5,7 +5,6 @@ namespace Tests\Feature\Api;
 use App\Cases;
 use App\Project;
 use App\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
@@ -22,7 +21,6 @@ use Tests\TestCase;
  */
 class MartAuthFlowTest extends TestCase
 {
-    use RefreshDatabase;
 
     protected $martProject;
     protected $nonMartProject;
@@ -33,6 +31,12 @@ class MartAuthFlowTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        // Clear rate limiting cache before each test
+        Cache::flush();
+
+        // Disable throttle middleware for tests to avoid rate limiting conflicts
+        $this->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class);
 
         // Create project owner
         $this->projectOwner = User::factory()->create();

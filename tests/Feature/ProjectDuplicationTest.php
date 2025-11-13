@@ -7,12 +7,10 @@ use App\Entry;
 use App\Media;
 use App\Project;
 use App\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ProjectDuplicationTest extends TestCase
 {
-    use RefreshDatabase;
 
     /** @test */
     public function duplicating_then_deleting_original_project_does_not_affect_duplicated_project_data()
