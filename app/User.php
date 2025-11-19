@@ -4,6 +4,9 @@ namespace App;
 
 use App\Mail\VerificationEmail;
 use App\Notifications\notifyUserforNewCaseWhenAlreadyRegistered;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasName;
+use Filament\Panel;
 use Helper;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,7 +20,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Mail;
 
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable implements MustVerifyEmail, FilamentUser, HasName
 {
     use HasFactory, Notifiable, SoftDeletes;
 
@@ -144,6 +147,37 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isAdmin()
     {
         return in_array('admin', $this->roles()->pluck('roles.name')->toArray());
+    }
+
+    /**
+     * Determine if the user can access the Filament admin panel.
+     *
+     * @param  Panel  $panel
+     * @return bool
+     */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->isAdmin();
+    }
+
+    /**
+     * Get the user's display name for Filament.
+     *
+     * @return string
+     */
+    public function getFilamentName(): string
+    {
+        return $this->email ?? 'Unknown User';
+    }
+
+    /**
+     * Get the user's avatar URL for Filament.
+     *
+     * @return string|null
+     */
+    public function getFilamentAvatarUrl(): ?string
+    {
+        return null;
     }
 
     /**

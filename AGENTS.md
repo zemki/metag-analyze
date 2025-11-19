@@ -162,6 +162,42 @@ curl -X POST "https://metag-analyze.test/mart-api/cases/5/submit" \
   -d '{"projectId":1,"questionnaireId":1,...}'
 ```
 
+## Filament Admin Panel (v4.x)
+
+### IMPORTANT: Always Check Filament Docs First
+- Filament documentation available at: `~/.claude/skills/docs-analyzer/references/filament-4x/`
+- ALWAYS read the docs before implementing Filament features
+- Filament 4.x has breaking changes from v3.x
+
+### Common Filament 4.x Patterns
+- Use `Schema` instead of `Form` in form methods:
+  ```php
+  public function form(Schema $schema): Schema
+  {
+      return $schema->components([...]);
+  }
+  ```
+- Use methods instead of property overrides (PHP 8.3 strict typing):
+  ```php
+  public static function getNavigationIcon(): ?string
+  {
+      return 'heroicon-o-cog-6-tooth';
+  }
+
+  public static function getNavigationLabel(): string
+  {
+      return 'Settings';
+  }
+  ```
+- User model must implement `FilamentUser` and `HasName` interfaces
+- User model needs `getFilamentName()` and `canAccessPanel(Panel $panel)` methods
+
+### Settings System
+- Settings stored in `settings` table with key-value pairs
+- Use `Setting::get('key', $default)` to retrieve values
+- Use `Setting::set('key', $value, $userId)` to update values
+- Settings page at `/admin/settings` for admins only
+
 ## Project-Specific Warnings
 
 - Completed cases reject submissions (422 error)
