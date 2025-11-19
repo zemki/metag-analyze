@@ -207,6 +207,43 @@
               </div>
             </div>
           </div>
+
+          <!-- Collapsible Schedule Timeline (for repeating schedules) -->
+          <div v-if="schedule.type === 'repeating' && hasScheduleData(schedule)" class="mt-4">
+            <button
+              @click="toggleScheduleTimeline(schedule.id)"
+              class="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+            >
+              <div class="flex items-center space-x-2">
+                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                <span>{{ expandedSchedules[schedule.id] ? trans('Hide Schedule Timeline') : trans('View Schedule Timeline') }}</span>
+              </div>
+              <svg
+                class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                :class="{ 'rotate-180': expandedSchedules[schedule.id] }"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            <!-- Schedule Preview Component -->
+            <div v-if="expandedSchedules[schedule.id]" class="mt-3">
+              <SchedulePreview
+                :type="schedule.type"
+                :daily-interval-duration="getTimingConfig(schedule, 'daily_interval_duration') || 4"
+                :daily-start-time="getTimingConfig(schedule, 'daily_start_time') || '09:00'"
+                :daily-end-time="getTimingConfig(schedule, 'daily_end_time') || '21:00'"
+                :min-break-between="getTimingConfig(schedule, 'min_break_between') || 0"
+                :max-daily-submits="getTimingConfig(schedule, 'max_daily_submits') || 1"
+                :quest-available-at="getTimingConfig(schedule, 'quest_available_at') || 'startOfInterval'"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -233,13 +270,15 @@
 <script>
 import AddEditQuestionnaireDialog from './AddEditQuestionnaireDialog.vue';
 import VersionHistoryModal from './VersionHistoryModal.vue';
+import SchedulePreview from './SchedulePreview.vue';
 
 export default {
   name: 'MartQuestionnaireManager',
 
   components: {
     AddEditQuestionnaireDialog,
-    VersionHistoryModal
+    VersionHistoryModal,
+    SchedulePreview
   },
 
   props: {
@@ -259,7 +298,8 @@ export default {
       loading: true,
       showScheduleDialog: false,
       showHistoryModal: false,
-      selectedSchedule: null
+      selectedSchedule: null,
+      expandedSchedules: {} // Track which schedules have timeline expanded
     };
   },
 
@@ -319,6 +359,19 @@ export default {
       this.selectedSchedule = null;
     },
 
+    toggleScheduleTimeline(scheduleId) {
+      if (!scheduleId) {
+        console.error('toggleScheduleTimeline called without scheduleId');
+        return;
+      }
+      try {
+        // Vue 3: Direct assignment is reactive
+        this.expandedSchedules[scheduleId] = !this.expandedSchedules[scheduleId];
+      } catch (error) {
+        console.error('Error toggling schedule timeline:', error);
+      }
+    },
+
     handleScheduleSaved() {
       this.closeScheduleDialog();
       this.loadSchedules();
@@ -347,6 +400,15 @@ export default {
     getNotificationConfig(schedule, key) {
       if (!schedule.notification_config) return null;
       return schedule.notification_config[key];
+    },
+
+    hasScheduleData(schedule) {
+      // Check if schedule has the minimum timing data needed for visualizer
+      if (!schedule.timing_config) return false;
+      const timing = schedule.timing_config;
+      return timing.daily_interval_duration &&
+             timing.daily_start_time &&
+             timing.daily_end_time;
     },
 
     formatDateTime(dateTime) {

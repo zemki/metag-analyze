@@ -212,20 +212,30 @@ export default {
     },
     intervals() {
       const result = [];
+
+      // Safety checks
+      if (!this.dailyIntervalDuration || this.windowDuration === 0 || this.intervalsPerDay === 0) {
+        return result;
+      }
+
       const totalMinutes = this.windowDuration * 60;
       const intervalMinutes = this.dailyIntervalDuration * 60;
 
-      for (let i = 0; i < this.intervalsPerDay; i++) {
-        const startMinutes = i * intervalMinutes;
-        const leftPercent = (startMinutes / totalMinutes) * 100;
-        const widthPercent = (intervalMinutes / totalMinutes) * 100;
-        const startTime = this.addMinutesToTime(this.dailyStartTime, startMinutes);
+      try {
+        for (let i = 0; i < this.intervalsPerDay; i++) {
+          const startMinutes = i * intervalMinutes;
+          const leftPercent = (startMinutes / totalMinutes) * 100;
+          const widthPercent = (intervalMinutes / totalMinutes) * 100;
+          const startTime = this.addMinutesToTime(this.startTime, startMinutes);
 
-        result.push({
-          leftPercent,
-          widthPercent,
-          startTime
-        });
+          result.push({
+            leftPercent,
+            widthPercent,
+            startTime
+          });
+        }
+      } catch (error) {
+        console.error('Error calculating intervals:', error);
       }
 
       return result;
