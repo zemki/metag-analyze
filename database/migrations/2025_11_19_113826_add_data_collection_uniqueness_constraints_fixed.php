@@ -40,10 +40,10 @@ return new class extends Migration
                 BEGIN
                     IF NEW.is_ios_data_collection = TRUE THEN
                         UPDATE mart_questions mq
-                        INNER JOIN mart_schedules ms ON mq.mart_schedule_id = ms.id
+                        INNER JOIN mart_schedules ms ON mq.schedule_id = ms.id
                         SET mq.is_ios_data_collection = FALSE
                         WHERE ms.mart_project_id = (
-                            SELECT mart_project_id FROM mart_schedules WHERE id = NEW.mart_schedule_id
+                            SELECT mart_project_id FROM mart_schedules WHERE id = NEW.schedule_id
                         )
                         AND mq.is_ios_data_collection = TRUE;
                     END IF;
@@ -57,10 +57,10 @@ return new class extends Migration
                 BEGIN
                     IF NEW.is_ios_data_collection = TRUE AND (OLD.is_ios_data_collection = FALSE OR OLD.is_ios_data_collection IS NULL) THEN
                         UPDATE mart_questions mq
-                        INNER JOIN mart_schedules ms ON mq.mart_schedule_id = ms.id
+                        INNER JOIN mart_schedules ms ON mq.schedule_id = ms.id
                         SET mq.is_ios_data_collection = FALSE
                         WHERE ms.mart_project_id = (
-                            SELECT mart_project_id FROM mart_schedules WHERE id = NEW.mart_schedule_id
+                            SELECT mart_project_id FROM mart_schedules WHERE id = NEW.schedule_id
                         )
                         AND mq.uuid != NEW.uuid
                         AND mq.is_ios_data_collection = TRUE;
@@ -76,10 +76,10 @@ return new class extends Migration
                 BEGIN
                     IF NEW.is_android_data_collection = TRUE THEN
                         UPDATE mart_questions mq
-                        INNER JOIN mart_schedules ms ON mq.mart_schedule_id = ms.id
+                        INNER JOIN mart_schedules ms ON mq.schedule_id = ms.id
                         SET mq.is_android_data_collection = FALSE
                         WHERE ms.mart_project_id = (
-                            SELECT mart_project_id FROM mart_schedules WHERE id = NEW.mart_schedule_id
+                            SELECT mart_project_id FROM mart_schedules WHERE id = NEW.schedule_id
                         )
                         AND mq.is_android_data_collection = TRUE;
                     END IF;
@@ -93,10 +93,10 @@ return new class extends Migration
                 BEGIN
                     IF NEW.is_android_data_collection = TRUE AND (OLD.is_android_data_collection = FALSE OR OLD.is_android_data_collection IS NULL) THEN
                         UPDATE mart_questions mq
-                        INNER JOIN mart_schedules ms ON mq.mart_schedule_id = ms.id
+                        INNER JOIN mart_schedules ms ON mq.schedule_id = ms.id
                         SET mq.is_android_data_collection = FALSE
                         WHERE ms.mart_project_id = (
-                            SELECT mart_project_id FROM mart_schedules WHERE id = NEW.mart_schedule_id
+                            SELECT mart_project_id FROM mart_schedules WHERE id = NEW.schedule_id
                         )
                         AND mq.uuid != NEW.uuid
                         AND mq.is_android_data_collection = TRUE;
