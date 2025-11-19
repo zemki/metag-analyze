@@ -36,7 +36,7 @@
                     <input
                         id="invitee"
                         name="invitee"
-                        class="block w-full py-2 pl-3 pr-10 leading-5 placeholder-gray-500 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-600 focus:border-blue-600 sm:text-sm"
+                        class="block w-full py-2 pl-3 pr-10 leading-5 placeholder-gray-500 bg-white border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-600 focus:border-blue-600 sm:text-sm"
                         :placeholder="trans('Enter email and press Enter or click Invite')"
                         v-model="toInvite"
                         autocomplete="off"
@@ -44,7 +44,7 @@
                     />
                     <button
                         :disabled="loading"
-                        class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-xs hover:bg-blue-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                         @click="invite"
                     >
                         <span v-if="loading">Loading...</span>

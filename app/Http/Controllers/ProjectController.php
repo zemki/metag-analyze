@@ -260,6 +260,10 @@ class ProjectController extends Controller
         }
         $data['breadcrumb'] = ['#' => 'Create a Project'];
 
+        // Get setting and ensure it's boolean
+        $martEnabledValue = \App\Setting::get('mart_enabled', true);
+        $data['martEnabled'] = filter_var($martEnabledValue, FILTER_VALIDATE_BOOLEAN);
+
         return view('projects.create', $data);
     }
 

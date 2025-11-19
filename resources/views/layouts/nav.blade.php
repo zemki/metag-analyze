@@ -47,7 +47,7 @@
 
                                 <button ref="usermenu" @click="showdropdown('dropdownLogout')"
                                         @mouseover="showdropdown('dropdownLogout')" type="button"
-                                        class="flex text-sm rounded-full bg-sky-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-sky-500 focus:ring-white"
+                                        class="flex text-sm rounded-full bg-sky-500 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-offset-sky-500 focus:ring-white"
                                         id="user-menu-button" aria-expanded="false" aria-haspopup="true">
                                     <span class="sr-only">Open user menu</span>
                                     <img class="w-8 h-8 rounded-full" src="{{\Gravatar::get(Auth::user()->email)}}"
@@ -56,7 +56,7 @@
                             </div>
 
                             <div id="dropdownLogout"
-                                 class="absolute right-0 hidden w-48 py-1 mt-2 origin-top-right bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                                 class="absolute right-0 hidden w-48 py-1 mt-2 origin-top-right bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-hidden"
                                  role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button"
                                  tabindex="-1">
                                 <button title="Change Email"

@@ -12,14 +12,14 @@
                 <label class="block text-sm font-medium text-gray-700">
                     {{__('Search')}}
                     <input placeholder="Search Translations..." wire:model="search"
-                        class="block w-full rounded-md border-gray-300 shadow-sm border focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2"
+                        class="block w-full rounded-md border-gray-300 shadow-xs border focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2"
                         type="text" />
                 </label>
             </div>
             <div class="w-1/3 float-right">
                 <label for="perPage" class="block text-sm font-medium text-gray-700">{{__('Per Page:')}}&nbsp;</label>
                 <select id="perPage" name="perPage" wire:model="perPage" wire:model="perPage"
-                    class="mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm @error('localeToAdd') border-red-800 @enderror">
+                    class="mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-blue-500 focus:outline-hidden focus:ring-blue-500 sm:text-sm @error('localeToAdd') border-red-800 @enderror">
                     <option>10</option>
                     <option>25</option>
                     <option>50</option>
@@ -137,7 +137,7 @@
                                 <td class="whitespace-pre-line py-4 pl-4 pr-4 text-sm text-gray-500 sm:pr-6">
                                     @if(!empty($translation->locales))
                                     <button type="button"
-                                        class="bg-transparent border focus:border-gray-900 border-gray-500 text-gray-500 hover:text-blue-500 font-bold py-2 px-4 rounded-full focus:outline-none"
+                                        class="bg-transparent border focus:border-gray-900 border-gray-500 text-gray-500 hover:text-blue-500 font-bold py-2 px-4 rounded-full focus:outline-hidden"
                                         wire:click="$emit('showModal',{{$translation->id}})">
                                         {{__('Manage Translations')}}
                                     </button>

@@ -45,7 +45,7 @@
           <h1 class="text-lg font-medium mr-4">{{ trans("Projects") }}</h1>
           <a :href="productionUrl+'/projects/new'" :title="trans('Create a new Project')">
             <button type="button"
-                    class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-500 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-500 border border-transparent rounded-md shadow-xs hover:bg-blue-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
               <svg class="w-5 h-5 mr-2 -ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
                    fill="currentColor" aria-hidden="true">
                 <path fill-rule="evenodd"
@@ -76,7 +76,7 @@
               </div>
               <input type="search" id="search-studies" name="search-projects" v-model="search"
                      autocomplete="off"
-                     class="block w-full py-2 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-500 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-0 focus:border-blue-500 sm:text-sm"
+                     class="block w-full py-2 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-500 bg-white border border-gray-300 rounded-md focus:outline-hidden focus:ring-0 focus:border-blue-500 sm:text-sm"
                      :placeholder="trans('Search Projects')"/>
             </div>
           </div>
@@ -153,7 +153,7 @@
               <a
                   title="manage Project"
                   :href="productionUrl + '/projects/' + Project.id"
-                  class="block text-center w-full px-3 py-1.5 text-sm font-medium text-white bg-blue-500 border border-transparent rounded-md shadow-sm cursor-pointer hover:bg-blue-700 hover:text-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  class="block text-center w-full px-3 py-1.5 text-sm font-medium text-white bg-blue-500 border border-transparent rounded-md shadow-xs cursor-pointer hover:bg-blue-700 hover:text-indigo-200 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 {{ trans("Manage Project") }}
               </a>
@@ -162,21 +162,21 @@
                   v-if="Project.authiscreator"
                   href="#"
                   @click="confirmDelete(Project.id, Project.name)"
-                  class="block text-center w-full px-3 py-1.5 text-sm font-medium text-white bg-red-500 rounded-md shadow-sm hover:bg-red-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  class="block text-center w-full px-3 py-1.5 text-sm font-medium text-white bg-red-500 rounded-md shadow-xs hover:bg-red-300 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
               >{{ trans("Delete Project") }}</a
               >
               <a
                   v-if="Project.authiscreator"
                   href="#"
                   @click="confirmduplicate(Project.id, Project.name)"
-                  class="block text-center w-full px-3 py-1.5 text-sm font-medium text-white bg-blue-500 rounded-md shadow-sm hover:bg-blue-700 hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  class="block text-center w-full px-3 py-1.5 text-sm font-medium text-white bg-blue-500 rounded-md shadow-xs hover:bg-blue-700 hover:text-gray-200 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >{{ trans("Duplicate Project") }}</a
               >
               <a
                   v-if="!Project.authiscreator"
                   href="#"
                   @click="confirmLeaveProject(loggedUser, Project.id)"
-                  class="block text-center w-full px-3 py-1.5 text-sm font-medium text-white bg-red-500 rounded-md shadow-sm hover:bg-red-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  class="block text-center w-full px-3 py-1.5 text-sm font-medium text-white bg-red-500 rounded-md shadow-xs hover:bg-red-300 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
               >{{ trans("Leave Project") }}</a
               >
             </div>

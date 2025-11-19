@@ -53,7 +53,7 @@
 
         <div class="w-1/5 inline-block ml-2">
             <select wire:model="stringToBeTranslatedField" name="stringToBeTranslatedField"
-                class="bg-white block appearance-none w-full border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:border-gray-500 @error('stringToBeTranslatedField') border-red-300 @enderror">
+                class="bg-white block appearance-none w-full border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-hidden focus:border-gray-500 @error('stringToBeTranslatedField') border-red-300 @enderror">
                 @foreach($csv_header as $key => $tableField)
                 <option value="{{$key}}">{{$tableField}}</option>
                 @endforeach
@@ -68,7 +68,7 @@
 
         <div class="w-1/5 inline-block ml-2">
             <select wire:model="languageField" name="languageField"
-                class="bg-white block appearance-none w-full border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:border-gray-500 @error('languageField') border-red-300 @enderror">
+                class="bg-white block appearance-none w-full border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-hidden focus:border-gray-500 @error('languageField') border-red-300 @enderror">
                 @foreach($csv_header as $key => $tableField)
                 <option value="{{$key}}">{{$tableField}}</option>
                 @endforeach
@@ -83,7 +83,7 @@
 
         <div class="w-1/5 inline-block ml-2">
             <select wire:model="translatedStringField" name="translatedStringField"
-                class="bg-white block appearance-none w-full border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:border-gray-500  @error('translatedStringField') border-red-300 @enderror">
+                class="bg-white block appearance-none w-full border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-hidden focus:border-gray-500  @error('translatedStringField') border-red-300 @enderror">
                 @foreach($csv_header as $key => $tableField)
                 <option value="{{$key}}">{{$tableField}}</option>
                 @endforeach
@@ -98,7 +98,7 @@
 
         <div class="w-1/5 inline-block ml-2">
             <select name="projectLabelString" wire:model="projectLabelString"
-                class="bg-white block appearance-none w-full border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:border-gray-500 ">
+                class="bg-white block appearance-none w-full border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-hidden focus:border-gray-500 ">
                 @foreach($csv_header as $key => $tableField)
                 <option value="{{$key}}">{{$tableField}}</option>
                 @endforeach

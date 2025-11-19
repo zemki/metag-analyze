@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Setting;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -40,6 +41,7 @@ class Settings extends Page implements HasForms
         $this->form->fill([
             'mart_enabled' => Setting::get('mart_enabled', true),
             'max_studies_per_user' => Setting::get('max_studies_per_user', 100),
+            'api_v2_cutoff_date' => Setting::get('api_v2_cutoff_date', '2025-12-21'),
         ]);
     }
 
@@ -58,6 +60,13 @@ class Settings extends Page implements HasForms
                     ->minValue(1)
                     ->maxValue(1000)
                     ->required(),
+
+                DatePicker::make('api_v2_cutoff_date')
+                    ->label('API V2 Cutoff Date')
+                    ->helperText('Projects created before this date use API v1 (media field), after use API v2 (entity field)')
+                    ->required()
+                    ->displayFormat('Y-m-d')
+                    ->format('Y-m-d'),
             ])
             ->statePath('data');
     }
@@ -68,6 +77,10 @@ class Settings extends Page implements HasForms
 
         Setting::set('mart_enabled', $data['mart_enabled'] ? '1' : '0', auth()->id());
         Setting::set('max_studies_per_user', $data['max_studies_per_user'], auth()->id());
+        Setting::set('api_v2_cutoff_date', $data['api_v2_cutoff_date'], auth()->id(), 'date');
+
+        // Clear dashboard stats cache so changes reflect immediately
+        \Illuminate\Support\Facades\Cache::forget('dashboard_stats');
 
         Notification::make()
             ->success()

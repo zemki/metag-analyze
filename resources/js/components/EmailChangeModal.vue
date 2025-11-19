@@ -12,7 +12,7 @@
         <input
           v-model="email"
           type="email"
-          class="block w-full px-4 py-2 leading-normal bg-white border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring focus:border-blue-500"
+          class="block w-full px-4 py-2 leading-normal bg-white border border-gray-300 rounded-lg appearance-none focus:outline-hidden focus:ring focus:border-blue-500"
           :class="{ 'border-red-500': !isValidEmail && email.length > 0 }"
           :aria-label="'New email address'"
           :placeholder="'Enter new email address'"

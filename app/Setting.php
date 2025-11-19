@@ -46,9 +46,10 @@ class Setting extends Model
      * @param  string  $key
      * @param  mixed  $value
      * @param  int|null  $userId
+     * @param  string|null  $type
      * @return bool
      */
-    public static function set($key, $value, $userId = null)
+    public static function set($key, $value, $userId = null, $type = null)
     {
         $setting = static::where('key', $key)->first();
 
@@ -56,10 +57,21 @@ class Setting extends Model
             return false;
         }
 
+        // Auto-detect type if not provided
+        if ($type === null) {
+            $type = match (true) {
+                is_bool($value) || in_array($value, ['0', '1', 0, 1], true) => 'boolean',
+                is_int($value) => 'integer',
+                is_float($value) => 'float',
+                default => 'string',
+            };
+        }
+
         return static::updateOrCreate(
             ['key' => $key],
             [
                 'value' => $value,
+                'type' => $type,
                 'updated_by' => $userId ?? auth()->id(),
             ]
         );

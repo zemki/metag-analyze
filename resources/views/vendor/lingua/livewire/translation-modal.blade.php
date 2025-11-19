@@ -1,6 +1,6 @@
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     @if($translation != "")
-    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+    <div class="fixed inset-0 bg-gray-500/75 transition-opacity"></div>
 
     <div class="fixed inset-0 z-10 overflow-y-auto">
         <div
@@ -40,7 +40,7 @@
                     <div class="flex justify-center pt-2">
 
                         <button type="button" wire:click="$emit('closeModal')"
-                            class=" relative -ml-px inline-flex items-center rounded-md border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            class=" relative -ml-px inline-flex items-center rounded-md border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500">
                             <span class="sr-only">Close</span>
                             <!-- Heroicon name: mini/chevron-right -->
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"

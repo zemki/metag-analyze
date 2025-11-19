@@ -8,7 +8,7 @@
   <div class="px-4 py-5 sm:p-6">
     <div class="block my-4">
       <button type="button" wire:click="buildJson()"
-        class="text-center inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">{{__('Build Json Files')}}</button>
+        class="text-center inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white hover:bg-blue-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">{{__('Build Json Files')}}</button>
     </div>
     <livewire:export-to-csv>
 
@@ -39,7 +39,7 @@
       </div>
       <div class="block my-4">
         <button type="button" wire:click="downloadjsons()"
-          class="text-center inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">{{__('Download Json Files')}}</button>
+          class="text-center inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white hover:bg-blue-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">{{__('Download Json Files')}}</button>
 
 
       </div>

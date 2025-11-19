@@ -7,7 +7,7 @@
         @foreach($locales as $locale)
         <button type="button"
             wire:click="$emit('confirmDelete','locale','{{$locale}}','{{implode(",",$locales)}}','The translation file will be also deleted.')"
-            class="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+            class="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white shadow-xs hover:bg-blue-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
             {{$locale}}
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                 stroke="currentColor" class="ml-3 -mr-1 h-5 w-5">
@@ -24,7 +24,7 @@
             <div>
                 <label for="locale" class="text-2xl font-bold text-gray-800 opacity-75">Language</label>
                 <select id="locale" name="locale" wire:model="localeToAdd"
-                    class="mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm @error('localeToAdd') border-red-800 @enderror">
+                    class="mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-blue-500 focus:outline-hidden focus:ring-blue-500 sm:text-sm @error('localeToAdd') border-red-800 @enderror">
                     @foreach(config('lingua.locales-list') as $value)
                     <option value="{{$value['locale']}}">{{$value['isolanguagename']}} - {{$value['nativename']}} -
                         {{$value['locale']}}
@@ -39,7 +39,7 @@
         </div>
         <div class="block my-4">
             <button type="button" wire:click="addLocale()"
-                class="text-center inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">{!!
+                class="text-center inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white hover:bg-blue-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">{!!
                 __('Add&nbsp;Locale') !!}</button>
         </div>
 

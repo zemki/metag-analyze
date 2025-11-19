@@ -10,7 +10,7 @@
                 class="block text-sm font-medium text-gray-700">{{__('Path to search for strings')}}</label>
             <div class="mt-1">
                 <input type="path" name="path" id="path" wire:model="path"
-                    class="block w-full rounded-md border-gray-300 shadow-sm border focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 @error('path') border-red-800 @enderror"
+                    class="block w-full rounded-md border-gray-300 shadow-xs border focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 @error('path') border-red-800 @enderror"
                     placeholder="{{__('Path')}}">
             </div>
         </div>
@@ -19,7 +19,7 @@
             <label for="project" class="block text-sm font-medium text-gray-700">{{__('Project Name')}}</label>
             <div class="mt-1">
                 <input type="project" name="project" id="project" wire:model="project"
-                    class="block w-full rounded-md border-gray-300 shadow-sm border focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2"
+                    class="block w-full rounded-md border-gray-300 shadow-xs border focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2"
                     placeholder="{{__('Project Name')}}">
             </div>
         </div>
@@ -28,7 +28,7 @@
             <label for="Regex"
                 class="block text-sm font-medium text-gray-700">{{__('Which pattern you want to scan?')}}</label>
             <select id="Regex" name="Regex" wire:model="pattern"
-                class="mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm @error('localeToAdd') border-red-800 @enderror">
+                class="mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-blue-500 focus:outline-hidden focus:ring-blue-500 sm:text-sm @error('localeToAdd') border-red-800 @enderror">
                 @foreach(config('lingua.regex') as $key => $value)
                 <option value="{{$value}}">{{$key}}</option>
                 @endforeach
@@ -37,10 +37,10 @@
 
         <div class="my-2 flex flex-col space-y-4 text-center">
             <button type="button" wire:click="scan()"
-                class="text-center inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Scan</button>
+                class="text-center inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white hover:bg-blue-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Scan</button>
             <button type="button"
                 wire:click="$emit('confirmDelete','translations','all the translations','','<p class=\'bg-red-100 border font-bold border-red-400 text-red-700 px-4 py-3 rounded relative\'>CAREFUL!</p> This will delete everything, including files.')"
-                class="inline-flex items-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">{{__('Delete all translations')}}</button>
+                class="inline-flex items-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white hover:bg-red-700 focus:outline-hidden focus:ring-2 focus:ring-red-500 focus:ring-offset-2">{{__('Delete all translations')}}</button>
 
 
         </div>

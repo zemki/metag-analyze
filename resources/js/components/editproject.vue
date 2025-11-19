@@ -41,7 +41,7 @@
           :disabled="!editable"
           id="name"
           v-model="projectData.name"
-          class="block w-full px-4 py-3 rounded-md shadow-sm transition duration-150"
+          class="block w-full px-4 py-3 rounded-md shadow-xs transition duration-150"
           :class="[
           editable
             ? 'border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200'
@@ -63,7 +63,7 @@
           id="description"
           v-model="projectData.description"
           rows="4"
-          class="block w-full px-4 py-3 rounded-md shadow-sm transition duration-150"
+          class="block w-full px-4 py-3 rounded-md shadow-xs transition duration-150"
           :class="[
           editable
             ? 'border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200'
@@ -85,7 +85,7 @@
           :disabled="!editable"
           id="entityName"
           v-model="projectData.entityName"
-          class="block w-full px-4 py-3 rounded-md shadow-sm transition duration-150"
+          class="block w-full px-4 py-3 rounded-md shadow-xs transition duration-150"
           :class="editable ? 'border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200' : 'bg-gray-50 border-gray-200'"
           placeholder="Enter name for entity field (default: 'entity')"
       />
@@ -121,7 +121,7 @@
               type="text"
               v-model="projectData.media[index]"
               :disabled="!editable"
-              class="flex-1 px-4 py-3 rounded-md shadow-sm transition duration-150"
+              class="flex-1 px-4 py-3 rounded-md shadow-xs transition duration-150"
               :class="editable ? 'border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200' : 'bg-gray-50 border-gray-200'"
               :placeholder="isLegacyProject ? trans('Enter media') : `${trans('Enter')} ${projectData.entityName || trans('entity')}`"
           />
@@ -187,7 +187,7 @@
                 v-if="editable"
                 type="button"
                 @click="addMartPage"
-                class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -224,7 +224,7 @@
                   type="text"
                   v-model="page.name"
                   :disabled="!editable"
-                  class="mt-1 block w-full px-4 py-3 rounded-md shadow-sm transition duration-150"
+                  class="mt-1 block w-full px-4 py-3 rounded-md shadow-xs transition duration-150"
                   :class="[
                   editable
                     ? 'border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200'
@@ -242,7 +242,7 @@
                   v-model="page.content"
                   :disabled="!editable"
                   rows="6"
-                  class="mt-1 block w-full px-4 py-3 rounded-md shadow-sm transition duration-150"
+                  class="mt-1 block w-full px-4 py-3 rounded-md shadow-xs transition duration-150"
                   :class="[
                   editable
                     ? 'border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200'
@@ -261,7 +261,7 @@
                   type="text"
                   v-model="page.buttonText"
                   :disabled="!editable"
-                  class="mt-1 block w-full px-4 py-3 rounded-md shadow-sm transition duration-150"
+                  class="mt-1 block w-full px-4 py-3 rounded-md shadow-xs transition duration-150"
                   :class="[
                   editable
                     ? 'border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200'
@@ -329,7 +329,7 @@
                 type="text"
                 v-model="input.name"
                 :disabled="!editable"
-                class="mt-1 block w-full px-4 py-3 rounded-md shadow-sm transition duration-150"
+                class="mt-1 block w-full px-4 py-3 rounded-md shadow-xs transition duration-150"
                 :class="[
                 editable
                   ? 'border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200'
@@ -356,7 +356,7 @@
             <select
                 v-model="input.type"
                 :disabled="!editable"
-                class="mt-1 block w-full px-4 py-3 rounded-md shadow-sm transition duration-150"
+                class="mt-1 block w-full px-4 py-3 rounded-md shadow-xs transition duration-150"
                 :class="[
                 editable
                   ? 'border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200'
@@ -379,7 +379,7 @@
                   v-model="input.answers[aIndex]"
                   @keyup="handleAdditionalInputs(index, aIndex, answer)"
                   :disabled="!editable"
-                  class="flex-1 px-4 py-3 rounded-md shadow-sm transition duration-150"
+                  class="flex-1 px-4 py-3 rounded-md shadow-xs transition duration-150"
                   :class="editable ? 'border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200' : 'bg-gray-100 border-gray-200'"
                   placeholder="Enter answer"
               />

@@ -26,7 +26,7 @@
                     name="begin"
                     v-model="editentry.data.start"
                     @input="newentrydateselected('edit')"
-                    class="block w-full px-4 py-2 leading-normal bg-white border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring"
+                    class="block w-full px-4 py-2 leading-normal bg-white border border-gray-300 rounded-lg appearance-none focus:outline-hidden focus:ring"
                 />
             </div>
             <div class="my-2">
@@ -37,7 +37,7 @@
                     type="datetime-local"
                     name="end"
                     v-model="editentry.data.end"
-                    class="block w-full px-4 py-2 leading-normal bg-white border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring"
+                    class="block w-full px-4 py-2 leading-normal bg-white border border-gray-300 rounded-lg appearance-none focus:outline-hidden focus:ring"
                 />
             </div>
             <div class="my-2">
@@ -48,7 +48,7 @@
                     type="text"
                     name="media_id"
                     v-model="editentry.data.media_id"
-                    class="block w-full px-4 py-2 leading-normal bg-white border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring"
+                    class="block w-full px-4 py-2 leading-normal bg-white border border-gray-300 rounded-lg appearance-none focus:outline-hidden focus:ring"
                 />
             </div>
             <h1 class="my-4 text-2xl font-bold tracking-wide text-center text-gray-700 uppercase">Inputs</h1>
@@ -62,14 +62,14 @@
                     v-if="value.type === 'text'"
                     :name="'text' + value.name"
                     v-model="editentry.data.inputs[value.name]"
-                    class="block w-full px-4 py-2 leading-normal bg-white border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring"
+                    class="block w-full px-4 py-2 leading-normal bg-white border border-gray-300 rounded-lg appearance-none focus:outline-hidden focus:ring"
                 />
                 <!-- Multiple Choice -->
                 <div v-if="value.type === 'multiple choice'">
                     <select
                         v-model="editentry.data.inputs[value.name]"
                         multiple
-                        class="block w-full px-4 py-3 leading-tight text-gray-700 bg-gray-200 border border-gray-200 rounded appearance-none focus:outline-none focus:bg-white focus:border-gray-500"
+                        class="block w-full px-4 py-3 leading-tight text-gray-700 bg-gray-200 border border-gray-200 rounded appearance-none focus:outline-hidden focus:bg-white focus:border-gray-500"
                     >
                         <option
                             v-for="(answer, indexA) in value.answers"
@@ -85,7 +85,7 @@
                 <div class="relative" v-if="value.type === 'one choice'">
                     <select
                         v-model="editentry.data.inputs[value.name]"
-                        class="block w-full px-4 py-3 pr-8 leading-tight text-gray-700 bg-gray-200 border border-gray-200 rounded appearance-none focus:outline-none focus:bg-white focus:border-gray-500"
+                        class="block w-full px-4 py-3 pr-8 leading-tight text-gray-700 bg-gray-200 border border-gray-200 rounded appearance-none focus:outline-hidden focus:bg-white focus:border-gray-500"
                     >
                         <option v-for="(answer, indexA) in value.answers" :key="indexA" :value="answer">
                             @{{ answer }}
@@ -105,7 +105,7 @@
                 <div class="relative" v-if="value.type === 'scale'">
                     <select
                         v-model="editentry.data.inputs[value.name]"
-                        class="block w-full px-4 py-3 pr-8 leading-tight text-gray-700 bg-gray-200 border border-gray-200 rounded appearance-none focus:outline-none focus:bg-white focus:border-gray-500"
+                        class="block w-full px-4 py-3 pr-8 leading-tight text-gray-700 bg-gray-200 border border-gray-200 rounded appearance-none focus:outline-hidden focus:bg-white focus:border-gray-500"
                     >
                         <option value="1">1</option>
                         <option value="2">2</option>

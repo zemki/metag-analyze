@@ -2,7 +2,7 @@
   <div class="fixed z-50 inset-0 overflow-y-auto" @click.self="close">
     <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
       <!-- Background overlay -->
-      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+      <div class="fixed inset-0 bg-gray-500/75 transition-opacity"></div>
 
       <!-- Modal panel -->
       <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
@@ -14,7 +14,7 @@
             </h3>
             <button
                 @click="close"
-                class="text-gray-400 hover:text-gray-500 focus:outline-none"
+                class="text-gray-400 hover:text-gray-500 focus:outline-hidden"
             >
               <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -52,7 +52,7 @@
                 <input
                     v-model="formData.name"
                     type="text"
-                    class="mt-1 block w-full px-4 py-3 rounded-md shadow-sm border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
+                    class="mt-1 block w-full px-4 py-3 rounded-md shadow-xs border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
                     :placeholder="trans('e.g., Daily Check-in, Morning Survey')"
                 />
               </div>
@@ -63,7 +63,7 @@
                 <textarea
                     v-model="formData.introductory_text"
                     rows="3"
-                    class="mt-1 block w-full px-4 py-3 rounded-md shadow-sm border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
+                    class="mt-1 block w-full px-4 py-3 rounded-md shadow-xs border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
                     :placeholder="trans('Text to display at the top of this questionnaire')"
                 ></textarea>
                 <p class="mt-1 text-xs text-gray-500">{{ trans('This text will be shown at the top of the questionnaire before any questions.') }}</p>
@@ -109,7 +109,7 @@
                   <input
                       v-model="formData.start_date_time.date"
                       type="date"
-                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
                 <div>
@@ -117,7 +117,7 @@
                   <input
                       v-model="formData.start_date_time.time"
                       type="time"
-                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
               </div>
@@ -129,7 +129,7 @@
                   <input
                       v-model="formData.end_date_time.date"
                       type="date"
-                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
                 <div>
@@ -137,7 +137,7 @@
                   <input
                       v-model="formData.end_date_time.time"
                       type="time"
-                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
               </div>
@@ -154,7 +154,7 @@
                         type="number"
                         min="1"
                         max="24"
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
@@ -163,7 +163,7 @@
                         v-model.number="formData.min_break_between"
                         type="number"
                         min="0"
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
@@ -172,14 +172,14 @@
                         v-model.number="formData.max_daily_submits"
                         type="number"
                         min="1"
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-700">{{ trans('Quest Available At') }}</label>
                     <select
                         v-model="formData.quest_available_at"
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="startOfInterval">{{ trans('Start of Interval') }}</option>
                       <option value="randomTimeWithinInterval">{{ trans('Random Time Within Interval') }}</option>
@@ -193,7 +193,7 @@
                     <input
                         v-model="formData.daily_start_time"
                         type="time"
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
@@ -201,7 +201,7 @@
                     <input
                         v-model="formData.daily_end_time"
                         type="time"
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                 </div>
@@ -238,7 +238,7 @@
                   <input
                       v-model="formData.notification_text"
                       type="text"
-                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
                       :placeholder="trans('Time for your questionnaire!')"
                   />
                 </div>
@@ -252,7 +252,7 @@
                 <textarea
                     v-model="formData.introductory_text"
                     rows="3"
-                    class="mt-1 block w-full px-4 py-3 rounded-md shadow-sm border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
+                    class="mt-1 block w-full px-4 py-3 rounded-md shadow-xs border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
                     :placeholder="trans('Text to display at the top of this questionnaire')"
                 ></textarea>
                 <p class="mt-1 text-xs text-gray-500">{{ trans('This text will be shown at the top of the questionnaire before any questions.') }}</p>
@@ -321,7 +321,7 @@
                     <textarea
                         v-model="question.text"
                         rows="2"
-                        class="mt-1 block w-full px-4 py-3 rounded-md shadow-sm border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
+                        class="mt-1 block w-full px-4 py-3 rounded-md shadow-xs border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
                         :placeholder="trans('Enter your question')"
                     ></textarea>
                   </div>
@@ -371,7 +371,7 @@
                     <input
                         type="text"
                         v-model="question.itemGroup"
-                        class="mt-1 block w-full px-4 py-3 rounded-md shadow-sm border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
+                        class="mt-1 block w-full px-4 py-3 rounded-md shadow-xs border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
                         :placeholder="trans('Enter item group name')"
                     />
                   </div>
@@ -381,7 +381,7 @@
                     <label class="block text-sm font-medium text-gray-700">{{ trans('Question Type') }} *</label>
                     <select
                         v-model="question.type"
-                        class="mt-1 block w-full px-4 py-3 rounded-md shadow-sm border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
+                        class="mt-1 block w-full px-4 py-3 rounded-md shadow-xs border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
                     >
                       <option disabled value="">{{ trans('Select type...') }}</option>
                       <option value="text">{{ trans('Text Field') }}</option>
@@ -400,7 +400,7 @@
                       <input
                           type="number"
                           v-model.number="question.config.minValue"
-                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
                     <div>
@@ -408,7 +408,7 @@
                       <input
                           type="number"
                           v-model.number="question.config.maxValue"
-                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
                     <div>
@@ -416,7 +416,7 @@
                       <input
                           type="number"
                           v-model.number="question.config.steps"
-                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
                   </div>
@@ -428,7 +428,7 @@
                       <input
                           type="text"
                           v-model="question.answers[aIndex]"
-                          class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                          class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
                           :placeholder="trans('Enter option text')"
                       />
                       <button
@@ -462,7 +462,7 @@
           <button
               type="button"
               @click="close"
-              class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             {{ trans('Cancel') }}
           </button>
@@ -470,7 +470,7 @@
               type="button"
               @click="save"
               :disabled="saving || !isValid"
-              class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             <svg v-if="saving" class="w-4 h-4 mr-2 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

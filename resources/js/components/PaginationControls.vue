@@ -1,5 +1,5 @@
 <template>
-  <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+  <nav class="relative z-0 inline-flex rounded-md shadow-xs -space-x-px" aria-label="Pagination">
     <!-- Previous Page -->
     <button
       @click="changePage(pagination.current_page - 1)"
@@ -8,7 +8,7 @@
         'relative inline-flex items-center px-2 py-2 rounded-l-md border text-sm font-medium',
         pagination.current_page <= 1
           ? 'border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed'
-          : 'border-gray-300 bg-white text-gray-500 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500'
+          : 'border-gray-300 bg-white text-gray-500 hover:bg-gray-50 focus:z-10 focus:outline-hidden focus:ring-1 focus:ring-blue-500 focus:border-blue-500'
       ]"
     >
       <span class="sr-only">Previous</span>
@@ -26,7 +26,7 @@
           'relative inline-flex items-center px-4 py-2 border text-sm font-medium',
           page === pagination.current_page
             ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500'
+            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50 focus:z-10 focus:outline-hidden focus:ring-1 focus:ring-blue-500 focus:border-blue-500'
         ]"
       >
         {{ page }}
@@ -47,7 +47,7 @@
         'relative inline-flex items-center px-2 py-2 rounded-r-md border text-sm font-medium',
         pagination.current_page >= pagination.last_page
           ? 'border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed'
-          : 'border-gray-300 bg-white text-gray-500 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500'
+          : 'border-gray-300 bg-white text-gray-500 hover:bg-gray-50 focus:z-10 focus:outline-hidden focus:ring-1 focus:ring-blue-500 focus:border-blue-500'
       ]"
     >
       <span class="sr-only">Next</span>

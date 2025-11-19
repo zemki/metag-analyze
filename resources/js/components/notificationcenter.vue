@@ -28,7 +28,7 @@
       <div
           v-for="(oneCase, index) in arrayOfCases"
           :key="index"
-          class="bg-white rounded-lg shadow-sm p-6 space-y-4 border border-gray-200"
+          class="bg-white rounded-lg shadow-xs p-6 space-y-4 border border-gray-200"
       >
         <!-- Case Header -->
         <div class="border-b border-gray-200 pb-4">
@@ -45,7 +45,7 @@
         <div v-if="admin" class="flex justify-end">
           <button
               @click="cleanupNotification(oneCase)"
-              class="inline-flex items-center px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-md hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+              class="inline-flex items-center px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-md hover:bg-red-100 focus:outline-hidden focus:ring-2 focus:ring-red-500"
           >
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -89,7 +89,7 @@
                 v-model="oneCase.title"
                 :maxlength="inputLength.title"
                 type="text"
-                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                class="w-full rounded-md border-gray-300 shadow-xs focus:border-blue-500 focus:ring-blue-500"
             />
             <p class="mt-1 text-sm text-gray-500 text-right">
               {{ inputLength.title - (oneCase.title ? oneCase.title.length : 0) }}/{{ inputLength.title }}
@@ -105,7 +105,7 @@
                 v-model="oneCase.message"
                 :maxlength="inputLength.message"
                 rows="4"
-                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                class="w-full rounded-md border-gray-300 shadow-xs focus:border-blue-500 focus:ring-blue-500"
             ></textarea>
             <p class="mt-1 text-sm text-gray-500 text-right">
               {{ inputLength.message - (oneCase.message ? oneCase.message.length : 0) }}/{{ inputLength.message }}
@@ -129,7 +129,7 @@
             <button
                 v-if="oneCase.user.profile && oneCase.user.profile.last_notification_at < yesterday"
                 @click="sendNotification(oneCase)"
-                class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -146,21 +146,21 @@
               <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <select
                     v-model="oneCase.selectedFrequency"
-                    class="col-span-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    class="col-span-2 rounded-md border-gray-300 shadow-xs focus:border-blue-500 focus:ring-blue-500"
                 >
                   <option v-for="f in frequency" :value="f">{{ f }}</option>
                 </select>
                 <div class="flex space-x-2 col-span-2">
                   <select
                       v-model="oneCase.selectedHour"
-                      class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      class="rounded-md border-gray-300 shadow-xs focus:border-blue-500 focus:ring-blue-500"
                   >
                     <option v-for="hour in hours" :value="hour">{{ hour }}</option>
                   </select>
                   <span class="text-xl self-center">:</span>
                   <select
                       v-model="oneCase.selectedMinutes"
-                      class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      class="rounded-md border-gray-300 shadow-xs focus:border-blue-500 focus:ring-blue-500"
                   >
                     <option v-for="minute in minutes" :value="minute">{{ minute }}</option>
                   </select>
@@ -168,7 +168,7 @@
               </div>
               <button
                   @click="planNotification(oneCase)"
-                  class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

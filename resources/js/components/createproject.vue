@@ -34,7 +34,7 @@
               type="button"
               @click="projectType = 'standard'"
               :class="[
-                'relative rounded-lg border p-4 flex flex-col items-center cursor-pointer focus:outline-none transition-all',
+                'relative rounded-lg border p-4 flex flex-col items-center cursor-pointer focus:outline-hidden transition-all',
                 projectType === 'standard' 
                   ? 'bg-blue-50 border-blue-500 ring-2 ring-blue-500' 
                   : 'bg-white border-gray-300 hover:border-gray-400'
@@ -49,19 +49,24 @@
           
           <button
               type="button"
-              @click="projectType = 'mart'"
+              @click="martEnabled ? projectType = 'mart' : null"
+              :disabled="!martEnabled"
               :class="[
-                'relative rounded-lg border p-4 flex flex-col items-center cursor-pointer focus:outline-none transition-all',
-                projectType === 'mart' 
-                  ? 'bg-blue-50 border-blue-500 ring-2 ring-blue-500' 
-                  : 'bg-white border-gray-300 hover:border-gray-400'
+                'relative rounded-lg border p-4 flex flex-col items-center transition-all',
+                !martEnabled
+                  ? 'opacity-50 cursor-not-allowed bg-gray-100 border-gray-200'
+                  : projectType === 'mart'
+                    ? 'bg-blue-50 border-blue-500 ring-2 ring-blue-500 cursor-pointer focus:outline-hidden'
+                    : 'bg-white border-gray-300 hover:border-gray-400 cursor-pointer focus:outline-hidden'
               ]"
           >
-            <svg class="w-12 h-12 mb-3" :class="projectType === 'mart' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-12 h-12 mb-3" :class="!martEnabled ? 'text-gray-300' : projectType === 'mart' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
             </svg>
-            <span class="block text-sm font-medium" :class="projectType === 'mart' ? 'text-blue-900' : 'text-gray-900'">MART (Mobile Assessment Research Tool) Project</span>
-            <span class="block text-xs text-center mt-1" :class="projectType === 'mart' ? 'text-blue-700' : 'text-gray-500'">Uses the modular MART App for Surveys, Experience Sampling, Android Event Logging, and Data Donations</span>
+            <span class="block text-sm font-medium" :class="!martEnabled ? 'text-gray-400' : projectType === 'mart' ? 'text-blue-900' : 'text-gray-900'">MART (Mobile Assessment Research Tool) Project</span>
+            <span class="block text-xs text-center mt-1" :class="!martEnabled ? 'text-gray-400' : projectType === 'mart' ? 'text-blue-700' : 'text-gray-500'">
+              {{ martEnabled ? 'Uses the modular MART App for Surveys, Experience Sampling, Android Event Logging, and Data Donations' : 'MART projects are currently disabled by administrator' }}
+            </span>
           </button>
         </div>
       </div>
@@ -84,7 +89,7 @@
                   id="name"
                   v-model="newProject.name"
                   @keydown.enter.prevent
-                  class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  class="block w-full border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   maxlength="200"
                   placeholder="Enter project name"
               />
@@ -104,7 +109,7 @@
                   id="description"
                   v-model="newProject.description"
                   rows="3"
-                  class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  class="block w-full border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   maxlength="255"
                   placeholder="Enter project description"
               ></textarea>
@@ -129,7 +134,7 @@
           <div class="relative flex flex-row w-64 h-10 mt-1 bg-transparent rounded-lg">
             <button
                 type="button"
-                class="w-20 h-full text-gray-600 bg-gray-300 rounded-l outline-none cursor-pointer hover:text-gray-700 hover:bg-gray-400"
+                class="w-20 h-full text-gray-600 bg-gray-300 rounded-l outline-hidden cursor-pointer hover:text-gray-700 hover:bg-gray-400"
                 @click="decrementInputs"
             >
               <span class="m-auto text-2xl font-thin">−</span>
@@ -139,7 +144,7 @@
                 type="number"
                 min="0"
                 max="3"
-                class="flex items-center w-full font-semibold text-center text-gray-700 bg-white outline-none focus:outline-none text-md hover:text-black focus:text-black md:text-base cursor-default"
+                class="flex items-center w-full font-semibold text-center text-gray-700 bg-white outline-hidden focus:outline-hidden text-md hover:text-black focus:text-black md:text-base cursor-default"
                 name="ninputs"
                 id="ninputs"
             />
@@ -161,7 +166,7 @@
                 id="entityName"
                 v-model="newProject.entityName"
                 @keydown.enter.prevent
-                class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                class="block w-full border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 maxlength="50"
                 placeholder="Enter name for entity field (default: 'entity')"
             />
@@ -240,7 +245,7 @@
               <input
                   type="text"
                   v-model="input.name"
-                  class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  class="block w-full border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder="Enter input name"
               />
             </div>
@@ -288,7 +293,7 @@
             <ul
                 v-if="input.showDropdown"
                 :id="'type-' + index"
-                class="absolute z-10 w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-60 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+                class="absolute z-10 w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-60 ring-1 ring-black ring-opacity-5 focus:outline-hidden sm:text-sm"
                 role="listbox"
                 aria-labelledby="listbox-label"
             >
@@ -360,7 +365,7 @@
         <button
             type="button"
             @click="validateProject"
-            class="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            class="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-xs hover:bg-blue-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
           Create Project
         </button>
@@ -393,7 +398,7 @@
                   type="text"
                   id="mart-name"
                   v-model="martProject.name"
-                  class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  class="block w-full border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   maxlength="200"
                   placeholder="Enter MART project name"
               />
@@ -411,7 +416,7 @@
                   id="mart-description"
                   v-model="martProject.description"
                   rows="3"
-                  class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  class="block w-full border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   maxlength="255"
                   placeholder="Enter MART project description"
               ></textarea>
@@ -434,7 +439,7 @@
                   type="date"
                   id="mart-start-date"
                   v-model="martProject.startDate"
-                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  class="mt-1 block w-full border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               />
             </div>
 
@@ -445,7 +450,7 @@
                   type="time"
                   id="mart-start-time"
                   v-model="martProject.startTime"
-                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  class="mt-1 block w-full border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               />
             </div>
 
@@ -456,7 +461,7 @@
                   type="date"
                   id="mart-end-date"
                   v-model="martProject.endDate"
-                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  class="mt-1 block w-full border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               />
             </div>
 
@@ -467,7 +472,7 @@
                   type="time"
                   id="mart-end-time"
                   v-model="martProject.endTime"
-                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  class="mt-1 block w-full border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               />
             </div>
           </div>
@@ -499,7 +504,7 @@
               @click="validateMartProject"
               :disabled="isCreatingMartProject"
               :class="[
-                'inline-flex items-center px-6 py-3 text-base font-medium text-white border border-transparent rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500',
+                'inline-flex items-center px-6 py-3 text-base font-medium text-white border border-transparent rounded-md shadow-xs focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500',
                 isCreatingMartProject
                   ? 'bg-blue-400 cursor-not-allowed'
                   : 'bg-blue-600 hover:bg-blue-700'
@@ -541,7 +546,15 @@ export default {
       type: Number,
       required: true,
     },
+    martEnabled: {
+      type: Boolean,
+      default: true,
+    },
   },
+  mounted() {
+    console.log('MART Enabled prop value:', this.martEnabled, 'Type:', typeof this.martEnabled);
+  },
+
   data() {
     return {
       projectType: 'standard', // Default to standard project
@@ -775,8 +788,8 @@ export default {
     // Determine Dropdown Class Based on Input Type
     dropdownClass(type) {
       return type
-          ? 'relative w-full py-2 pl-3 pr-10 text-left bg-white border border-gray-300 rounded-md shadow-sm cursor-default focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
-          : 'relative w-full py-4 pl-3 pr-10 text-left bg-white border border-gray-300 rounded-md shadow-sm cursor-default focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm';
+          ? 'relative w-full py-2 pl-3 pr-10 text-left bg-white border border-gray-300 rounded-md shadow-xs cursor-default focus:outline-hidden focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+          : 'relative w-full py-4 pl-3 pr-10 text-left bg-white border border-gray-300 rounded-md shadow-xs cursor-default focus:outline-hidden focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm';
     },
 
     // Determine Selected Type Class

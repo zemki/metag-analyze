@@ -14,7 +14,7 @@
         <!-- Action Buttons -->
         <div class="flex items-center space-x-3">
           <a :href="urlToCreateCase + '/cases/new'"
-             class="inline-flex items-center px-2 py-1.5 text-xs font-medium text-white bg-blue-600 border border-transparent rounded hover:bg-blue-700 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-blue-500 whitespace-nowrap">
+             class="inline-flex items-center px-2 py-1.5 text-xs font-medium text-white bg-blue-600 border border-transparent rounded hover:bg-blue-700 focus:outline-hidden focus:ring-1 focus:ring-offset-1 focus:ring-blue-500 whitespace-nowrap">
             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
@@ -23,7 +23,7 @@
 
           <!-- Project Settings Button -->
           <button @click="openProjectSettings"
-                  class="inline-flex items-center px-2 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-blue-500 whitespace-nowrap">
+                  class="inline-flex items-center px-2 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 focus:outline-hidden focus:ring-1 focus:ring-offset-1 focus:ring-blue-500 whitespace-nowrap">
             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -34,7 +34,7 @@
           <!-- More Actions Dropdown -->
           <div class="relative">
             <button @click="actionsDropdownOpen = !actionsDropdownOpen" type="button"
-                    class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
               <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
               </svg>
@@ -132,14 +132,14 @@
                   @input="debouncedSearch"
                   type="text"
                   placeholder="Search cases..."
-                  class="block w-full pl-10 pr-3 py-1.5 text-sm border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  class="block w-full pl-10 pr-3 py-1.5 text-sm border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-hidden focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>
 
             <!-- Status Filter -->
             <select v-model="statusFilter" @change="loadCases"
-                    class="text-sm border border-gray-300 rounded-md px-3 py-1.5 bg-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    class="text-sm border border-gray-300 rounded-md px-3 py-1.5 bg-white focus:outline-hidden focus:ring-blue-500 focus:border-blue-500">
               <option value="">All Status</option>
               <option value="active">Active</option>
               <option value="completed">Completed</option>
@@ -148,7 +148,7 @@
 
             <!-- Sort Options -->
             <select v-model="sortBy" @change="loadCases"
-                    class="text-sm border border-gray-300 rounded-md px-3 py-1.5 bg-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    class="text-sm border border-gray-300 rounded-md px-3 py-1.5 bg-white focus:outline-hidden focus:ring-blue-500 focus:border-blue-500">
               <option value="created_at">Created Date</option>
               <option value="name">Name</option>
               <option value="user_id">User</option>
@@ -157,7 +157,7 @@
             </select>
 
             <button @click="toggleSortOrder"
-                    class="p-1.5 border border-gray-300 bg-white rounded-md hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    class="p-1.5 border border-gray-300 bg-white rounded-md hover:bg-gray-50 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
                     :title="sortOrder === 'desc' ? 'Sort Ascending' : 'Sort Descending'">
               <svg class="h-4 w-4 text-gray-600" :class="{ 'rotate-180': sortOrder === 'desc' }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
@@ -166,7 +166,7 @@
 
             <!-- Per Page -->
             <select v-model="perPage" @change="loadCases"
-                    class="text-sm border border-gray-300 rounded-md px-3 py-1.5 bg-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    class="text-sm border border-gray-300 rounded-md px-3 py-1.5 bg-white focus:outline-hidden focus:ring-blue-500 focus:border-blue-500">
               <option value="25">25</option>
               <option value="50">50</option>
               <option value="100">100</option>
@@ -253,7 +253,7 @@
               </p>
               <a v-if="!searchQuery && !statusFilter"
                  :href="urlToCreateCase + '/cases/new'"
-                 class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                 class="inline-flex items-center px-4 py-2 border border-transparent shadow-xs text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
@@ -385,7 +385,7 @@
     <!-- Project Settings Modal -->
     <div v-if="showProjectSettings" class="fixed inset-0 z-50 overflow-y-auto">
       <!-- Backdrop -->
-      <div class="fixed inset-0 bg-black bg-opacity-50" @click="showProjectSettings = false"></div>
+      <div class="fixed inset-0 bg-black/50" @click="showProjectSettings = false"></div>
 
       <!-- Modal Container -->
       <div class="flex min-h-full items-center justify-center p-4">

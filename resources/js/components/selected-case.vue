@@ -21,7 +21,7 @@
           type="datetime-local"
           id="begin"
           name="begin"
-          class="w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:shadow-outline"
+          class="w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-hidden focus:shadow-outline"
           v-model="editentry.data.start"
           @input="editentrydateselected('edit')"
         />
@@ -36,7 +36,7 @@
           type="datetime-local"
           id="end"
           name="end"
-          class="w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:shadow-outline"
+          class="w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-hidden focus:shadow-outline"
           v-model="editentry.data.end"
         />
       </div>
@@ -48,7 +48,7 @@
           type="text"
           name="media_id"
           v-model="editentry.data.media"
-          class="block w-full px-4 py-2 leading-normal bg-white border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring"
+          class="block w-full px-4 py-2 leading-normal bg-white border border-gray-300 rounded-lg appearance-none focus:outline-hidden focus:ring"
         />
       </div>
       <h1
@@ -69,14 +69,14 @@
           v-if="value.type === 'text'"
           :name="'text' + value.name"
           v-model="editentry.data.inputs[value.name]"
-          class="block w-full px-4 leading-normal bg-white border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring"
+          class="block w-full px-4 leading-normal bg-white border border-gray-300 rounded-lg appearance-none focus:outline-hidden focus:ring"
         />
         <div class="pb-2 sm:col-span-3" v-if="value.type === 'multiple choice'">
           <div class="mt-1">
             <select
               multiple
               v-model="editentry.data.inputs[value.name]"
-              class="block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              class="block w-full border-gray-300 rounded-md shadow-xs focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             >
               <option
                 v-for="(answer, indexA) in value.answers.filter(a => a.trim() !== '')"
@@ -92,7 +92,7 @@
           <div class="mt-1">
             <select
               v-model="editentry.data.inputs[value.name][0]"
-              class="block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              class="block w-full border-gray-300 rounded-md shadow-xs focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             >
               <option
                 v-for="(answer, indexA) in value.answers.filter(a => a.trim() !== '')"
@@ -108,7 +108,7 @@
           <div class="mt-1">
             <select
               v-model="editentry.data.inputs[value.name]"
-              class="block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              class="block w-full border-gray-300 rounded-md shadow-xs focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             >
               <option value="1">1</option>
               <option value="2">2</option>
@@ -134,7 +134,7 @@
         >
           <button
             type="button"
-            class="relative z-0 inline-flex items-center px-4 py-2 text-sm font-medium text-gray-900 bg-white hover:bg-blue-500 hover:text-white focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
+            class="relative z-0 inline-flex items-center px-4 py-2 text-sm font-medium text-gray-900 bg-white hover:bg-blue-500 hover:text-white focus:z-10 focus:outline-hidden focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
           >
             <svg
               class="mr-2.5 h-5 w-5 text-gray-400"
@@ -157,7 +157,7 @@
         <a :href="groupedCasesPath()">
           <button
             type="button"
-            class="relative z-0 inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-900 bg-white hover:bg-blue-500 hover:text-white focus:z-10 focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
+            class="relative z-0 inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-900 bg-white hover:bg-blue-500 hover:text-white focus:z-10 focus:outline-hidden focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -204,7 +204,7 @@
               v-if="showCase && selectedCase.backend"
               type="button"
               @click="toggleEntryModal()"
-              class="w-full justify-center inline-flex items-center px-2.5 py-1.5 border border-transparent font-medium text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              class="w-full justify-center inline-flex items-center px-2.5 py-1.5 border border-transparent font-medium text-white bg-blue-500 hover:bg-blue-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               {{ trans("Add new entry") }}
             </button>
@@ -236,7 +236,7 @@
               v-if="showCase || selectedCase.entries.length > 0"
               type="button"
               @click="toggleEntryModal(entry)"
-              class="w-full justify-center inline-flex items-center px-2.5 py-1.5 border border-transparent font-medium text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              class="w-full justify-center inline-flex items-center px-2.5 py-1.5 border border-transparent font-medium text-white bg-blue-500 hover:bg-blue-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               {{ trans("Edit") }}
             </button>
@@ -313,7 +313,7 @@
             >
               <div class="overflow-hidden rounded">
                 <!-- accordion-tab  -->
-                <div class="outline-none group accordion-section" tabindex="1">
+                <div class="outline-hidden group accordion-section" tabindex="1">
                   <div
                     class="relative flex items-center justify-between px-4 py-3 pr-10 transition duration-500 bg-blue-100 cursor-pointer group ease"
                   >

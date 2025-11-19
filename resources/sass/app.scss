@@ -1,7 +1,5 @@
 @use 'variables';
-@use "tailwindcss/base";
-@use "tailwindcss/components";
-@use "tailwindcss/utilities";
+@import "tailwindcss";
 
 // modal
 .modal {
