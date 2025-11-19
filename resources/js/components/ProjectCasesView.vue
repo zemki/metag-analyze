@@ -385,10 +385,10 @@
     <!-- Project Settings Modal -->
     <div v-if="showProjectSettings" class="fixed inset-0 z-50 overflow-y-auto">
       <!-- Backdrop -->
-      <div class="fixed inset-0 bg-black/50" @click="showProjectSettings = false"></div>
+      <div class="fixed inset-0 bg-black/50 z-40" @click="showProjectSettings = false"></div>
 
       <!-- Modal Container -->
-      <div class="flex min-h-full items-center justify-center p-4">
+      <div class="flex min-h-full items-center justify-center p-4 relative z-50">
         <div class="relative bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
           <!-- Header (Fixed) -->
           <div class="flex items-center justify-between p-6 border-b border-gray-200 shrink-0">
@@ -584,13 +584,11 @@ export default {
       if (editProjectComponent && typeof editProjectComponent.save === 'function') {
         this.isLoading = true;
         try {
-          await editProjectComponent.save(closeAfterSave);
+          await editProjectComponent.save(false); // Never redirect from EditProject component
 
           if (closeAfterSave) {
-            // Redirect to projects page
-            setTimeout(() => {
-              window.location.href = this.productionUrl + '/projects';
-            }, 500);
+            // Just close the modal, stay on the same page
+            this.showProjectSettings = false;
           }
           // If closeAfterSave is false, do nothing - keep modal open for continued editing
 

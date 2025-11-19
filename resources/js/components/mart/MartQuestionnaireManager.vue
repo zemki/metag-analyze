@@ -254,8 +254,14 @@ export default {
         const response = await window.axios.get(`/projects/${this.projectId}/questionnaires`);
         this.schedules = response.data.questionnaires || [];
       } catch (error) {
-        console.error('Error loading questionnaires:', error);
-        this.$root.showSnackbarMessage(this.trans('Failed to load questionnaires'));
+        // Check if it's a MART project not found error (project not fully set up yet)
+        if (error.response?.status === 404 && error.response?.data?.message === 'MART project not found') {
+          console.warn('MART project not fully initialized yet');
+          this.schedules = []; // Set empty schedules, component will show "No questionnaires yet"
+        } else {
+          console.error('Error loading questionnaires:', error);
+          this.$root.showSnackbarMessage(this.trans('Failed to load questionnaires'));
+        }
       } finally {
         this.loading = false;
       }

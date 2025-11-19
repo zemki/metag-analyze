@@ -119,7 +119,7 @@ class MartScheduleController extends Controller
             // Create questions
             foreach ($validated['questions'] as $index => $questionData) {
                 MartQuestion::create([
-                    'mart_questionnaire_id' => $schedule->id,
+                    'schedule_id' => $schedule->id,
                     'position' => $index + 1,
                     'text' => $questionData['text'],
                     'type' => $questionData['type'],
@@ -205,7 +205,7 @@ class MartScheduleController extends Controller
             foreach ($validated['questions'] as $questionData) {
                 $question = MartQuestion::find($questionData['uuid']);
 
-                if (! $question || $question->mart_questionnaire_id !== $schedule->id) {
+                if (! $question || $question->schedule_id !== $schedule->id) {
                     throw new \Exception("Question {$questionData['uuid']} not found in this schedule");
                 }
 

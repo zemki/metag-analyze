@@ -484,6 +484,21 @@ class ProjectController extends Controller
         $project->update($attributes);
         $project->save();
 
+        // If this is a MART project and doesn't have a MartProject record yet, create it
+        if ($project->isMartProject() && !$project->martProject()) {
+            DB::connection('mart')->beginTransaction();
+            try {
+                \App\Mart\MartProject::create([
+                    'main_project_id' => $project->id,
+                ]);
+                DB::connection('mart')->commit();
+            } catch (\Exception $e) {
+                DB::connection('mart')->rollBack();
+                \Log::error('Failed to create MART project during update: ' . $e->getMessage());
+                // Don't fail the whole update, just log the error
+            }
+        }
+
         // Handle media and entity synchronization
         // Only process media if useEntity is true or it's a legacy project
         $useEntity = $attributes['use_entity'] ?? true; // Default to true for legacy projects
@@ -545,7 +560,7 @@ class ProjectController extends Controller
                     // Copy all questions with NEW UUIDs
                     foreach ($originalSchedule->questions as $originalQuestion) {
                         MartQuestion::create([
-                            'mart_questionnaire_id' => $newSchedule->id,
+                            'schedule_id' => $newSchedule->id,
                             'position' => $originalQuestion->position,
                             'text' => $originalQuestion->text,
                             'type' => $originalQuestion->type,

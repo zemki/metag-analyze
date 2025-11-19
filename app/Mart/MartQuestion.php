@@ -39,7 +39,7 @@ class MartQuestion extends Model
      */
     protected $fillable = [
         'uuid',
-        'mart_questionnaire_id',
+        'schedule_id',
         'position',
         'text',
         'type',
@@ -81,7 +81,7 @@ class MartQuestion extends Model
      */
     public function schedule(): BelongsTo
     {
-        return $this->belongsTo(MartSchedule::class, 'mart_questionnaire_id');
+        return $this->belongsTo(MartSchedule::class, 'schedule_id');
     }
 
     /**
