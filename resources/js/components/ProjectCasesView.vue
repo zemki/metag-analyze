@@ -339,7 +339,7 @@
           <!-- Case Content -->
           <div class="flex-1 overflow-hidden">
             <SelectedCase
-              :project-inputs="projectInputs"
+              :project-inputs="parsedProjectInputs"
               :cases="selectedCase"
             />
             <!-- DEBUG: Let's see what projectInputs contains -->
@@ -532,6 +532,18 @@ export default {
   computed: {
     urlToCreateCase() {
       return `/projects/${this.project.id}`;
+    },
+    parsedProjectInputs() {
+      // Parse projectInputs if it's a string
+      if (typeof this.projectInputs === 'string') {
+        try {
+          return JSON.parse(this.projectInputs);
+        } catch (e) {
+          console.error('Failed to parse projectInputs:', e);
+          return [];
+        }
+      }
+      return this.projectInputs;
     }
   },
   watch: {

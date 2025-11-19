@@ -219,17 +219,6 @@
                 </svg>
               </button>
             </div>
-
-            <!-- Add Entity Button -->
-            <button
-                @click="addMedia"
-                class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-500 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors duration-150"
-            >
-              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/>
-              </svg>
-              {{ `Add ${newProject.entityName || 'Entity'}` }}
-            </button>
           </div>
           <p v-else class="text-xs text-gray-500">
             This field won't be included in the mobile app.

@@ -35,6 +35,25 @@ php artisan reverb:start            # WebSocket server
 - Use `App\Models\Team` not `Laravel\Jetstream\Team` in tests
 - Check neighboring files for patterns before adding dependencies
 
+## Styling & Frontend (UPDATED: 2025-11-19)
+
+### Tailwind CSS v4
+- **IMPORTANT**: Project uses Tailwind CSS v4 (NOT v3)
+- Migrated from Sass to plain CSS (`resources/css/app.css`)
+- Uses `@tailwindcss/vite` plugin (configured in `vite.config.mjs`)
+- CSS custom properties used instead of Sass variables (e.g., `var(--primary)`)
+
+### Key Tailwind v4 Breaking Changes Applied
+- `shadow-sm` → `shadow-xs`
+- `bg-opacity-75` → `bg-gray-500/75` (inline opacity syntax)
+- `outline-none` → `outline-hidden`
+- `@tailwindcss/forms` loaded via `@plugin` directive in CSS, not in config
+
+### CSS Files
+- **Main CSS**: `resources/css/app.css` (NOT `resources/sass/app.scss`)
+- **Variables**: CSS custom properties in `:root` selector
+- **Tailwind Import**: `@import "tailwindcss";` (v4 syntax)
+
 ## Workflow
 
 1. Make changes
@@ -192,11 +211,38 @@ curl -X POST "https://metag-analyze.test/mart-api/cases/5/submit" \
 - User model must implement `FilamentUser` and `HasName` interfaces
 - User model needs `getFilamentName()` and `canAccessPanel(Panel $panel)` methods
 
-### Settings System
+### Settings System (UPDATED: 2025-11-19)
 - Settings stored in `settings` table with key-value pairs
 - Use `Setting::get('key', $default)` to retrieve values
-- Use `Setting::set('key', $value, $userId)` to update values
+- Use `Setting::set('key', $value, $userId, $type)` to update values with type
 - Settings page at `/admin/settings` for admins only
+
+**Available Settings:**
+- `mart_enabled` (boolean) - Enable/disable MART project creation for all users
+- `max_studies_per_user` (integer) - Maximum number of projects a user can create
+- `api_v2_cutoff_date` (date) - Projects created before this date use API v1 (media field), after use API v2 (entity field)
+
+## Recent Bug Fixes & UI Improvements (2025-11-19)
+
+### Edit Entry Modal
+- Fixed issue where some entry values weren't pre-populated when editing
+- Properly handles `undefined` and `null` values for all input types
+- Multiple choice inputs now correctly converted to arrays
+- Location: `resources/js/components/selected-case.vue:792-804`
+
+### Modal Z-Index Issues
+- Fixed delete project modal appearing below dark background
+- Added proper z-index layering (background: z-40, content: z-50)
+- Location: `resources/js/components/global/modal.vue`
+
+### Project Creation UI
+- Removed "Add Entity" button from standard project creation (entities now managed via input fields only)
+- Location: `resources/js/components/createproject.vue`
+
+### MART Project Toggle
+- MART project creation can now be disabled via admin settings
+- When disabled, MART button is grayed out and shows "MART projects are currently disabled by administrator"
+- Setting synced from Filament admin panel to frontend
 
 ## Project-Specific Warnings
 
@@ -206,3 +252,4 @@ curl -X POST "https://metag-analyze.test/mart-api/cases/5/submit" \
 - Test database separate from development database
 - never run npm run build - i will compile the npm run dev
 - entity is a replacement for media, but the database still has media as table and fields
+- **NEVER use Sass/SCSS** - project migrated to plain CSS with Tailwind v4

@@ -46,14 +46,21 @@ class ProjectTest extends TestCase
     }
 
     /** @test    */
-    public function a_project_needs_owner()
+    public function a_project_automatically_assigns_owner_from_authenticated_user()
     {
-
         $this->actingAs($this->user);
 
-        $attributes = Project::factory()->raw(['created_by' => '']);
+        $attributes = Project::factory()->raw([
+            'created_by' => 999, // Try to override with different user ID
+        ]);
 
-        $this->post('/projects', $attributes)->assertSessionHasErrors('created_by');
+        $response = $this->post('/projects', $attributes);
+
+        $response->assertStatus(200);
+
+        // Verify the project was created with the authenticated user's ID, not the submitted one
+        $project = Project::latest()->first();
+        $this->assertEquals($this->user->id, $project->created_by);
     }
 
     /** @test */

@@ -56,7 +56,7 @@
       >
         {{ trans("Inputs") }}
       </h1>
-      <div v-for="(value, index) in (typeof projectInputs === 'string' ? JSON.parse(projectInputs) : projectInputs)" :key="index">
+      <div v-for="(value, index) in projectInputs" :key="index">
         <label
           v-if="value.type !== 'audio recording'"
           class="pb-2 text-base font-bold tracking-wide text-gray-700 uppercase"
@@ -110,11 +110,13 @@
               v-model="editentry.data.inputs[value.name]"
               class="block w-full border-gray-300 rounded-md shadow-xs focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             >
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
+              <option
+                v-for="n in getScaleRange(value)"
+                :key="n"
+                :value="n"
+              >
+                {{ n }}
+              </option>
             </select>
           </div>
         </div>
@@ -794,9 +796,19 @@ export default {
           if (input.type === 'one choice') {
             // Ensure one choice is always an array
             processedInputs[input.name] = Array.isArray(currentValue) ? currentValue : [currentValue || ''];
+          } else if (input.type === 'multiple choice') {
+            // Ensure multiple choice is always an array
+            processedInputs[input.name] = Array.isArray(currentValue) ? currentValue : (currentValue ? [currentValue] : []);
+          } else if (input.type === 'scale') {
+            // For scale, preserve numeric values including 0, convert to number if string
+            if (currentValue !== undefined && currentValue !== null && currentValue !== '') {
+              processedInputs[input.name] = typeof currentValue === 'number' ? currentValue : parseInt(currentValue, 10);
+            } else {
+              processedInputs[input.name] = '';
+            }
           } else {
-            // Keep other types as-is
-            processedInputs[input.name] = currentValue;
+            // For text, number, etc., ensure we have a value (not undefined)
+            processedInputs[input.name] = currentValue !== undefined && currentValue !== null ? currentValue : '';
           }
         });
         
@@ -835,6 +847,24 @@ export default {
       return props.cases.project.id + "/groupedcases/" + props.cases.id;
     };
 
+    const getScaleRange = (question) => {
+      // For MART questions with martMetadata
+      if (question.martMetadata) {
+        const min = question.martMetadata.minValue || 1;
+        const max = question.martMetadata.maxValue || 5;
+        const steps = question.martMetadata.steps || 1;
+
+        const range = [];
+        for (let i = min; i <= max; i += steps) {
+          range.push(i);
+        }
+        return range;
+      }
+
+      // Default fallback for non-MART questions
+      return [1, 2, 3, 4, 5];
+    };
+
     return {
       caseIsSet,
       caseNotEnded,
@@ -855,6 +885,7 @@ export default {
       editentrydateselected,
       distinctPath,
       groupedCasesPath,
+      getScaleRange,
     };
   },
 };
