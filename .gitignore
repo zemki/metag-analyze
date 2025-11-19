@@ -22,7 +22,7 @@ package-lock.json
 # Build assets
 /public/build
 /public/*.js
-*.css
+/public/*.css
 
 # IDE & Editors
 /.idea
