@@ -24,7 +24,7 @@ class MartEntry extends Model
      */
     protected $fillable = [
         'main_entry_id',
-        'schedule_id',
+        'mart_questionnaire_id',
         'questionnaire_id',
         'participant_id',
         'user_id',
@@ -59,7 +59,7 @@ class MartEntry extends Model
      */
     public function schedule(): BelongsTo
     {
-        return $this->belongsTo(MartSchedule::class, 'schedule_id');
+        return $this->belongsTo(MartSchedule::class, 'mart_questionnaire_id');
     }
 
     /**

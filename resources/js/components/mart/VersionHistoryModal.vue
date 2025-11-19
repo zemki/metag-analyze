@@ -229,7 +229,7 @@ export default {
       this.error = null;
 
       try {
-        const response = await window.axios.get(`/schedules/${this.schedule.id}/history`);
+        const response = await window.axios.get(`/questionnaires/${this.schedule.id}/history`);
 
         if (!response.data.success) {
           throw new Error(response.data.message || 'Failed to load history');

@@ -157,16 +157,16 @@
 
     <!-- MART Project Sections -->
     <div v-if="isMartProject" class="space-y-6">
-      <!-- Questionnaire Schedules Section (PRIMARY) -->
+      <!-- Questionnaires Section -->
       <div class="pt-8 space-y-6">
         <div class="pb-4 border-b border-gray-200">
-          <h3 class="text-lg font-medium text-gray-900">{{ trans('Questionnaire Schedules') }}</h3>
+          <h3 class="text-lg font-medium text-gray-900">{{ trans('Questionnaires') }}</h3>
           <p class="mt-2 text-sm text-gray-600">
-            {{ trans('Manage questionnaire schedules with unique questions for each schedule. Questions are always editable with automatic version tracking.') }}
+            {{ trans('Manage questionnaires with unique questions for each questionnaire. Questions are always editable with automatic version tracking.') }}
           </p>
         </div>
 
-        <MartScheduleManager
+        <MartQuestionnaireManager
             :project-id="project.id"
             :editable="editable"
         />
@@ -440,8 +440,9 @@
         {{ editable ? trans('Cancel') : trans('Edit Project') }}
       </button>
       <button
-          @click="save"
-          :disabled="!editable || isLoading"
+          v-if="editable"
+          @click="save(false)"
+          :disabled="isLoading"
           class="inline-flex items-center px-6 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
       >
         <svg v-if="isLoading" class="w-5 h-5 mr-2 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -449,7 +450,20 @@
           <path class="opacity-75" fill="currentColor"
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
-        {{ trans('Save Changes') }}
+        {{ trans('Save') }}
+      </button>
+      <button
+          v-if="editable"
+          @click="save(true)"
+          :disabled="isLoading"
+          class="inline-flex items-center px-6 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
+      >
+        <svg v-if="isLoading" class="w-5 h-5 mr-2 animate-spin" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        {{ trans('Save and Close') }}
       </button>
     </div>
 
@@ -457,13 +471,13 @@
 </template>
 
 <script>
-import MartScheduleManager from './mart/MartScheduleManager.vue';
+import MartQuestionnaireManager from './mart/MartQuestionnaireManager.vue';
 
 export default {
   name: 'EditProject',
 
   components: {
-    MartScheduleManager
+    MartQuestionnaireManager
   },
 
   props: {
@@ -871,7 +885,7 @@ export default {
       return true;
     },
 
-    async save() {
+    async save(closeAfterSave = false) {
       if (!this.validateProjectData()) {
         this.showSnackbarMessage(this.trans('Please fill in all required fields.'));
         return;
@@ -987,7 +1001,7 @@ export default {
 
         // Controller returns simple string response
         this.showSnackbarMessage(response.data);
-        
+
         // Emit the updated project data to parent component
         const updatedProject = {
           ...this.project,
@@ -997,9 +1011,11 @@ export default {
           use_entity: this.projectData.useEntity !== false ? 1 : 0,
           inputs: submitData.inputs // Already stringified
         };
-        
+
         this.$emit('project-updated', updatedProject);
 
+        // Note: Redirect is handled by parent component (ProjectCasesView) when in modal
+        // This allows the modal to control the flow
 
       } catch (error) {
         let errorMessage = this.trans('An error occurred while saving.');

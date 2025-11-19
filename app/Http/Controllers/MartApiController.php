@@ -184,7 +184,7 @@ class MartApiController extends Controller
             // Step 2: Create MART entry in MART database
             $martEntryData = [
                 'main_entry_id' => $entry->id,
-                'schedule_id' => $schedule->id,
+                'mart_questionnaire_id' => $schedule->id,
                 'questionnaire_id' => $request->questionnaireId,
                 'participant_id' => $request->participantId,
                 'user_id' => $request->userId,

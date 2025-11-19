@@ -473,501 +473,20 @@
           </div>
         </div>
 
-        <!-- Questionnaires -->
-        <div class="pt-8 space-y-6">
-          <div class="pb-4 border-b border-gray-200">
-            <h3 class="text-lg font-medium leading-6 text-gray-900">Questionnaires *</h3>
-            <p class="mt-2 text-sm text-gray-600">
-              Create at least one questionnaire with questions. Each questionnaire can have different questions, timing, and notification settings.
-            </p>
-          </div>
-
-          <!-- Schedule Builder UI -->
-          <div class="space-y-4">
-            <!-- Empty State -->
-            <div v-if="martProject.schedules.length === 0" class="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-              <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-              </svg>
-              <h3 class="mt-2 text-sm font-medium text-gray-900">No questionnaires created</h3>
-              <p class="mt-1 text-sm text-gray-500">Get started by creating your first questionnaire.</p>
-              <div class="mt-6">
-                <button
-                    type="button"
-                    @click="addMartSchedule"
-                    class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                  </svg>
-                  Add Questionnaire
-                </button>
-              </div>
-            </div>
-
-            <!-- Schedules List -->
-            <div v-else class="space-y-4">
-              <div class="flex justify-between items-center">
-                <span class="text-sm font-medium text-gray-700">{{ martProject.schedules.length }} questionnaire(s) created</span>
-                <button
-                    type="button"
-                    @click="addMartSchedule"
-                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                  </svg>
-                  Add Questionnaire
-                </button>
-              </div>
-
-              <!-- Schedule Cards -->
-              <div v-for="(schedule, scheduleIndex) in martProject.schedules" :key="scheduleIndex" class="border-2 border-gray-300 rounded-lg p-5 space-y-4 bg-gray-50">
-                <!-- Schedule Header -->
-                <div class="flex justify-between items-start pb-3 border-b border-gray-200">
-                  <div class="flex items-center space-x-2">
-                    <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
-                    </svg>
-                    <h4 class="text-md font-semibold text-gray-900">{{ schedule.name || `Questionnaire ${scheduleIndex + 1}` }}</h4>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                          :class="schedule.type === 'repeating' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'">
-                      {{ schedule.type === 'repeating' ? 'Repeating' : 'Single' }}
-                    </span>
-                  </div>
-                  <button
-                      type="button"
-                      @click="removeMartSchedule(scheduleIndex)"
-                      class="text-red-600 hover:text-red-900 hover:bg-red-50 p-1 rounded"
-                  >
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                    </svg>
-                  </button>
-                </div>
-
-                <!-- Collapsible Schedule Content -->
-                <div>
-                  <button
-                      type="button"
-                      @click="schedule.expanded = !schedule.expanded"
-                      class="w-full text-left inline-flex items-center justify-between text-sm font-medium text-blue-600 hover:text-blue-900"
-                  >
-                    <span>{{ schedule.expanded ? 'Hide' : 'Edit' }} Schedule Details & Questions ({{ (schedule.questions || []).length }} questions)</span>
-                    <svg class="w-4 h-4 transition-transform" :class="{'rotate-180': schedule.expanded}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                    </svg>
-                  </button>
-                </div>
-
-                <!-- Expanded Schedule Form -->
-                <div v-if="schedule.expanded" class="space-y-4 pt-4">
-                  <!-- Schedule Name -->
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700">Schedule Name *</label>
-                    <input
-                        v-model="schedule.name"
-                        type="text"
-                        class="mt-1 block w-full px-4 py-2 rounded-md shadow-sm border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 sm:text-sm"
-                        placeholder="e.g., Daily Check-in, Morning Survey"
-                    />
-                  </div>
-
-                  <!-- Introductory Text -->
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700">Introductory Text (optional)</label>
-                    <textarea
-                        v-model="schedule.introductory_text"
-                        rows="3"
-                        class="mt-1 block w-full px-4 py-2 rounded-md shadow-sm border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 sm:text-sm"
-                        placeholder="Text to display at the top of this questionnaire"
-                    ></textarea>
-                    <p class="mt-1 text-xs text-gray-500">This text will be shown at the top of the questionnaire before any questions.</p>
-                  </div>
-
-                  <!-- Schedule Type -->
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Schedule Type *</label>
-                    <div class="grid grid-cols-2 gap-3">
-                      <button
-                          type="button"
-                          @click="schedule.type = 'single'"
-                          :class="['p-3 border-2 rounded-lg text-left transition-all text-sm',
-                                   schedule.type === 'single' ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400']"
-                      >
-                        <div class="font-medium text-gray-900">Single</div>
-                        <div class="text-xs text-gray-600 mt-1">One-time questionnaire</div>
-                      </button>
-                      <button
-                          type="button"
-                          @click="schedule.type = 'repeating'"
-                          :class="['p-3 border-2 rounded-lg text-left transition-all text-sm',
-                                   schedule.type === 'repeating' ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400']"
-                      >
-                        <div class="font-medium text-gray-900">Repeating</div>
-                        <div class="text-xs text-gray-600 mt-1">Multiple times during study</div>
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- Date/Time Settings -->
-                  <div class="grid grid-cols-2 gap-4">
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700">Start Date *</label>
-                      <input
-                          v-model="schedule.start_date_time.date"
-                          type="date"
-                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700">Start Time *</label>
-                      <input
-                          v-model="schedule.start_date_time.time"
-                          type="time"
-                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      />
-                    </div>
-                  </div>
-
-                  <!-- End Date/Time (for repeating) -->
-                  <div v-if="schedule.type === 'repeating'" class="grid grid-cols-2 gap-4">
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700">End Date *</label>
-                      <input
-                          v-model="schedule.end_date_time.date"
-                          type="date"
-                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700">End Time *</label>
-                      <input
-                          v-model="schedule.end_date_time.time"
-                          type="time"
-                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      />
-                    </div>
-                  </div>
-
-                  <!-- Notification Settings -->
-                  <div class="space-y-3 p-3 bg-white rounded-md border border-gray-200">
-                    <div class="flex items-center">
-                      <input
-                          v-model="schedule.show_progress_bar"
-                          type="checkbox"
-                          :id="'show_progress_bar_' + scheduleIndex"
-                          class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
-                      />
-                      <label :for="'show_progress_bar_' + scheduleIndex" class="ml-2 block text-sm text-gray-700">
-                        Show Progress Bar
-                      </label>
-                    </div>
-
-                    <div class="flex items-center">
-                      <input
-                          v-model="schedule.show_notifications"
-                          type="checkbox"
-                          :id="'show_notifications_' + scheduleIndex"
-                          class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
-                      />
-                      <label :for="'show_notifications_' + scheduleIndex" class="ml-2 block text-sm text-gray-700">
-                        Show Notifications
-                      </label>
-                    </div>
-
-                    <div v-if="schedule.show_notifications">
-                      <label class="block text-sm font-medium text-gray-700">Notification Text</label>
-                      <input
-                          v-model="schedule.notification_text"
-                          type="text"
-                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                          placeholder="Time for your questionnaire!"
-                      />
-                    </div>
-                  </div>
-
-                  <!-- Questions for this schedule -->
-                  <div class="pt-4 border-t border-gray-300">
-                    <div class="flex justify-between items-center mb-3">
-                      <h5 class="text-sm font-medium text-gray-900">Questions</h5>
-                      <button
-                          type="button"
-                          @click="addQuestionToSchedule(scheduleIndex)"
-                          class="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200"
-                      >
-                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                        </svg>
-                        Add Question
-                      </button>
-                    </div>
-
-                    <div v-if="(schedule.questions || []).length === 0" class="text-center py-6 text-gray-500 bg-white rounded-md border border-dashed border-gray-300">
-                      <p class="text-xs">No questions yet. Click "Add Question" to get started.</p>
-                    </div>
-
-                    <div v-else class="space-y-3">
-                      <div v-for="(question, qIndex) in schedule.questions" :key="qIndex"
-                           class="border border-gray-200 rounded-md p-3 bg-white space-y-3">
-                        <!-- Question Header -->
-                        <div class="flex justify-between items-start">
-                          <span class="text-xs font-medium text-gray-700">Question {{ qIndex + 1 }}</span>
-                          <button
-                              type="button"
-                              @click="removeQuestionFromSchedule(scheduleIndex, qIndex)"
-                              class="text-red-600 hover:text-red-900"
-                          >
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                          </button>
-                        </div>
-
-                        <!-- Question Text -->
-                        <div>
-                          <label class="block text-xs font-medium text-gray-700">Question Text *</label>
-                          <textarea
-                              v-model="question.text"
-                              rows="2"
-                              class="mt-1 block w-full px-3 py-2 rounded-md shadow-sm border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 text-sm"
-                              placeholder="Enter your question"
-                          ></textarea>
-                        </div>
-
-                        <!-- Question Type -->
-                        <div>
-                          <label class="block text-xs font-medium text-gray-700">Type *</label>
-                          <select
-                              v-model="question.type"
-                              @change="handleScheduleQuestionTypeChange(scheduleIndex, qIndex)"
-                              class="mt-1 block w-full px-3 py-2 rounded-md shadow-sm border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 text-sm"
-                          >
-                            <option value="">Select type...</option>
-                            <option value="text">Text Field</option>
-                            <option value="textarea">Text Area</option>
-                            <option value="number">Number</option>
-                            <option value="range">Range Slider</option>
-                            <option value="radio">Single Choice</option>
-                            <option value="checkbox">Multiple Choice</option>
-                          </select>
-                        </div>
-
-                        <!-- Range Options -->
-                        <div v-if="question.type === 'range'" class="grid grid-cols-3 gap-2">
-                          <div>
-                            <label class="block text-xs font-medium text-gray-700">Min</label>
-                            <input
-                                type="number"
-                                v-model.number="question.minValue"
-                                class="mt-1 block w-full px-2 py-1 border border-gray-300 rounded-md text-sm"
-                            />
-                          </div>
-                          <div>
-                            <label class="block text-xs font-medium text-gray-700">Max</label>
-                            <input
-                                type="number"
-                                v-model.number="question.maxValue"
-                                class="mt-1 block w-full px-2 py-1 border border-gray-300 rounded-md text-sm"
-                            />
-                          </div>
-                          <div>
-                            <label class="block text-xs font-medium text-gray-700">Steps</label>
-                            <input
-                                type="number"
-                                v-model.number="question.steps"
-                                class="mt-1 block w-full px-2 py-1 border border-gray-300 rounded-md text-sm"
-                            />
-                          </div>
-                        </div>
-
-                        <!-- Choice Options -->
-                        <div v-if="question.type === 'radio' || question.type === 'checkbox'" class="space-y-2">
-                          <label class="block text-xs font-medium text-gray-700">Options</label>
-                          <div v-for="(option, oIndex) in question.options" :key="oIndex" class="flex items-center space-x-2">
-                            <input
-                                type="text"
-                                v-model="option.text"
-                                class="flex-1 px-2 py-1 border border-gray-300 rounded-md text-sm"
-                                :placeholder="'Option ' + (oIndex + 1)"
-                            />
-                            <button
-                                v-if="question.options.length > 1"
-                                @click="removeScheduleQuestionOption(scheduleIndex, qIndex, oIndex)"
-                                class="p-1 text-red-500 hover:bg-red-50 rounded"
-                            >
-                              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                              </svg>
-                            </button>
-                          </div>
-                          <button
-                              @click="addScheduleQuestionOption(scheduleIndex, qIndex)"
-                              class="text-xs text-blue-600 hover:text-blue-900"
-                          >
-                            + Add Option
-                          </button>
-                        </div>
-
-                        <!-- Mandatory -->
-                        <div class="flex items-center">
-                          <input
-                              type="checkbox"
-                              :id="'mandatory_' + scheduleIndex + '_' + qIndex"
-                              v-model="question.mandatory"
-                              class="h-3 w-3 text-blue-500 border-gray-300 rounded"
-                          />
-                          <label :for="'mandatory_' + scheduleIndex + '_' + qIndex" class="ml-2 block text-xs text-gray-700">
-                            Required question
-                          </label>
-                        </div>
-
-                        <!-- iOS Data Collection -->
-                        <div class="flex items-center">
-                          <input
-                              type="checkbox"
-                              :id="'ios_data_collection_' + scheduleIndex + '_' + qIndex"
-                              v-model="question.isIOSDataCollection"
-                              class="h-3 w-3 text-blue-500 border-gray-300 rounded"
-                          />
-                          <label :for="'ios_data_collection_' + scheduleIndex + '_' + qIndex" class="ml-2 block text-xs text-gray-700">
-                            iOS data collection question
-                          </label>
-                        </div>
-
-                        <!-- Android Data Collection -->
-                        <div class="flex items-center">
-                          <input
-                              type="checkbox"
-                              :id="'android_data_collection_' + scheduleIndex + '_' + qIndex"
-                              v-model="question.isAndroidDataCollection"
-                              class="h-3 w-3 text-blue-500 border-gray-300 rounded"
-                          />
-                          <label :for="'android_data_collection_' + scheduleIndex + '_' + qIndex" class="ml-2 block text-xs text-gray-700">
-                            Android data collection question
-                          </label>
-                        </div>
-
-                        <!-- Item Group -->
-                        <div>
-                          <label class="block text-xs font-medium text-gray-700">Item Group (optional)</label>
-                          <input
-                              type="text"
-                              v-model="question.itemGroup"
-                              class="mt-1 block w-full px-2 py-1 border border-gray-300 rounded-md text-sm"
-                              placeholder="Enter item group name"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Pages Builder -->
-        <div class="pt-8 space-y-6">
-          <h3 class="text-lg font-medium leading-6 text-gray-900">Pages Builder</h3>
-          <p class="text-sm text-gray-600">Create instruction pages with HTML content for your mobile app.</p>
-          
-          <!-- Pages List -->
-          <div class="space-y-4">
-            <div class="flex justify-between items-center">
-              <h4 class="text-md font-medium text-gray-900">Pages</h4>
-              <button
-                  type="button"
-                  @click="addMartPage"
-                  class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        <!-- Next Steps Info -->
+        <div class="pt-8">
+          <div class="rounded-md bg-blue-50 border border-blue-200 p-4">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
                 </svg>
-                Add Page
-              </button>
-            </div>
-
-            <!-- Page Items -->
-            <div v-if="martProject.pages.length === 0" class="text-center py-8 text-gray-500">
-              No pages added yet. Click "Add Page" to get started.
-            </div>
-            
-            <div v-for="(page, index) in martProject.pages" :key="index" class="border border-gray-300 rounded-lg p-4 space-y-4">
-              <div class="flex justify-between items-start">
-                <span class="text-sm font-medium text-gray-700">Page {{ index + 1 }}</span>
-                <button
-                    type="button"
-                    @click="removeMartPage(index)"
-                    class="text-red-600 hover:text-red-900"
-                >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                  </svg>
-                </button>
               </div>
-
-              <!-- Page Name -->
-              <div>
-                <label :for="'page-name-' + index" class="block text-sm font-medium text-gray-700">Page Name *</label>
-                <input
-                    :id="'page-name-' + index"
-                    type="text"
-                    v-model="page.name"
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="Enter page name"
-                />
-              </div>
-
-              <!-- Page Content -->
-              <div>
-                <label :for="'page-content-' + index" class="block text-sm font-medium text-gray-700">Page Content (HTML) *</label>
-                <textarea
-                    :id="'page-content-' + index"
-                    v-model="page.content"
-                    rows="6"
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="Enter HTML content for the page"
-                ></textarea>
-                <p class="text-xs text-gray-500 mt-1">You can use HTML tags for formatting (e.g., &lt;h1&gt;, &lt;p&gt;, &lt;strong&gt;, &lt;br&gt;, etc.)</p>
-              </div>
-
-              <!-- Button Text -->
-              <div>
-                <label :for="'page-button-' + index" class="block text-sm font-medium text-gray-700">Button Text *</label>
-                <input
-                    :id="'page-button-' + index"
-                    type="text"
-                    v-model="page.buttonText"
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="Continue"
-                />
-              </div>
-
-              <!-- Show on First App Start -->
-              <div class="flex items-center">
-                <input
-                    :id="'page-first-start-' + index"
-                    type="checkbox"
-                    v-model="page.showOnFirstAppStart"
-                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label :for="'page-first-start-' + index" class="ml-2 block text-sm text-gray-700">
-                  Show this page on first app start
-                </label>
-              </div>
-
-              <!-- Mark as Success Page -->
-              <div class="flex items-center">
-                <input
-                    :id="'page-success-' + index"
-                    type="checkbox"
-                    v-model="page.isSuccessPage"
-                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label :for="'page-success-' + index" class="ml-2 block text-sm text-gray-700">
-                  Mark as success page
-                </label>
+              <div class="ml-3">
+                <h3 class="text-sm font-medium text-blue-800">Next Steps</h3>
+                <div class="mt-2 text-sm text-blue-700">
+                  <p>After creating your project, you can add questionnaires and pages from the project edit page.</p>
+                </div>
               </div>
             </div>
           </div>
@@ -1043,8 +562,6 @@ export default {
         startTime: '',
         endDate: '',
         endTime: '',
-        schedules: [], // New schedule-based approach
-        pages: [],
         response: '',
       },
       isCreatingMartProject: false,
@@ -1119,7 +636,6 @@ export default {
         description: this.newProject.description,
         ninputs: this.newProject.ninputs,
         inputs: JSON.stringify(inputsData), // Only include user inputs, not entity config
-        created_by: this.userId,
         entityName: this.newProject.entityName || 'entity',
         useEntity: this.newProject.useEntity,
         media: this.newProject.useEntity ? this.newProject.media.filter(m => m.trim() !== '') : [],
@@ -1132,6 +648,8 @@ export default {
             window.location.href = this.productionUrl + '/projects';
           })
           .catch(error => {
+            console.error('Project creation error:', error);
+
             if (error.response && error.response.data) {
               // Handle validation errors (multiple errors)
               if (error.response.data.errors) {
@@ -1153,6 +671,14 @@ export default {
             } else {
               this.newProject.response = 'An unexpected error occurred.';
             }
+
+            // Scroll to error message
+            this.$nextTick(() => {
+              const errorEl = document.querySelector('.bg-red-100');
+              if (errorEl) {
+                errorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }
+            });
           });
     },
 
@@ -1286,218 +812,31 @@ export default {
         return;
       }
 
-      // Schedule validation - at least one questionnaire required
-      if (this.martProject.schedules.length === 0) {
-        this.martProject.response = 'At least one questionnaire with questions is required';
-        return;
-      }
-
-      // Validate each schedule
-      for (let s = 0; s < this.martProject.schedules.length; s++) {
-        const schedule = this.martProject.schedules[s];
-
-        if (!schedule.name.trim()) {
-          this.martProject.response = `Questionnaire ${s + 1}: Questionnaire name is required`;
-          return;
-        }
-
-        if (!schedule.start_date_time.date) {
-          this.martProject.response = `Questionnaire ${s + 1}: Start date is required`;
-          return;
-        }
-
-        if (schedule.type === 'repeating' && !schedule.end_date_time.date) {
-          this.martProject.response = `Questionnaire ${s + 1}: End date is required for repeating questionnaires`;
-          return;
-        }
-
-        // Validate questions in this questionnaire
-        if (!schedule.questions || schedule.questions.length === 0) {
-          this.martProject.response = `Questionnaire ${s + 1}: At least one question is required`;
-          return;
-        }
-
-        // Validate each question
-        for (let q = 0; q < schedule.questions.length; q++) {
-          const question = schedule.questions[q];
-
-          if (!question.text.trim()) {
-            this.martProject.response = `Questionnaire ${s + 1}, Question ${q + 1}: Question text is required`;
-            return;
-          }
-
-          if (!question.type) {
-            this.martProject.response = `Questionnaire ${s + 1}, Question ${q + 1}: Question type is required`;
-            return;
-          }
-
-          // Validate choice questions have options
-          if ((question.type === 'radio' || question.type === 'checkbox') &&
-              (!question.options || question.options.filter(opt => opt.text && opt.text.trim()).length < 2)) {
-            this.martProject.response = `Questionnaire ${s + 1}, Question ${q + 1}: At least 2 options are required for choice questions`;
-            return;
-          }
-
-          // Validate range questions
-          if (question.type === 'range') {
-            if (question.minValue == null || question.maxValue == null) {
-              this.martProject.response = `Questionnaire ${s + 1}, Question ${q + 1}: Min and max values are required for range questions`;
-              return;
-            }
-            if (question.minValue >= question.maxValue) {
-              this.martProject.response = `Questionnaire ${s + 1}, Question ${q + 1}: Max value must be greater than min value`;
-              return;
-            }
-          }
-        }
-      }
-
-      // Validate pages
-      for (let i = 0; i < this.martProject.pages.length; i++) {
-        const page = this.martProject.pages[i];
-
-        if (!page.name.trim()) {
-          this.martProject.response = `Page ${i + 1}: Page name is required`;
-          return;
-        }
-
-        if (!page.content.trim()) {
-          this.martProject.response = `Page ${i + 1}: Page content is required`;
-          return;
-        }
-
-        if (!page.buttonText.trim()) {
-          this.martProject.response = `Page ${i + 1}: Button text is required`;
-          return;
-        }
-      }
-
-      // Create MART configuration for legacy compatibility
-      const martConfig = {
-        type: 'mart',
-        projectOptions: {
-          startDateAndTime: {
-            date: this.martProject.startDate,
-            time: this.martProject.startTime || '00:00'
-          },
-          endDateAndTime: {
-            date: this.martProject.endDate,
-            time: this.martProject.endTime || '23:59'
-          },
-          pages: this.martProject.pages.map((page, index) => ({
-            name: page.name,
-            content: page.content,
-            showOnFirstAppStart: page.showOnFirstAppStart,
-            isSuccessPage: page.isSuccessPage,
-            buttonText: page.buttonText,
-            sortOrder: index
-          }))
-        }
-      };
-
-      // Prepare form data for project creation
-      const formData = {
-        name: this.martProject.name,
-        description: this.martProject.description,
-        ninputs: 0,
-        inputs: JSON.stringify([martConfig]), // Store MART config only
-        created_by: this.userId,
-        is_mart: true,
-      };
-
-      // Set loading state
-      this.isCreatingMartProject = true;
-
+      // Validation passed, create the MART project
       try {
-        // Step 1: Create the project
-        const projectResponse = await window.axios.post(this.productionUrl + '/projects', formData);
-        const projectId = projectResponse.data.id || projectResponse.data.project?.id;
+        const formData = {
+          name: this.martProject.name,
+          description: this.martProject.description,
+          startDate: this.martProject.startDate,
+          startTime: this.martProject.startTime,
+          endDate: this.martProject.endDate,
+          endTime: this.martProject.endTime,
+          isMart: true,
+        };
 
-        if (!projectId) {
-          window.location.href = this.productionUrl + '/projects';
-          return;
-        }
-
-        // Step 2: Create each schedule with its questions
-        for (let s = 0; s < this.martProject.schedules.length; s++) {
-          const schedule = this.martProject.schedules[s];
-
-          // Build timing config
-          const timingConfig = {
-            start_date_time: schedule.start_date_time,
-            end_date_time: schedule.type === 'repeating' ? schedule.end_date_time : null,
-            daily_interval_duration: schedule.daily_interval_duration || null,
-            min_break_between: schedule.min_break_between || null,
-            max_daily_submits: schedule.max_daily_submits || null,
-            daily_start_time: schedule.daily_start_time || null,
-            daily_end_time: schedule.daily_end_time || null,
-            quest_available_at: schedule.quest_available_at || 'randomTimeWithinInterval',
-          };
-
-          // Build notification config
-          const notificationConfig = {
-            show_progress_bar: schedule.show_progress_bar,
-            show_notifications: schedule.show_notifications,
-            notification_text: schedule.notification_text || '',
-          };
-
-          // Convert questions to backend format
-          const processedQuestions = schedule.questions.map(q => {
-            const backendType = this.mapMartTypeToMetagType(q.type);
-            const config = {};
-
-            // Add type-specific config
-            if (q.type === 'range') {
-              config.min = q.minValue;
-              config.max = q.maxValue;
-              config.step = q.steps;
-            } else if (q.type === 'radio' || q.type === 'checkbox') {
-              config.options = q.options.filter(o => o.text && o.text.trim()).map(o => o.text.trim());
-            }
-
-            return {
-              text: q.text,
-              type: backendType,
-              mandatory: q.mandatory,
-              is_ios_data_collection: q.isIOSDataCollection || false,
-              is_android_data_collection: q.isAndroidDataCollection || false,
-              item_group: q.itemGroup || null,
-              config: config
-            };
-          });
-
-          // Create the schedule via API
-          const scheduleData = {
-            questionnaire_id: s + 1, // Sequential ID
-            name: schedule.name,
-            type: schedule.type,
-            start_date_time: timingConfig.start_date_time,
-            end_date_time: timingConfig.end_date_time,
-            show_progress_bar: notificationConfig.show_progress_bar,
-            show_notifications: notificationConfig.show_notifications,
-            notification_text: notificationConfig.notification_text,
-            daily_interval_duration: timingConfig.daily_interval_duration,
-            min_break_between: timingConfig.min_break_between,
-            max_daily_submits: timingConfig.max_daily_submits,
-            daily_start_time: timingConfig.daily_start_time,
-            daily_end_time: timingConfig.daily_end_time,
-            quest_available_at: timingConfig.quest_available_at,
-            questions: processedQuestions
-          };
-
-          await window.axios.post(`${this.productionUrl}/projects/${projectId}/schedules`, scheduleData);
-        }
+        const response = await window.axios.post(this.productionUrl + '/projects', formData);
 
         // Success! Redirect to projects page
         window.location.href = this.productionUrl + '/projects';
-
       } catch (error) {
-        console.error('Error creating MART project:', error);
+        console.error('MART project creation error:', error);
+
         if (error.response && error.response.data) {
-          // Handle validation errors
+          // Handle validation errors (multiple errors)
           if (error.response.data.errors) {
             let errorMessages = '<ul class="list-disc pl-5">';
 
+            // Loop through all error messages
             Object.keys(error.response.data.errors).forEach(field => {
               error.response.data.errors[field].forEach(message => {
                 errorMessages += `<li>${message}</li>`;
@@ -1507,141 +846,21 @@ export default {
             errorMessages += '</ul>';
             this.martProject.response = errorMessages;
           } else {
-            this.martProject.response = error.response.data.message || 'An error occurred.';
+            // Single error message
+            this.martProject.response = error.response.data.message || 'An error occurred while creating the project.';
           }
         } else {
-          this.martProject.response = 'An unexpected error occurred while creating the project.';
+          this.martProject.response = 'An unexpected error occurred.';
         }
-      } finally {
-        // Always reset loading state
-        this.isCreatingMartProject = false;
-      }
-    },
 
-    // MART Schedule Management Methods
-    addMartSchedule() {
-      const scheduleId = this.martProject.schedules.length + 1;
-      this.martProject.schedules.push({
-        name: `Questionnaire ${scheduleId}`,
-        introductory_text: '',
-        type: 'single',
-        start_date_time: { date: '', time: '09:00' },
-        end_date_time: { date: '', time: '21:00' },
-        show_progress_bar: true,
-        show_notifications: true,
-        notification_text: '',
-        daily_interval_duration: 4,
-        min_break_between: 180,
-        max_daily_submits: 6,
-        daily_start_time: '09:00',
-        daily_end_time: '21:00',
-        quest_available_at: 'randomTimeWithinInterval',
-        questions: [],
-        expanded: true // Start expanded for new schedules
-      });
-    },
-
-    removeMartSchedule(scheduleIndex) {
-      this.martProject.schedules.splice(scheduleIndex, 1);
-    },
-
-    addQuestionToSchedule(scheduleIndex) {
-      const schedule = this.martProject.schedules[scheduleIndex];
-      if (!schedule.questions) {
-        schedule.questions = [];
-      }
-      schedule.questions.push({
-        text: '',
-        type: '',
-        mandatory: false,
-        isIOSDataCollection: false,
-        isAndroidDataCollection: false,
-        itemGroup: '',
-        minValue: 0,
-        maxValue: 10,
-        steps: 1,
-        options: [{ text: '', value: 0 }]
-      });
-    },
-
-    removeQuestionFromSchedule(scheduleIndex, questionIndex) {
-      this.martProject.schedules[scheduleIndex].questions.splice(questionIndex, 1);
-    },
-
-    handleScheduleQuestionTypeChange(scheduleIndex, questionIndex) {
-      const question = this.martProject.schedules[scheduleIndex].questions[questionIndex];
-
-      // Reset type-specific properties
-      question.minValue = 0;
-      question.maxValue = 10;
-      question.steps = 1;
-      question.options = [];
-
-      // Initialize based on type
-      if (question.type === 'number') {
-        question.minValue = 1;
-        question.maxValue = 10;
-      } else if (question.type === 'range') {
-        question.minValue = 0;
-        question.maxValue = 10;
-        question.steps = 1;
-      } else if (question.type === 'radio' || question.type === 'checkbox') {
-        question.options = [
-          { text: '', value: 0 },
-          { text: '', value: 1 }
-        ];
-      }
-    },
-
-    addScheduleQuestionOption(scheduleIndex, questionIndex) {
-      const question = this.martProject.schedules[scheduleIndex].questions[questionIndex];
-      if (!question.options) {
-        question.options = [];
-      }
-      question.options.push({
-        text: '',
-        value: question.options.length
-      });
-    },
-
-    removeScheduleQuestionOption(scheduleIndex, questionIndex, optionIndex) {
-      const question = this.martProject.schedules[scheduleIndex].questions[questionIndex];
-      if (question.options.length > 1) {
-        question.options.splice(optionIndex, 1);
-        // Renumber values
-        question.options.forEach((opt, idx) => {
-          opt.value = idx;
+        // Scroll to error message
+        this.$nextTick(() => {
+          const errorEl = document.querySelector('.bg-red-100');
+          if (errorEl) {
+            errorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
         });
       }
-    },
-
-    // MART Page Management Methods
-    addMartPage() {
-      this.martProject.pages.push({
-        name: '',
-        content: '',
-        buttonText: 'Continue',
-        showOnFirstAppStart: false,
-        isSuccessPage: false
-      });
-    },
-
-    removeMartPage(index) {
-      this.martProject.pages.splice(index, 1);
-    },
-
-    // Helper method to map MART types to MetaG types
-    mapMartTypeToMetagType(martType) {
-      const mapping = {
-        'text': 'text',
-        'textarea': 'text',
-        'number': 'scale',
-        'range': 'scale',
-        'radio': 'one choice',
-        'checkbox': 'multiple choice'
-      };
-      
-      return mapping[martType] || 'text';
     },
   },
 };

@@ -269,30 +269,62 @@ class ProjectController extends Controller
         $attributes = request()->validate([
             'name' => self::REQUIRED,
             'description' => self::REQUIRED,
-            'created_by' => self::REQUIRED,
             self::INPUTS => self::NULLABLE,
             'entityName' => self::NULLABLE,
             'useEntity' => 'boolean|nullable',
+            'isMart' => 'boolean|nullable',
+            'startDate' => self::NULLABLE,
+            'startTime' => self::NULLABLE,
+            'endDate' => self::NULLABLE,
+            'endTime' => self::NULLABLE,
         ]);
-        // Check if inputs is already a JSON string or an array
-        if (is_string($attributes[self::INPUTS]) && $this->isJson($attributes[self::INPUTS])) {
-            $inputs = json_decode($attributes[self::INPUTS], true);
-        } else {
-            $inputs = $attributes[self::INPUTS];
-        }
 
-        // Process each input to ensure answers are properly handled
-        foreach ($inputs as &$input) {
-            // Check if the input has 'answers' key before attempting to filter
-            if (isset($input['answers'])) {
-                $input['answers'] = array_filter($input['answers']);
+        // Set created_by from authenticated user
+        $attributes['created_by'] = auth()->id();
+
+        // Process inputs if provided (MART projects don't have inputs)
+        if (isset($attributes[self::INPUTS])) {
+            // Check if inputs is already a JSON string or an array
+            if (is_string($attributes[self::INPUTS]) && $this->isJson($attributes[self::INPUTS])) {
+                $inputs = json_decode($attributes[self::INPUTS], true);
             } else {
-                // Initialize an empty array for non-choice type inputs
-                $input['answers'] = [];
+                $inputs = $attributes[self::INPUTS];
             }
+
+            // Process each input to ensure answers are properly handled
+            foreach ($inputs as &$input) {
+                // Check if the input has 'answers' key before attempting to filter
+                if (isset($input['answers'])) {
+                    $input['answers'] = array_filter($input['answers']);
+                } else {
+                    // Initialize an empty array for non-choice type inputs
+                    $input['answers'] = [];
+                }
+            }
+
+            $attributes[self::INPUTS] = json_encode($inputs);
+        } else {
+            // MART projects or projects without inputs - set empty JSON array
+            $attributes[self::INPUTS] = json_encode([]);
         }
 
-        $attributes[self::INPUTS] = json_encode($inputs);
+        // If this is a MART project, add the MART marker to inputs
+        if (isset($attributes['isMart']) && $attributes['isMart'] === true) {
+            $inputs = json_decode($attributes[self::INPUTS], true);
+            $inputs[] = [
+                'type' => 'mart',
+                'name' => 'MART Configuration',
+                'startDate' => $attributes['startDate'] ?? null,
+                'startTime' => $attributes['startTime'] ?? null,
+                'endDate' => $attributes['endDate'] ?? null,
+                'endTime' => $attributes['endTime'] ?? null,
+                'answers' => [],
+            ];
+            $attributes[self::INPUTS] = json_encode($inputs);
+        }
+
+        // Remove MART-specific fields that shouldn't be in the projects table
+        unset($attributes['isMart'], $attributes['startDate'], $attributes['startTime'], $attributes['endDate'], $attributes['endTime']);
 
         // Only update entity_name and use_entity for non-legacy projects
         if (request()->has('entityName') || request()->has('useEntity')) {
@@ -509,7 +541,7 @@ class ProjectController extends Controller
                     // Copy all questions with NEW UUIDs
                     foreach ($originalSchedule->questions as $originalQuestion) {
                         MartQuestion::create([
-                            'schedule_id' => $newSchedule->id,
+                            'mart_questionnaire_id' => $newSchedule->id,
                             'position' => $originalQuestion->position,
                             'text' => $originalQuestion->text,
                             'type' => $originalQuestion->type,

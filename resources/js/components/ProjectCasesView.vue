@@ -248,9 +248,17 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
               <h3 class="mt-2 text-sm font-medium text-gray-900">No cases found</h3>
-              <p class="mt-1 text-sm text-gray-500">
+              <p class="mt-1 text-sm text-gray-500 mb-4">
                 {{ searchQuery || statusFilter ? 'Try adjusting your search or filter criteria.' : 'Get started by creating a new case.' }}
               </p>
+              <a v-if="!searchQuery && !statusFilter"
+                 :href="urlToCreateCase + '/cases/new'"
+                 class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                Create your first case
+              </a>
             </div>
           </div>
         </div>
@@ -345,23 +353,16 @@
           </div>
         </div>
 
-        <!-- Empty State -->
-        <div v-else class="h-full flex items-center justify-center bg-gray-50 pb-16">
+        <!-- Empty State - Only show if there are cases but none selected -->
+        <div v-else-if="totalCasesCount > 0" class="h-full flex items-center justify-center bg-gray-50 pb-16">
           <div class="text-center max-w-md mx-auto px-4">
             <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             <h3 class="text-lg font-medium text-gray-900 mb-2">Select a case to view details</h3>
-            <p class="text-sm text-gray-500 mb-6">
+            <p class="text-sm text-gray-500">
               Choose a case from the list above to see its entries and data
             </p>
-            <a :href="urlToCreateCase + '/cases/new'"
-               class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              {{ totalCasesCount > 0 ? 'Create another case' : 'Create your first case' }}
-            </a>
           </div>
         </div>
       </div>
@@ -418,14 +419,23 @@
                     class="px-6 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors duration-150">
               Cancel
             </button>
-            <button @click="saveProjectChanges"
+            <button @click="saveProjectChanges(false)"
                     :disabled="isLoading"
                     class="inline-flex items-center px-6 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150">
               <svg v-if="isLoading" class="w-5 h-5 mr-2 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Save Changes
+              Save
+            </button>
+            <button @click="saveProjectChanges(true)"
+                    :disabled="isLoading"
+                    class="inline-flex items-center px-6 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150">
+              <svg v-if="isLoading" class="w-5 h-5 mr-2 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Save and Close
             </button>
           </div>
         </div>
@@ -534,13 +544,6 @@ export default {
     this.loadCases();
     this.debouncedSearch = debounce(this.loadCases, 300);
 
-    // DEBUG: Let's see what we receive
-    // console.log('ProjectCasesView DEBUG:', {
-    //   projectInputs: this.projectInputs,
-    //   project: this.project,
-    //   'project.inputs': this.project?.inputs
-    // });
-
     // Handle window resize and mouse events
     document.addEventListener('mouseup', this.stopResize);
     document.addEventListener('mousemove', this.handleResize);
@@ -563,14 +566,22 @@ export default {
       // this.showProjectSettings = false;
     },
 
-    async saveProjectChanges() {
+    async saveProjectChanges(closeAfterSave = false) {
       // Trigger save from the EditProject component
       const editProjectComponent = this.$refs.editProject;
       if (editProjectComponent && typeof editProjectComponent.save === 'function') {
         this.isLoading = true;
         try {
-          await editProjectComponent.save();
-          this.showProjectSettings = false; // Close modal on successful save
+          await editProjectComponent.save(closeAfterSave);
+
+          if (closeAfterSave) {
+            // Redirect to projects page
+            setTimeout(() => {
+              window.location.href = this.productionUrl + '/projects';
+            }, 500);
+          }
+          // If closeAfterSave is false, do nothing - keep modal open for continued editing
+
         } catch (error) {
           console.error('Failed to save project changes:', error);
         } finally {
@@ -798,8 +809,7 @@ export default {
 
           this.dialog.show = false;
 
-          // Show success message (you might want to implement a toast notification)
-          console.log('Case deleted successfully');
+          // Case deleted successfully
         } else {
           throw new Error('Delete failed');
         }

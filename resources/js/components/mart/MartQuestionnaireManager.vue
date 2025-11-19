@@ -5,7 +5,7 @@
       <div>
         <h3 class="text-lg font-medium text-gray-900">{{ trans('Questionnaires') }}</h3>
         <p class="mt-2 text-sm text-gray-600">
-          {{ trans('Manage multiple questionnaire schedules with unique questions for each schedule.') }}
+          {{ trans('Manage multiple questionnaires with unique questions for each questionnaire.') }}
         </p>
       </div>
       <button
@@ -184,8 +184,8 @@
       </div>
     </div>
 
-    <!-- Add/Edit Schedule Dialog -->
-    <AddEditScheduleDialog
+    <!-- Add/Edit Questionnaire Dialog -->
+    <AddEditQuestionnaireDialog
         v-if="showScheduleDialog"
         :schedule="selectedSchedule"
         :project-id="projectId"
@@ -204,14 +204,14 @@
 </template>
 
 <script>
-import AddEditScheduleDialog from './AddEditScheduleDialog.vue';
+import AddEditQuestionnaireDialog from './AddEditQuestionnaireDialog.vue';
 import VersionHistoryModal from './VersionHistoryModal.vue';
 
 export default {
-  name: 'MartScheduleManager',
+  name: 'MartQuestionnaireManager',
 
   components: {
-    AddEditScheduleDialog,
+    AddEditQuestionnaireDialog,
     VersionHistoryModal
   },
 
@@ -251,11 +251,11 @@ export default {
     async loadSchedules() {
       this.loading = true;
       try {
-        const response = await window.axios.get(`/projects/${this.projectId}/schedules`);
-        this.schedules = response.data.schedules || [];
+        const response = await window.axios.get(`/projects/${this.projectId}/questionnaires`);
+        this.schedules = response.data.questionnaires || [];
       } catch (error) {
-        console.error('Error loading schedules:', error);
-        this.$root.showSnackbarMessage(this.trans('Failed to load schedules'));
+        console.error('Error loading questionnaires:', error);
+        this.$root.showSnackbarMessage(this.trans('Failed to load questionnaires'));
       } finally {
         this.loading = false;
       }
@@ -289,7 +289,7 @@ export default {
     handleScheduleSaved() {
       this.closeScheduleDialog();
       this.loadSchedules();
-      this.$root.showSnackbarMessage(this.trans('Schedule saved successfully'));
+      this.$root.showSnackbarMessage(this.trans('Questionnaire saved successfully'));
     },
 
     getQuestionCount(schedule) {

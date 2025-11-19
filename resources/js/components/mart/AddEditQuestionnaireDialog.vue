@@ -10,7 +10,7 @@
         <div class="bg-white px-6 py-4 border-b border-gray-200">
           <div class="flex items-center justify-between">
             <h3 class="text-lg leading-6 font-medium text-gray-900">
-              {{ isEditMode ? trans('Edit Questions') : trans('Add Questionnaire Schedule') }}
+              {{ isEditMode ? trans('Edit Questions') : trans('Add Questionnaire') }}
             </h3>
             <button
                 @click="close"
@@ -44,11 +44,11 @@
           </div>
 
           <div class="space-y-6">
-            <!-- Schedule Settings (only for new schedules) -->
+            <!-- Questionnaire Settings (only for new questionnaires) -->
             <div v-if="!isEditMode" class="space-y-4">
-              <!-- Schedule Name -->
+              <!-- Questionnaire Name -->
               <div>
-                <label class="block text-sm font-medium text-gray-700">{{ trans('Schedule Name') }} *</label>
+                <label class="block text-sm font-medium text-gray-700">{{ trans('Questionnaire Name') }} *</label>
                 <input
                     v-model="formData.name"
                     type="text"
@@ -69,9 +69,9 @@
                 <p class="mt-1 text-xs text-gray-500">{{ trans('This text will be shown at the top of the questionnaire before any questions.') }}</p>
               </div>
 
-              <!-- Schedule Type -->
+              <!-- Questionnaire Type -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">{{ trans('Schedule Type') }} *</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">{{ trans('Questionnaire Type') }} *</label>
                 <div class="grid grid-cols-2 gap-4">
                   <button
                       type="button"
@@ -142,9 +142,9 @@
                 </div>
               </div>
 
-              <!-- Repeating Schedule Options -->
+              <!-- Repeating Questionnaire Options -->
               <div v-if="formData.type === 'repeating'" class="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <h4 class="text-sm font-medium text-gray-900">{{ trans('Repeating Schedule Options') }}</h4>
+                <h4 class="text-sm font-medium text-gray-900">{{ trans('Repeating Questionnaire Options') }}</h4>
 
                 <div class="grid grid-cols-2 gap-4">
                   <div>
@@ -476,7 +476,7 @@
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            {{ isEditMode ? trans('Update Questions') : trans('Create Schedule') }}
+            {{ isEditMode ? trans('Update Questions') : trans('Create Questionnaire') }}
           </button>
         </div>
       </div>
@@ -486,7 +486,7 @@
 
 <script>
 export default {
-  name: 'AddEditScheduleDialog',
+  name: 'AddEditQuestionnaireDialog',
 
   props: {
     schedule: {
@@ -691,13 +691,13 @@ export default {
 
         if (this.isEditMode) {
           // Update questions and introductory text
-          await window.axios.put(`/schedules/${this.schedule.id}/questions`, {
+          await window.axios.put(`/questionnaires/${this.schedule.id}/questions`, {
             questions: processedQuestions,
             introductory_text: this.formData.introductory_text
           });
         } else {
-          // Create new schedule
-          await window.axios.post(`/projects/${this.projectId}/schedules`, {
+          // Create new questionnaire
+          await window.axios.post(`/projects/${this.projectId}/questionnaires`, {
             ...this.formData,
             questions: processedQuestions
           });
@@ -705,8 +705,8 @@ export default {
 
         this.$emit('saved');
       } catch (error) {
-        console.error('Error saving schedule:', error);
-        let errorMessage = this.trans('Failed to save schedule');
+        console.error('Error saving questionnaire:', error);
+        let errorMessage = this.trans('Failed to save questionnaire');
 
         if (error.response?.data?.errors) {
           const errors = Object.values(error.response.data.errors).flat();

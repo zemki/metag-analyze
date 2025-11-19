@@ -16,7 +16,7 @@ class MartSchedule extends Model
     /**
      * The table associated with the model.
      */
-    protected $table = 'mart_schedules';
+    protected $table = 'mart_questionnaires';
 
     /**
      * The attributes that are mass assignable.
@@ -52,7 +52,7 @@ class MartSchedule extends Model
      */
     public function questions(): HasMany
     {
-        return $this->hasMany(MartQuestion::class, 'schedule_id')->orderBy('position');
+        return $this->hasMany(MartQuestion::class, 'mart_questionnaire_id')->orderBy('position');
     }
 
     /**
@@ -60,7 +60,7 @@ class MartSchedule extends Model
      */
     public function entries(): HasMany
     {
-        return $this->hasMany(MartEntry::class, 'schedule_id');
+        return $this->hasMany(MartEntry::class, 'mart_questionnaire_id');
     }
 
     /**

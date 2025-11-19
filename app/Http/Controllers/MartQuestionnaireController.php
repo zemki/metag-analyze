@@ -10,10 +10,10 @@ use App\Project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class MartScheduleController extends Controller
+class MartQuestionnaireController extends Controller
 {
     /**
-     * Get all questionnaire schedules for a project.
+     * Get all questionnaires for a project.
      * Now queries MART database
      */
     public function index(Project $project)
@@ -30,20 +30,20 @@ class MartScheduleController extends Controller
             ], 404);
         }
 
-        // Get schedules with questions from MART database
-        $schedules = MartSchedule::forProject($martProject->id)
+        // Get questionnaires with questions from MART database
+        $questionnaires = MartSchedule::forProject($martProject->id)
             ->with('questions')
             ->orderBy('questionnaire_id')
             ->get();
 
         return response()->json([
             'success' => true,
-            'schedules' => $schedules,
+            'questionnaires' => $questionnaires,
         ]);
     }
 
     /**
-     * Store a new questionnaire schedule for a project.
+     * Store a new questionnaire for a project.
      * Now creates in MART database with separate question records
      */
     public function store(Request $request, Project $project)
@@ -156,13 +156,13 @@ class MartScheduleController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to create schedule: '.$e->getMessage(),
+                'message' => 'Failed to create questionnaire: '.$e->getMessage(),
             ], 500);
         }
     }
 
     /**
-     * Update questions for a questionnaire schedule.
+     * Update questions for a questionnaire.
      * Now updates individual MartQuestion records with version tracking
      */
     public function updateQuestions(Request $request, MartSchedule $schedule)
@@ -241,7 +241,7 @@ class MartScheduleController extends Controller
     }
 
     /**
-     * Get question version history for a schedule.
+     * Get question version history for a questionnaire.
      * Now queries MartQuestionHistory for each question
      */
     public function history(MartSchedule $schedule)
