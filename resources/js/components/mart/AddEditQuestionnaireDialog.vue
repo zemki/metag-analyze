@@ -156,6 +156,10 @@
                         max="24"
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
                     />
+                    <p class="mt-1 text-xs text-gray-500">
+                      {{ trans('Day divided into intervals. Only 1 questionnaire per interval.') }}
+                      <span class="block mt-0.5 text-gray-400">{{ trans('Example: 4 hours = 3 intervals in 12h window (9-13, 13-17, 17-21)') }}</span>
+                    </p>
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-700">{{ trans('Min Break Between (minutes)') }}</label>
@@ -165,6 +169,10 @@
                         min="0"
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
                     />
+                    <p class="mt-1 text-xs text-gray-500">
+                      {{ trans('Minimum time between submissions. Prevents rapid completion.') }}
+                      <span class="block mt-0.5 text-gray-400">{{ trans('Example: 180 minutes = 3 hours minimum gap') }}</span>
+                    </p>
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-700">{{ trans('Max Daily Submits') }}</label>
@@ -174,6 +182,10 @@
                         min="1"
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
                     />
+                    <p class="mt-1 text-xs text-gray-500">
+                      {{ trans('Maximum submissions allowed per day.') }}
+                      <span class="block mt-0.5 text-gray-400">{{ trans('Can exceed intervals if min break allows') }}</span>
+                    </p>
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-700">{{ trans('Quest Available At') }}</label>
@@ -184,6 +196,10 @@
                       <option value="startOfInterval">{{ trans('Start of Interval') }}</option>
                       <option value="randomTimeWithinInterval">{{ trans('Random Time Within Interval') }}</option>
                     </select>
+                    <p class="mt-1 text-xs text-gray-500">
+                      <span class="block">{{ trans('Start: Available at 9:00, 13:00, 17:00') }}</span>
+                      <span class="block mt-0.5 text-gray-400">{{ trans('Random: Available at random time within each interval') }}</span>
+                    </p>
                   </div>
                 </div>
 
@@ -195,6 +211,10 @@
                         type="time"
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
                     />
+                    <p class="mt-1 text-xs text-gray-500">
+                      {{ trans('Beginning of the daily active window.') }}
+                      <span class="block mt-0.5 text-gray-400">{{ trans('Example: 09:00 - questionnaires available from this time') }}</span>
+                    </p>
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-700">{{ trans('Daily End Time') }}</label>
@@ -203,6 +223,10 @@
                         type="time"
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
                     />
+                    <p class="mt-1 text-xs text-gray-500">
+                      {{ trans('End of the daily active window.') }}
+                      <span class="block mt-0.5 text-gray-400">{{ trans('Example: 21:00 - last interval ends at this time') }}</span>
+                    </p>
                   </div>
                 </div>
               </div>
@@ -244,6 +268,17 @@
                 </div>
               </div>
             </div>
+
+            <!-- Schedule Preview -->
+            <SchedulePreview
+              :type="formData.type"
+              :daily-interval-duration="formData.daily_interval_duration"
+              :daily-start-time="formData.daily_start_time"
+              :daily-end-time="formData.daily_end_time"
+              :min-break-between="formData.min_break_between"
+              :max-daily-submits="formData.max_daily_submits"
+              :quest-available-at="formData.quest_available_at"
+            />
 
             <!-- Introductory Text (for edit mode) -->
             <div v-if="isEditMode" class="pt-6 border-t border-gray-200">
@@ -485,8 +520,14 @@
 </template>
 
 <script>
+import SchedulePreview from './SchedulePreview.vue';
+
 export default {
   name: 'AddEditQuestionnaireDialog',
+
+  components: {
+    SchedulePreview
+  },
 
   props: {
     schedule: {
@@ -590,6 +631,73 @@ export default {
           }
         };
       });
+
+      // Load timing configuration
+      if (this.schedule.timing_config) {
+        const timing = this.schedule.timing_config;
+
+        // Load schedule type
+        if (this.schedule.type) {
+          this.formData.type = this.schedule.type;
+        }
+
+        // Load date/time settings
+        if (timing.start_date_time) {
+          this.formData.start_date_time = {
+            date: timing.start_date_time.date || '',
+            time: timing.start_date_time.time || '09:00'
+          };
+        }
+
+        if (timing.end_date_time) {
+          this.formData.end_date_time = {
+            date: timing.end_date_time.date || '',
+            time: timing.end_date_time.time || '21:00'
+          };
+        }
+
+        // Load repeating schedule settings
+        if (timing.daily_interval_duration !== undefined) {
+          this.formData.daily_interval_duration = timing.daily_interval_duration;
+        }
+
+        if (timing.min_break_between !== undefined) {
+          this.formData.min_break_between = timing.min_break_between;
+        }
+
+        if (timing.max_daily_submits !== undefined) {
+          this.formData.max_daily_submits = timing.max_daily_submits;
+        }
+
+        if (timing.daily_start_time) {
+          this.formData.daily_start_time = timing.daily_start_time;
+        }
+
+        if (timing.daily_end_time) {
+          this.formData.daily_end_time = timing.daily_end_time;
+        }
+
+        if (timing.quest_available_at) {
+          this.formData.quest_available_at = timing.quest_available_at;
+        }
+      }
+
+      // Load notification configuration
+      if (this.schedule.notification_config) {
+        const notif = this.schedule.notification_config;
+
+        if (notif.show_progress_bar !== undefined) {
+          this.formData.show_progress_bar = notif.show_progress_bar;
+        }
+
+        if (notif.show_notifications !== undefined) {
+          this.formData.show_notifications = notif.show_notifications;
+        }
+
+        if (notif.notification_text) {
+          this.formData.notification_text = notif.notification_text;
+        }
+      }
     },
 
     // Map backend types (scale, text, one choice, multiple choice) to form types

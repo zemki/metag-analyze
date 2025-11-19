@@ -170,6 +170,33 @@
                   <span class="ml-2 text-gray-900">{{ getTimingConfig(schedule, 'daily_start_time') }} - {{ getTimingConfig(schedule, 'daily_end_time') }}</span>
                 </div>
               </div>
+              <div v-if="schedule.type === 'repeating' && getTimingConfig(schedule, 'daily_interval_duration')" class="flex items-start">
+                <svg class="w-4 h-4 mr-2 mt-0.5 text-cyan-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                </svg>
+                <div>
+                  <span class="font-medium text-gray-700">{{ trans('Interval Duration') }}:</span>
+                  <span class="ml-2 text-gray-900">{{ getTimingConfig(schedule, 'daily_interval_duration') }} {{ trans('hours') }}</span>
+                </div>
+              </div>
+              <div v-if="schedule.type === 'repeating' && getTimingConfig(schedule, 'min_break_between')" class="flex items-start">
+                <svg class="w-4 h-4 mr-2 mt-0.5 text-orange-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                </svg>
+                <div>
+                  <span class="font-medium text-gray-700">{{ trans('Min Break') }}:</span>
+                  <span class="ml-2 text-gray-900">{{ getTimingConfig(schedule, 'min_break_between') }} {{ trans('minutes') }}</span>
+                </div>
+              </div>
+              <div v-if="schedule.type === 'repeating' && getTimingConfig(schedule, 'quest_available_at')" class="flex items-start">
+                <svg class="w-4 h-4 mr-2 mt-0.5 text-teal-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
+                </svg>
+                <div>
+                  <span class="font-medium text-gray-700">{{ trans('Available At') }}:</span>
+                  <span class="ml-2 text-gray-900">{{ getTimingConfig(schedule, 'quest_available_at') === 'startOfInterval' ? trans('Start of interval') : trans('Random time') }}</span>
+                </div>
+              </div>
               <div v-if="getNotificationConfig(schedule, 'show_progress_bar')" class="flex items-start">
                 <svg class="w-4 h-4 mr-2 mt-0.5 text-indigo-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
