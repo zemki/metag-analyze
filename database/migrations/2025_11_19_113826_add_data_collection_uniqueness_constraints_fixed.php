@@ -24,6 +24,14 @@ return new class extends Migration
         $driver = $connection->getDriverName();
 
         if ($driver === 'mysql') {
+            // Drop existing triggers first if they exist
+            DB::connection('mart')->unprepared('DROP TRIGGER IF EXISTS before_insert_ios_data_collection_question');
+            DB::connection('mart')->unprepared('DROP TRIGGER IF EXISTS before_update_ios_data_collection_question');
+            DB::connection('mart')->unprepared('DROP TRIGGER IF EXISTS before_insert_android_data_collection_question');
+            DB::connection('mart')->unprepared('DROP TRIGGER IF EXISTS before_update_android_data_collection_question');
+            DB::connection('mart')->unprepared('DROP TRIGGER IF EXISTS before_insert_success_page');
+            DB::connection('mart')->unprepared('DROP TRIGGER IF EXISTS before_update_success_page');
+
             // Trigger to enforce only one iOS data collection question per project
             DB::connection('mart')->unprepared('
                 CREATE TRIGGER before_insert_ios_data_collection_question
@@ -32,10 +40,10 @@ return new class extends Migration
                 BEGIN
                     IF NEW.is_ios_data_collection = TRUE THEN
                         UPDATE mart_questions mq
-                        INNER JOIN mart_questionnaires mq2 ON mq.mart_questionnaire_id = mq2.id
+                        INNER JOIN mart_schedules ms ON mq.mart_schedule_id = ms.id
                         SET mq.is_ios_data_collection = FALSE
-                        WHERE mq2.mart_project_id = (
-                            SELECT mart_project_id FROM mart_questionnaires WHERE id = NEW.mart_questionnaire_id
+                        WHERE ms.mart_project_id = (
+                            SELECT mart_project_id FROM mart_schedules WHERE id = NEW.mart_schedule_id
                         )
                         AND mq.is_ios_data_collection = TRUE;
                     END IF;
@@ -49,10 +57,10 @@ return new class extends Migration
                 BEGIN
                     IF NEW.is_ios_data_collection = TRUE AND (OLD.is_ios_data_collection = FALSE OR OLD.is_ios_data_collection IS NULL) THEN
                         UPDATE mart_questions mq
-                        INNER JOIN mart_questionnaires mq2 ON mq.mart_questionnaire_id = mq2.id
+                        INNER JOIN mart_schedules ms ON mq.mart_schedule_id = ms.id
                         SET mq.is_ios_data_collection = FALSE
-                        WHERE mq2.mart_project_id = (
-                            SELECT mart_project_id FROM mart_questionnaires WHERE id = NEW.mart_questionnaire_id
+                        WHERE ms.mart_project_id = (
+                            SELECT mart_project_id FROM mart_schedules WHERE id = NEW.mart_schedule_id
                         )
                         AND mq.uuid != NEW.uuid
                         AND mq.is_ios_data_collection = TRUE;
@@ -68,10 +76,10 @@ return new class extends Migration
                 BEGIN
                     IF NEW.is_android_data_collection = TRUE THEN
                         UPDATE mart_questions mq
-                        INNER JOIN mart_questionnaires mq2 ON mq.mart_questionnaire_id = mq2.id
+                        INNER JOIN mart_schedules ms ON mq.mart_schedule_id = ms.id
                         SET mq.is_android_data_collection = FALSE
-                        WHERE mq2.mart_project_id = (
-                            SELECT mart_project_id FROM mart_questionnaires WHERE id = NEW.mart_questionnaire_id
+                        WHERE ms.mart_project_id = (
+                            SELECT mart_project_id FROM mart_schedules WHERE id = NEW.mart_schedule_id
                         )
                         AND mq.is_android_data_collection = TRUE;
                     END IF;
@@ -85,10 +93,10 @@ return new class extends Migration
                 BEGIN
                     IF NEW.is_android_data_collection = TRUE AND (OLD.is_android_data_collection = FALSE OR OLD.is_android_data_collection IS NULL) THEN
                         UPDATE mart_questions mq
-                        INNER JOIN mart_questionnaires mq2 ON mq.mart_questionnaire_id = mq2.id
+                        INNER JOIN mart_schedules ms ON mq.mart_schedule_id = ms.id
                         SET mq.is_android_data_collection = FALSE
-                        WHERE mq2.mart_project_id = (
-                            SELECT mart_project_id FROM mart_questionnaires WHERE id = NEW.mart_questionnaire_id
+                        WHERE ms.mart_project_id = (
+                            SELECT mart_project_id FROM mart_schedules WHERE id = NEW.mart_schedule_id
                         )
                         AND mq.uuid != NEW.uuid
                         AND mq.is_android_data_collection = TRUE;
