@@ -25,8 +25,11 @@ class AddDataCollectionUniquenessConstraints extends Migration
         $driver = $connection->getDriverName();
 
         if ($driver === 'mysql') {
-            // Trigger to enforce only one iOS data collection question per project
-            DB::connection('mart')->unprepared('
+            // Try to create triggers, but gracefully handle permission errors
+            // In environments without SUPER privilege, application logic will enforce constraints
+            try {
+                // Trigger to enforce only one iOS data collection question per project
+                DB::connection('mart')->unprepared('
                 CREATE TRIGGER before_insert_ios_data_collection_question
                 BEFORE INSERT ON mart_questions
                 FOR EACH ROW
@@ -126,6 +129,17 @@ class AddDataCollectionUniquenessConstraints extends Migration
                     END IF;
                 END
             ');
+            } catch (\Illuminate\Database\QueryException $e) {
+                // Check if error is due to insufficient privileges
+                if (strpos($e->getMessage(), 'You do not have the SUPER privilege') !== false ||
+                    strpos($e->getMessage(), 'log_bin_trust_function_creators') !== false) {
+                    \Log::warning('Skipping trigger creation - insufficient database privileges (SUPER required). Application logic will enforce uniqueness constraints.');
+                    \Log::warning('To enable triggers, ask your database administrator to run: SET GLOBAL log_bin_trust_function_creators = 1;');
+                } else {
+                    // Re-throw if it's a different error
+                    throw $e;
+                }
+            }
         }
 
         // For other database drivers (PostgreSQL, SQLite), application logic will handle uniqueness
@@ -142,12 +156,18 @@ class AddDataCollectionUniquenessConstraints extends Migration
         $driver = $connection->getDriverName();
 
         if ($driver === 'mysql') {
-            DB::connection('mart')->unprepared('DROP TRIGGER IF EXISTS before_insert_ios_data_collection_question');
-            DB::connection('mart')->unprepared('DROP TRIGGER IF EXISTS before_update_ios_data_collection_question');
-            DB::connection('mart')->unprepared('DROP TRIGGER IF EXISTS before_insert_android_data_collection_question');
-            DB::connection('mart')->unprepared('DROP TRIGGER IF EXISTS before_update_android_data_collection_question');
-            DB::connection('mart')->unprepared('DROP TRIGGER IF EXISTS before_insert_success_page');
-            DB::connection('mart')->unprepared('DROP TRIGGER IF EXISTS before_update_success_page');
+            // DROP TRIGGER IF EXISTS should be safe even without SUPER privilege
+            try {
+                DB::connection('mart')->unprepared('DROP TRIGGER IF EXISTS before_insert_ios_data_collection_question');
+                DB::connection('mart')->unprepared('DROP TRIGGER IF EXISTS before_update_ios_data_collection_question');
+                DB::connection('mart')->unprepared('DROP TRIGGER IF EXISTS before_insert_android_data_collection_question');
+                DB::connection('mart')->unprepared('DROP TRIGGER IF EXISTS before_update_android_data_collection_question');
+                DB::connection('mart')->unprepared('DROP TRIGGER IF EXISTS before_insert_success_page');
+                DB::connection('mart')->unprepared('DROP TRIGGER IF EXISTS before_update_success_page');
+            } catch (\Exception $e) {
+                // Silently continue if triggers don't exist or can't be dropped
+                \Log::info('Triggers may not exist or cannot be dropped: ' . $e->getMessage());
+            }
         }
     }
 }
