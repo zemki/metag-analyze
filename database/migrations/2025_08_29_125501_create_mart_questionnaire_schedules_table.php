@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('mart_questionnaire_schedules', function (Blueprint $table) {
+        if (!Schema::hasTable('mart_questionnaire_schedules')) {
+            Schema::create('mart_questionnaire_schedules', function (Blueprint $table) {
             $table->id();
             $table->unsignedInteger('project_id');
             $table->integer('questionnaire_id'); // Mobile app reference ID
@@ -44,7 +45,8 @@ return new class extends Migration
             $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
             $table->unique(['project_id', 'questionnaire_id']); // Ensure unique questionnaire_id per project
             $table->index('type');
-        });
+            });
+        }
     }
 
     /**
