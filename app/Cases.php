@@ -43,6 +43,10 @@ class Cases extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'first_login_at' => 'datetime',
+    ];
+
     public static function boot()
     {
         parent::boot();

@@ -231,6 +231,37 @@
                 </div>
               </div>
 
+              <!-- Dynamic End Date Calculation -->
+              <div class="space-y-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div class="flex items-center">
+                  <input
+                      v-model="formData.calculate_end_date_on_login"
+                      type="checkbox"
+                      id="calculate_end_date"
+                      class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
+                  />
+                  <label for="calculate_end_date" class="ml-2 block text-sm font-medium text-gray-700">
+                    {{ trans('Calculate end date dynamically on first login') }}
+                  </label>
+                </div>
+
+                <div v-if="formData.calculate_end_date_on_login" class="ml-6">
+                  <label class="block text-sm font-medium text-gray-700">
+                    {{ trans('Duration (days after first login)') }}
+                  </label>
+                  <input
+                      v-model.number="formData.duration_days_after_login"
+                      type="number"
+                      min="1"
+                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                      :placeholder="trans('e.g., 7')"
+                  />
+                  <p class="mt-1 text-xs text-gray-500">
+                    {{ trans('The questionnaire will end X days after the participant first logs in.') }}
+                  </p>
+                </div>
+              </div>
+
               <!-- Notification Settings -->
               <div class="space-y-3">
                 <div class="flex items-center">
@@ -554,6 +585,8 @@ export default {
         type: 'single',
         start_date_time: { date: '', time: '09:00' },
         end_date_time: { date: '', time: '21:00' },
+        calculate_end_date_on_login: false,
+        duration_days_after_login: null,
         show_progress_bar: true,
         show_notifications: true,
         notification_text: '',
@@ -679,6 +712,15 @@ export default {
 
         if (timing.quest_available_at) {
           this.formData.quest_available_at = timing.quest_available_at;
+        }
+
+        // Load dynamic end date settings
+        if (timing.calculate_end_date_on_login !== undefined) {
+          this.formData.calculate_end_date_on_login = timing.calculate_end_date_on_login;
+        }
+
+        if (timing.duration_days_after_login !== undefined) {
+          this.formData.duration_days_after_login = timing.duration_days_after_login;
         }
       }
 

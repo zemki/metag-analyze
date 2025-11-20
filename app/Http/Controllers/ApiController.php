@@ -121,6 +121,15 @@ class ApiController extends Controller
             $userHasACase->duration .= $lastDayPos ? '' : '|lastDay:' . $duration;
             $userHasACase->save();
 
+            // Track first login for MART projects
+            if ($userHasACase->project->isMartProject() && !$userHasACase->first_login_at) {
+                $userHasACase->first_login_at = now();
+                $userHasACase->save();
+
+                // Calculate dynamic end dates for MART schedules
+                $this->calculateMartDynamicEndDates($userHasACase);
+            }
+
             // Determine which API version to use
             $forceApiV2 = env('FORCE_API_V2', false);
             $projectDate = new DateTime($userHasACase->project->created_at ?? 'now');
@@ -413,5 +422,31 @@ class ApiController extends Controller
             'message' => 'Password setup email sent successfully. Please check your inbox.',
             'details' => 'You will receive an email with a link to set your password. The link is valid for 24 hours.',
         ], 200);
+    }
+
+    /**
+     * Calculate dynamic end dates for MART schedules on first login.
+     *
+     * This method is called when a participant logs in for the first time to a MART project.
+     * It checks each schedule to see if it should calculate end dates dynamically based on login time.
+     *
+     * Implementation steps (to be completed later):
+     * 1. Get all schedules for the MART project
+     * 2. Loop through each schedule
+     * 3. Check if timing_config.calculate_end_date_on_login is true
+     * 4. If true, calculate end_date_time based on:
+     *    - first_login_at timestamp
+     *    - timing_config.duration_days_after_login
+     * 5. Update the timing_config.end_date_time field
+     * 6. Save the schedule
+     *
+     * @param \App\Cases $case The case that just logged in for the first time
+     * @return void
+     */
+    protected function calculateMartDynamicEndDates($case)
+    {
+        // TODO: Implement dynamic end date calculation
+        // This is a placeholder method that will be implemented later
+        // For now, it does nothing - schedules will use their static end dates
     }
 }

@@ -156,10 +156,17 @@ if ($project->hasMartData()) {
 - See `MART_SEPARATION_PROGRESS.md` for implementation details
 
 ### Frontend Components (Multiple Questionnaires)
-- `resources/js/components/mart/MartScheduleManager.vue` - Main schedule list/manager
-- `resources/js/components/mart/AddEditScheduleDialog.vue` - Create/edit schedules and questions
+- `resources/js/components/mart/MartQuestionnaireManager.vue` - Main questionnaire list/manager
+- `resources/js/components/mart/AddEditQuestionnaireDialog.vue` - Create/edit questionnaires and questions
 - `resources/js/components/mart/VersionHistoryModal.vue` - View question version history
 - Integrated into `resources/js/components/editproject.vue` for MART projects only
+
+### MART API Type Specification
+- **Location**: `DOCS/martTypes.ts` (user-managed, git-ignored)
+- TypeScript definitions for mobile app API contract
+- Defines structure for questionnaires, scales, pages, submissions
+- Key types: `ProjectOptions`, `questionnaireOptions`, `Scale`, `Questionnaire`, `Submit`
+- **IMPORTANT**: Always check martTypes.ts for exact field names and structure
 
 ### IMPORTANT: Data Format Requirements
 - Date format: DD.MM.YYYY (e.g., "31.03.2025")
@@ -173,6 +180,38 @@ if ($project->hasMartData()) {
 - Default values in `rangeOptions` NOT in root `options`
 - Page structure: Include both `id` and `pageId` fields
 - Participant data: Optional fields added when `participant_id` provided
+
+### Dynamic End Date Calculation (UPDATED: 2025-11-20)
+
+**Feature**: Questionnaire end dates can be calculated dynamically based on participant's first login.
+
+**Database Fields:**
+- `cases.first_login_at` (timestamp) - Tracks when participant first logged in
+- `mart_schedules.timing_config` JSON contains:
+  - `calculate_end_date_on_login` (boolean) - Enable dynamic calculation
+  - `duration_days_after_login` (integer) - Days to add from first login
+  - `max_total_submits` (integer) - Total submissions across entire study
+
+**Calculation Formula:**
+```
+Duration (days) = max_total_submits / maxDailySubmits
+End Date = First Login Date + Duration (days)
+```
+
+**Login Detection:**
+- `app/Http/Controllers/ApiController.php:124-131` - Detects first login for MART projects
+- Sets `first_login_at` timestamp on cases table
+- Calls `calculateMartDynamicEndDates()` placeholder method (line 446)
+
+**UI:**
+- Checkbox in `AddEditQuestionnaireDialog.vue` - "Calculate end date dynamically on first login"
+- When checked, start_date_time and end_date_time inputs are disabled
+- Researcher enters max_total_submits, system auto-calculates duration
+
+**Behavior:**
+- Static dates: Researcher manually sets start/end dates
+- Dynamic dates: Start = login time, end = calculated from formula
+- Mobile app always receives concrete start/end dates (no calculation on mobile)
 
 ### API Testing
 ```bash
@@ -227,6 +266,28 @@ curl -X POST "https://metag-analyze.test/mart-api/cases/5/submit" \
 - `mart_enabled` (boolean) - Enable/disable MART project creation for all users
 - `max_studies_per_user` (integer) - Maximum number of projects a user can create
 - `api_v2_cutoff_date` (date) - Projects created before this date use API v1 (media field), after use API v2 (entity field)
+
+## Database Migrations & Seeders (UPDATED: 2025-11-20)
+
+### Password Hashing in Seeders
+- **IMPORTANT**: Always use `bcrypt()` helper for password hashing in seeders
+- DO NOT use `Hash::make()` in seeders (can cause facade loading issues)
+- Example: `'password' => bcrypt('password123')`
+- Files updated: All seeders now use `bcrypt()` consistently
+
+### Trigger Creation & Permissions
+- Database triggers require SUPER privilege or `log_bin_trust_function_creators=1`
+- Migrations that create triggers now gracefully handle permission errors
+- When SUPER privilege unavailable, triggers are skipped with logged warnings
+- Application logic enforces constraints when triggers can't be created
+- Files: `database/migrations/*_add_data_collection_uniqueness_constraints*.php`
+
+### Destructive Command Safety
+- `php artisan migrate:fresh-all` - Resets BOTH main and MART databases
+- BLOCKED in production environment (checks `app()->environment()`)
+- Requires double confirmation including typing "DELETE ALL DATA"
+- Automatically clears Redis cache after migration
+- Manually drops MART tables before running migrate:fresh to avoid cross-DB issues
 
 ## Recent Bug Fixes & UI Improvements (2025-11-19)
 
