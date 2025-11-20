@@ -74,7 +74,12 @@ jobs:
           echo "Checking databases..."
           mysql -h127.0.0.1 -uroot -proot -e "SHOW DATABASES LIKE 'metagtesting%';"
 
-      - name: Run Migrations
+      - name: Load Database Schema
+        run: |
+          php artisan db:schema:load --no-interaction --force
+          php artisan db:schema:load --database=mart --no-interaction --force
+
+      - name: Run Pending Migrations
         run: |
           php artisan migrate --no-interaction --force
           php artisan migrate --database=mart --no-interaction --force
