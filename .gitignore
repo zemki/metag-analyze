@@ -57,5 +57,8 @@ CLAUDE.md
 /context
 /context
 
+# Cache files
+*.cache
+
 # MART API specification (user-managed)
 DOCS/martTypes.ts

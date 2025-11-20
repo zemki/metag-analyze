@@ -64,14 +64,9 @@ class Project extends Model
                 continue;
             }
 
-            $isMultipleOrOneChoice = property_exists($input, 'numberofanswer') && $input->numberofanswer > 0;
-            if ($isMultipleOrOneChoice) {
-                for ($i = 0; $i < $input->numberofanswer; $i++) {
-                    array_push($headings, $input->name);
-                }
-            } else {
-                array_push($headings, $input->name);
-            }
+            // Add each input name only once, regardless of type
+            // Multi-choice answers will be comma-separated in a single column
+            array_push($headings, $input->name);
         }
 
         return $headings;
@@ -272,7 +267,7 @@ class Project extends Model
 
         if (is_array($inputs)) {
             foreach ($inputs as $input) {
-                if (isset($input['type']) && $input['type'] === 'mart') {
+                if (isset($input['type']) && $input->type === 'mart') {
                     return true;
                 }
             }

@@ -1,3 +1,4 @@
+import Gravatar from "vue-gravatar";
 import EditProject from "./components/editproject.vue";
 import ProjectInvites from "./components/projectsInvites.vue";
 import Graph from "./components/graph.vue";
