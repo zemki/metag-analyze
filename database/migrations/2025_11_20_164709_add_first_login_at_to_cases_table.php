@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('cases', function (Blueprint $table) {
-            //
+            $table->timestamp('first_login_at')->nullable()->after('file_token');
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('cases', function (Blueprint $table) {
-            //
+            $table->dropColumn('first_login_at');
         });
     }
 };
