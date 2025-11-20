@@ -4,15 +4,30 @@
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+DROP TABLE IF EXISTS `ltm_translations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `ltm_translations` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `status` int NOT NULL DEFAULT '0',
+  `locale` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `group` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `key` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `value` text COLLATE utf8mb4_unicode_ci,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `mart_answers`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `mart_answers` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `entry_id` bigint unsigned NOT NULL,
-  `question_uuid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `question_uuid` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `question_version` int NOT NULL,
-  `answer_value` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `answer_value` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -26,12 +41,12 @@ DROP TABLE IF EXISTS `mart_device_info`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `mart_device_info` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `participant_id` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `user_id` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `os` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `os_version` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `model` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `manufacturer` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `participant_id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `user_id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `os` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `os_version` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `model` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `manufacturer` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `last_updated` timestamp NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -48,12 +63,12 @@ CREATE TABLE `mart_entries` (
   `main_entry_id` bigint unsigned NOT NULL,
   `schedule_id` bigint unsigned NOT NULL,
   `questionnaire_id` int NOT NULL,
-  `participant_id` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `user_id` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `participant_id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `user_id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `started_at` timestamp NOT NULL,
   `completed_at` timestamp NOT NULL,
   `duration_ms` int NOT NULL,
-  `timezone` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `timezone` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `timestamp` bigint NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -70,10 +85,10 @@ DROP TABLE IF EXISTS `mart_pages`;
 CREATE TABLE `mart_pages` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `mart_project_id` bigint unsigned NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `content` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `show_on_first_app_start` tinyint(1) NOT NULL DEFAULT '0',
-  `button_text` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Continue',
+  `button_text` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Continue',
   `sort_order` int NOT NULL DEFAULT '0',
   `is_success_page` tinyint(1) NOT NULL DEFAULT '0',
   `created_at` timestamp NULL DEFAULT NULL,
@@ -147,10 +162,10 @@ DROP TABLE IF EXISTS `mart_question_history`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `mart_question_history` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `question_uuid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `question_uuid` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `version` int NOT NULL,
-  `text` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `type` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `text` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `config` json DEFAULT NULL,
   `is_mandatory` tinyint(1) NOT NULL,
   `changed_at` timestamp NOT NULL,
@@ -162,16 +177,16 @@ DROP TABLE IF EXISTS `mart_questions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `mart_questions` (
-  `uuid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `uuid` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `schedule_id` bigint unsigned NOT NULL,
   `position` int NOT NULL,
-  `text` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `type` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `text` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `type` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `config` json DEFAULT NULL,
   `is_mandatory` tinyint(1) NOT NULL DEFAULT '1',
   `is_ios_data_collection` tinyint(1) NOT NULL DEFAULT '0',
   `is_android_data_collection` tinyint(1) NOT NULL DEFAULT '0',
-  `item_group` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `item_group` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `version` int NOT NULL DEFAULT '1',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -292,9 +307,9 @@ CREATE TABLE `mart_schedules` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `mart_project_id` bigint unsigned NOT NULL,
   `questionnaire_id` int NOT NULL,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `introductory_text` text COLLATE utf8mb4_unicode_ci,
-  `type` enum('single','repeating') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `introductory_text` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `type` enum('single','repeating') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `timing_config` json NOT NULL,
   `notification_config` json NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -311,22 +326,44 @@ DROP TABLE IF EXISTS `mart_stats`;
 CREATE TABLE `mart_stats` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `mart_project_id` bigint unsigned NOT NULL,
-  `participant_id` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `user_id` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `participant_id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `user_id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `android_usage_stats` json DEFAULT NULL,
   `android_event_stats` json DEFAULT NULL,
   `ios_activations` int DEFAULT NULL,
   `ios_screen_time` int DEFAULT NULL,
   `ios_stats` json DEFAULT NULL,
-  `device_id` text COLLATE utf8mb4_unicode_ci,
+  `device_id` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `timestamp` bigint NOT NULL,
-  `timezone` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `timezone` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `mart_stats_mart_project_id_participant_id_index` (`mart_project_id`,`participant_id`),
   KEY `mart_stats_timestamp_index` (`timestamp`),
   CONSTRAINT `mart_stats_mart_project_id_foreign` FOREIGN KEY (`mart_project_id`) REFERENCES `mart_projects` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `migrations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `migrations` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `migration` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `batch` int NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `password_resets`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `password_resets` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `token` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `password_resets_email_index` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 --
@@ -339,3 +376,5 @@ CREATE TABLE `mart_stats` (
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1,'2014_04_02_193005_create_translations_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (2,'2014_10_12_100000_create_password_resets_table',1);
