@@ -485,3 +485,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (44,'2025_11_19_125
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (45,'2025_11_20_000001_add_first_login_at_to_cases_table',3);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (46,'2025_11_20_000002_add_qr_token_fields_to_cases_table',3);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (47,'2025_11_20_164709_add_first_login_at_to_cases_table',3);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (48,'2025_11_20_181131_add_qr_token_fields_to_cases_table',4);
