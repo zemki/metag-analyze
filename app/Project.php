@@ -20,6 +20,13 @@ class Project extends Model
         'entity_name', 'use_entity', // New entity-related fields
     ];
 
+    /**
+     * In-memory cache for MART project to avoid repeated DB queries
+     *
+     * @var \App\Mart\MartProject|false|null
+     */
+    protected $martProjectCache = null;
+
     // this is a recommended way to declare event handlers
     public static function boot()
     {

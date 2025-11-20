@@ -56,3 +56,6 @@ CLAUDE.md
 /.playwright-mcp
 /context
 /context
+
+# MART API specification (user-managed)
+DOCS/martTypes.ts
