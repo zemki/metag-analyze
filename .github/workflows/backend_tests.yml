@@ -76,13 +76,11 @@ jobs:
 
       - name: Load Database Schema
         run: |
-          php artisan db:schema:load --no-interaction --force
-          php artisan db:schema:load --database=mart --no-interaction --force
+          php artisan schema:load --no-interaction --force
+          php artisan schema:load --database=mart --no-interaction --force
 
       - name: Run Pending Migrations
-        run: |
-          php artisan migrate --no-interaction --force
-          php artisan migrate --database=mart --no-interaction --force
+        run: php artisan migrate --no-interaction --force
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
