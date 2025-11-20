@@ -37,8 +37,12 @@
       "Bash(curl -X GET \"https://metag-analyze.test/mart-api/projects/2/structure?participant_id=test-participant-001\" -H \"Authorization: Bearer mart_test_token_2025\" -H \"Accept: application/json\" -k)",
       "Bash(curl -X GET \"https://metag-analyze.test/mart-api/projects/2/structure?participant_id=test-participant-001\" -H \"Authorization: Bearer 65baea947e4fe1bd7cacb00b84c6e888c73ce128cf7d5d695073623675c67951\" -H \"Accept: application/json\" -k)",
       "Bash(php artisan test:*)",
-      "Skill(docs-analyzer)"
+      "Skill(docs-analyzer)",
+      "Bash(git checkout:*)"
     ],
-    "deny": []
+    "deny": [],
+    "additionalDirectories": [
+      "/Users/belli/AndroidStudioProjects/MetagCompose/"
+    ]
   }
 }

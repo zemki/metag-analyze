@@ -267,7 +267,7 @@ class Project extends Model
 
         if (is_array($inputs)) {
             foreach ($inputs as $input) {
-                if (isset($input['type']) && $input->type === 'mart') {
+                if (isset($input['type']) && $input['type'] === 'mart') {
                     return true;
                 }
             }

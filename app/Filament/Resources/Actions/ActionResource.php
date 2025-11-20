@@ -16,13 +16,25 @@ class ActionResource extends Resource
 {
     protected static ?string $model = Action::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
+    public static function getNavigationIcon(): string|BackedEnum|null
+    {
+        return Heroicon::OutlinedClipboardDocumentList;
+    }
 
-    protected static ?string $navigationLabel = 'Activity Log';
+    public static function getNavigationLabel(): string
+    {
+        return 'Activity Log';
+    }
 
-    protected static ?string $modelLabel = 'Action';
+    public static function getModelLabel(): string
+    {
+        return 'Action';
+    }
 
-    protected static ?string $pluralModelLabel = 'Actions';
+    public static function getPluralModelLabel(): string
+    {
+        return 'Actions';
+    }
 
     public static function form(Schema $schema): Schema
     {

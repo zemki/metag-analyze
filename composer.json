@@ -20,7 +20,8 @@
         "laravel/tinker": "^2.0",
         "laravel/ui": "^v4.0.0",
         "maatwebsite/excel": "^3.1",
-        "psr/simple-cache": "^2.0"
+        "psr/simple-cache": "^2.0",
+        "simplesoftwareio/simple-qrcode": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.16",
