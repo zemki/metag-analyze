@@ -430,7 +430,7 @@ class ProjectCasesController extends Controller
 
         // Check if valid QR already exists, return it
         if ($case->hasValidQRToken()) {
-            $url = url("/qr-login?token={$case->qr_token_uuid}");
+            $url = "metagapp://login?token={$case->qr_token_uuid}";
             $qrCode = (string) \SimpleSoftwareIO\QrCode\Facades\QrCode::size(300)->format('svg')->generate($url);
 
             return response()->json([
@@ -469,7 +469,7 @@ class ProjectCasesController extends Controller
         ]);
 
         // Generate QR code image
-        $url = url("/qr-login?token={$uuid}");
+        $url = "metagapp://login?token={$uuid}";
         $qrCode = (string) \SimpleSoftwareIO\QrCode\Facades\QrCode::size(300)->format('svg')->generate($url);
 
         return response()->json([
