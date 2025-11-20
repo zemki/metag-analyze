@@ -18,15 +18,17 @@ class AddDataCollectionFlagsToMartQuestions extends Migration
      */
     public function up()
     {
-        Schema::connection('mart')->table('mart_questions', function (Blueprint $table) {
-            $table->boolean('is_ios_data_collection')->default(false)->after('is_mandatory');
-            $table->boolean('is_android_data_collection')->default(false)->after('is_ios_data_collection');
-            $table->string('item_group', 255)->nullable()->after('is_android_data_collection');
+        if (!Schema::connection('mart')->hasColumn('mart_questions', 'is_ios_data_collection')) {
+            Schema::connection('mart')->table('mart_questions', function (Blueprint $table) {
+                $table->boolean('is_ios_data_collection')->default(false)->after('is_mandatory');
+                $table->boolean('is_android_data_collection')->default(false)->after('is_ios_data_collection');
+                $table->string('item_group', 255)->nullable()->after('is_android_data_collection');
 
-            // Add indexes for performance when finding marked questions
-            $table->index('is_ios_data_collection', 'idx_ios_data_collection');
-            $table->index('is_android_data_collection', 'idx_android_data_collection');
-        });
+                // Add indexes for performance when finding marked questions
+                $table->index('is_ios_data_collection', 'idx_ios_data_collection');
+                $table->index('is_android_data_collection', 'idx_android_data_collection');
+            });
+        }
     }
 
     /**

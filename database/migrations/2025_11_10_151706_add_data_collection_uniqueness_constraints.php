@@ -28,6 +28,14 @@ class AddDataCollectionUniquenessConstraints extends Migration
             // Try to create triggers, but gracefully handle permission errors
             // In environments without SUPER privilege, application logic will enforce constraints
             try {
+                // Drop existing triggers first if they exist
+                DB::connection('mart')->unprepared('DROP TRIGGER IF EXISTS before_insert_ios_data_collection_question');
+                DB::connection('mart')->unprepared('DROP TRIGGER IF EXISTS before_update_ios_data_collection_question');
+                DB::connection('mart')->unprepared('DROP TRIGGER IF EXISTS before_insert_android_data_collection_question');
+                DB::connection('mart')->unprepared('DROP TRIGGER IF EXISTS before_update_android_data_collection_question');
+                DB::connection('mart')->unprepared('DROP TRIGGER IF EXISTS before_insert_success_page');
+                DB::connection('mart')->unprepared('DROP TRIGGER IF EXISTS before_update_success_page');
+
                 // Trigger to enforce only one iOS data collection question per project
                 DB::connection('mart')->unprepared('
                 CREATE TRIGGER before_insert_ios_data_collection_question

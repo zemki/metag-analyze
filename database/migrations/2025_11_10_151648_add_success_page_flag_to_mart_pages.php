@@ -16,12 +16,14 @@ class AddSuccessPageFlagToMartPages extends Migration
      */
     public function up()
     {
-        Schema::connection('mart')->table('mart_pages', function (Blueprint $table) {
-            $table->boolean('is_success_page')->default(false)->after('sort_order');
+        if (!Schema::connection('mart')->hasColumn('mart_pages', 'is_success_page')) {
+            Schema::connection('mart')->table('mart_pages', function (Blueprint $table) {
+                $table->boolean('is_success_page')->default(false)->after('sort_order');
 
-            // Add index for performance when finding success page
-            $table->index('is_success_page', 'idx_success_page');
-        });
+                // Add index for performance when finding success page
+                $table->index('is_success_page', 'idx_success_page');
+            });
+        }
     }
 
     /**

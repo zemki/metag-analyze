@@ -14,9 +14,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::connection('mart')->table('mart_schedules', function (Blueprint $table) {
-            $table->text('introductory_text')->nullable()->after('name');
-        });
+        if (!Schema::connection('mart')->hasColumn('mart_schedules', 'introductory_text')) {
+            Schema::connection('mart')->table('mart_schedules', function (Blueprint $table) {
+                $table->text('introductory_text')->nullable()->after('name');
+            });
+        }
     }
 
     /**

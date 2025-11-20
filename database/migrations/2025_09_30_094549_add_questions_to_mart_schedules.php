@@ -11,11 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('mart_questionnaire_schedules', function (Blueprint $table) {
-            $table->json('questions')->nullable()->after('questionnaire_id');
-            $table->integer('questions_version')->default(1)->after('questions');
-            $table->json('questions_history')->nullable()->after('questions_version');
-        });
+        if (!Schema::hasColumn('mart_questionnaire_schedules', 'questions')) {
+            Schema::table('mart_questionnaire_schedules', function (Blueprint $table) {
+                $table->json('questions')->nullable()->after('questionnaire_id');
+                $table->integer('questions_version')->default(1)->after('questions');
+                $table->json('questions_history')->nullable()->after('questions_version');
+            });
+        }
     }
 
     /**
