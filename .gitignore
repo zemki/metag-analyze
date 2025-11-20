@@ -49,3 +49,4 @@ Homestead.yaml
 Homestead.json
 /public/vendor
 *.cache
+DOCS/martTypes.ts
