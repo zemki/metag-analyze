@@ -231,17 +231,30 @@
               </svg>
             </button>
 
-            <!-- Schedule Preview Component -->
+            <!-- Schedule Preview Component (Lazy Loaded) -->
             <div v-if="expandedSchedules[schedule.id]" class="mt-3">
-              <SchedulePreview
-                :type="schedule.type"
-                :daily-interval-duration="getTimingConfig(schedule, 'daily_interval_duration') || 4"
-                :daily-start-time="getTimingConfig(schedule, 'daily_start_time') || '09:00'"
-                :daily-end-time="getTimingConfig(schedule, 'daily_end_time') || '21:00'"
-                :min-break-between="getTimingConfig(schedule, 'min_break_between') || 0"
-                :max-daily-submits="getTimingConfig(schedule, 'max_daily_submits') || 1"
-                :quest-available-at="getTimingConfig(schedule, 'quest_available_at') || 'startOfInterval'"
-              />
+              <Suspense>
+                <template #default>
+                  <SchedulePreview
+                    :type="schedule.type"
+                    :daily-interval-duration="getTimingConfig(schedule, 'daily_interval_duration') || 4"
+                    :daily-start-time="getTimingConfig(schedule, 'daily_start_time') || '09:00'"
+                    :daily-end-time="getTimingConfig(schedule, 'daily_end_time') || '21:00'"
+                    :min-break-between="getTimingConfig(schedule, 'min_break_between') || 0"
+                    :max-daily-submits="getTimingConfig(schedule, 'max_daily_submits') || 1"
+                    :quest-available-at="getTimingConfig(schedule, 'quest_available_at') || 'startOfInterval'"
+                  />
+                </template>
+                <template #fallback>
+                  <div class="flex items-center justify-center p-6 bg-gray-50 rounded-lg border border-gray-200">
+                    <svg class="animate-spin h-5 w-5 text-blue-600 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="text-sm text-gray-600">{{ trans('Loading timeline...') }}</span>
+                  </div>
+                </template>
+              </Suspense>
             </div>
           </div>
         </div>
@@ -268,9 +281,14 @@
 </template>
 
 <script>
+import { defineAsyncComponent } from 'vue';
 import AddEditQuestionnaireDialog from './AddEditQuestionnaireDialog.vue';
 import VersionHistoryModal from './VersionHistoryModal.vue';
-import SchedulePreview from './SchedulePreview.vue';
+
+// Lazy load SchedulePreview component for better performance
+const SchedulePreview = defineAsyncComponent(() =>
+  import('./SchedulePreview.vue')
+);
 
 export default {
   name: 'MartQuestionnaireManager',

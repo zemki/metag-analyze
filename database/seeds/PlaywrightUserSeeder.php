@@ -2,7 +2,6 @@
 
 use App\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class PlaywrightUserSeeder extends Seeder
 {
@@ -19,7 +18,7 @@ class PlaywrightUserSeeder extends Seeder
         $user = User::updateOrCreate(
             ['email' => 'playwright@test.com'],
             [
-                'password' => Hash::make('playwright123'),
+                'password' => bcrypt('playwright123'),
                 'email_verified_at' => now(),
                 'created_at' => now(),
                 'updated_at' => now(),

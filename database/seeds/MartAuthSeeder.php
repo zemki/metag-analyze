@@ -3,7 +3,6 @@
 use App\Role;
 use App\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class MartAuthSeeder extends Seeder
 {
@@ -25,7 +24,7 @@ class MartAuthSeeder extends Seeder
             // Create MART API user
             $martUser = new User;
             $martUser->email = 'mart@metag-analyze.test';
-            $martUser->password = Hash::make('mart_secure_password_2025');
+            $martUser->password = bcrypt('mart_secure_password_2025');
             $martUser->api_token = $hashedToken;
             $martUser->token_expires_at = now()->addYears(5); // Long-lived token for testing
             $martUser->save();

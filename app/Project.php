@@ -284,12 +284,20 @@ class Project extends Model
     /**
      * Get the MART project from the MART database (cross-DB query).
      * Returns null if this is not a MART project or no MART data exists.
+     * Results are cached in-memory to avoid repeated queries during the same request.
      *
      * @return \App\Mart\MartProject|null
      */
     public function martProject()
     {
-        return \App\Mart\MartProject::where('main_project_id', $this->id)->first();
+        // Check if we've already queried this during the request
+        if ($this->martProjectCache === null) {
+            // Query and cache result (false = not found, to distinguish from null = not checked)
+            $this->martProjectCache = \App\Mart\MartProject::where('main_project_id', $this->id)->first() ?: false;
+        }
+
+        // Return null if not found (false indicates "checked but not found")
+        return $this->martProjectCache === false ? null : $this->martProjectCache;
     }
 
     /**

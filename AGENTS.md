@@ -21,6 +21,12 @@ npm run test:unit                   # Frontend tests
 php artisan migrate                 # Run migrations
 php artisan migrate:status          # Check status
 
+# Database Reset (DESTRUCTIVE - Local Only)
+php artisan migrate:fresh-all --seed  # 🚨 Drops BOTH main & MART databases, then seeds
+                                      # BLOCKED in production environment
+                                      # Requires typing "DELETE ALL DATA" to confirm
+                                      # Automatically clears all caches
+
 # Background Services
 php artisan queue:work              # Queue worker
 php artisan reverb:start            # WebSocket server

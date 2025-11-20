@@ -10,7 +10,6 @@ use App\Role;
 use App\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class StagingMartSeeder extends Seeder
@@ -52,7 +51,7 @@ class StagingMartSeeder extends Seeder
             $user = User::firstOrCreate(
                 ['email' => $email],
                 [
-                    'password' => Hash::make($password),
+                    'password' => bcrypt($password),
                     'email_verified_at' => now(),
                     'deviceID' => 'STAGING_' . Str::random(10),
                 ]
@@ -66,7 +65,7 @@ class StagingMartSeeder extends Seeder
 
             // Update password if user already exists
             if (!$user->wasRecentlyCreated) {
-                $user->password = Hash::make($password);
+                $user->password = bcrypt($password);
                 $user->save();
                 $this->command->warn("  User already exists - password updated");
             } else {
