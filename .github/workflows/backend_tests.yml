@@ -77,7 +77,7 @@ jobs:
       - name: Run Migrations
         run: |
           php artisan migrate --no-interaction --force
-          php artisan migrate --no-interaction --force --database=mart
+          php artisan migrate --database=mart --no-interaction --force
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
