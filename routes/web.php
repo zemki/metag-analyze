@@ -88,6 +88,7 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified', 'LoggedUser']],
     Route::get('/cases/{case}/qrcode', 'ProjectCasesController@generateQRCode');
     Route::post('/cases/{case}/qrcode/regenerate', 'ProjectCasesController@regenerateQRCode');
     Route::post('/cases/{case}/qrcode/revoke', 'ProjectCasesController@revokeQRCode');
+    Route::post('/cases/{case}/qrcode/unrevoke', 'ProjectCasesController@unrevokeQRCode');
 
     /**
      * User Routes

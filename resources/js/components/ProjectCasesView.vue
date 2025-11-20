@@ -233,13 +233,14 @@
                 </button>
                 <button v-if="canShowQRCode(caseItem)"
                         @click.stop="showQRCodeModal(caseItem)"
-                        class="p-1 text-gray-400 hover:text-green-600"
-                        title="QR Code Login">
+                        :class="caseItem.qr_token_revoked_at ? 'p-1 text-red-500 hover:text-red-700' : 'p-1 text-gray-400 hover:text-green-600'"
+                        :title="caseItem.qr_token_revoked_at ? 'QR Code Revoked' : 'QR Code Login'">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <rect x="3" y="3" width="7" height="7" stroke-width="2"/>
                     <rect x="14" y="3" width="7" height="7" stroke-width="2"/>
                     <rect x="3" y="14" width="7" height="7" stroke-width="2"/>
                     <rect x="14" y="14" width="7" height="7" stroke-width="2"/>
+                    <line v-if="caseItem.qr_token_revoked_at" x1="3" y1="3" x2="21" y2="21" stroke-width="2"/>
                   </svg>
                 </button>
                 <button @click.stop="confirmDeleteCase(caseItem)"
@@ -338,14 +339,15 @@
                 </button>
                 <button v-if="canShowQRCode(selectedCase)"
                         @click="showQRCodeModal(selectedCase)"
-                        class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-green-600 bg-green-50 border border-green-200 rounded hover:bg-green-100">
+                        :class="selectedCase.qr_token_revoked_at ? 'inline-flex items-center px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 border border-red-200 rounded hover:bg-red-100' : 'inline-flex items-center px-3 py-1.5 text-xs font-medium text-green-600 bg-green-50 border border-green-200 rounded hover:bg-green-100'">
                   <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <rect x="3" y="3" width="7" height="7" stroke-width="2"/>
                     <rect x="14" y="3" width="7" height="7" stroke-width="2"/>
                     <rect x="3" y="14" width="7" height="7" stroke-width="2"/>
                     <rect x="14" y="14" width="7" height="7" stroke-width="2"/>
+                    <line v-if="selectedCase.qr_token_revoked_at" x1="3" y1="3" x2="21" y2="21" stroke-width="2"/>
                   </svg>
-                  QR Code
+                  {{ selectedCase.qr_token_revoked_at ? 'QR Revoked' : 'QR Code' }}
                 </button>
                 <button @click="confirmDeleteCase(selectedCase)"
                         class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 border border-red-200 rounded hover:bg-red-100">
@@ -410,7 +412,8 @@
                  :case-data="qrCodeData"
                  @close="qrCodeModalVisible = false"
                  @regenerate="handleRegenerateQR"
-                 @revoke="handleRevokeQR" />
+                 @revoke="handleRevokeQR"
+                 @unrevoke="handleUnrevokeQR" />
 
     <!-- Project Settings Modal -->
     <div v-if="showProjectSettings" class="fixed inset-0 z-50 overflow-y-auto">
@@ -947,6 +950,17 @@ export default {
       try {
         const response = await axios.post(`/cases/${caseId}/qrcode/regenerate`);
         this.qrCodeData = response.data;
+
+        // Update the case in the cases list (regenerate clears revocation)
+        const caseIndex = this.cases.findIndex(c => c.id === caseId);
+        if (caseIndex !== -1) {
+          this.cases[caseIndex].qr_token_revoked_at = null;
+        }
+
+        // Update selectedCase if it matches
+        if (this.selectedCase && this.selectedCase.id === caseId) {
+          this.selectedCase.qr_token_revoked_at = null;
+        }
       } catch (error) {
         alert('Failed to regenerate QR code');
         console.error('QR code regeneration error:', error);
@@ -956,11 +970,59 @@ export default {
     async handleRevokeQR(caseId, reason) {
       try {
         await axios.post(`/cases/${caseId}/qrcode/revoke`, { reason });
+
+        // Update the case in the cases list
+        const caseIndex = this.cases.findIndex(c => c.id === caseId);
+        if (caseIndex !== -1) {
+          this.cases[caseIndex].qr_token_revoked_at = new Date().toISOString();
+        }
+
+        // Update selectedCase if it matches
+        if (this.selectedCase && this.selectedCase.id === caseId) {
+          this.selectedCase.qr_token_revoked_at = new Date().toISOString();
+        }
+
+        // Update the modal data to show revoked status
+        if (this.qrCodeData && this.qrCodeData.case_id === caseId) {
+          this.qrCodeData.is_revoked = true;
+          this.qrCodeData.revoked_at = new Date().toISOString();
+          this.qrCodeData.revoked_reason = reason;
+        }
+
         this.qrCodeModalVisible = false;
         alert('QR code revoked successfully');
       } catch (error) {
         alert('Failed to revoke QR code');
         console.error('QR code revocation error:', error);
+      }
+    },
+
+    async handleUnrevokeQR(caseId) {
+      try {
+        await axios.post(`/cases/${caseId}/qrcode/unrevoke`);
+
+        // Update the case in the cases list
+        const caseIndex = this.cases.findIndex(c => c.id === caseId);
+        if (caseIndex !== -1) {
+          this.cases[caseIndex].qr_token_revoked_at = null;
+        }
+
+        // Update selectedCase if it matches
+        if (this.selectedCase && this.selectedCase.id === caseId) {
+          this.selectedCase.qr_token_revoked_at = null;
+        }
+
+        // Update the modal data to show active status
+        if (this.qrCodeData && this.qrCodeData.case_id === caseId) {
+          this.qrCodeData.is_revoked = false;
+          this.qrCodeData.revoked_at = null;
+          this.qrCodeData.revoked_reason = null;
+        }
+
+        alert('QR code re-enabled successfully');
+      } catch (error) {
+        alert('Failed to re-enable QR code');
+        console.error('QR code un-revocation error:', error);
       }
     },
 

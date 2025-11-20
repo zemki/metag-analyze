@@ -163,7 +163,7 @@ class ProjectController extends Controller
                 },
                 'files:id,case_id,path',
             ])
-            ->select('id', 'name', 'duration', 'user_id', 'created_at', 'project_id');
+            ->select('id', 'name', 'duration', 'user_id', 'created_at', 'project_id', 'qr_token_uuid', 'qr_token_revoked_at');
 
         // Apply search filter
         if ($request->filled('search')) {

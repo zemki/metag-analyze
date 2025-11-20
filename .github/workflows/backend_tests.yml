@@ -75,7 +75,9 @@ jobs:
           mysql -h127.0.0.1 -uroot -proot -e "SHOW DATABASES LIKE 'metagtesting%';"
 
       - name: Run Migrations
-        run: php artisan migrate --no-interaction --force
+        run: |
+          php artisan migrate --no-interaction --force
+          php artisan migrate --database=mart --no-interaction --force
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

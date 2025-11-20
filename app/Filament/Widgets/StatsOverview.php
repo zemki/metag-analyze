@@ -41,8 +41,13 @@ class StatsOverview extends StatsOverviewWidget
                 return "{$role['name']}: {$role['count']}";
             })->join(' | ');
 
-            // Get MART projects count
-            $martProjectsCount = MartProject::count();
+            // Get MART projects count (gracefully handle if MART tables don't exist)
+            try {
+                $martProjectsCount = MartProject::count();
+            } catch (\Exception $e) {
+                // MART database not migrated yet
+                $martProjectsCount = 0;
+            }
 
             // Get total projects
             $totalProjects = Project::count();

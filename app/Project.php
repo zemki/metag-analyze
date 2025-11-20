@@ -287,8 +287,13 @@ class Project extends Model
     {
         // Check if we've already queried this during the request
         if ($this->martProjectCache === null) {
-            // Query and cache result (false = not found, to distinguish from null = not checked)
-            $this->martProjectCache = \App\Mart\MartProject::where('main_project_id', $this->id)->first() ?: false;
+            try {
+                // Query and cache result (false = not found, to distinguish from null = not checked)
+                $this->martProjectCache = \App\Mart\MartProject::where('main_project_id', $this->id)->first() ?: false;
+            } catch (\Exception $e) {
+                // MART tables don't exist yet (database not migrated)
+                $this->martProjectCache = false;
+            }
         }
 
         // Return null if not found (false indicates "checked but not found")

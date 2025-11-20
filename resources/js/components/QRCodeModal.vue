@@ -56,6 +56,12 @@
                         Download
                     </button>
                     <button
+                        v-if="caseData.is_revoked"
+                        @click="handleUnrevoke"
+                        class="flex-1 px-3 py-2 text-sm font-medium text-green-600 bg-green-50 border border-green-200 rounded hover:bg-green-100">
+                        Re-enable
+                    </button>
+                    <button
                         v-if="!caseData.is_revoked"
                         @click="handleRegenerate"
                         class="flex-1 px-3 py-2 text-sm font-medium text-orange-600 bg-orange-50 border border-orange-200 rounded hover:bg-orange-100">
@@ -111,6 +117,12 @@ export default {
             const reason = prompt('Enter reason for revoking this QR code (optional):');
             if (reason !== null) { // null = cancelled
                 this.$emit('revoke', this.caseData.case_id, reason);
+            }
+        },
+
+        handleUnrevoke() {
+            if (confirm('Re-enable this QR code? It will become valid again.')) {
+                this.$emit('unrevoke', this.caseData.case_id);
             }
         }
     }

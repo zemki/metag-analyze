@@ -428,8 +428,8 @@ class ProjectCasesController extends Controller
             return response()->json(['error' => 'Cannot generate QR code for case without assigned user'], 400);
         }
 
-        // Check if valid QR already exists, return it
-        if ($case->hasValidQRToken()) {
+        // Check if any QR token already exists (valid or revoked), return it
+        if ($case->qr_token_uuid) {
             $url = "metagapp://login?token={$case->qr_token_uuid}";
             $qrCode = (string) \SimpleSoftwareIO\QrCode\Facades\QrCode::size(300)->format('svg')->generate($url);
 
@@ -441,9 +441,9 @@ class ProjectCasesController extends Controller
                 'case_id' => $case->id,
                 'case_name' => $case->name,
                 'participant_email' => $case->user->email,
-                'is_revoked' => false,
-                'revoked_at' => null,
-                'revoked_reason' => null,
+                'is_revoked' => !is_null($case->qr_token_revoked_at),
+                'revoked_at' => $case->qr_token_revoked_at,
+                'revoked_reason' => $case->qr_token_revoked_reason,
             ]);
         }
 
@@ -535,6 +535,41 @@ class ProjectCasesController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'QR code revoked successfully'
+        ]);
+    }
+
+    /**
+     * Un-revoke (re-enable) QR code for case
+     *
+     * @param Cases $case
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function unrevokeQRCode(Cases $case)
+    {
+        $project = $case->project;
+
+        // Authorize user owns project
+        if (auth()->user()->notOwnerNorInvited($project) && !auth()->user()->isAdmin()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Check if QR code exists and is revoked
+        if (!$case->qr_token_uuid) {
+            return response()->json(['error' => 'No QR code exists for this case'], 400);
+        }
+
+        if (is_null($case->qr_token_revoked_at)) {
+            return response()->json(['error' => 'QR code is not revoked'], 400);
+        }
+
+        $case->update([
+            'qr_token_revoked_at' => null,
+            'qr_token_revoked_reason' => null
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'QR code re-enabled successfully'
         ]);
     }
 }
