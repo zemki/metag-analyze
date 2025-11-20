@@ -5,6 +5,7 @@ namespace App;
 use App\Enums\CaseStatus;
 use App\Helpers\Helper;
 use App\Notifications\researcherNotificationToUser;
+use App\Setting;
 use File;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -45,6 +46,8 @@ class Cases extends Model
 
     protected $casts = [
         'first_login_at' => 'datetime',
+        'qr_token_generated_at' => 'datetime',
+        'qr_token_revoked_at' => 'datetime',
     ];
 
     public static function boot()
@@ -516,5 +519,56 @@ class Cases extends Model
     public function getEntriesCountAttribute()
     {
         return $this->entries()->count();
+    }
+
+    /**
+     * Check if case has a valid (non-revoked) QR token
+     *
+     * @return bool
+     */
+    public function hasValidQRToken(): bool
+    {
+        return !is_null($this->qr_token_uuid)
+            && is_null($this->qr_token_revoked_at);
+    }
+
+    /**
+     * Revoke the QR token
+     *
+     * @param string|null $reason
+     * @return void
+     */
+    public function revokeQRToken(string $reason = null): void
+    {
+        $this->update([
+            'qr_token_revoked_at' => now(),
+            'qr_token_revoked_reason' => $reason ?? 'Revoked'
+        ]);
+    }
+
+    /**
+     * Check if case can generate QR code (API v2, non-MART, has user)
+     *
+     * @return bool
+     */
+    public function canGenerateQRCode(): bool
+    {
+        // Must have assigned user
+        if (!$this->user_id || !$this->user) {
+            return false;
+        }
+
+        // Must not be MART project
+        if ($this->project->isMartProject()) {
+            return false;
+        }
+
+        // Must be API v2 project
+        $cutoffDate = Setting::get('api_v2_cutoff_date');
+        if ($cutoffDate && $this->project->created_at < $cutoffDate) {
+            return false;
+        }
+
+        return true;
     }
 }

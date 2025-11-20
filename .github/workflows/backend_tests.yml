@@ -90,8 +90,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
+      - name: Clean npm cache (fix rollup optional deps bug)
+        run: npm cache clean --force
+
       - name: Install front-end dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps || npm install
 
       - name: Build frontend assets
         run: npm run build

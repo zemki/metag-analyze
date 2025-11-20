@@ -13,6 +13,11 @@
 
 Route::post('login', 'ApiController@login')->middleware('throttle:10,60');
 
+// QR Code Login - rate limited to prevent brute force attacks
+// For API v2 non-MART projects only
+// 10 requests per minute per IP
+Route::post('qr-login', 'ApiController@qrLogin')->middleware('throttle:10,1');
+
 // Email existence check - heavily rate limited to prevent enumeration attacks
 // ⚠️ IMPORTANT: This endpoint is used by MART mobile apps to check if user exists
 // before allowing self-registration

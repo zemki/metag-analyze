@@ -449,4 +449,114 @@ class ApiController extends Controller
         // This is a placeholder method that will be implemented later
         // For now, it does nothing - schedules will use their static end dates
     }
+
+    /**
+     * Handles QR Code Login Request
+     *
+     * @return JsonResponse
+     */
+    public function qrLogin(Request $request)
+    {
+        $uuid = $request->input('token');
+
+        if (!$uuid) {
+            return response()->json(['error' => 'qr_invalid'], 401);
+        }
+
+        // Look up case by QR token UUID
+        $case = Cases::where('qr_token_uuid', $uuid)
+            ->with(['user', 'project'])
+            ->first();
+
+        if (!$case) {
+            return response()->json(['error' => 'qr_invalid'], 401);
+        }
+
+        // Check if token is revoked
+        if ($case->qr_token_revoked_at) {
+            return response()->json(['error' => 'qr_revoked'], 401);
+        }
+
+        // Block MART projects
+        if ($case->project->isMartProject()) {
+            return response()->json(['error' => 'mart_project'], 403);
+        }
+
+        // Block API v1 projects
+        $projectDate = new DateTime($case->project->created_at ?? 'now');
+        $cutoffDate = new DateTime(config('app.api_v2_cutoff_date', '2025-03-21'));
+        if ($projectDate < $cutoffDate) {
+            return response()->json(['error' => 'api_v1_project'], 403);
+        }
+
+        // Decrypt QR data
+        try {
+            $decryptedData = json_decode(Crypt::decryptString($case->qr_encrypted_data), true);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'qr_invalid'], 401);
+        }
+
+        $user = $case->user;
+
+        if (!$user) {
+            return response()->json(['error' => 'qr_invalid'], 401);
+        }
+
+        // Verify password hasn't changed since QR generation
+        if ($user->password !== $decryptedData['password']) {
+            return response()->json(['error' => 'password_mismatch'], 401);
+        }
+
+        // Authenticate the user
+        auth()->login($user);
+
+        // Reset any failed login attempts and lockout
+        $user->forceFill([
+            'failed_login_attempts' => 0,
+            'lockout_until' => null,
+        ])->save();
+
+        // Generate token with expiration
+        $token = Helper::random_str(60, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
+        $user->forceFill([
+            'api_token' => hash('sha256', $token),
+            'token_expires_at' => now()->addDays(config('auth.token_expiration_days', 30)),
+        ])->save();
+
+        if ($case->isBackend()) {
+            return response()->json(['case' => 'No cases'], 499);
+        }
+
+        if (!$user->profile()->exists()) {
+            $user->addProfile($user);
+        }
+
+        User::saveDeviceId($request);
+        $lastDayPos = strpos($case->duration, 'lastDay:');
+        $startDay = Helper::get_string_between($case->duration, 'startDay:', '|');
+
+        $duration = $lastDayPos
+            ? substr($case->duration, $lastDayPos + strlen('lastDay:'), strlen($case->duration) - 1)
+            : Cases::calculateDuration($request->datetime, $case->duration);
+
+        $case->duration .= $lastDayPos ? '' : '|lastDay:' . $duration;
+        $case->save();
+
+        // Use API V2 formatting (guaranteed by API v2 check above)
+        $v2ApiController = new \App\Http\Controllers\Api\V2\ApiController;
+        $inputs = $v2ApiController->formatLoginResponse($case);
+
+        $notStarted = (strtotime(date('d.m.Y')) < strtotime($startDay));
+
+        return response()->json([
+            self::INPUTS => $inputs[self::INPUTS],
+            'case' => $case->makeHidden('file_token'),
+            self::TOKEN => $token,
+            'file_token' => $case->file_token ? Crypt::decryptString($case->file_token) : null,
+            'duration' => $duration,
+            self::CUSTOMINPUTS => $inputs[self::INPUTS][self::CUSTOMINPUTS],
+            self::NOTSTARTED => $notStarted,
+            'api_version' => 'v2',
+        ], 200);
+    }
 }

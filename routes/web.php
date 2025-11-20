@@ -83,6 +83,13 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified', 'LoggedUser']],
     Route::delete('/cases/{case}/files/{file}', 'FileCasesController@destroy');
 
     /**
+     * QR Code Routes (API v2 non-MART projects only)
+     */
+    Route::get('/cases/{case}/qrcode', 'ProjectCasesController@generateQRCode');
+    Route::post('/cases/{case}/qrcode/regenerate', 'ProjectCasesController@regenerateQRCode');
+    Route::post('/cases/{case}/qrcode/revoke', 'ProjectCasesController@revokeQRCode');
+
+    /**
      * User Routes
      */
     Route::post('/users/password/reset', 'Auth\ForgotPasswordController@SendsPasswordResetEmailFromCasesList');

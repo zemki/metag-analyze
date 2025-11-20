@@ -231,6 +231,17 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </button>
+                <button v-if="canShowQRCode(caseItem)"
+                        @click.stop="showQRCodeModal(caseItem)"
+                        class="p-1 text-gray-400 hover:text-green-600"
+                        title="QR Code Login">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <rect x="3" y="3" width="7" height="7" stroke-width="2"/>
+                    <rect x="14" y="3" width="7" height="7" stroke-width="2"/>
+                    <rect x="3" y="14" width="7" height="7" stroke-width="2"/>
+                    <rect x="14" y="14" width="7" height="7" stroke-width="2"/>
+                  </svg>
+                </button>
                 <button @click.stop="confirmDeleteCase(caseItem)"
                         class="p-1 text-gray-400 hover:text-red-600"
                         title="Delete Case">
@@ -325,6 +336,17 @@
                   </svg>
                   Export
                 </button>
+                <button v-if="canShowQRCode(selectedCase)"
+                        @click="showQRCodeModal(selectedCase)"
+                        class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-green-600 bg-green-50 border border-green-200 rounded hover:bg-green-100">
+                  <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <rect x="3" y="3" width="7" height="7" stroke-width="2"/>
+                    <rect x="14" y="3" width="7" height="7" stroke-width="2"/>
+                    <rect x="3" y="14" width="7" height="7" stroke-width="2"/>
+                    <rect x="14" y="14" width="7" height="7" stroke-width="2"/>
+                  </svg>
+                  QR Code
+                </button>
                 <button @click="confirmDeleteCase(selectedCase)"
                         class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 border border-red-200 rounded hover:bg-red-100">
                   <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -381,6 +403,14 @@
                     @confirm="dialog.onConfirm"
                     @cancel="dialog.onCancel"
     />
+
+    <!-- QR Code Modal -->
+    <QRCodeModal v-if="qrCodeModalVisible"
+                 :show="qrCodeModalVisible"
+                 :case-data="qrCodeData"
+                 @close="qrCodeModalVisible = false"
+                 @regenerate="handleRegenerateQR"
+                 @revoke="handleRevokeQR" />
 
     <!-- Project Settings Modal -->
     <div v-if="showProjectSettings" class="fixed inset-0 z-50 overflow-y-auto">
@@ -452,6 +482,7 @@ import ProjectInvites from './projectsInvites.vue';
 import Modal from './global/modal.vue';
 import CustomDialogue from './global/CustomDialogue.vue';
 import PaginationControls from './PaginationControls.vue';
+import QRCodeModal from './QRCodeModal.vue';
 
 export default {
   name: 'ProjectCasesView',
@@ -461,7 +492,8 @@ export default {
     ProjectInvites,
     Modal,
     CustomDialogue,
-    PaginationControls
+    PaginationControls,
+    QRCodeModal
   },
   props: {
     project: {
@@ -526,7 +558,12 @@ export default {
         confirmText: '',
         onConfirm: null,
         onCancel: null
-      }
+      },
+
+      // QR Code Modal
+      qrCodeModalVisible: false,
+      qrCodeData: null,
+      apiV2CutoffDate: null
     };
   },
   computed: {
@@ -552,6 +589,9 @@ export default {
   mounted() {
     // Initialize local project copy
     this.localProject = { ...this.project };
+
+    // Fetch API v2 cutoff date for QR code availability check
+    this.fetchApiV2CutoffDate();
 
     this.loadCases();
     this.debouncedSearch = debounce(this.loadCases, 300);
@@ -857,6 +897,83 @@ export default {
         this.isResizing = false;
         document.body.style.cursor = '';
         document.body.style.userSelect = '';
+      }
+    },
+
+    // QR Code functions
+    canShowQRCode(caseItem) {
+      // Don't show for MART projects
+      if (this.localProject.is_mart_project) {
+        return false;
+      }
+
+      // Don't show if case has no user
+      if (!caseItem.user_id) {
+        return false;
+      }
+
+      // Check if project is API v2 (created after cutoff date)
+      if (this.apiV2CutoffDate) {
+        const projectDate = new Date(this.localProject.created_at);
+        const cutoffDate = new Date(this.apiV2CutoffDate);
+        if (projectDate < cutoffDate) {
+          return false;
+        }
+      }
+
+      return true;
+    },
+
+    async showQRCodeModal(caseItem) {
+      try {
+        const response = await axios.get(`/cases/${caseItem.id}/qrcode`);
+        this.qrCodeData = response.data;
+        this.qrCodeModalVisible = true;
+      } catch (error) {
+        if (error.response?.status === 403) {
+          alert(error.response.data.error || 'Cannot generate QR code for this case');
+        } else {
+          alert('Failed to generate QR code');
+          console.error('QR code generation error:', error);
+        }
+      }
+    },
+
+    async handleRegenerateQR(caseId) {
+      if (!confirm('Regenerate QR code? This will invalidate the current QR code.')) {
+        return;
+      }
+
+      try {
+        const response = await axios.post(`/cases/${caseId}/qrcode/regenerate`);
+        this.qrCodeData = response.data;
+      } catch (error) {
+        alert('Failed to regenerate QR code');
+        console.error('QR code regeneration error:', error);
+      }
+    },
+
+    async handleRevokeQR(caseId, reason) {
+      try {
+        await axios.post(`/cases/${caseId}/qrcode/revoke`, { reason });
+        this.qrCodeModalVisible = false;
+        alert('QR code revoked successfully');
+      } catch (error) {
+        alert('Failed to revoke QR code');
+        console.error('QR code revocation error:', error);
+      }
+    },
+
+    async fetchApiV2CutoffDate() {
+      try {
+        // Fetch from Laravel config or settings API
+        // For now, use the config value from app.php
+        const response = await axios.get('/api/settings/api_v2_cutoff_date');
+        this.apiV2CutoffDate = response.data.value;
+      } catch (error) {
+        // If not available via API, use hardcoded default from config
+        this.apiV2CutoffDate = '2025-03-21'; // Default from config/app.php
+        console.warn('Could not fetch API v2 cutoff date, using default');
       }
     },
 

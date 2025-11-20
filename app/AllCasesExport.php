@@ -142,36 +142,23 @@ class AllCasesExport implements FromCollection, WithHeadings, WithMapping
 
     /**
      * This function formats the values of multiple and one choice questions
+     * Multiple answers are comma-separated in a single column
      */
     private function formatMultipleAndOneChoiceValues(&$tempValuesArray, $input, array $index, $projectInputNames, $key, $numberOfAnswersByQuestion): void
     {
-        if (is_null($input) || $input === '') {
-            // print empty value
-            for ($i = 0; $i < $numberOfAnswersByQuestion; $i++) {
-                $tempValuesArray[$key][$i] = [''];
-            }
-
+        // Handle empty or null input
+        if (is_null($input) || $input === '' || (is_array($input) && empty($input))) {
+            $tempValuesArray[$key] = '';
             return;
         }
 
+        // Ensure input is an array
         if (! is_array($input)) {
             $input = [$input];
         }
 
-        foreach ($input as $value) {
-            $index[array_search($value, $projectInputNames[$key])] = $value;
-        }
-
-        // print values in the same column in multiple choice or one choice answers
-        for ($i = 0; $i < $numberOfAnswersByQuestion; $i++) {
-            $tempValuesArray[$key][$i] = [];
-            if (array_key_exists($i, $index)) {
-                array_push($tempValuesArray[$key][$i], $index[$i]);
-            } else {
-                array_push($tempValuesArray[$key][$i], '');
-            }
-        }
-
+        // Join multiple values with comma separator for single column output
+        $tempValuesArray[$key] = implode(', ', $input);
     }
 
     /**
