@@ -196,7 +196,13 @@ class ProjectOptionsResource extends JsonResource
      */
     private function getSuccessPageId()
     {
-        $successPage = $this->pages()->where('is_success_page', true)->first();
+        // Get pages through MartProject relationship (MART database)
+        $martProject = $this->martProject();
+        if (!$martProject) {
+            return null;
+        }
+
+        $successPage = $martProject->pages()->where('is_success_page', true)->first();
         return $successPage ? $successPage->id : null;
     }
 }
