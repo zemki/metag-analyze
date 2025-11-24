@@ -169,6 +169,7 @@ class MartStructureResource extends JsonResource
 
     /**
      * Get last data donation questionnaire submission (manual iOS/Android stats)
+     * Returns object per martTypes.ts: { questionnaireId: number, timestamp: number }
      * Now queries MART database
      */
     private function getLastDataDonationSubmit($participantId)
@@ -183,11 +184,18 @@ class MartStructureResource extends JsonResource
             ->orderBy('timestamp', 'desc')
             ->first();
 
-        return $stat ? $stat->timestamp : null;
+        // Return object with questionnaireId and timestamp per martTypes.ts
+        // Note: We don't currently track which questionnaire triggered the stats,
+        // so questionnaireId is null. This matches the optional nature in the type definition.
+        return $stat ? [
+            'questionnaireId' => null,
+            'timestamp' => $stat->timestamp
+        ] : null;
     }
 
     /**
      * Get last automatic Android stats submission timestamp
+     * Returns object per martTypes.ts: { timestamp: number }
      * Now queries MART database
      */
     private function getLastAndroidStatsSubmit($participantId)
@@ -198,6 +206,7 @@ class MartStructureResource extends JsonResource
             ->orderBy('timestamp', 'desc')
             ->first();
 
-        return $stat ? $stat->timestamp : null;
+        // Return object with timestamp per martTypes.ts
+        return $stat ? ['timestamp' => $stat->timestamp] : null;
     }
 }
