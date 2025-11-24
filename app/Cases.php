@@ -499,7 +499,7 @@ class Cases extends Model
     /**
      * Check if case is accessible for data entry/viewing
      * For MART projects: only completed cases are accessible
-     * For standard projects: active cases are accessible
+     * For standard projects: active and completed cases are accessible
      */
     public function isAccessible(): bool
     {
@@ -510,8 +510,8 @@ class Cases extends Model
             return $status === CaseStatus::COMPLETED;
         }
 
-        // Standard projects: active cases are accessible (existing logic)
-        return $status === CaseStatus::ACTIVE;
+        // Standard projects: active and completed cases are accessible
+        return $status === CaseStatus::ACTIVE || $status === CaseStatus::COMPLETED;
     }
 
     /**
