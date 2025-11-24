@@ -781,24 +781,25 @@ export default {
       }
     },
 
-    // Map backend types (scale, text, one choice, multiple choice) to form types
+    // Map backend types (number, range, text, one choice, multiple choice) to form types
     mapBackendTypeToFormType(backendType) {
       const mapping = {
         'text': 'text',
-        'scale': 'range',
+        'number': 'number',
+        'range': 'range',
         'one choice': 'radio',
         'multiple choice': 'checkbox'
       };
       return mapping[backendType] || 'text';
     },
 
-    // Map form types (text, range, radio, checkbox) to backend types
+    // Map form types (text, number, range, radio, checkbox) to backend types
     mapFormTypeToBackendType(formType) {
       const mapping = {
         'text': 'text',
         'textarea': 'text',
-        'number': 'scale',
-        'range': 'scale',
+        'number': 'number',
+        'range': 'range',
         'radio': 'one choice',
         'checkbox': 'multiple choice'
       };

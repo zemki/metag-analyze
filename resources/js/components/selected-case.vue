@@ -278,16 +278,16 @@
               <p class="font-bold" v-if="indexJ !== 'firstValue'">
                 {{ indexJ }}
               </p>
-              <audio-player
+              <AudioPlayer
                 v-if="indexJ == 'file' && entry.file_object && entry.file_path"
                 :caseid="cases.id"
                 class="w-96 sm:my-2 sm:px-2"
                 :file="entry.file_object"
-                loop="false"
-                autoplay="false"
+                :loop="false"
+                :autoplay="false"
                 :name="entry.file_path"
                 :date="entry.created_for_soundplayer"
-              ></audio-player>
+              />
               <div v-else-if="indexJ == 'file'" class="italic text-gray-500">
                 {{ trans("File was deleted") }}
               </div>
@@ -516,12 +516,14 @@ import { ref, computed, reactive, onBeforeUnmount } from "vue";
 import moment from "moment";
 import Modal from "./global/modal.vue";
 import Snackbar from "./global/snackbar.vue";
+import AudioPlayer from "./audioplayer.vue";
 
 export default {
   name: "SelectedCase",
   components: {
     Modal,
     Snackbar,
+    AudioPlayer,
   },
   props: {
     cases: {

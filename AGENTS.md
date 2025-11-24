@@ -213,6 +213,13 @@ End Date = First Login Date + Duration (days)
 - Dynamic dates: Start = login time, end = calculated from formula
 - Mobile app always receives concrete start/end dates (no calculation on mobile)
 
+**IMPORTANT - API Contract:**
+- `max_total_submits` is stored in database and used for backend calculations ONLY
+- `max_total_submits` is NOT sent to mobile app via MART API
+- Backend calculates concrete start/end dates and sends those to mobile
+- Mobile receives only: `startDateAndTime`, `endDateAndTime`, `maxDailySubmits`
+- This prevents mobile from needing to implement date calculation logic
+
 ### API Testing
 ```bash
 # Structure endpoint
@@ -289,24 +296,43 @@ curl -X POST "https://metag-analyze.test/mart-api/cases/5/submit" \
 - Automatically clears Redis cache after migration
 - Manually drops MART tables before running migrate:fresh to avoid cross-DB issues
 
-## Recent Bug Fixes & UI Improvements (2025-11-19)
+## Recent Bug Fixes & UI Improvements
 
-### Edit Entry Modal
+### Entry Timestamp Handling (UPDATED: 2025-11-24)
+- **Fixed**: Mobile app sends Unix timestamps (seconds) for begin/end dates, causing "Invalid date" display
+- **Solution**: Added automatic timestamp conversion in `EntryController::store()` and `update()`
+- Backend now detects 10-digit numeric timestamps and converts to MySQL datetime format
+- Preserves existing datetime strings without modification
+- Location: `app/Http/Controllers/EntryController.php:71-78, 140-147`
+
+### Audio Player Redesign (UPDATED: 2025-11-24)
+- **Complete redesign** with research-focused aesthetic matching project palette
+- **Features**:
+  - Waveform visualization with 60 animated bars (pseudo-random based on file ID)
+  - Gradient-based color scheme (teal to blue) with warm background
+  - Pulsing progress indicator with glowing line animation
+  - Professional control panel with tactile button feedback
+  - Custom-styled volume slider with gradient thumb
+  - Card-based layout with sophisticated shadows
+- **Technical**: Uses CSS-only animations, responsive design, hover effects
+- Location: `resources/js/components/audioplayer.vue`
+
+### Edit Entry Modal (2025-11-19)
 - Fixed issue where some entry values weren't pre-populated when editing
 - Properly handles `undefined` and `null` values for all input types
 - Multiple choice inputs now correctly converted to arrays
 - Location: `resources/js/components/selected-case.vue:792-804`
 
-### Modal Z-Index Issues
+### Modal Z-Index Issues (2025-11-19)
 - Fixed delete project modal appearing below dark background
 - Added proper z-index layering (background: z-40, content: z-50)
 - Location: `resources/js/components/global/modal.vue`
 
-### Project Creation UI
+### Project Creation UI (2025-11-19)
 - Removed "Add Entity" button from standard project creation (entities now managed via input fields only)
 - Location: `resources/js/components/createproject.vue`
 
-### MART Project Toggle
+### MART Project Toggle (2025-11-19)
 - MART project creation can now be disabled via admin settings
 - When disabled, MART button is grayed out and shows "MART projects are currently disabled by administrator"
 - Setting synced from Filament admin panel to frontend

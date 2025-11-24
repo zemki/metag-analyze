@@ -175,7 +175,7 @@
         </div>
 
         <!-- Cases List - Compact Email Style -->
-        <div class="overflow-y-auto" :style="{ height: (casesListHeight - 120) + 'px' }">
+        <div class="overflow-y-auto" :style="{ height: (casesListHeight - 200) + 'px' }">
           <div v-if="loading" class="flex items-center justify-center py-8">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           </div>
@@ -284,7 +284,7 @@
         </div>
 
         <!-- Pagination -->
-        <div v-if="pagination.total > 0" class="px-6 py-3 bg-gray-50 border-t border-gray-200 relative z-0">
+        <div v-if="pagination.total > 0" class="px-6 py-3 bg-gray-50 border-t border-gray-200 relative z-10">
           <div class="flex items-center justify-between">
             <div class="text-sm text-gray-700">
               Showing {{ pagination.from || 0 }} to {{ pagination.to || 0 }} of {{ pagination.total || 0 }} cases

@@ -7,6 +7,7 @@ use App\Helpers\Helper;
 use App\Mail\VerificationEmail;
 use App\Project;
 use App\Role;
+use App\Setting;
 use App\User;
 use DateTime;
 use Exception;
@@ -166,8 +167,10 @@ class ApiController extends Controller
             if ($user = User::where('email', $request->email)->first()) {
                 $user->increment('failed_login_attempts');
 
-                if ($user->failed_login_attempts >= config('auth.max_login_attempts', 5)) {
-                    $user->lockout_until = now()->addMinutes(30);
+                $maxAttempts = Setting::get('api_max_login_attempts', config('auth.max_login_attempts', 10));
+                if ($user->failed_login_attempts >= $maxAttempts) {
+                    $lockoutDuration = Setting::get('api_lockout_duration', config('auth.lockout_duration', 30));
+                    $user->lockout_until = now()->addMinutes($lockoutDuration);
                     $user->save();
                 }
             }

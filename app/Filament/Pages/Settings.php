@@ -42,6 +42,10 @@ class Settings extends Page implements HasForms
             'mart_enabled' => Setting::get('mart_enabled', true),
             'max_studies_per_user' => Setting::get('max_studies_per_user', 100),
             'api_v2_cutoff_date' => Setting::get('api_v2_cutoff_date', '2025-12-21'),
+            'api_max_login_attempts' => Setting::get('api_max_login_attempts', 10),
+            'api_lockout_duration' => Setting::get('api_lockout_duration', 30),
+            'mart_max_login_attempts' => Setting::get('mart_max_login_attempts', 10),
+            'mart_lockout_duration' => Setting::get('mart_lockout_duration', 30),
         ]);
     }
 
@@ -67,6 +71,38 @@ class Settings extends Page implements HasForms
                     ->required()
                     ->displayFormat('Y-m-d')
                     ->format('Y-m-d'),
+
+                TextInput::make('api_max_login_attempts')
+                    ->label('API Max Login Attempts')
+                    ->helperText('Maximum failed login attempts before lockout (applies to web and standard API login)')
+                    ->numeric()
+                    ->minValue(3)
+                    ->maxValue(20)
+                    ->required(),
+
+                TextInput::make('api_lockout_duration')
+                    ->label('API Lockout Duration (minutes)')
+                    ->helperText('How long users are locked out after exceeding max API login attempts')
+                    ->numeric()
+                    ->minValue(5)
+                    ->maxValue(120)
+                    ->required(),
+
+                TextInput::make('mart_max_login_attempts')
+                    ->label('MART Max Login Attempts')
+                    ->helperText('Maximum failed login attempts before lockout for MART mobile app login')
+                    ->numeric()
+                    ->minValue(3)
+                    ->maxValue(20)
+                    ->required(),
+
+                TextInput::make('mart_lockout_duration')
+                    ->label('MART Lockout Duration (minutes)')
+                    ->helperText('How long MART users are locked out after exceeding max login attempts')
+                    ->numeric()
+                    ->minValue(5)
+                    ->maxValue(120)
+                    ->required(),
             ])
             ->statePath('data');
     }
@@ -78,6 +114,10 @@ class Settings extends Page implements HasForms
         Setting::set('mart_enabled', $data['mart_enabled'] ? '1' : '0', auth()->id());
         Setting::set('max_studies_per_user', $data['max_studies_per_user'], auth()->id());
         Setting::set('api_v2_cutoff_date', $data['api_v2_cutoff_date'], auth()->id(), 'date');
+        Setting::set('api_max_login_attempts', $data['api_max_login_attempts'], auth()->id(), 'integer');
+        Setting::set('api_lockout_duration', $data['api_lockout_duration'], auth()->id(), 'integer');
+        Setting::set('mart_max_login_attempts', $data['mart_max_login_attempts'], auth()->id(), 'integer');
+        Setting::set('mart_lockout_duration', $data['mart_lockout_duration'], auth()->id(), 'integer');
 
         // Clear dashboard stats cache so changes reflect immediately
         \Illuminate\Support\Facades\Cache::forget('dashboard_stats');

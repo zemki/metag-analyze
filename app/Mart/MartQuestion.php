@@ -7,6 +7,21 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
+/**
+ * MartQuestion Model
+ *
+ * Represents individual questions within MART questionnaires.
+ *
+ * Question Types:
+ * - 'number': Numeric input field (sends type='number' with minValue/maxValue to mobile)
+ * - 'range': Range slider (sends type='range' with rangeOptions to mobile)
+ * - 'text': Text input field
+ * - 'one choice': Single selection (radio buttons)
+ * - 'multiple choice': Multiple selection (checkboxes)
+ *
+ * Note: 'number' and 'range' both store similar config (min, max, step) but are
+ * rendered differently on mobile and in the API response format per martTypes.ts.
+ */
 class MartQuestion extends Model
 {
     /**

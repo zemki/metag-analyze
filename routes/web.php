@@ -80,6 +80,7 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified', 'LoggedUser']],
     Route::patch('/projects/{project}/cases/{case}', 'ProjectCasesController@update');
     Route::delete('/cases/{case}', 'ProjectCasesController@destroy')->name('cases.destroy');
     Route::get('/cases/{case}/files', 'FileCasesController@index');
+    Route::get('/files/{file}', 'FileCasesController@show'); // Web route for audio player
     Route::delete('/cases/{case}/files/{file}', 'FileCasesController@destroy');
 
     /**

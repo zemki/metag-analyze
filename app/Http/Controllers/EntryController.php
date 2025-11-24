@@ -68,6 +68,15 @@ class EntryController extends Controller
             self::INPUTS => 'nullable',
         ]);
 
+        // Convert Unix timestamps to MySQL datetime format if needed
+        // Mobile app sends Unix timestamps (seconds), check if it's numeric and not already a datetime string
+        if (is_numeric($attributes[self::BEGIN]) && strlen($attributes[self::BEGIN]) == 10) {
+            $attributes[self::BEGIN] = date('Y-m-d H:i:s', $attributes[self::BEGIN]);
+        }
+        if (is_numeric($attributes['end']) && strlen($attributes['end']) == 10) {
+            $attributes['end'] = date('Y-m-d H:i:s', $attributes['end']);
+        }
+
         $isComingFromBackend = is_numeric($attributes[self::MEDIA_ID]);
 
         if ($isComingFromBackend) {
@@ -127,6 +136,16 @@ class EntryController extends Controller
             self::MEDIA_ID => self::REQUIRED,
             self::INPUTS => 'nullable',
         ]);
+
+        // Convert Unix timestamps to MySQL datetime format if needed
+        // Mobile app sends Unix timestamps (seconds), check if it's numeric and not already a datetime string
+        if (is_numeric($attributes[self::BEGIN]) && strlen($attributes[self::BEGIN]) == 10) {
+            $attributes[self::BEGIN] = date('Y-m-d H:i:s', $attributes[self::BEGIN]);
+        }
+        if (is_numeric($attributes['end']) && strlen($attributes['end']) == 10) {
+            $attributes['end'] = date('Y-m-d H:i:s', $attributes['end']);
+        }
+
         if (is_string($attributes[self::MEDIA_ID])) {
             $attributes[self::MEDIA_ID] = Media::firstOrCreate(['name' => $attributes[self::MEDIA_ID]])->id;
         }

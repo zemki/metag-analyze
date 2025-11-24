@@ -116,10 +116,10 @@ return [
     'token_expiration' => env('API_TOKEN_EXPIRATION', 2880),
 
     // Maximum failed login attempts before lockout
-    'max_login_attempts' => env('MAX_LOGIN_ATTEMPTS', 5),
+    'max_login_attempts' => env('MAX_LOGIN_ATTEMPTS', 10),
 
     // Lockout duration in minutes
-    'lockout_duration' => env('LOGIN_LOCKOUT_DURATION', 10),
+    'lockout_duration' => env('LOGIN_LOCKOUT_DURATION', 30),
 
     // Token cache duration in minutes
     'token_cache_duration' => env('TOKEN_CACHE_DURATION', 1440),

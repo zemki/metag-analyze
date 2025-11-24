@@ -30,6 +30,59 @@ class FileCasesController extends Controller
         return view('files.index', $data);
     }
 
+    /**
+     * Get a specific file for audio playback (web frontend)
+     * Similar to Api\V2\FileController@show but uses web session auth
+     */
+    public function show(Files $file)
+    {
+        try {
+            // Get the case this file belongs to
+            $case = $file->case;
+
+            if (!$case) {
+                return response()->json([
+                    'error' => 'File not found',
+                ], 404);
+            }
+
+            // Check if user has access to this case
+            // User must be assigned to this case or be the project owner
+            $hasAccess = $case->user_id === auth()->id() ||
+                        $case->project->created_by === auth()->id();
+
+            if (!$hasAccess) {
+                return response()->json([
+                    'error' => 'Access denied',
+                ], 403);
+            }
+
+            // Check if file exists
+            if (!file_exists($file->path)) {
+                return response()->json([
+                    'error' => 'File not found on disk',
+                ], 404);
+            }
+
+            // Decrypt and return the file content
+            $decryptedContent = decrypt(file_get_contents($file->path));
+
+            return response()->json([
+                'data' => $decryptedContent,
+                'file_id' => $file->id,
+                'case_id' => $case->id,
+                'size' => $file->size,
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('FileCasesController@show error: ' . $e->getMessage());
+
+            return response()->json([
+                'error' => 'Failed to retrieve file',
+            ], 500);
+        }
+    }
+
     public function destroy(Cases $case, Files $file)
     {
         $project = $case->project;

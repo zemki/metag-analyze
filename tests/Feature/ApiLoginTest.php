@@ -73,7 +73,7 @@ class ApiLoginTest extends TestCase
         // Disable rate limiting for this test
         $this->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class);
 
-        for ($i = 0; $i < 6; $i++) {
+        for ($i = 0; $i < 11; $i++) {
             $this->postJson('/api/login', [
                 'email' => 'test3@example.com',
                 'password' => 'wrongpassword',
@@ -82,7 +82,7 @@ class ApiLoginTest extends TestCase
 
         $user->refresh();
 
-        $this->assertEquals(6, $user->failed_login_attempts);
+        $this->assertEquals(11, $user->failed_login_attempts);
         $this->assertNotNull($user->lockout_until);
     }
 

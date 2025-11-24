@@ -230,8 +230,14 @@ class ProjectController extends Controller
                     // Only process file entries if they exist
                     if (isset($inputs['file'])) {
                         $fileObject = $case->files->where('id', $inputs['file'])->first();
-                        if ($fileObject) {
-                            $entry->file_object = $fileObject;
+                        if ($fileObject && file_exists($fileObject->path)) {
+                            // Don't decrypt here - let the frontend fetch via API endpoint
+                            // This prevents huge JSON payloads and browser data URI limits
+                            $entry->file_object = (object) [
+                                'id' => $fileObject->id,
+                                'created_at' => $fileObject->created_at ? $fileObject->created_at->format('Y-m-d H:i:s') : null,
+                                'size' => $fileObject->size,
+                            ];
                             $entry->file_path = $fileObject->path;
                         }
                     }

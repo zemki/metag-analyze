@@ -30,11 +30,23 @@ class ScaleResource extends JsonResource
             $config = is_array($this->config) ? $this->config : json_decode($this->config, true);
 
             switch ($questionType) {
-                case 'scale':
+                case 'number':
                     $scaleOptions = [
                         'type' => 'number',
-                        'minValue' => $config['minValue'] ?? 1,
-                        'maxValue' => $config['maxValue'] ?? 10,
+                        'minValue' => $config['min'] ?? 1,
+                        'maxValue' => $config['max'] ?? 10,
+                    ];
+                    break;
+
+                case 'range':
+                    $scaleOptions = [
+                        'type' => 'range',
+                        'rangeOptions' => [
+                            'minValue' => $config['min'] ?? 1,
+                            'maxValue' => $config['max'] ?? 10,
+                            'steps' => $config['step'] ?? 1,
+                            'defaultValue' => $config['defaultValue'] ?? ($config['min'] ?? 1),
+                        ],
                     ];
                     break;
 

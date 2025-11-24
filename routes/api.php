@@ -13,6 +13,11 @@
 
 Route::post('login', 'ApiController@login')->middleware('throttle:10,60');
 
+// Settings API
+Route::get('settings/api_v2_cutoff_date', function () {
+    return response()->json(['value' => \App\Setting::get('api_v2_cutoff_date', '2025-12-21')]);
+});
+
 // QR Code Login - rate limited to prevent brute force attacks
 // For API v2 non-MART projects only
 // 10 requests per minute per IP

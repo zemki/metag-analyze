@@ -77,4 +77,18 @@ class Entry extends Model
     {
         return \App\Mart\MartEntry::where('main_entry_id', $this->id)->first();
     }
+
+    /**
+     * Get the file associated with this entry (from inputs->file)
+     *
+     * @return Files|null
+     */
+    public function file()
+    {
+        $inputs = json_decode($this->inputs, true);
+        if (isset($inputs['file'])) {
+            return Files::find($inputs['file']);
+        }
+        return null;
+    }
 }
