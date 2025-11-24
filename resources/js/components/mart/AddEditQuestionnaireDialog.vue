@@ -494,6 +494,24 @@
                     </select>
                   </div>
 
+                  <!-- Number Options -->
+                  <div v-if="question.type === 'number'" class="space-y-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <h4 class="text-sm font-medium text-gray-900">{{ trans('Number Input Options') }}</h4>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700">{{ trans('Max Digits (Optional)') }}</label>
+                      <input
+                          type="number"
+                          v-model.number="question.config.maxDigits"
+                          min="1"
+                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                          :placeholder="trans('e.g., 5 for max 99999')"
+                      />
+                      <p class="mt-1 text-xs text-gray-500">
+                        {{ trans('Maximum number of digits allowed (e.g., 3 allows max 999).') }}
+                      </p>
+                    </div>
+                  </div>
+
                   <!-- Range Options -->
                   <div v-if="question.type === 'range'" class="grid grid-cols-3 gap-4">
                     <div>
@@ -587,6 +605,7 @@
 
 <script>
 import SchedulePreview from './SchedulePreview.vue';
+import { emitter } from '../../app.js';
 
 export default {
   name: 'AddEditQuestionnaireDialog',
@@ -695,7 +714,8 @@ export default {
           config: {
             minValue: config.min || 0,
             maxValue: config.max || 10,
-            steps: config.step || 1
+            steps: config.step || 1,
+            maxDigits: config.maxDigits || null
           }
         };
       });
@@ -815,7 +835,8 @@ export default {
         config: {
           minValue: 0,
           maxValue: 10,
-          steps: 1
+          steps: 1,
+          maxDigits: null
         }
       });
     },
@@ -854,6 +875,12 @@ export default {
             config.min = q.config.minValue;
             config.max = q.config.maxValue;
             config.step = q.config.steps;
+          } else if (q.type === 'number') {
+            config.min = q.config.minValue;
+            config.max = q.config.maxValue;
+            if (q.config.maxDigits) {
+              config.maxDigits = q.config.maxDigits;
+            }
           } else if (q.type === 'radio' || q.type === 'checkbox') {
             config.options = q.answers.filter(a => a.trim());
           }
@@ -899,7 +926,7 @@ export default {
           errorMessage = error.response.data.message;
         }
 
-        this.$root.showSnackbarMessage(errorMessage);
+        emitter.emit('show-snackbar', errorMessage);
       } finally {
         this.saving = false;
       }
@@ -943,13 +970,13 @@ export default {
             };
           }
 
-          this.$root.showSnackbarMessage(this.trans('Project dates applied successfully'));
+          emitter.emit('show-snackbar', this.trans('Project dates applied successfully'));
         } else {
-          this.$root.showSnackbarMessage(this.trans('No project dates found'), 'warning');
+          emitter.emit('show-snackbar', this.trans('No project dates found'));
         }
       } catch (error) {
         console.error('Error fetching project dates:', error);
-        this.$root.showSnackbarMessage(this.trans('Failed to load project dates'), 'error');
+        emitter.emit('show-snackbar', this.trans('Failed to load project dates'));
       }
     },
 

@@ -251,6 +251,7 @@
 </template>
 <script>
 import moment from "moment";
+import { emitter } from '../app.js';
 
 export default {
   props: {
@@ -392,7 +393,7 @@ export default {
       }
     },
     showSnackbar(message) {
-      this.$root.showSnackbarMessage(message.message || message);
+      emitter.emit('show-snackbar', message.message || message);
     },
     sort(s) {
       if (s === this.currentSort) {

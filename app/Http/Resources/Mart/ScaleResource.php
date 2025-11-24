@@ -36,6 +36,11 @@ class ScaleResource extends JsonResource
                         'minValue' => $config['min'] ?? 1,
                         'maxValue' => $config['max'] ?? 10,
                     ];
+
+                    // Add maxDigits if present
+                    if (isset($config['maxDigits'])) {
+                        $scaleOptions['maxDigits'] = $config['maxDigits'];
+                    }
                     break;
 
                 case 'range':

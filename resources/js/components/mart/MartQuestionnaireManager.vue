@@ -284,6 +284,7 @@
 import { defineAsyncComponent } from 'vue';
 import AddEditQuestionnaireDialog from './AddEditQuestionnaireDialog.vue';
 import VersionHistoryModal from './VersionHistoryModal.vue';
+import { emitter } from '../../app.js';
 
 // Lazy load SchedulePreview component for better performance
 const SchedulePreview = defineAsyncComponent(() =>
@@ -345,7 +346,7 @@ export default {
           this.schedules = []; // Set empty schedules, component will show "No questionnaires yet"
         } else {
           console.error('Error loading questionnaires:', error);
-          this.$root.showSnackbarMessage(this.trans('Failed to load questionnaires'));
+          emitter.emit('show-snackbar', this.trans('Failed to load questionnaires'));
         }
       } finally {
         this.loading = false;
@@ -393,7 +394,7 @@ export default {
     handleScheduleSaved() {
       this.closeScheduleDialog();
       this.loadSchedules();
-      this.$root.showSnackbarMessage(this.trans('Questionnaire saved successfully'));
+      emitter.emit('show-snackbar', this.trans('Questionnaire saved successfully'));
     },
 
     getQuestionCount(schedule) {

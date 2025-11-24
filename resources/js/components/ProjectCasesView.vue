@@ -414,13 +414,15 @@
          class="fixed inset-0 z-0"></div>
 
     <!-- Confirmation Dialog -->
-    <CustomDialogue v-if="dialog.show"
-                    :title="dialog.title"
-                    :message="dialog.message"
-                    :confirm-text="dialog.confirmText"
-                    @confirm="dialog.onConfirm"
-                    @cancel="dialog.onCancel"
-    />
+    <Modal v-if="dialog.show"
+           :title="dialog.title"
+           :visible="dialog.show"
+           :confirm-text="dialog.confirmText"
+           :danger="dialog.danger"
+           @confirm="dialog.onConfirm"
+           @cancel="dialog.onCancel">
+      <div v-html="dialog.message"></div>
+    </Modal>
 
     <!-- QR Code Modal -->
     <QRCodeModal v-if="qrCodeModalVisible"
@@ -566,9 +568,9 @@ import SelectedCase from './selected-case.vue';
 import EditProject from './editproject.vue';
 import ProjectInvites from './projectsInvites.vue';
 import Modal from './global/modal.vue';
-import CustomDialogue from './global/CustomDialogue.vue';
 import PaginationControls from './PaginationControls.vue';
 import QRCodeModal from './QRCodeModal.vue';
+import { emitter } from '../app.js';
 
 export default {
   name: 'ProjectCasesView',
@@ -577,7 +579,6 @@ export default {
     EditProject,
     ProjectInvites,
     Modal,
-    CustomDialogue,
     PaginationControls,
     QRCodeModal
   },
@@ -641,7 +642,8 @@ export default {
         show: false,
         title: '',
         message: '',
-        confirmText: '',
+        confirmText: 'Confirm',
+        danger: false,
         onConfirm: null,
         onCancel: null
       },
@@ -922,9 +924,10 @@ export default {
 
     confirmDeleteCase(caseItem) {
       this.dialog.show = true;
-      this.dialog.title = this.trans('Confirm Case deletion');
+      this.dialog.title = this.trans('Confirm Delete');
       this.dialog.message = this.trans('Do you want to delete this case and all the entries?');
-      this.dialog.confirmText = this.trans('YES delete case and all the entries');
+      this.dialog.confirmText = this.trans('Delete Case');
+      this.dialog.danger = true;
       this.dialog.onConfirm = () => this.deleteCase(caseItem);
       this.dialog.onCancel = () => {
         this.dialog.show = false;
@@ -954,13 +957,14 @@ export default {
 
           this.dialog.show = false;
 
-          // Case deleted successfully
+          // Show success message
+          emitter.emit('show-snackbar', this.trans('Case deleted successfully'));
         } else {
           throw new Error('Delete failed');
         }
       } catch (error) {
         console.error('Error deleting case:', error);
-        alert('Error deleting case. Please try again.');
+        emitter.emit('show-snackbar', this.trans('Error deleting case. Please try again.'));
       }
     },
 
@@ -1026,9 +1030,9 @@ export default {
         this.qrCodeModalVisible = true;
       } catch (error) {
         if (error.response?.status === 403) {
-          alert(error.response.data.error || 'Cannot generate QR code for this case');
+          emitter.emit('show-snackbar', error.response.data.error || 'Cannot generate QR code for this case');
         } else {
-          alert('Failed to generate QR code');
+          emitter.emit('show-snackbar', 'Failed to generate QR code');
           console.error('QR code generation error:', error);
         }
       }
@@ -1054,7 +1058,7 @@ export default {
           this.selectedCase.qr_token_revoked_at = null;
         }
       } catch (error) {
-        alert('Failed to regenerate QR code');
+        emitter.emit('show-snackbar', 'Failed to regenerate QR code');
         console.error('QR code regeneration error:', error);
       }
     },
@@ -1082,9 +1086,9 @@ export default {
         }
 
         this.qrCodeModalVisible = false;
-        alert('QR code revoked successfully');
+        emitter.emit('show-snackbar', 'QR code revoked successfully');
       } catch (error) {
-        alert('Failed to revoke QR code');
+        emitter.emit('show-snackbar', 'Failed to revoke QR code');
         console.error('QR code revocation error:', error);
       }
     },
@@ -1111,9 +1115,9 @@ export default {
           this.qrCodeData.revoked_reason = null;
         }
 
-        alert('QR code re-enabled successfully');
+        emitter.emit('show-snackbar', 'QR code re-enabled successfully');
       } catch (error) {
-        alert('Failed to re-enable QR code');
+        emitter.emit('show-snackbar', 'Failed to re-enable QR code');
         console.error('QR code un-revocation error:', error);
       }
     },
@@ -1135,7 +1139,7 @@ export default {
 
       // Validate math answer
       if (isNaN(userAnswer) || userAnswer !== expectedAnswer) {
-        alert('Incorrect math answer. Please try again.');
+        emitter.emit('show-snackbar', this.trans('Incorrect math answer. Please try again.'));
         return;
       }
 
@@ -1184,18 +1188,19 @@ export default {
           // Close modal
           this.closeCaseModalVisible = false;
 
-          alert('Case closed successfully. The case last day has been set to yesterday.');
+          // Store message for display after reload
+          localStorage.setItem('snackbarMessage', this.trans('Case closed successfully. The case last day has been set to yesterday.'));
 
           // Refresh the page to update case statuses
           window.location.reload();
         }
       } catch (error) {
         if (error.response?.status === 422) {
-          alert('Incorrect math answer. Please try again.');
+          emitter.emit('show-snackbar', this.trans('Incorrect math answer. Please try again.'));
         } else if (error.response?.data?.error) {
-          alert(error.response.data.error);
+          emitter.emit('show-snackbar', error.response.data.error);
         } else {
-          alert('Failed to close case');
+          emitter.emit('show-snackbar', this.trans('Failed to close case'));
           console.error('Close case error:', error);
         }
       }

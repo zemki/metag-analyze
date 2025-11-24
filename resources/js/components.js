@@ -10,7 +10,6 @@ import SelectedCase from "./components/selected-case.vue";
 import createproject from "./components/createproject.vue";
 import Modal from "./components/global/modal.vue";
 import Snackbar from "./components/global/snackbar.vue";
-import CustomDialogue from "./components/global/CustomDialogue.vue";
 import DebugPanel from "./components/debug-panel.vue";
 import Breadcrumb from "./components/breadcrumb.vue";
 import Treemap from "./components/treemap.vue";
@@ -31,7 +30,6 @@ export const components = {
   "create-project": createproject,
   "modal": Modal,
   "snackbar": Snackbar,
-  "custom-dialogue": CustomDialogue,
   "debug-panel": DebugPanel,
   "breadcrumb": Breadcrumb,
   "treemap": Treemap,

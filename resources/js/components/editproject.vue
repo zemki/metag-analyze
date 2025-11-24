@@ -472,6 +472,7 @@
 
 <script>
 import MartQuestionnaireManager from './mart/MartQuestionnaireManager.vue';
+import { emitter } from '../app.js';
 
 export default {
   name: 'EditProject',
@@ -812,7 +813,7 @@ export default {
     },
 
     showSnackbarMessage(message) {
-      this.$root.showSnackbarMessage(message);
+      emitter.emit('show-snackbar', message);
     },
 
     // Edit Mode Management

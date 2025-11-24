@@ -5,6 +5,8 @@
       v-if="showDeleteModal"
       title="Confirm Delete"
       :visible="showDeleteModal"
+      confirm-text="Delete File"
+      :danger="true"
       @confirm="deleteFile"
       @cancel="showDeleteModal = false"
     >
@@ -116,7 +118,7 @@
 
 <script>
 import Modal from './global/modal.vue';
-import { emitter } from '@/emitter';
+import { emitter } from '../app.js';
 
 const convertTimeHHMMSS = (val) => {
   const hhmmss = new Date(val * 1000).toISOString().substr(11, 8);

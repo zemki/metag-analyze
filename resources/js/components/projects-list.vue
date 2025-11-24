@@ -26,15 +26,21 @@
         v-if="showDeleteProjectModal"
         title="Confirm Delete"
         :visible="showDeleteProjectModal"
+        confirm-text="Delete Project"
+        :danger="true"
         @confirm="deleteStudy"
         @cancel="closeDeleteProjectModal"
     >
-      <div class="p-2 text-center text-white bg-red-600">
-        <p>{{ trans("You are about to delete the study") }}</p>
-        <p class="uppercase">{{ deleteProjectName }}</p>
-        <p>{{ trans("and all its content?") }}</p>
-        <p class="has-text-weight-bold">{{ trans("Continue?") }}</p>
-      </div>
+      <p class="text-sm text-gray-600">
+        {{ trans("You are about to delete the project") }}
+      </p>
+      <p class="mt-2 text-base font-semibold text-gray-900">{{ deleteProjectName }}</p>
+      <p class="mt-2 text-sm text-gray-600">
+        {{ trans("and all its content.") }}
+      </p>
+      <p class="mt-3 text-xs font-medium text-red-600">
+        {{ trans("This action cannot be undone.") }}
+      </p>
     </Modal>
 
 
@@ -188,7 +194,7 @@
 </template>
 <script>
 import Modal from "./global/modal.vue";
-import { emitter } from '@/emitter';
+import { emitter } from '../app.js';
 
 export default {
   name: "ProjectsList",
