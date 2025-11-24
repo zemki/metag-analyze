@@ -25,6 +25,9 @@ export default defineConfig({
         tailwindcss(),
         vitePluginRequire.default(),
     ],
+    define: {
+        __VUE_PROD_DEVTOOLS__: false,
+    },
     css: {
         devSourcemap: true,
     },

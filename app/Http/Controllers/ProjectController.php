@@ -431,6 +431,15 @@ class ProjectController extends Controller
     public function update(Project $project)
     {
         $this->authorize(self::UPDATESTRING, $project);
+
+        // Check if project is editable (MART projects are always editable, non-MART are locked once cases exist)
+        if (!$project->isEditable()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This project cannot be edited because it has existing cases with data. To maintain data integrity, project structure is locked once cases are created.'
+            ], 403);
+        }
+
         $media = request()->media;
         $attributes = request()->validate([
             'name' => self::REQUIRED,
