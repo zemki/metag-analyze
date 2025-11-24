@@ -54,9 +54,19 @@
             <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span class="text-xs font-medium text-gray-600">{{ trans('Max Submits') }}</span>
+            <span class="text-xs font-medium text-gray-600">{{ trans('Max Daily Submits') }}</span>
           </div>
           <div class="text-lg font-bold text-gray-900">{{ maxDailySubmits }}</div>
+        </div>
+
+        <div v-if="maxTotalSubmits" class="bg-white rounded-lg p-3 shadow-sm border border-purple-100">
+          <div class="flex items-center space-x-2 mb-1">
+            <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span class="text-xs font-medium text-gray-600">{{ trans('Max Total Submits') }}</span>
+          </div>
+          <div class="text-lg font-bold text-gray-900">{{ maxTotalSubmits }}</div>
         </div>
       </div>
 
@@ -173,6 +183,10 @@ export default {
       default: null
     },
     maxDailySubmits: {
+      type: Number,
+      default: null
+    },
+    maxTotalSubmits: {
       type: Number,
       default: null
     },

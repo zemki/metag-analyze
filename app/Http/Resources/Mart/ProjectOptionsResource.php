@@ -148,8 +148,8 @@ class ProjectOptionsResource extends JsonResource
     }
 
     /**
-     * Get the iOS data collection question ID for this project.
-     * Returns the questionnaire ID of the question marked as iOS data collection.
+     * Get the iOS data donation questionnaire ID for this project.
+     * Returns the questionnaire ID marked as iOS data donation questionnaire.
      *
      * @return int|null
      */
@@ -160,22 +160,17 @@ class ProjectOptionsResource extends JsonResource
             return null;
         }
 
-        // Find the question marked as iOS data collection across all schedules
-        $schedules = MartSchedule::forProject($martProject->id)->with('questions')->get();
+        // Find the questionnaire marked as iOS data donation
+        $schedule = MartSchedule::forProject($martProject->id)
+            ->where('is_ios_data_donation', true)
+            ->first();
 
-        foreach ($schedules as $schedule) {
-            $iosQuestion = $schedule->questions()->where('is_ios_data_collection', true)->first();
-            if ($iosQuestion) {
-                return $schedule->questionnaire_id;
-            }
-        }
-
-        return null;
+        return $schedule ? $schedule->questionnaire_id : null;
     }
 
     /**
-     * Get the Android data collection question ID for this project.
-     * Returns the questionnaire ID of the question marked as Android data collection.
+     * Get the Android data donation questionnaire ID for this project.
+     * Returns the questionnaire ID marked as Android data donation questionnaire.
      *
      * @return int|null
      */
@@ -186,17 +181,12 @@ class ProjectOptionsResource extends JsonResource
             return null;
         }
 
-        // Find the question marked as Android data collection across all schedules
-        $schedules = MartSchedule::forProject($martProject->id)->with('questions')->get();
+        // Find the questionnaire marked as Android data donation
+        $schedule = MartSchedule::forProject($martProject->id)
+            ->where('is_android_data_donation', true)
+            ->first();
 
-        foreach ($schedules as $schedule) {
-            $androidQuestion = $schedule->questions()->where('is_android_data_collection', true)->first();
-            if ($androidQuestion) {
-                return $schedule->questionnaire_id;
-            }
-        }
-
-        return null;
+        return $schedule ? $schedule->questionnaire_id : null;
     }
 
     /**

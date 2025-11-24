@@ -187,8 +187,11 @@ class Cases extends Model
      *
      * @return false|string
      */
-    public static function calculateDuration(int $datetime, $caseDuration)
+    public static function calculateDuration(?int $datetime, $caseDuration)
     {
+        // Default to current timestamp if datetime is not provided (e.g., QR code login)
+        $datetime = $datetime ?? time();
+
         $sub = substr($caseDuration, strpos($caseDuration, ':') + strlen(':'), strlen($caseDuration));
         $realDuration = (int) substr($sub, 0, strpos($sub, '|'));
 

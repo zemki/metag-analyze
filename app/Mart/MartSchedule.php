@@ -29,6 +29,8 @@ class MartSchedule extends Model
         'type',
         'timing_config',
         'notification_config',
+        'is_ios_data_donation',
+        'is_android_data_donation',
     ];
 
     /**
@@ -37,6 +39,8 @@ class MartSchedule extends Model
     protected $casts = [
         'timing_config' => 'array',
         'notification_config' => 'array',
+        'is_ios_data_donation' => 'boolean',
+        'is_android_data_donation' => 'boolean',
     ];
 
     /**

@@ -60,9 +60,12 @@ class MartQuestionnaireController extends Controller
             'show_progress_bar' => 'boolean',
             'show_notifications' => 'boolean',
             'notification_text' => 'nullable|string',
+            'is_ios_data_donation' => 'nullable|boolean',
+            'is_android_data_donation' => 'nullable|boolean',
             'daily_interval_duration' => 'nullable|integer',
             'min_break_between' => 'nullable|integer',
             'max_daily_submits' => 'nullable|integer',
+            'max_total_submits' => 'nullable|integer',
             'daily_start_time' => 'nullable|string',
             'daily_end_time' => 'nullable|string',
             'quest_available_at' => 'nullable|in:startOfInterval,randomTimeWithinInterval',
@@ -72,15 +75,32 @@ class MartQuestionnaireController extends Controller
             'questions.*.type' => 'required|in:scale,text,one choice,multiple choice',
             'questions.*.mandatory' => 'required|boolean',
             'questions.*.config' => 'nullable|array',
-            'questions.*.is_ios_data_collection' => 'nullable|boolean',
-            'questions.*.is_android_data_collection' => 'nullable|boolean',
-            'questions.*.item_group' => 'nullable|string',
         ]);
 
         // Get or create MART project
         $martProject = $project->martProject();
         if (! $martProject) {
             $martProject = MartProject::create(['main_project_id' => $project->id]);
+        }
+
+        // Calculate end_date_time if max_total_submits is provided for repeating questionnaires
+        if ($validated['type'] === 'repeating' &&
+            isset($validated['max_total_submits']) &&
+            $validated['max_total_submits'] > 0 &&
+            isset($validated['start_date_time']) &&
+            isset($validated['daily_start_time']) &&
+            isset($validated['daily_end_time']) &&
+            isset($validated['daily_interval_duration']) &&
+            isset($validated['max_daily_submits'])
+        ) {
+            $validated['end_date_time'] = \App\MartQuestionnaireSchedule::calculateEndDateTime(
+                $validated['start_date_time'],
+                $validated['daily_start_time'],
+                $validated['daily_end_time'],
+                $validated['daily_interval_duration'],
+                $validated['max_daily_submits'],
+                $validated['max_total_submits']
+            );
         }
 
         DB::connection('mart')->beginTransaction();
@@ -93,6 +113,7 @@ class MartQuestionnaireController extends Controller
                 'daily_interval_duration' => $validated['daily_interval_duration'] ?? null,
                 'min_break_between' => $validated['min_break_between'] ?? null,
                 'max_daily_submits' => $validated['max_daily_submits'] ?? null,
+                'max_total_submits' => $validated['max_total_submits'] ?? null,
                 'daily_start_time' => $validated['daily_start_time'] ?? null,
                 'daily_end_time' => $validated['daily_end_time'] ?? null,
                 'quest_available_at' => $validated['quest_available_at'] ?? null,
@@ -114,6 +135,8 @@ class MartQuestionnaireController extends Controller
                 'type' => $validated['type'],
                 'timing_config' => $timingConfig,
                 'notification_config' => $notificationConfig,
+                'is_ios_data_donation' => $validated['is_ios_data_donation'] ?? false,
+                'is_android_data_donation' => $validated['is_android_data_donation'] ?? false,
             ]);
 
             // Create questions
@@ -125,9 +148,6 @@ class MartQuestionnaireController extends Controller
                     'type' => $questionData['type'],
                     'config' => $questionData['config'] ?? [],
                     'is_mandatory' => $questionData['mandatory'],
-                    'is_ios_data_collection' => $questionData['is_ios_data_collection'] ?? false,
-                    'is_android_data_collection' => $questionData['is_android_data_collection'] ?? false,
-                    'item_group' => $questionData['item_group'] ?? null,
                     'version' => 1,
                 ]);
             }

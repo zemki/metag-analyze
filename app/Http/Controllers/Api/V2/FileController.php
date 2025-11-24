@@ -32,7 +32,7 @@ class FileController extends Controller
 
             // Check if user has access to this case
             // User must be assigned to this case or be the project owner
-            $hasAccess = $case->users->contains($user->id) ||
+            $hasAccess = $case->user_id === $user->id ||
                         $case->project->created_by === $user->id;
 
             if (! $hasAccess) {

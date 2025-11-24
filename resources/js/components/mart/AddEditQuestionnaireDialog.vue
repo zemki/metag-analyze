@@ -103,22 +103,38 @@
               </div>
 
               <!-- Date/Time Settings -->
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">{{ trans('Start Date') }} *</label>
-                  <input
-                      v-model="formData.start_date_time.date"
-                      type="date"
-                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
-                  />
+              <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                  <h4 class="text-sm font-medium text-gray-900">{{ trans('Schedule Dates') }}</h4>
+                  <button
+                      type="button"
+                      @click="useProjectDates"
+                      class="inline-flex items-center px-3 py-1 text-xs font-medium text-blue-700 bg-blue-50 rounded-md hover:bg-blue-100 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                    </svg>
+                    {{ trans('Use Project Dates') }}
+                  </button>
                 </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">{{ trans('Start Time') }} *</label>
-                  <input
-                      v-model="formData.start_date_time.time"
-                      type="time"
-                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
-                  />
+
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700">{{ trans('Start Date') }} *</label>
+                    <input
+                        v-model="formData.start_date_time.date"
+                        type="date"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700">{{ trans('Start Time') }} *</label>
+                    <input
+                        v-model="formData.start_date_time.time"
+                        type="time"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -129,7 +145,13 @@
                   <input
                       v-model="formData.end_date_time.date"
                       type="date"
-                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                      :disabled="formData.calculate_end_date_on_login"
+                      :class="[
+                        'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs',
+                        formData.calculate_end_date_on_login
+                          ? 'bg-gray-100 cursor-not-allowed text-gray-500'
+                          : 'focus:ring-blue-500 focus:border-blue-500'
+                      ]"
                   />
                 </div>
                 <div>
@@ -137,8 +159,45 @@
                   <input
                       v-model="formData.end_date_time.time"
                       type="time"
-                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                      :disabled="formData.calculate_end_date_on_login"
+                      :class="[
+                        'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs',
+                        formData.calculate_end_date_on_login
+                          ? 'bg-gray-100 cursor-not-allowed text-gray-500'
+                          : 'focus:ring-blue-500 focus:border-blue-500'
+                      ]"
                   />
+                </div>
+              </div>
+
+              <!-- Dynamic End Date Calculation -->
+              <div v-if="formData.type === 'repeating'" class="space-y-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div class="flex items-center">
+                  <input
+                      v-model="formData.calculate_end_date_on_login"
+                      type="checkbox"
+                      id="calculate_end_date"
+                      class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
+                  />
+                  <label for="calculate_end_date" class="ml-2 block text-sm font-medium text-gray-700">
+                    {{ trans('Calculate end date dynamically on first login') }}
+                  </label>
+                </div>
+
+                <div v-if="formData.calculate_end_date_on_login" class="ml-6">
+                  <label class="block text-sm font-medium text-gray-700">
+                    {{ trans('Duration (days after first login)') }}
+                  </label>
+                  <input
+                      v-model.number="formData.duration_days_after_login"
+                      type="number"
+                      min="1"
+                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                      :placeholder="trans('e.g., 7')"
+                  />
+                  <p class="mt-1 text-xs text-gray-500">
+                    {{ trans('The questionnaire will end X days after the participant first logs in.') }}
+                  </p>
                 </div>
               </div>
 
@@ -188,6 +247,19 @@
                     </p>
                   </div>
                   <div>
+                    <label class="block text-sm font-medium text-gray-700">{{ trans('Max Total Submits') }}</label>
+                    <input
+                        v-model.number="formData.max_total_submits"
+                        type="number"
+                        min="1"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <p class="mt-1 text-xs text-gray-500">
+                      {{ trans('Maximum total submissions across all days.') }}
+                      <span class="block mt-0.5 text-gray-400">{{ trans('End date will be calculated based on this value') }}</span>
+                    </p>
+                  </div>
+                  <div>
                     <label class="block text-sm font-medium text-gray-700">{{ trans('Quest Available At') }}</label>
                     <select
                         v-model="formData.quest_available_at"
@@ -231,37 +303,6 @@
                 </div>
               </div>
 
-              <!-- Dynamic End Date Calculation -->
-              <div class="space-y-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <div class="flex items-center">
-                  <input
-                      v-model="formData.calculate_end_date_on_login"
-                      type="checkbox"
-                      id="calculate_end_date"
-                      class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
-                  />
-                  <label for="calculate_end_date" class="ml-2 block text-sm font-medium text-gray-700">
-                    {{ trans('Calculate end date dynamically on first login') }}
-                  </label>
-                </div>
-
-                <div v-if="formData.calculate_end_date_on_login" class="ml-6">
-                  <label class="block text-sm font-medium text-gray-700">
-                    {{ trans('Duration (days after first login)') }}
-                  </label>
-                  <input
-                      v-model.number="formData.duration_days_after_login"
-                      type="number"
-                      min="1"
-                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
-                      :placeholder="trans('e.g., 7')"
-                  />
-                  <p class="mt-1 text-xs text-gray-500">
-                    {{ trans('The questionnaire will end X days after the participant first logs in.') }}
-                  </p>
-                </div>
-              </div>
-
               <!-- Notification Settings -->
               <div class="space-y-3">
                 <div class="flex items-center">
@@ -298,6 +339,36 @@
                   />
                 </div>
               </div>
+
+              <!-- Data Donation Settings -->
+              <div class="space-y-3 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                <h4 class="text-sm font-medium text-gray-900">{{ trans('Data Donation Settings') }}</h4>
+                <p class="text-xs text-gray-600">{{ trans('Mark this questionnaire as a data donation questionnaire for device statistics collection.') }}</p>
+
+                <div class="flex items-center">
+                  <input
+                      v-model="formData.is_ios_data_donation"
+                      type="checkbox"
+                      id="is_ios_data_donation"
+                      class="h-4 w-4 text-purple-500 focus:ring-purple-400 border-gray-300 rounded"
+                  />
+                  <label for="is_ios_data_donation" class="ml-2 block text-sm text-gray-700">
+                    {{ trans('iOS Data Donation Questionnaire') }}
+                  </label>
+                </div>
+
+                <div class="flex items-center">
+                  <input
+                      v-model="formData.is_android_data_donation"
+                      type="checkbox"
+                      id="is_android_data_donation"
+                      class="h-4 w-4 text-purple-500 focus:ring-purple-400 border-gray-300 rounded"
+                  />
+                  <label for="is_android_data_donation" class="ml-2 block text-sm text-gray-700">
+                    {{ trans('Android Data Donation Questionnaire') }}
+                  </label>
+                </div>
+              </div>
             </div>
 
             <!-- Schedule Preview -->
@@ -308,6 +379,7 @@
               :daily-end-time="formData.daily_end_time"
               :min-break-between="formData.min_break_between"
               :max-daily-submits="formData.max_daily_submits"
+              :max-total-submits="formData.max_total_submits"
               :quest-available-at="formData.quest_available_at"
             />
 
@@ -403,43 +475,6 @@
                     <label :for="'mandatory-' + index" class="ml-2 block text-sm text-gray-700">
                       {{ trans('Required question') }}
                     </label>
-                  </div>
-
-                  <!-- iOS Data Collection -->
-                  <div class="flex items-center">
-                    <input
-                        type="checkbox"
-                        :id="'ios-data-collection-' + index"
-                        v-model="question.isIOSDataCollection"
-                        class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
-                    />
-                    <label :for="'ios-data-collection-' + index" class="ml-2 block text-sm text-gray-700">
-                      {{ trans('iOS data collection question') }}
-                    </label>
-                  </div>
-
-                  <!-- Android Data Collection -->
-                  <div class="flex items-center">
-                    <input
-                        type="checkbox"
-                        :id="'android-data-collection-' + index"
-                        v-model="question.isAndroidDataCollection"
-                        class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
-                    />
-                    <label :for="'android-data-collection-' + index" class="ml-2 block text-sm text-gray-700">
-                      {{ trans('Android data collection question') }}
-                    </label>
-                  </div>
-
-                  <!-- Item Group -->
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700">{{ trans('Item Group (optional)') }}</label>
-                    <input
-                        type="text"
-                        v-model="question.itemGroup"
-                        class="mt-1 block w-full px-4 py-3 rounded-md shadow-xs border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
-                        :placeholder="trans('Enter item group name')"
-                    />
                   </div>
 
                   <!-- Question Type -->
@@ -590,9 +625,12 @@ export default {
         show_progress_bar: true,
         show_notifications: true,
         notification_text: '',
+        is_ios_data_donation: false,
+        is_android_data_donation: false,
         daily_interval_duration: 4,
         min_break_between: 180,
         max_daily_submits: 6,
+        max_total_submits: null,
         daily_start_time: '09:00',
         daily_end_time: '21:00',
         quest_available_at: 'randomTimeWithinInterval',
@@ -653,9 +691,6 @@ export default {
           text: q.text || '',
           type: this.mapBackendTypeToFormType(q.type) || '',
           mandatory: q.is_mandatory !== undefined ? q.is_mandatory : true,
-          isIOSDataCollection: q.is_ios_data_collection || false,
-          isAndroidDataCollection: q.is_android_data_collection || false,
-          itemGroup: q.item_group || '',
           answers: config.options || [],
           config: {
             minValue: config.min || 0,
@@ -700,6 +735,10 @@ export default {
 
         if (timing.max_daily_submits !== undefined) {
           this.formData.max_daily_submits = timing.max_daily_submits;
+        }
+
+        if (timing.max_total_submits !== undefined) {
+          this.formData.max_total_submits = timing.max_total_submits;
         }
 
         if (timing.daily_start_time) {
@@ -771,9 +810,6 @@ export default {
         text: '',
         type: '',
         mandatory: false,
-        isIOSDataCollection: false,
-        isAndroidDataCollection: false,
-        itemGroup: '',
         answers: [],
         config: {
           minValue: 0,
@@ -825,9 +861,6 @@ export default {
             text: q.text,
             type: backendType,
             mandatory: q.mandatory,
-            is_ios_data_collection: q.isIOSDataCollection || false,
-            is_android_data_collection: q.isAndroidDataCollection || false,
-            item_group: q.itemGroup || null,
             config: config
           };
 
@@ -881,6 +914,42 @@ export default {
       }
 
       return false;
+    },
+
+    async useProjectDates() {
+      try {
+        // Fetch project data including MART config
+        const response = await window.axios.get(`/projects/${this.projectId}`);
+        const project = response.data;
+
+        // Check if project has MART config with dates
+        if (project.martConfig && project.martConfig.projectOptions) {
+          const projectOptions = project.martConfig.projectOptions;
+
+          // Set start date/time from project
+          if (projectOptions.startDateAndTime) {
+            this.formData.start_date_time = {
+              date: projectOptions.startDateAndTime.date || '',
+              time: projectOptions.startDateAndTime.time || '09:00'
+            };
+          }
+
+          // Set end date/time from project (only for repeating questionnaires)
+          if (this.formData.type === 'repeating' && projectOptions.endDateAndTime) {
+            this.formData.end_date_time = {
+              date: projectOptions.endDateAndTime.date || '',
+              time: projectOptions.endDateAndTime.time || '21:00'
+            };
+          }
+
+          this.$root.showSnackbarMessage(this.trans('Project dates applied successfully'));
+        } else {
+          this.$root.showSnackbarMessage(this.trans('No project dates found'), 'warning');
+        }
+      } catch (error) {
+        console.error('Error fetching project dates:', error);
+        this.$root.showSnackbarMessage(this.trans('Failed to load project dates'), 'error');
+      }
     },
 
     close() {
