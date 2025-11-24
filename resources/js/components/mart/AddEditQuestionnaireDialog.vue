@@ -502,20 +502,7 @@
                         class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
                     />
                     <label :for="'mandatory-' + index" class="ml-2 block text-sm text-gray-700">
-                      {{ trans('Required question') }}
-                    </label>
-                  </div>
-
-                  <!-- Allow Skip Checkbox -->
-                  <div class="flex items-center mt-2">
-                    <input
-                        type="checkbox"
-                        :id="'allow-skip-' + index"
-                        v-model="question.allowSkip"
-                        class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
-                    />
-                    <label :for="'allow-skip-' + index" class="ml-2 block text-sm text-gray-700">
-                      {{ trans('Allow skipping this question') }}
+                      {{ trans('Mandatory question') }}
                     </label>
                   </div>
 
@@ -872,7 +859,6 @@ export default {
           mandatory: q.is_mandatory !== undefined ? q.is_mandatory : true,
           randomizationGroupId: q.randomizationGroupId || null,
           randomizeAnswers: q.randomizeAnswers || false,
-          allowSkip: q.noValueAllowed || false,
           itemGroup: q.item_group || null,
           useTimer: !!timer.time,
           timerSeconds: timer.time || 30,
@@ -989,9 +975,9 @@ export default {
     mapFormTypeToBackendType(formType) {
       const mapping = {
         'text': 'text',
-        'textarea': 'textarea',
-        'number': 'number',
-        'range': 'range',
+        'textarea': 'text',
+        'number': 'scale',
+        'range': 'scale',
         'radio': 'one choice',
         'checkbox': 'multiple choice'
       };
@@ -1005,7 +991,6 @@ export default {
         mandatory: false,
         randomizationGroupId: null,
         randomizeAnswers: false,
-        allowSkip: false,
         itemGroup: null,
         useTimer: false,
         timerSeconds: 30,
@@ -1096,7 +1081,7 @@ export default {
             config: config,
             randomizationGroupId: q.randomizationGroupId || null,
             randomizeAnswers: q.randomizeAnswers || false,
-            noValueAllowed: q.allowSkip || false,
+            noValueAllowed: !q.mandatory,
             item_group: q.itemGroup || null
           };
 

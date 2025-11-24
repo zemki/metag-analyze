@@ -53,6 +53,7 @@ class Helper
             'audio/mp4' => 'm4a',
             'audio/x-m4a' => 'm4a',
             'audio/aac' => 'aac',
+            'audio/x-hx-aac-adts' => 'aac',
             'audio/wav' => 'wav',
             'audio/x-wav' => 'wav',
             'audio/wave' => 'wav',
