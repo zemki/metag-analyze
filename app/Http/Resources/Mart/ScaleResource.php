@@ -89,6 +89,18 @@ class ScaleResource extends JsonResource
 
                 case 'text':
                     $scaleOptions = ['type' => 'text'];
+                    // Add placeholder if present
+                    if (isset($config['placeholder'])) {
+                        $scaleOptions['placeholder'] = $config['placeholder'];
+                    }
+                    break;
+
+                case 'textarea':
+                    $scaleOptions = ['type' => 'textarea'];
+                    // Add placeholder if present
+                    if (isset($config['placeholder'])) {
+                        $scaleOptions['placeholder'] = $config['placeholder'];
+                    }
                     break;
             }
         } elseif ($this->isMartProject && isset($this->martMetadata)) {
@@ -98,10 +110,18 @@ class ScaleResource extends JsonResource
             switch ($martType) {
                 case 'text':
                     $scaleOptions = ['type' => 'text'];
+                    // Add placeholder if present
+                    if (isset($this->martMetadata['placeholder'])) {
+                        $scaleOptions['placeholder'] = $this->martMetadata['placeholder'];
+                    }
                     break;
 
                 case 'textarea':
                     $scaleOptions = ['type' => 'textarea'];
+                    // Add placeholder if present
+                    if (isset($this->martMetadata['placeholder'])) {
+                        $scaleOptions['placeholder'] = $this->martMetadata['placeholder'];
+                    }
                     break;
 
                 case 'number':
@@ -209,10 +229,33 @@ class ScaleResource extends JsonResource
             }
         }
 
-        return [
+        // Add timer and jump to $scaleOptions if present (MART projects only)
+        // These should be inside the options object per martTypes.ts
+        if ($this->isMartProject && isset($this->config)) {
+            $config = is_array($this->config) ? $this->config : json_decode($this->config, true);
+
+            if (isset($config['timer']) && is_array($config['timer'])) {
+                $scaleOptions['timer'] = [
+                    'time' => $config['timer']['time'],
+                    'showCountdown' => $config['timer']['showCountdown'],
+                ];
+            }
+
+            // Add jump if present (only for radio/checkbox)
+            if (isset($config['jump']) && is_array($config['jump'])) {
+                $scaleOptions['jump'] = [
+                    'jumpCondition' => $config['jump']['jumpCondition'],
+                    'jumpOver' => $config['jump']['jumpOver'],
+                ];
+            }
+        }
+
+        $result = [
             'projectId' => $this->projectId ?? 0,
             'scaleId' => $this->index + 1,
             'options' => $scaleOptions,
         ];
+
+        return $result;
     }
 }

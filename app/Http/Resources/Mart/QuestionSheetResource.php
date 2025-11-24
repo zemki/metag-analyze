@@ -32,7 +32,10 @@ class QuestionSheetResource extends JsonResource
                     'scaleId' => $index + 1,
                     'text' => $question['text'] ?? $question['name'] ?? '',
                     'options' => [
-                        'randomizationGroupId' => 1,
+                        'randomizationGroupId' => $question['randomizationGroupId'] ?? null,
+                        'randomizeAnswers' => $question['randomizeAnswers'] ?? false,
+                        'itemGroup' => $question['item_group'] ?? null,
+                        'noValueAllowed' => $question['noValueAllowed'] ?? false,
                     ],
                 ];
             }
@@ -49,7 +52,10 @@ class QuestionSheetResource extends JsonResource
                         'scaleId' => $index + 1,
                         'text' => $input['name'] ?? '',
                         'options' => [
-                            'randomizationGroupId' => 1,
+                            'randomizationGroupId' => $input['randomizationGroupId'] ?? null,
+                            'randomizeAnswers' => $input['randomizeAnswers'] ?? false,
+                            'itemGroup' => $input['item_group'] ?? null,
+                            'noValueAllowed' => $input['noValueAllowed'] ?? false,
                         ],
                     ];
                 }

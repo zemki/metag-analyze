@@ -464,6 +464,35 @@
                     ></textarea>
                   </div>
 
+                  <!-- Randomization Group -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700">{{ trans('Randomization Group (Optional)') }}</label>
+                    <input
+                        type="number"
+                        v-model.number="question.randomizationGroupId"
+                        min="0"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                        :placeholder="trans('e.g., 1')"
+                    />
+                    <p class="mt-1 text-xs text-gray-500">
+                      {{ trans('Items with same group number will be randomized together. Leave empty for no randomization.') }}
+                    </p>
+                  </div>
+
+                  <!-- Item Group -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700">{{ trans('Item Group (Optional)') }}</label>
+                    <input
+                        type="text"
+                        v-model="question.itemGroup"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                        :placeholder="trans('e.g., 1 or intro')"
+                    />
+                    <p class="mt-1 text-xs text-gray-500">
+                      {{ trans('Items with same group value will be shown together on one page. Leave empty to show separately.') }}
+                    </p>
+                  </div>
+
                   <!-- Mandatory Checkbox -->
                   <div class="flex items-center">
                     <input
@@ -474,6 +503,19 @@
                     />
                     <label :for="'mandatory-' + index" class="ml-2 block text-sm text-gray-700">
                       {{ trans('Required question') }}
+                    </label>
+                  </div>
+
+                  <!-- Allow Skip Checkbox -->
+                  <div class="flex items-center mt-2">
+                    <input
+                        type="checkbox"
+                        :id="'allow-skip-' + index"
+                        v-model="question.allowSkip"
+                        class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
+                    />
+                    <label :for="'allow-skip-' + index" class="ml-2 block text-sm text-gray-700">
+                      {{ trans('Allow skipping this question') }}
                     </label>
                   </div>
 
@@ -492,6 +534,20 @@
                       <option value="radio">{{ trans('Single Choice') }}</option>
                       <option value="checkbox">{{ trans('Multiple Choice') }}</option>
                     </select>
+                  </div>
+
+                  <!-- Placeholder (for text/textarea) -->
+                  <div v-if="question.type === 'text' || question.type === 'textarea'">
+                    <label class="block text-sm font-medium text-gray-700">{{ trans('Placeholder (Optional)') }}</label>
+                    <input
+                        type="text"
+                        v-model="question.placeholder"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                        :placeholder="trans('e.g., Enter your answer here...')"
+                    />
+                    <p class="mt-1 text-xs text-gray-500">
+                      {{ trans('Hint text shown in the input field before the user types.') }}
+                    </p>
                   </div>
 
                   <!-- Number Options -->
@@ -569,6 +625,108 @@
                       </svg>
                       {{ trans('Add Option') }}
                     </button>
+
+                    <!-- Randomize Answers Checkbox -->
+                    <div class="flex items-center mt-3 pt-3 border-t border-gray-200">
+                      <input
+                          type="checkbox"
+                          :id="'randomize-answers-' + index"
+                          v-model="question.randomizeAnswers"
+                          class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
+                      />
+                      <label :for="'randomize-answers-' + index" class="ml-2 block text-sm text-gray-700">
+                        {{ trans('Randomize answer options') }}
+                      </label>
+                    </div>
+                  </div>
+
+                  <!-- Timer Options (applies to all question types) -->
+                  <div class="space-y-3 p-4 bg-amber-50 rounded-lg border border-amber-200">
+                    <div class="flex items-center">
+                      <input
+                          type="checkbox"
+                          :id="'use-timer-' + index"
+                          v-model="question.useTimer"
+                          class="h-4 w-4 text-amber-600 focus:ring-amber-400 border-gray-300 rounded"
+                      />
+                      <label :for="'use-timer-' + index" class="ml-2 block text-sm font-medium text-amber-900">
+                        {{ trans('Timed item') }}
+                      </label>
+                    </div>
+
+                    <!-- Conditional Timer Settings -->
+                    <div v-if="question.useTimer" class="ml-6 space-y-3">
+                      <div>
+                        <label class="block text-sm font-medium text-amber-900">{{ trans('Time limit (seconds)') }}</label>
+                        <input
+                            type="number"
+                            v-model.number="question.timerSeconds"
+                            min="1"
+                            class="mt-1 block w-full px-3 py-2 border border-amber-300 rounded-md shadow-xs focus:ring-amber-500 focus:border-amber-500"
+                            :placeholder="trans('e.g., 30')"
+                        />
+                        <p class="mt-1 text-xs text-amber-700">
+                          {{ trans('Number of seconds allowed to answer this question.') }}
+                        </p>
+                      </div>
+
+                      <div class="flex items-center">
+                        <input
+                            type="checkbox"
+                            :id="'show-countdown-' + index"
+                            v-model="question.showCountdown"
+                            class="h-4 w-4 text-amber-600 focus:ring-amber-400 border-gray-300 rounded"
+                        />
+                        <label :for="'show-countdown-' + index" class="ml-2 block text-sm text-amber-900">
+                          {{ trans('Show countdown to participant') }}
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Jump/Filter Options (radio and checkbox only) -->
+                  <div v-if="question.type === 'radio' || question.type === 'checkbox'" class="space-y-3 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                    <div class="flex items-center">
+                      <input
+                          type="checkbox"
+                          :id="'use-jump-' + index"
+                          v-model="question.useJump"
+                          class="h-4 w-4 text-purple-600 focus:ring-purple-400 border-gray-300 rounded"
+                      />
+                      <label :for="'use-jump-' + index" class="ml-2 block text-sm font-medium text-purple-900">
+                        {{ trans('Use as a filter') }}
+                      </label>
+                    </div>
+
+                    <!-- Conditional Jump Settings -->
+                    <div v-if="question.useJump" class="ml-6 space-y-3">
+                      <div>
+                        <label class="block text-sm font-medium text-purple-900">{{ trans('Jump Condition (answer value)') }}</label>
+                        <input
+                            type="text"
+                            v-model="question.jumpCondition"
+                            class="mt-1 block w-full px-3 py-2 border border-purple-300 rounded-md shadow-xs focus:ring-purple-500 focus:border-purple-500"
+                            :placeholder="trans('e.g., 0')"
+                        />
+                        <p class="mt-1 text-xs text-purple-700">
+                          {{ trans('Answer value that triggers the jump (0-based index).') }}
+                        </p>
+                      </div>
+
+                      <div>
+                        <label class="block text-sm font-medium text-purple-900">{{ trans('Jump Over (number of items)') }}</label>
+                        <input
+                            type="number"
+                            v-model.number="question.jumpOver"
+                            min="1"
+                            class="mt-1 block w-full px-3 py-2 border border-purple-300 rounded-md shadow-xs focus:ring-purple-500 focus:border-purple-500"
+                            :placeholder="trans('e.g., 1')"
+                        />
+                        <p class="mt-1 text-xs text-purple-700">
+                          {{ trans('Number of items to skip when condition is met.') }}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -704,12 +862,25 @@ export default {
       this.formData.questions = (this.schedule.questions || []).map(q => {
         // Extract config values
         const config = q.config || {};
+        const timer = config.timer || {};
+        const jump = config.jump || {};
 
         return {
           uuid: q.uuid,  // Include UUID for updates
           text: q.text || '',
           type: this.mapBackendTypeToFormType(q.type) || '',
           mandatory: q.is_mandatory !== undefined ? q.is_mandatory : true,
+          randomizationGroupId: q.randomizationGroupId || null,
+          randomizeAnswers: q.randomizeAnswers || false,
+          allowSkip: q.noValueAllowed || false,
+          itemGroup: q.item_group || null,
+          useTimer: !!timer.time,
+          timerSeconds: timer.time || 30,
+          showCountdown: timer.showCountdown !== undefined ? timer.showCountdown : true,
+          useJump: !!(jump.jumpCondition !== undefined || jump.jumpOver !== undefined),
+          jumpCondition: jump.jumpCondition !== undefined ? jump.jumpCondition : '',
+          jumpOver: jump.jumpOver !== undefined ? jump.jumpOver : 1,
+          placeholder: config.placeholder || '',
           answers: config.options || [],
           config: {
             minValue: config.min || 0,
@@ -801,10 +972,11 @@ export default {
       }
     },
 
-    // Map backend types (number, range, text, one choice, multiple choice) to form types
+    // Map backend types (number, range, text, textarea, one choice, multiple choice) to form types
     mapBackendTypeToFormType(backendType) {
       const mapping = {
         'text': 'text',
+        'textarea': 'textarea',
         'number': 'number',
         'range': 'range',
         'one choice': 'radio',
@@ -817,7 +989,7 @@ export default {
     mapFormTypeToBackendType(formType) {
       const mapping = {
         'text': 'text',
-        'textarea': 'text',
+        'textarea': 'textarea',
         'number': 'number',
         'range': 'range',
         'radio': 'one choice',
@@ -831,6 +1003,17 @@ export default {
         text: '',
         type: '',
         mandatory: false,
+        randomizationGroupId: null,
+        randomizeAnswers: false,
+        allowSkip: false,
+        itemGroup: null,
+        useTimer: false,
+        timerSeconds: 30,
+        showCountdown: true,
+        useJump: false,
+        jumpCondition: '',
+        jumpOver: 1,
+        placeholder: '',
         answers: [],
         config: {
           minValue: 0,
@@ -883,13 +1066,38 @@ export default {
             }
           } else if (q.type === 'radio' || q.type === 'checkbox') {
             config.options = q.answers.filter(a => a.trim());
+          } else if (q.type === 'text' || q.type === 'textarea') {
+            // Add placeholder for text/textarea types
+            if (q.placeholder) {
+              config.placeholder = q.placeholder;
+            }
+          }
+
+          // Add timer config if enabled
+          if (q.useTimer) {
+            config.timer = {
+              time: q.timerSeconds,
+              showCountdown: q.showCountdown
+            };
+          }
+
+          // Add jump config if enabled (only for radio/checkbox)
+          if (q.useJump && (q.type === 'radio' || q.type === 'checkbox')) {
+            config.jump = {
+              jumpCondition: q.jumpCondition,
+              jumpOver: q.jumpOver
+            };
           }
 
           const questionData = {
             text: q.text,
             type: backendType,
             mandatory: q.mandatory,
-            config: config
+            config: config,
+            randomizationGroupId: q.randomizationGroupId || null,
+            randomizeAnswers: q.randomizeAnswers || false,
+            noValueAllowed: q.allowSkip || false,
+            item_group: q.itemGroup || null
           };
 
           // Include UUID for updates

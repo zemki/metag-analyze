@@ -15,9 +15,16 @@ use Illuminate\Support\Str;
  * Question Types:
  * - 'number': Numeric input field (sends type='number' with minValue/maxValue to mobile)
  * - 'range': Range slider (sends type='range' with rangeOptions to mobile)
- * - 'text': Text input field
+ * - 'text': Single-line text input field
+ * - 'textarea': Multi-line text input field
  * - 'one choice': Single selection (radio buttons)
  * - 'multiple choice': Multiple selection (checkboxes)
+ *
+ * Question Options (sent via API, stored at question level):
+ * - 'randomizationGroupId': Integer grouping questions for randomized presentation
+ * - 'randomizeAnswers': Boolean to randomize answer options (radio/checkbox)
+ * - 'itemGroup': String grouping questions to display together on same page
+ * - 'noValueAllowed': Boolean to allow skipping the question (inverse of is_mandatory)
  *
  * Note: 'number' and 'range' both store similar config (min, max, step) but are
  * rendered differently on mobile and in the API response format per martTypes.ts.

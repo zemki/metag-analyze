@@ -53,8 +53,8 @@ return new class extends Migration
             $table->foreignId('schedule_id')->constrained('mart_schedules')->onDelete('cascade');
             $table->integer('position'); // Order within schedule
             $table->text('text'); // Question text
-            $table->string('type'); // number, range, text, one choice, multiple choice
-            $table->json('config')->nullable(); // Type-specific config (minValue, maxValue, answers, etc.)
+            $table->string('type'); // number, range, text, textarea, one choice, multiple choice
+            $table->json('config')->nullable(); // Type-specific config (minValue, maxValue, answers, etc.) + API-level options (randomizationGroupId, randomizeAnswers, noValueAllowed)
             $table->boolean('is_mandatory')->default(true);
             $table->integer('version')->default(1); // Version number
             $table->timestamps();
