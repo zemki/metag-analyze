@@ -91,6 +91,11 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified', 'LoggedUser']],
     Route::post('/cases/{case}/qrcode/unrevoke', 'ProjectCasesController@unrevokeQRCode');
 
     /**
+     * Case Management Routes (Admin only)
+     */
+    Route::post('/cases/{case}/close-early', 'ProjectCasesController@closeEarly');
+
+    /**
      * User Routes
      */
     Route::post('/users/password/reset', 'Auth\ForgotPasswordController@SendsPasswordResetEmailFromCasesList');

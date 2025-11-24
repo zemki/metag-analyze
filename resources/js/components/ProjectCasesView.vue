@@ -243,6 +243,14 @@
                     <line v-if="caseItem.qr_token_revoked_at" x1="3" y1="3" x2="21" y2="21" stroke-width="2"/>
                   </svg>
                 </button>
+                <button v-if="isCreator && !localProject.is_mart_project"
+                        @click.stop="showCloseCaseModal(caseItem)"
+                        class="p-1 text-gray-400 hover:text-orange-600"
+                        title="Close Case Early">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
                 <button @click.stop="confirmDeleteCase(caseItem)"
                         class="p-1 text-gray-400 hover:text-red-600"
                         title="Delete Case">
@@ -349,6 +357,14 @@
                   </svg>
                   {{ selectedCase.qr_token_revoked_at ? 'QR Revoked' : 'QR Code' }}
                 </button>
+                <button v-if="isCreator && !localProject.is_mart_project"
+                        @click="showCloseCaseModal(selectedCase)"
+                        class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-orange-600 bg-orange-50 border border-orange-200 rounded hover:bg-orange-100">
+                  <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  Close Early
+                </button>
                 <button @click="confirmDeleteCase(selectedCase)"
                         class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 border border-red-200 rounded hover:bg-red-100">
                   <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -414,6 +430,73 @@
                  @regenerate="handleRegenerateQR"
                  @revoke="handleRevokeQR"
                  @unrevoke="handleUnrevokeQR" />
+
+    <!-- Close Case Early Modal -->
+    <div v-if="closeCaseModalVisible" class="fixed inset-0 z-50 overflow-y-auto">
+      <!-- Backdrop -->
+      <div class="fixed inset-0 bg-black/50 z-40" @click="closeCaseModalVisible = false"></div>
+
+      <!-- Modal Container -->
+      <div class="flex min-h-full items-center justify-center p-4 relative z-50">
+        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md">
+          <!-- Header -->
+          <div class="flex items-center justify-between p-6 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">{{ trans('Close Case Early') }}</h3>
+            <button @click="closeCaseModalVisible = false" class="text-gray-400 hover:text-gray-600">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Content -->
+          <div class="p-6 space-y-4">
+            <!-- Warning Message -->
+            <div class="flex items-start space-x-3 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+              <svg class="w-5 h-5 text-orange-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <div class="text-sm text-orange-800">
+                <p class="font-medium">{{ trans('Warning: This action cannot be undone') }}</p>
+                <p class="mt-1">{{ trans('Closing this case will prevent the user from entering any more data and may disrupt planned data collection.') }}</p>
+                <p class="mt-1 font-medium">{{ trans('This feature should be used for testing purposes only.') }}</p>
+              </div>
+            </div>
+
+            <!-- Math Challenge -->
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-gray-700">
+                {{ trans('Please verify by solving this simple math problem:') }}
+              </label>
+              <div class="flex items-center space-x-3">
+                <span class="text-lg font-mono">{{ mathChallenge.num1 }} + {{ mathChallenge.num2 }} =</span>
+                <input
+                  v-model="mathChallenge.answer"
+                  type="number"
+                  class="w-20 px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-orange-500 focus:border-orange-500"
+                  placeholder="?"
+                  @keyup.enter="confirmCloseCase"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="flex items-center justify-end gap-3 px-6 py-4 bg-gray-50 border-t border-gray-200">
+            <button
+              @click="closeCaseModalVisible = false"
+              class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+              {{ trans('Cancel') }}
+            </button>
+            <button
+              @click="confirmCloseCase"
+              class="px-4 py-2 text-sm font-medium text-white bg-orange-600 border border-transparent rounded-md hover:bg-orange-700">
+              {{ trans('Close Case') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Project Settings Modal -->
     <div v-if="showProjectSettings" class="fixed inset-0 z-50 overflow-y-auto">
@@ -566,7 +649,16 @@ export default {
       // QR Code Modal
       qrCodeModalVisible: false,
       qrCodeData: null,
-      apiV2CutoffDate: null
+      apiV2CutoffDate: null,
+
+      // Close Case Early Modal
+      closeCaseModalVisible: false,
+      closeCaseTarget: null,
+      mathChallenge: {
+        num1: 0,
+        num2: 0,
+        answer: ''
+      }
     };
   },
   computed: {
@@ -1023,6 +1115,89 @@ export default {
       } catch (error) {
         alert('Failed to re-enable QR code');
         console.error('QR code un-revocation error:', error);
+      }
+    },
+
+    // Close Case Early functions
+    showCloseCaseModal(caseItem) {
+      // Generate random math challenge (1-9 + 1-9)
+      this.mathChallenge.num1 = Math.floor(Math.random() * 9) + 1;
+      this.mathChallenge.num2 = Math.floor(Math.random() * 9) + 1;
+      this.mathChallenge.answer = '';
+
+      this.closeCaseTarget = caseItem;
+      this.closeCaseModalVisible = true;
+    },
+
+    async confirmCloseCase() {
+      const expectedAnswer = this.mathChallenge.num1 + this.mathChallenge.num2;
+      const userAnswer = parseInt(this.mathChallenge.answer);
+
+      // Validate math answer
+      if (isNaN(userAnswer) || userAnswer !== expectedAnswer) {
+        alert('Incorrect math answer. Please try again.');
+        return;
+      }
+
+      try {
+        const response = await axios.post(`/cases/${this.closeCaseTarget.id}/close-early`, {
+          math_answer: userAnswer,
+          expected_answer: expectedAnswer
+        });
+
+        if (response.data.success) {
+          // Update the case in the cases list
+          const caseIndex = this.cases.findIndex(c => c.id === this.closeCaseTarget.id);
+          if (caseIndex !== -1) {
+            // Update the duration field to reflect the new lastDay
+            const oldDuration = this.cases[caseIndex].duration;
+            const newLastDay = response.data.new_last_day;
+
+            // Parse and update duration string
+            const durationParts = oldDuration.split('|');
+            const updatedParts = durationParts.map(part => {
+              if (part.startsWith('lastDay:')) {
+                return `lastDay:${newLastDay}`;
+              }
+              return part;
+            });
+
+            this.cases[caseIndex].duration = updatedParts.join('|');
+          }
+
+          // Update selectedCase if it matches
+          if (this.selectedCase && this.selectedCase.id === this.closeCaseTarget.id) {
+            const oldDuration = this.selectedCase.duration;
+            const newLastDay = response.data.new_last_day;
+
+            const durationParts = oldDuration.split('|');
+            const updatedParts = durationParts.map(part => {
+              if (part.startsWith('lastDay:')) {
+                return `lastDay:${newLastDay}`;
+              }
+              return part;
+            });
+
+            this.selectedCase.duration = updatedParts.join('|');
+          }
+
+          // Close modal
+          this.closeCaseModalVisible = false;
+
+          alert('Case closed successfully. The case last day has been set to yesterday.');
+
+          // Refresh the page to update case statuses
+          window.location.reload();
+        }
+      } catch (error) {
+        if (error.response?.status === 422) {
+          alert('Incorrect math answer. Please try again.');
+        } else if (error.response?.data?.error) {
+          alert(error.response.data.error);
+        } else {
+          alert('Failed to close case');
+          console.error('Close case error:', error);
+        }
       }
     },
 

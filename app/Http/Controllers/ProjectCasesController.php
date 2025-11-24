@@ -572,4 +572,71 @@ class ProjectCasesController extends Controller
             'message' => 'QR code re-enabled successfully'
         ]);
     }
+
+    /**
+     * Close a case early by setting its last day to yesterday
+     * Admin/owner only action for non-MART projects
+     *
+     * @param Cases $case
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function closeEarly(Cases $case)
+    {
+        $project = $case->project;
+
+        // Authorize user owns project or is admin
+        if (auth()->user()->notOwnerNorInvited($project) && !auth()->user()->isAdmin()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Block MART projects (similar to QR code feature)
+        if ($project->isMartProject()) {
+            return response()->json(['error' => 'Cannot close MART project cases early'], 403);
+        }
+
+        // Validate math challenge answer
+        $request = request();
+        $request->validate([
+            'math_answer' => 'required|integer',
+            'expected_answer' => 'required|integer'
+        ]);
+
+        if ((int)$request->math_answer !== (int)$request->expected_answer) {
+            return response()->json(['error' => 'Incorrect math answer'], 422);
+        }
+
+        // Parse the current duration string
+        $duration = $case->duration;
+
+        // Extract existing values
+        $value = Helper::get_string_between($duration, 'value:', '|');
+        $days = Helper::get_string_between($duration, 'days:', '|');
+        $firstDay = Helper::get_string_between($duration, 'firstDay:', '|');
+
+        // If no firstDay, try startDay (legacy format)
+        if (!$firstDay) {
+            $firstDay = Helper::get_string_between($duration, 'startDay:', '|');
+            $firstDayKey = 'startDay';
+        } else {
+            $firstDayKey = 'firstDay';
+        }
+
+        // Set lastDay to yesterday
+        $yesterday = date('d.m.Y', strtotime('yesterday'));
+
+        // Reconstruct duration string
+        $newDuration = "value:{$value}|days:{$days}|lastDay:{$yesterday}|{$firstDayKey}:{$firstDay}";
+
+        // Update case
+        $case->update([
+            'duration' => $newDuration
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Case closed successfully',
+            'new_last_day' => $yesterday,
+            'status' => $case->fresh()->getStatus()->value
+        ]);
+    }
 }
