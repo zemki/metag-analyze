@@ -78,6 +78,43 @@ php artisan reverb:start            # WebSocket server
 - Add documentation files unless explicitly requested
 - Expose or log sensitive data
 
+## Security Configuration (UPDATED: 2025-11-24)
+
+### IP Address Blocking
+- **Environment Variable**: `BLOCKED_IPS` in `.env`
+- **Format**: Comma-separated list of IP addresses
+- **Example**: `BLOCKED_IPS=45.93.9.139,193.168.141.21,45.86.86.223`
+- **Behavior**: Blocked IPs receive a 403 Forbidden response for all requests
+- **Leave empty to disable**: `BLOCKED_IPS=`
+- **Location**: `app/Http/Middleware/BlockIpMiddleware.php`
+- **Usage**: Updates take effect immediately after changing `.env` (no deployment required)
+
+**Important Notes:**
+- Use this for blocking known malicious IPs during active attacks
+- For advanced blocking scenarios, consider implementing database-backed IP blocking via Filament Admin Panel
+- This middleware applies to all routes (web, API, admin)
+
+### File Upload Security
+- **Location**: `app/Helpers/Helper.php` (`extension()` method)
+- **Security Measure**: Content-based MIME type validation using PHP's `finfo`
+- **Protection**: Prevents MIME type spoofing attacks (e.g., uploading PHP files disguised as audio/image)
+- **Whitelist**: Only allows audio formats (mp3, m4a, aac, wav, ogg, webm, flac) and image formats (jpg, png, gif, webp, svg)
+- **Validation**: Files are validated based on their ACTUAL content, not the declared MIME type in the data URI
+- **Storage**: Files are encrypted and stored in `storage/app/project{id}/files/` (not web-accessible)
+- **Used By**: `app/Files.php` for mobile app file uploads (audio recordings, images)
+
+**Security Features:**
+- Decodes base64 data and inspects actual file content
+- Rejects any file type not in the whitelist
+- Logs security validation failures for monitoring
+- Throws exception to prevent insecure file storage
+- Maps detected MIME types to safe file extensions
+
+**Important:**
+- If file upload fails with "File validation failed", check Laravel logs for details
+- Only legitimate audio/image files will be accepted
+- Any attempt to upload PHP, executable, or other dangerous files will be rejected
+
 ## Core Files
 
 - `app/Http/Controllers/MartApiController.php` - MART API endpoints
