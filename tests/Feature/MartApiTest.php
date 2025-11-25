@@ -288,4 +288,63 @@ class MartApiTest extends TestCase
         $controller->submitEntry($request, $this->case);
     }
 
+    /** @test */
+    public function it_auto_creates_case_when_structure_called_with_authenticated_user()
+    {
+        // Create a new user without a case
+        $newUser = User::factory()->create();
+
+        // Verify user has no case in this project
+        $this->assertDatabaseMissing('cases', [
+            'user_id' => $newUser->id,
+            'project_id' => $this->project->id,
+        ]);
+
+        // Create request with authenticated user
+        $request = \Illuminate\Http\Request::create('/test', 'GET');
+        $request->setUserResolver(fn() => $newUser);
+
+        // Call controller directly
+        $controller = new \App\Http\Controllers\MartApiController;
+        $resource = $controller->getProjectStructure($request, $this->project);
+
+        // Verify case was auto-created
+        $this->assertDatabaseHas('cases', [
+            'user_id' => $newUser->id,
+            'project_id' => $this->project->id,
+        ]);
+
+        // Verify case has correct format
+        $case = \App\Cases::where('user_id', $newUser->id)
+            ->where('project_id', $this->project->id)
+            ->first();
+
+        $this->assertNotNull($case);
+        $this->assertMatchesRegularExpression('/^P[A-F0-9]{6}$/', $case->name);
+        $this->assertNotNull($case->first_login_at);
+    }
+
+    /** @test */
+    public function it_does_not_create_duplicate_case_on_subsequent_structure_calls()
+    {
+        // Create a new user without a case
+        $newUser = User::factory()->create();
+
+        // Create request with authenticated user
+        $request = \Illuminate\Http\Request::create('/test', 'GET');
+        $request->setUserResolver(fn() => $newUser);
+
+        // Call controller twice
+        $controller = new \App\Http\Controllers\MartApiController;
+        $controller->getProjectStructure($request, $this->project);
+        $controller->getProjectStructure($request, $this->project);
+
+        // Verify only one case exists
+        $caseCount = \App\Cases::where('user_id', $newUser->id)
+            ->where('project_id', $this->project->id)
+            ->count();
+
+        $this->assertEquals(1, $caseCount);
+    }
+
 }

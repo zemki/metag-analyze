@@ -550,4 +550,160 @@ class MartAuthFlowTest extends TestCase
                 'step' => 'password_check_required',
             ]);
     }
+
+    /**
+     * ====================
+     * CASE CREATION DETAIL TESTS
+     * ====================
+     */
+
+    /** @test */
+    public function it_creates_case_with_short_participant_id_format()
+    {
+        // Complete auth flow
+        $this->postJson('/api/mart/check-email', [
+            'email' => 'testuser@example.com',
+        ]);
+
+        $this->postJson('/api/mart/check-password', [
+            'email' => 'testuser@example.com',
+            'password' => $this->testPassword,
+        ]);
+
+        $response = $this->postJson('/api/mart/check-access', [
+            'email' => 'testuser@example.com',
+            'projectId' => $this->martProject->id,
+        ]);
+
+        $response->assertStatus(200);
+
+        // Verify participantId and caseId are returned
+        $response->assertJsonStructure([
+            'projectId',
+            'participantIsAllowed',
+            'participantId',
+            'caseId',
+        ]);
+
+        $participantId = $response->json('participantId');
+        $caseId = $response->json('caseId');
+
+        // Verify participantId format is P + 6 hex chars (e.g., P1A2B3C)
+        $this->assertMatchesRegularExpression('/^P[A-F0-9]{6}$/', $participantId);
+
+        // Verify case exists with correct data
+        $case = Cases::find($caseId);
+        $this->assertNotNull($case);
+        $this->assertEquals($participantId, $case->name);
+        $this->assertEquals($this->testUser->id, $case->user_id);
+        $this->assertEquals($this->martProject->id, $case->project_id);
+    }
+
+    /** @test */
+    public function it_sets_first_login_at_when_case_is_created()
+    {
+        // Complete auth flow
+        $this->postJson('/api/mart/check-email', [
+            'email' => 'testuser@example.com',
+        ]);
+
+        $this->postJson('/api/mart/check-password', [
+            'email' => 'testuser@example.com',
+            'password' => $this->testPassword,
+        ]);
+
+        $response = $this->postJson('/api/mart/check-access', [
+            'email' => 'testuser@example.com',
+            'projectId' => $this->martProject->id,
+        ]);
+
+        $response->assertStatus(200);
+
+        // Get the created case
+        $caseId = $response->json('caseId');
+        $case = Cases::find($caseId);
+
+        // Verify first_login_at is set
+        $this->assertNotNull($case->first_login_at);
+        $this->assertInstanceOf(\Carbon\Carbon::class, $case->first_login_at);
+
+        // Verify it's approximately now (within 5 seconds)
+        $this->assertTrue(
+            $case->first_login_at->diffInSeconds(now()) < 5,
+            'first_login_at should be set to approximately current time'
+        );
+    }
+
+    /** @test */
+    public function it_does_not_update_first_login_at_on_subsequent_logins()
+    {
+        // Create case with existing first_login_at
+        $existingLoginTime = now()->subDays(5);
+        $case = Cases::create([
+            'name' => 'P123456',
+            'user_id' => $this->testUser->id,
+            'project_id' => $this->martProject->id,
+            'duration' => 'startDay:'.now()->format('d.m.Y').'|',
+            'first_login_at' => $existingLoginTime,
+        ]);
+
+        // Complete auth flow
+        $this->postJson('/api/mart/check-email', [
+            'email' => 'testuser@example.com',
+        ]);
+
+        $this->postJson('/api/mart/check-password', [
+            'email' => 'testuser@example.com',
+            'password' => $this->testPassword,
+        ]);
+
+        $response = $this->postJson('/api/mart/check-access', [
+            'email' => 'testuser@example.com',
+            'projectId' => $this->martProject->id,
+        ]);
+
+        $response->assertStatus(200);
+
+        // Verify first_login_at was NOT updated
+        $case->refresh();
+        $this->assertEquals(
+            $existingLoginTime->format('Y-m-d H:i:s'),
+            $case->first_login_at->format('Y-m-d H:i:s'),
+            'first_login_at should not change on subsequent logins'
+        );
+    }
+
+    /** @test */
+    public function it_returns_existing_case_participant_id_on_subsequent_logins()
+    {
+        // Create case first
+        $existingCase = Cases::create([
+            'name' => 'PABCDEF',
+            'user_id' => $this->testUser->id,
+            'project_id' => $this->martProject->id,
+            'duration' => 'startDay:'.now()->format('d.m.Y').'|',
+            'first_login_at' => now()->subDays(5),
+        ]);
+
+        // Complete auth flow
+        $this->postJson('/api/mart/check-email', [
+            'email' => 'testuser@example.com',
+        ]);
+
+        $this->postJson('/api/mart/check-password', [
+            'email' => 'testuser@example.com',
+            'password' => $this->testPassword,
+        ]);
+
+        $response = $this->postJson('/api/mart/check-access', [
+            'email' => 'testuser@example.com',
+            'projectId' => $this->martProject->id,
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'participantId' => 'PABCDEF',
+                'caseId' => $existingCase->id,
+            ]);
+    }
 }
