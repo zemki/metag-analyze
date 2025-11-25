@@ -318,7 +318,7 @@ class MartAuthController extends Controller
         // 6. Auto-create case if doesn't exist
         if (! $case) {
             $case = Cases::create([
-                'name' => 'MART_'.uniqid(), // Participant ID
+                'name' => 'P'.strtoupper(substr(md5(uniqid()), 0, 6)), // Short participant ID (e.g., P1A2B3C)
                 'user_id' => $user->id,
                 'project_id' => $projectId,
                 'duration' => 'startDay:'.now()->format('d.m.Y').'|',

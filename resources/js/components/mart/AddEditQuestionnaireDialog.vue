@@ -10,7 +10,7 @@
         <div class="bg-white px-6 py-4 border-b border-gray-200">
           <div class="flex items-center justify-between">
             <h3 class="text-lg leading-6 font-medium text-gray-900">
-              {{ isEditMode ? trans('Edit Questions') : trans('Add Questionnaire') }}
+              {{ isEditMode ? trans('Edit Questionnaire') : trans('Add Questionnaire') }}
             </h3>
             <button
                 @click="close"
@@ -44,8 +44,8 @@
           </div>
 
           <div class="space-y-6">
-            <!-- Questionnaire Settings (only for new questionnaires) -->
-            <div v-if="!isEditMode" class="space-y-4">
+            <!-- Questionnaire Settings -->
+            <div class="space-y-4">
               <!-- Questionnaire Name -->
               <div>
                 <label class="block text-sm font-medium text-gray-700">{{ trans('Questionnaire Name') }} *</label>
@@ -430,20 +430,6 @@
               :use-dynamic-end-date="formData.use_dynamic_end_date"
             />
 
-            <!-- Introductory Text (for edit mode) -->
-            <div v-if="isEditMode" class="pt-6 border-t border-gray-200">
-              <div>
-                <label class="block text-sm font-medium text-gray-700">{{ trans('Introductory Text (optional)') }}</label>
-                <textarea
-                    v-model="formData.introductory_text"
-                    rows="3"
-                    class="mt-1 block w-full px-4 py-3 rounded-md shadow-xs border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
-                    :placeholder="trans('Text to display at the top of this questionnaire')"
-                ></textarea>
-                <p class="mt-1 text-xs text-gray-500">{{ trans('This text will be shown at the top of the questionnaire before any questions.') }}</p>
-              </div>
-            </div>
-
             <!-- Questions Builder -->
             <div class="pt-6 border-t border-gray-200">
               <div class="flex justify-between items-center mb-4">
@@ -787,7 +773,7 @@
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            {{ isEditMode ? trans('Update Questions') : trans('Create Questionnaire') }}
+            {{ isEditMode ? trans('Update Questionnaire') : trans('Create Questionnaire') }}
           </button>
         </div>
       </div>
@@ -988,14 +974,20 @@ export default {
         };
       });
 
+      // Load basic schedule info
+      if (this.schedule.name) {
+        this.formData.name = this.schedule.name;
+      }
+      if (this.schedule.questionnaire_id) {
+        this.formData.questionnaire_id = this.schedule.questionnaire_id;
+      }
+      if (this.schedule.type) {
+        this.formData.type = this.schedule.type;
+      }
+
       // Load timing configuration
       if (this.schedule.timing_config) {
         const timing = this.schedule.timing_config;
-
-        // Load schedule type
-        if (this.schedule.type) {
-          this.formData.type = this.schedule.type;
-        }
 
         // Load date/time settings
         if (timing.start_date_time) {
@@ -1210,10 +1202,10 @@ export default {
         });
 
         if (this.isEditMode) {
-          // Update questions and introductory text
+          // Update questions, settings, and introductory text
           await window.axios.put(`/questionnaires/${this.schedule.id}/questions`, {
-            questions: processedQuestions,
-            introductory_text: this.formData.introductory_text
+            ...this.formData,
+            questions: processedQuestions
           });
         } else {
           // Create new questionnaire

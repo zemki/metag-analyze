@@ -41,17 +41,26 @@ class MartApiController extends Controller
             ->with('questions')
             ->get();
 
-        // Get participant_id from query parameter if provided
-        $participantId = $request->query('participant_id');
+        // Get participant_id from query parameter OR request body (mobile app sends in body)
+        $participantId = $request->query('participant_id') ?? $request->input('participant_id');
 
-        // Look up case ID from participant_id for per-case date overrides
-        $caseId = null;
+        // Look up case for per-case date overrides
+        $case = null;
         if ($participantId) {
             $case = Cases::where('project_id', $project->id)
                 ->where('name', $participantId)
                 ->first();
-            $caseId = $case?->id;
         }
+
+        // Fallback: find case by authenticated user if no participant_id
+        if (!$case && $request->user()) {
+            $case = Cases::where('project_id', $project->id)
+                ->where('user_id', $request->user()->id)
+                ->first();
+            $participantId = $case?->name;
+        }
+
+        $caseId = $case?->id;
 
         // Pass schedules, participant_id, and case_id to the resource
         $resource = new MartStructureResource($project, $schedules);

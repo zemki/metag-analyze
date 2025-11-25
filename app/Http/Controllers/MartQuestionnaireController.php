@@ -212,6 +212,22 @@ class MartQuestionnaireController extends Controller
 
         $validated = $request->validate([
             'introductory_text' => 'nullable|string',
+            'name' => 'nullable|string|max:255',
+            'type' => 'nullable|in:single,repeating',
+            'start_date_time' => 'nullable|array',
+            'end_date_time' => 'nullable|array',
+            'start_on_first_login' => 'nullable|boolean',
+            'use_dynamic_end_date' => 'nullable|boolean',
+            'show_progress_bar' => 'nullable|boolean',
+            'show_notifications' => 'nullable|boolean',
+            'notification_text' => 'nullable|string',
+            'daily_interval_duration' => 'nullable|integer',
+            'min_break_between' => 'nullable|integer',
+            'max_daily_submits' => 'nullable|integer',
+            'max_total_submits' => 'nullable|integer',
+            'daily_start_time' => 'nullable|string',
+            'daily_end_time' => 'nullable|string',
+            'quest_available_at' => 'nullable|in:startOfInterval,randomTimeWithinInterval',
             'questions' => 'required|array',
             'questions.*.uuid' => 'nullable|string',
             'questions.*.text' => 'required|string',
@@ -223,11 +239,49 @@ class MartQuestionnaireController extends Controller
         DB::connection('mart')->beginTransaction();
 
         try {
-            // Update schedule introductory text if provided
+            // Update schedule basic fields
             if (isset($validated['introductory_text'])) {
                 $schedule->introductory_text = $validated['introductory_text'];
-                $schedule->save();
             }
+            if (isset($validated['name'])) {
+                $schedule->name = $validated['name'];
+            }
+            if (isset($validated['type'])) {
+                $schedule->type = $validated['type'];
+            }
+
+            // Update timing config if any timing fields are provided
+            $timingFields = ['start_date_time', 'end_date_time', 'start_on_first_login', 'use_dynamic_end_date',
+                'daily_interval_duration', 'min_break_between', 'max_daily_submits', 'max_total_submits',
+                'daily_start_time', 'daily_end_time', 'quest_available_at'];
+
+            $hasTimingUpdates = collect($timingFields)->contains(fn($field) => array_key_exists($field, $validated));
+
+            if ($hasTimingUpdates) {
+                $currentTiming = $schedule->timing_config ?? [];
+                foreach ($timingFields as $field) {
+                    if (array_key_exists($field, $validated)) {
+                        $currentTiming[$field] = $validated[$field];
+                    }
+                }
+                $schedule->timing_config = $currentTiming;
+            }
+
+            // Update notification config if any notification fields are provided
+            $notifFields = ['show_progress_bar', 'show_notifications', 'notification_text'];
+            $hasNotifUpdates = collect($notifFields)->contains(fn($field) => array_key_exists($field, $validated));
+
+            if ($hasNotifUpdates) {
+                $currentNotif = $schedule->notification_config ?? [];
+                foreach ($notifFields as $field) {
+                    if (array_key_exists($field, $validated)) {
+                        $currentNotif[$field] = $validated[$field];
+                    }
+                }
+                $schedule->notification_config = $currentNotif;
+            }
+
+            $schedule->save();
 
             // Track which UUIDs we've processed to detect deleted questions
             $processedUuids = [];
