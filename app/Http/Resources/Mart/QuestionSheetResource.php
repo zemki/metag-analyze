@@ -64,8 +64,8 @@ class QuestionSheetResource extends JsonResource
             $questionnaireName = $this->name . ' Questions';
         }
 
+        // Per martTypes.ts, Questionnaire only has questionnaireId, name, items (no projectId)
         return [
-            'projectId' => $this->id,
             'questionnaireId' => $this->questionnaireId,
             'name' => $questionnaireName,
             'items' => $items,

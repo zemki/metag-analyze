@@ -250,12 +250,10 @@ class ScaleResource extends JsonResource
             }
         }
 
-        $result = [
-            'projectId' => $this->projectId ?? 0,
+        // Per martTypes.ts, Scale only has scaleId and options (no projectId)
+        return [
             'scaleId' => $this->index + 1,
             'options' => $scaleOptions,
         ];
-
-        return $result;
     }
 }
