@@ -91,17 +91,13 @@ class MartStructureResource extends JsonResource
                 'questionnaires' => $questionnaires,
                 'scales' => $scales,
                 'pages' => $pageResources,
+                // Always include these fields (required by martTypes.ts)
+                'deviceInfos' => $this->participantId ? $this->getDeviceInfo($this->participantId) : [],
+                'repeatingSubmits' => $this->participantId ? $this->getSubmissions($this->participantId) : [],
+                'singleSubmits' => $this->participantId ? $this->getSubmissions($this->participantId) : [],
+                'lastDataDonationSubmit' => $this->participantId ? $this->getLastDataDonationSubmit($this->participantId) : null,
+                'lastAndroidStatsSubmit' => $this->participantId ? $this->getLastAndroidStatsSubmit($this->participantId) : null,
             ];
-
-            // Add participant data if participant_id is provided
-            if ($this->participantId) {
-                $response['deviceInfos'] = $this->getDeviceInfo($this->participantId);
-                $submissions = $this->getSubmissions($this->participantId);
-                $response['repeatingSubmits'] = $submissions;
-                $response['singleSubmits'] = $submissions;
-                $response['lastDataDonationSubmit'] = $this->getLastDataDonationSubmit($this->participantId);
-                $response['lastAndroidStatsSubmit'] = $this->getLastAndroidStatsSubmit($this->participantId);
-            }
 
             return $response;
         } else {
@@ -122,17 +118,13 @@ class MartStructureResource extends JsonResource
                 'questionnaires' => [$questionSheet],
                 'scales' => $scales,
                 'pages' => [], // Standard projects don't have pages
+                // Always include these fields (required by martTypes.ts)
+                'deviceInfos' => $this->participantId ? $this->getDeviceInfo($this->participantId) : [],
+                'repeatingSubmits' => $this->participantId ? $this->getSubmissions($this->participantId) : [],
+                'singleSubmits' => $this->participantId ? $this->getSubmissions($this->participantId) : [],
+                'lastDataDonationSubmit' => $this->participantId ? $this->getLastDataDonationSubmit($this->participantId) : null,
+                'lastAndroidStatsSubmit' => $this->participantId ? $this->getLastAndroidStatsSubmit($this->participantId) : null,
             ];
-
-            // Add participant data if participant_id is provided
-            if ($this->participantId) {
-                $response['deviceInfos'] = $this->getDeviceInfo($this->participantId);
-                $submissions = $this->getSubmissions($this->participantId);
-                $response['repeatingSubmits'] = $submissions;
-                $response['singleSubmits'] = $submissions;
-                $response['lastDataDonationSubmit'] = $this->getLastDataDonationSubmit($this->participantId);
-                $response['lastAndroidStatsSubmit'] = $this->getLastAndroidStatsSubmit($this->participantId);
-            }
 
             return $response;
         }
