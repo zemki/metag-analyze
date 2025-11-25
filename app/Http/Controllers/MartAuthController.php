@@ -333,10 +333,12 @@ class MartAuthController extends Controller
             ]);
         }
 
-        // 7. Return success response matching frontend TypeScript type
+        // 7. Return success response with participant info
         return response()->json([
             'projectId' => $projectId,
             'participantIsAllowed' => true,
+            'participantId' => $case->name,
+            'caseId' => $case->id,
         ], 200);
     }
 
