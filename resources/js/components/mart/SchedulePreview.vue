@@ -134,18 +134,31 @@
           v-for="(warning, index) in warnings"
           :key="index"
           class="flex items-start space-x-2 p-3 rounded-lg"
-          :class="warning.type === 'warning' ? 'bg-amber-50 border border-amber-200' : 'bg-blue-50 border border-blue-200'"
+          :class="{
+            'bg-amber-50 border border-amber-200': warning.type === 'warning',
+            'bg-red-50 border border-red-200': warning.type === 'error',
+            'bg-green-50 border border-green-200': warning.type === 'info'
+          }"
         >
           <svg
             class="w-5 h-5 flex-shrink-0 mt-0.5"
-            :class="warning.type === 'warning' ? 'text-amber-600' : 'text-blue-600'"
+            :class="{
+              'text-amber-600': warning.type === 'warning',
+              'text-red-600': warning.type === 'error',
+              'text-green-600': warning.type === 'info'
+            }"
             fill="currentColor"
             viewBox="0 0 20 20"
           >
             <path v-if="warning.type === 'warning'" fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+            <path v-else-if="warning.type === 'error'" fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
             <path v-else fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
           </svg>
-          <p class="text-xs" :class="warning.type === 'warning' ? 'text-amber-800' : 'text-blue-800'">
+          <p class="text-xs" :class="{
+            'text-amber-800': warning.type === 'warning',
+            'text-red-800': warning.type === 'error',
+            'text-green-800': warning.type === 'info'
+          }">
             {{ warning.message }}
           </p>
         </div>
@@ -197,6 +210,14 @@ export default {
     type: {
       type: String,
       default: 'single'
+    },
+    startOnFirstLogin: {
+      type: Boolean,
+      default: false
+    },
+    useDynamicEndDate: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -257,11 +278,32 @@ export default {
     warnings() {
       const warnings = [];
 
-      // Warning: Max submits exceeds intervals
-      if (this.maxDailySubmits && this.maxDailySubmits > this.intervalsPerDay) {
+      // Info: Dynamic start date
+      if (this.startOnFirstLogin) {
         warnings.push({
           type: 'info',
-          message: this.trans('Max daily submits ({max}) exceeds available intervals ({intervals}). Users can submit multiple times per interval if min break allows.', {
+          message: this.trans('Start date will be set when each participant logs in for the first time.')
+        });
+      }
+
+      // Info: Dynamic end date
+      if (this.useDynamicEndDate && this.maxTotalSubmits && this.maxDailySubmits) {
+        const durationDays = Math.ceil(this.maxTotalSubmits / this.maxDailySubmits);
+        warnings.push({
+          type: 'info',
+          message: this.trans('End date will be calculated as {days} days after start date (based on {total} total submits / {daily} daily submits).', {
+            days: durationDays,
+            total: this.maxTotalSubmits,
+            daily: this.maxDailySubmits
+          })
+        });
+      }
+
+      // Warning: Max submits exceeds intervals (invalid configuration)
+      if (this.maxDailySubmits && this.maxDailySubmits > this.intervalsPerDay) {
+        warnings.push({
+          type: 'error',
+          message: this.trans('Maximum submitted surveys per day ({max}) exceeds available intervals ({intervals}). Please reduce max daily submits.', {
             max: this.maxDailySubmits,
             intervals: this.intervalsPerDay
           })

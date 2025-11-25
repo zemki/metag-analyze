@@ -102,6 +102,22 @@
                 </div>
               </div>
 
+              <!-- Start on First Login Checkbox -->
+              <div class="flex items-center p-3 bg-green-50 rounded-lg border border-green-200">
+                <input
+                    v-model="formData.start_on_first_login"
+                    type="checkbox"
+                    id="start_on_first_login"
+                    class="h-4 w-4 text-green-600 focus:ring-green-400 border-gray-300 rounded"
+                />
+                <label for="start_on_first_login" class="ml-2 block text-sm text-green-900">
+                  {{ trans('Start when participant logs in') }}
+                </label>
+                <span class="ml-2 text-xs text-green-700">
+                  {{ trans('Each participant will have their own start date based on their first login') }}
+                </span>
+              </div>
+
               <!-- Date/Time Settings -->
               <div class="space-y-3">
                 <div class="flex justify-between items-center">
@@ -109,7 +125,13 @@
                   <button
                       type="button"
                       @click="useProjectDates"
-                      class="inline-flex items-center px-3 py-1 text-xs font-medium text-blue-700 bg-blue-50 rounded-md hover:bg-blue-100 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      :disabled="formData.start_on_first_login"
+                      :class="[
+                        'inline-flex items-center px-3 py-1 text-xs font-medium rounded-md focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500',
+                        formData.start_on_first_login
+                          ? 'text-gray-400 bg-gray-100 cursor-not-allowed'
+                          : 'text-blue-700 bg-blue-50 hover:bg-blue-100'
+                      ]"
                   >
                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
@@ -120,35 +142,81 @@
 
                 <div class="grid grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700">{{ trans('Start Date') }} *</label>
+                    <label class="block text-sm font-medium text-gray-700">
+                      {{ trans('Start Date') }}
+                      <span v-if="!formData.start_on_first_login">*</span>
+                      <span v-else class="text-xs text-green-600 font-normal ml-1">({{ trans('Set on first login') }})</span>
+                    </label>
                     <input
                         v-model="formData.start_date_time.date"
                         type="date"
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                        :disabled="formData.start_on_first_login"
+                        :placeholder="formData.start_on_first_login ? trans('Set on first login') : ''"
+                        :class="[
+                          'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs',
+                          formData.start_on_first_login
+                            ? 'bg-gray-100 cursor-not-allowed text-gray-500'
+                            : 'focus:ring-blue-500 focus:border-blue-500'
+                        ]"
                     />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700">{{ trans('Start Time') }} *</label>
+                    <label class="block text-sm font-medium text-gray-700">
+                      {{ trans('Start Time') }}
+                      <span v-if="!formData.start_on_first_login">*</span>
+                    </label>
                     <input
                         v-model="formData.start_date_time.time"
                         type="time"
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                        :disabled="formData.start_on_first_login"
+                        :class="[
+                          'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs',
+                          formData.start_on_first_login
+                            ? 'bg-gray-100 cursor-not-allowed text-gray-500'
+                            : 'focus:ring-blue-500 focus:border-blue-500'
+                        ]"
                     />
+                    <p v-if="formData.start_on_first_login" class="mt-1 text-xs text-green-600">
+                      {{ trans('Will use daily start time when participant logs in') }}
+                    </p>
                   </div>
                 </div>
+              </div>
+
+              <!-- Calculate End Date Dynamically Checkbox -->
+              <div v-if="formData.type === 'repeating'" class="space-y-2">
+                <div class="flex items-center">
+                  <input
+                      v-model="formData.use_dynamic_end_date"
+                      type="checkbox"
+                      id="use_dynamic_end_date"
+                      class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
+                  />
+                  <label for="use_dynamic_end_date" class="ml-2 block text-sm text-gray-700">
+                    {{ trans('Calculate end date dynamically based on total submissions') }}
+                  </label>
+                </div>
+                <p v-if="formData.use_dynamic_end_date && !calculatedEndDate" class="ml-6 text-xs text-orange-600">
+                  {{ trans('Fill in Start Date, Max Total Submits, and Max Daily Submits to auto-calculate end date') }}
+                </p>
               </div>
 
               <!-- End Date/Time (for repeating) -->
               <div v-if="formData.type === 'repeating'" class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700">{{ trans('End Date') }} *</label>
+                  <label class="block text-sm font-medium text-gray-700">
+                    {{ trans('End Date') }} *
+                    <span v-if="formData.use_dynamic_end_date && calculatedEndDate" class="text-xs text-gray-500 font-normal ml-2">
+                      ({{ trans('Auto-calculated') }}: {{ calculatedEndDate }})
+                    </span>
+                  </label>
                   <input
                       v-model="formData.end_date_time.date"
                       type="date"
-                      :disabled="formData.calculate_end_date_on_login"
+                      :disabled="formData.use_dynamic_end_date && !!calculatedEndDate"
                       :class="[
                         'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs',
-                        formData.calculate_end_date_on_login
+                        formData.use_dynamic_end_date && calculatedEndDate
                           ? 'bg-gray-100 cursor-not-allowed text-gray-500'
                           : 'focus:ring-blue-500 focus:border-blue-500'
                       ]"
@@ -159,10 +227,10 @@
                   <input
                       v-model="formData.end_date_time.time"
                       type="time"
-                      :disabled="formData.calculate_end_date_on_login"
+                      :disabled="formData.use_dynamic_end_date && !!calculatedEndDate"
                       :class="[
                         'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs',
-                        formData.calculate_end_date_on_login
+                        formData.use_dynamic_end_date && calculatedEndDate
                           ? 'bg-gray-100 cursor-not-allowed text-gray-500'
                           : 'focus:ring-blue-500 focus:border-blue-500'
                       ]"
@@ -170,44 +238,43 @@
                 </div>
               </div>
 
-              <!-- Dynamic End Date Calculation -->
-              <div v-if="formData.type === 'repeating'" class="space-y-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <div class="flex items-center">
-                  <input
-                      v-model="formData.calculate_end_date_on_login"
-                      type="checkbox"
-                      id="calculate_end_date"
-                      class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
-                  />
-                  <label for="calculate_end_date" class="ml-2 block text-sm font-medium text-gray-700">
-                    {{ trans('Calculate end date dynamically on first login') }}
-                  </label>
-                </div>
-
-                <div v-if="formData.calculate_end_date_on_login" class="ml-6">
-                  <label class="block text-sm font-medium text-gray-700">
-                    {{ trans('Duration (days after first login)') }}
-                  </label>
-                  <input
-                      v-model.number="formData.duration_days_after_login"
-                      type="number"
-                      min="1"
-                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
-                      :placeholder="trans('e.g., 7')"
-                  />
-                  <p class="mt-1 text-xs text-gray-500">
-                    {{ trans('The questionnaire will end X days after the participant first logs in.') }}
-                  </p>
-                </div>
-              </div>
 
               <!-- Repeating Questionnaire Options -->
               <div v-if="formData.type === 'repeating'" class="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <h4 class="text-sm font-medium text-gray-900">{{ trans('Repeating Questionnaire Options') }}</h4>
 
+                <!-- Daily Start/End Time (moved to top) -->
                 <div class="grid grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700">{{ trans('Daily Interval Duration (hours)') }}</label>
+                    <label class="block text-sm font-medium text-gray-700">{{ trans('Daily Start Time') }}</label>
+                    <input
+                        v-model="formData.daily_start_time"
+                        type="time"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <p class="mt-1 text-xs text-gray-500">
+                      {{ trans('Beginning of the daily active window.') }}
+                      <span class="block mt-0.5 text-gray-400">{{ trans('Example: 09:00 - questionnaires available from this time') }}</span>
+                    </p>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700">{{ trans('Daily End Time') }}</label>
+                    <input
+                        v-model="formData.daily_end_time"
+                        type="time"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <p class="mt-1 text-xs text-gray-500">
+                      {{ trans('End of the daily active window.') }}
+                      <span class="block mt-0.5 text-gray-400">{{ trans('Example: 21:00 - last interval ends at this time') }}</span>
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Other options -->
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700">{{ trans('Interval duration (hours)') }}</label>
                     <input
                         v-model.number="formData.daily_interval_duration"
                         type="number"
@@ -217,11 +284,11 @@
                     />
                     <p class="mt-1 text-xs text-gray-500">
                       {{ trans('Day divided into intervals. Only 1 questionnaire per interval.') }}
-                      <span class="block mt-0.5 text-gray-400">{{ trans('Example: 4 hours = 3 intervals in 12h window (9-13, 13-17, 17-21)') }}</span>
+                      <span class="block mt-0.5 text-gray-400">{{ trans('Example: 3 intervals = 4 hours each for 12 daily active hours') }}</span>
                     </p>
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700">{{ trans('Min Break Between (minutes)') }}</label>
+                    <label class="block text-sm font-medium text-gray-700">{{ trans('Minimum Break Between Surveys (minutes)') }}</label>
                     <input
                         v-model.number="formData.min_break_between"
                         type="number"
@@ -229,21 +296,26 @@
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
                     />
                     <p class="mt-1 text-xs text-gray-500">
-                      {{ trans('Minimum time between submissions. Prevents rapid completion.') }}
-                      <span class="block mt-0.5 text-gray-400">{{ trans('Example: 180 minutes = 3 hours minimum gap') }}</span>
+                      {{ trans('Minimum time between submissions to avoid overlapping time frames in experience sampling.') }}
                     </p>
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700">{{ trans('Max Daily Submits') }}</label>
+                    <label class="block text-sm font-medium text-gray-700">
+                      {{ trans('Maximum Submitted Surveys per Day') }}
+                      <span v-if="numberOfIntervals > 0" class="text-xs font-normal text-gray-500 ml-1">({{ trans('max') }}: {{ numberOfIntervals }})</span>
+                    </label>
                     <input
                         v-model.number="formData.max_daily_submits"
                         type="number"
                         min="1"
+                        :max="numberOfIntervals || undefined"
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
                     />
-                    <p class="mt-1 text-xs text-gray-500">
-                      {{ trans('Maximum submissions allowed per day.') }}
-                      <span class="block mt-0.5 text-gray-400">{{ trans('Can exceed intervals if min break allows') }}</span>
+                    <p v-if="formData.max_daily_submits > numberOfIntervals && numberOfIntervals > 0" class="mt-1 text-xs text-red-600">
+                      {{ trans('Cannot exceed number of intervals') }} ({{ numberOfIntervals }})
+                    </p>
+                    <p v-else class="mt-1 text-xs text-gray-500">
+                      {{ trans('Maximum submissions allowed per day. Must be less than or equal to number of intervals.') }}
                     </p>
                   </div>
                   <div>
@@ -271,33 +343,6 @@
                     <p class="mt-1 text-xs text-gray-500">
                       <span class="block">{{ trans('Start: Available at 9:00, 13:00, 17:00') }}</span>
                       <span class="block mt-0.5 text-gray-400">{{ trans('Random: Available at random time within each interval') }}</span>
-                    </p>
-                  </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700">{{ trans('Daily Start Time') }}</label>
-                    <input
-                        v-model="formData.daily_start_time"
-                        type="time"
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
-                    />
-                    <p class="mt-1 text-xs text-gray-500">
-                      {{ trans('Beginning of the daily active window.') }}
-                      <span class="block mt-0.5 text-gray-400">{{ trans('Example: 09:00 - questionnaires available from this time') }}</span>
-                    </p>
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700">{{ trans('Daily End Time') }}</label>
-                    <input
-                        v-model="formData.daily_end_time"
-                        type="time"
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
-                    />
-                    <p class="mt-1 text-xs text-gray-500">
-                      {{ trans('End of the daily active window.') }}
-                      <span class="block mt-0.5 text-gray-400">{{ trans('Example: 21:00 - last interval ends at this time') }}</span>
                     </p>
                   </div>
                 </div>
@@ -381,6 +426,8 @@
               :max-daily-submits="formData.max_daily_submits"
               :max-total-submits="formData.max_total_submits"
               :quest-available-at="formData.quest_available_at"
+              :start-on-first-login="formData.start_on_first_login"
+              :use-dynamic-end-date="formData.use_dynamic_end_date"
             />
 
             <!-- Introductory Text (for edit mode) -->
@@ -784,8 +831,8 @@ export default {
         type: 'single',
         start_date_time: { date: '', time: '09:00' },
         end_date_time: { date: '', time: '21:00' },
-        calculate_end_date_on_login: false,
-        duration_days_after_login: null,
+        start_on_first_login: false,
+        use_dynamic_end_date: false,
         show_progress_bar: true,
         show_notifications: true,
         notification_text: '',
@@ -821,11 +868,75 @@ export default {
       }
 
       if (!this.isEditMode) {
-        if (!this.formData.name || !this.formData.start_date_time.date) return false;
-        if (this.formData.type === 'repeating' && !this.formData.end_date_time.date) return false;
+        if (!this.formData.name) return false;
+        // Start date is required only if not using "start on first login"
+        if (!this.formData.start_on_first_login && !this.formData.start_date_time.date) return false;
+        if (this.formData.type === 'repeating' && !this.formData.use_dynamic_end_date && !this.formData.end_date_time.date) return false;
+
+        // Validate max_daily_submits doesn't exceed number of intervals
+        if (this.formData.type === 'repeating' && this.numberOfIntervals > 0) {
+          if (this.formData.max_daily_submits > this.numberOfIntervals) {
+            return false;
+          }
+        }
       }
 
       return true;
+    },
+
+    calculatedEndDate() {
+      // Auto-calculate end date when checkbox is enabled and max_total_submits is provided
+      if (
+        this.formData.type === 'repeating' &&
+        this.formData.use_dynamic_end_date &&
+        this.formData.max_total_submits &&
+        this.formData.max_daily_submits
+      ) {
+        const durationDays = Math.ceil(this.formData.max_total_submits / this.formData.max_daily_submits);
+
+        // If start_on_first_login is true, we can't calculate exact date but can show duration
+        if (this.formData.start_on_first_login) {
+          return `+${durationDays} ${this.trans('days from login')}`;
+        }
+
+        // If we have a start date, calculate the exact end date
+        if (this.formData.start_date_time.date) {
+          const startDate = new Date(this.formData.start_date_time.date);
+          const endDate = new Date(startDate);
+          endDate.setDate(startDate.getDate() + durationDays);
+
+          // Format as YYYY-MM-DD
+          const formatted = endDate.toISOString().split('T')[0];
+
+          // Auto-update the end_date_time.date field
+          this.formData.end_date_time.date = formatted;
+
+          return formatted;
+        }
+      }
+      return null;
+    },
+
+    numberOfIntervals() {
+      // Calculate number of intervals based on daily window and interval duration
+      if (
+        this.formData.type === 'repeating' &&
+        this.formData.daily_start_time &&
+        this.formData.daily_end_time &&
+        this.formData.daily_interval_duration > 0
+      ) {
+        const start = this.formData.daily_start_time.split(':').map(Number);
+        const end = this.formData.daily_end_time.split(':').map(Number);
+
+        const startMinutes = start[0] * 60 + start[1];
+        const endMinutes = end[0] * 60 + end[1];
+
+        const totalMinutes = endMinutes - startMinutes;
+        const intervalMinutes = this.formData.daily_interval_duration * 60;
+
+        return Math.floor(totalMinutes / intervalMinutes);
+      }
+      return 0;
     }
   },
 
@@ -930,13 +1041,14 @@ export default {
           this.formData.quest_available_at = timing.quest_available_at;
         }
 
-        // Load dynamic end date settings
-        if (timing.calculate_end_date_on_login !== undefined) {
-          this.formData.calculate_end_date_on_login = timing.calculate_end_date_on_login;
+        // Load start_on_first_login flag
+        if (timing.start_on_first_login !== undefined) {
+          this.formData.start_on_first_login = timing.start_on_first_login;
         }
 
-        if (timing.duration_days_after_login !== undefined) {
-          this.formData.duration_days_after_login = timing.duration_days_after_login;
+        // Load use_dynamic_end_date flag
+        if (timing.use_dynamic_end_date !== undefined) {
+          this.formData.use_dynamic_end_date = timing.use_dynamic_end_date;
         }
       }
 
@@ -958,7 +1070,9 @@ export default {
       }
     },
 
-    // Map backend types (number, range, text, textarea, one choice, multiple choice) to form types
+    // Map backend/DB types to form types
+    // DB stores: number, range, text, textarea, one choice, multiple choice
+    // Form uses: number, range, text, textarea, radio, checkbox
     mapBackendTypeToFormType(backendType) {
       const mapping = {
         'text': 'text',
@@ -971,13 +1085,15 @@ export default {
       return mapping[backendType] || 'text';
     },
 
-    // Map form types (text, number, range, radio, checkbox) to backend types
+    // Map form types to backend/DB types
+    // DB stores: number, range, text, textarea, one choice, multiple choice
+    // Mobile API expects: number, range, text, textarea, radio, checkbox
     mapFormTypeToBackendType(formType) {
       const mapping = {
         'text': 'text',
-        'textarea': 'text',
-        'number': 'scale',
-        'range': 'scale',
+        'textarea': 'textarea',
+        'number': 'number',
+        'range': 'range',
         'radio': 'one choice',
         'checkbox': 'multiple choice'
       };

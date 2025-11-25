@@ -177,6 +177,7 @@ if ($project->hasMartData()) {
 ### Key MART Models (in app/Mart/)
 - **MartProject** - Links to main projects via `main_project_id`
 - **MartSchedule** - Questionnaire schedules with timing/notification config
+- **MartCaseSchedule** - Per-case date overrides for dynamic start/end dates
 - **MartQuestion** - Individual questions with UUIDs (stable across edits)
 - **MartEntry** - Submission metadata, links to main entries
 - **MartAnswer** - Individual answers linked to question UUIDs
@@ -218,44 +219,59 @@ if ($project->hasMartData()) {
 - Page structure: Include both `id` and `pageId` fields
 - Participant data: Optional fields added when `participant_id` provided
 
-### Dynamic End Date Calculation (UPDATED: 2025-11-20)
+### Dynamic Start/End Date Calculation (UPDATED: 2025-11-25)
 
-**Feature**: Questionnaire end dates can be calculated dynamically based on participant's first login.
+**Feature**: Questionnaire start and end dates can be calculated dynamically per-participant based on their first login.
 
-**Database Fields:**
-- `cases.first_login_at` (timestamp) - Tracks when participant first logged in
-- `mart_schedules.timing_config` JSON contains:
-  - `calculate_end_date_on_login` (boolean) - Enable dynamic calculation
-  - `duration_days_after_login` (integer) - Days to add from first login
+**Database Tables:**
+- `cases.first_login_at` (timestamp) - Tracks when participant first logged in (main DB)
+- `mart_schedules.timing_config` JSON contains flags (MART DB):
+  - `start_on_first_login` (boolean) - Set start date when participant logs in
+  - `use_dynamic_end_date` (boolean) - Calculate end date from start + duration
   - `max_total_submits` (integer) - Total submissions across entire study
+- `mart_case_schedules` table (MART DB) - Per-case date overrides:
+  - `case_id` - Reference to cases.id in main DB
+  - `schedule_id` - Reference to mart_schedules.id in MART DB
+  - `timing_overrides` - JSON with calculated `start_date_time` and/or `end_date_time`
+  - `calculated_at` - When dates were calculated
 
 **Calculation Formula:**
 ```
-Duration (days) = max_total_submits / maxDailySubmits
-End Date = First Login Date + Duration (days)
+Duration (days) = ceil(max_total_submits / max_daily_submits)
+Start Date = First Login Date (if start_on_first_login)
+End Date = Start Date + Duration (days) (if use_dynamic_end_date)
 ```
 
-**Login Detection:**
-- `app/Http/Controllers/ApiController.php:124-131` - Detects first login for MART projects
-- Sets `first_login_at` timestamp on cases table
-- Calls `calculateMartDynamicEndDates()` placeholder method (line 446)
+**Data Flow:**
+1. Researcher creates questionnaire with "Start when participant logs in" checked
+   - MART DB: `mart_schedules.timing_config.start_on_first_login = true`
+2. Participant logs in for first time
+   - Main DB: `cases.first_login_at = now()`
+   - `calculateMartDynamicEndDates()` called in `ApiController.php:449-497`
+   - MART DB: `mart_case_schedules` record created with calculated dates
+3. Mobile app requests structure
+   - API queries `mart_case_schedules` for per-case overrides
+   - Mobile receives concrete dates (DD.MM.YYYY format)
 
 **UI:**
-- Checkbox in `AddEditQuestionnaireDialog.vue` - "Calculate end date dynamically on first login"
-- When checked, start_date_time and end_date_time inputs are disabled
-- Researcher enters max_total_submits, system auto-calculates duration
+- "Start when participant logs in" checkbox (green styling, top of form)
+- When checked, start date/time fields are disabled with "(Set on first login)" label
+- "Calculate end date dynamically" checkbox (existing, for end dates)
+- `SchedulePreview.vue` shows info messages about dynamic date settings
 
-**Behavior:**
-- Static dates: Researcher manually sets start/end dates
-- Dynamic dates: Start = login time, end = calculated from formula
-- Mobile app always receives concrete start/end dates (no calculation on mobile)
+**Key Files:**
+- `app/Mart/MartCaseSchedule.php` - Model for per-case date overrides
+- `app/Http/Controllers/ApiController.php:449-497` - `calculateMartDynamicEndDates()`
+- `app/Mart/MartSchedule.php:115-166` - `toMobileFormat($caseId)` with override support
+- `app/Http/Controllers/MartApiController.php:47-59` - Case ID lookup and passing
+- `resources/js/components/mart/AddEditQuestionnaireDialog.vue` - Frontend UI
 
 **IMPORTANT - API Contract:**
 - `max_total_submits` is stored in database and used for backend calculations ONLY
 - `max_total_submits` is NOT sent to mobile app via MART API
 - Backend calculates concrete start/end dates and sends those to mobile
 - Mobile receives only: `startDateAndTime`, `endDateAndTime`, `maxDailySubmits`
-- This prevents mobile from needing to implement date calculation logic
+- Per-case dates override schedule defaults when `participant_id` is provided in API request
 
 ### API Testing
 ```bash
@@ -373,6 +389,20 @@ curl -X POST "https://metag-analyze.test/mart-api/cases/5/submit" \
 - MART project creation can now be disabled via admin settings
 - When disabled, MART button is grayed out and shows "MART projects are currently disabled by administrator"
 - Setting synced from Filament admin panel to frontend
+
+### Case Creation for MART Projects (UPDATED: 2025-11-25)
+- "This is a backend case" checkbox hidden for MART projects
+- "Backend Cases" info card hidden for MART projects
+- MART projects only support mobile app cases (no backend-only cases)
+- Location: `resources/views/cases/create.blade.php`
+
+### Questionnaire Card Compact Design (UPDATED: 2025-11-25)
+- Redesigned questionnaire cards in MartQuestionnaireManager.vue
+- **Feature badges row**: Login start, Auto end, iOS Data, Android Data, Notif, Progress
+- **Compact info grid**: Start, End, Window, Daily, Total, Every, Break, At
+- Badges are color-coded and show enabled/disabled state
+- Added `formatDateTimeCompact()` method for date display (DD/MM format)
+- Location: `resources/js/components/mart/MartQuestionnaireManager.vue:125-208`
 
 ## Project-Specific Warnings
 

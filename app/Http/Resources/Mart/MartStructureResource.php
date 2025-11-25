@@ -14,6 +14,7 @@ class MartStructureResource extends JsonResource
 {
     protected $schedules;
     protected $participantId;
+    protected $caseId;
 
     public function __construct($resource, $schedules = null)
     {
@@ -24,6 +25,11 @@ class MartStructureResource extends JsonResource
     public function setParticipantId($participantId)
     {
         $this->participantId = $participantId;
+    }
+
+    public function setCaseId($caseId)
+    {
+        $this->caseId = $caseId;
     }
 
     public function toArray($request)
@@ -81,7 +87,7 @@ class MartStructureResource extends JsonResource
             });
 
             $response = [
-                'projectOptions' => new ProjectOptionsResource($project, $martConfig, $this->schedules),
+                'projectOptions' => new ProjectOptionsResource($project, $martConfig, $this->schedules, $this->caseId),
                 'questionnaires' => $questionnaires,
                 'scales' => $scales,
                 'pages' => $pageResources,
@@ -112,7 +118,7 @@ class MartStructureResource extends JsonResource
             }
 
             $response = [
-                'projectOptions' => new ProjectOptionsResource($project, null, $this->schedules),
+                'projectOptions' => new ProjectOptionsResource($project, null, $this->schedules, $this->caseId),
                 'questionnaires' => [$questionSheet],
                 'scales' => $scales,
                 'pages' => [], // Standard projects don't have pages

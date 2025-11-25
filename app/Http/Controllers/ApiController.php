@@ -448,9 +448,52 @@ class ApiController extends Controller
      */
     protected function calculateMartDynamicEndDates($case)
     {
-        // TODO: Implement dynamic end date calculation
-        // This is a placeholder method that will be implemented later
-        // For now, it does nothing - schedules will use their static end dates
+        $project = $case->project;
+        $martProject = $project->martProject();
+
+        if (! $martProject) {
+            return;
+        }
+
+        $schedules = \App\Mart\MartSchedule::where('mart_project_id', $martProject->id)->get();
+
+        foreach ($schedules as $schedule) {
+            $timing = $schedule->timing_config ?? [];
+            $overrides = [];
+
+            // Calculate start date if start_on_first_login is true
+            if ($timing['start_on_first_login'] ?? false) {
+                $overrides['start_date_time'] = [
+                    'date' => $case->first_login_at->format('Y-m-d'),
+                    'time' => $timing['daily_start_time'] ?? '09:00',
+                ];
+            }
+
+            // Calculate end date if use_dynamic_end_date is true
+            if ($timing['use_dynamic_end_date'] ?? false) {
+                // Use the override start date if set, otherwise use schedule's static start date
+                $startDate = $overrides['start_date_time']['date']
+                    ?? ($timing['start_date_time']['date'] ?? null);
+
+                if ($startDate) {
+                    $maxTotalSubmits = $timing['max_total_submits'] ?? 30;
+                    $maxDailySubmits = $timing['max_daily_submits'] ?? 6;
+
+                    $durationDays = (int) ceil($maxTotalSubmits / $maxDailySubmits);
+                    $endDate = \Carbon\Carbon::parse($startDate)->addDays($durationDays);
+
+                    $overrides['end_date_time'] = [
+                        'date' => $endDate->format('Y-m-d'),
+                        'time' => $timing['daily_end_time'] ?? '21:00',
+                    ];
+                }
+            }
+
+            // Store in MART database if there are any overrides
+            if (! empty($overrides)) {
+                \App\Mart\MartCaseSchedule::setForCase($case->id, $schedule->id, $overrides);
+            }
+        }
     }
 
     /**

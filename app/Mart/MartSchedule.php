@@ -109,19 +109,34 @@ class MartSchedule extends Model
 
     /**
      * Convert schedule to mobile format according to martTypes.ts
+     *
+     * @param int|null $caseId Optional case ID to get per-case date overrides
      */
-    public function toMobileFormat(): array
+    public function toMobileFormat(?int $caseId = null): array
     {
         $timingConfig = $this->timing_config ?? [];
         $notificationConfig = $this->notification_config ?? [];
+
+        // Check for per-case overrides if caseId is provided
+        $overrides = [];
+        if ($caseId) {
+            $caseSchedule = MartCaseSchedule::getForCase($caseId, $this->id);
+            if ($caseSchedule) {
+                $overrides = $caseSchedule->timing_overrides ?? [];
+            }
+        }
+
+        // Use override dates if available, otherwise use schedule defaults
+        $startDateTime = $overrides['start_date_time'] ?? ($timingConfig['start_date_time'] ?? null);
+        $endDateTime = $overrides['end_date_time'] ?? ($timingConfig['end_date_time'] ?? null);
 
         // Base format for all questionnaires
         $format = [
             'questionnaireId' => $this->questionnaire_id,
             'type' => $this->type,
             'startDateAndTime' => [
-                'date' => $this->formatDateForMobile($timingConfig['start_date_time']['date'] ?? null),
-                'time' => $timingConfig['start_date_time']['time'] ?? '00:00',
+                'date' => $this->formatDateForMobile($startDateTime['date'] ?? null),
+                'time' => $startDateTime['time'] ?? '00:00',
             ],
             'showProgressBar' => $notificationConfig['show_progress_bar'] ?? false,
             'showNotifications' => $notificationConfig['show_notifications'] ?? false,
@@ -131,8 +146,8 @@ class MartSchedule extends Model
         // Add repeating-specific fields
         if ($this->isRepeating()) {
             $format['endDateAndTime'] = [
-                'date' => $this->formatDateForMobile($timingConfig['end_date_time']['date'] ?? null),
-                'time' => $timingConfig['end_date_time']['time'] ?? '23:59',
+                'date' => $this->formatDateForMobile($endDateTime['date'] ?? null),
+                'time' => $endDateTime['time'] ?? '23:59',
             ];
             $format['minBreakBetweenQuestionnaire'] = $timingConfig['min_break_between'] ?? 180;
             $format['dailyIntervalDuration'] = $timingConfig['daily_interval_duration'] ?? 4;

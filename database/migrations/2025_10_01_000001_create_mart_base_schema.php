@@ -39,6 +39,10 @@ return new class extends Migration
             // Notification configuration stored as JSON
             $table->json('notification_config'); // Contains: show_progress_bar, show_notifications, text
 
+            // Data donation flags (questionnaire-level)
+            $table->boolean('is_ios_data_donation')->default(false);
+            $table->boolean('is_android_data_donation')->default(false);
+
             $table->timestamps();
 
             $table->unique(['mart_project_id', 'questionnaire_id']);

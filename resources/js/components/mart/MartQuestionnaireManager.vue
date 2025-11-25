@@ -123,86 +123,90 @@
           </div>
 
           <!-- Schedule Details -->
-          <div class="mt-4 bg-gray-50 rounded-lg p-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-              <div class="flex items-start">
-                <svg class="w-4 h-4 mr-2 mt-0.5 text-green-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
-                </svg>
-                <div>
-                  <span class="font-medium text-gray-700">{{ trans('Start') }}:</span>
-                  <span class="ml-2 text-gray-900">{{ formatDateTime(getTimingConfig(schedule, 'start_date_time')) }}</span>
+          <div class="mt-3 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-4 border border-gray-200">
+            <!-- Two Column Layout -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Left Column: Timing -->
+              <div class="space-y-2">
+                <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ trans('Timing') }}</h5>
+
+                <!-- Start Date -->
+                <div class="flex items-center text-sm">
+                  <svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd"/></svg>
+                  <span class="text-gray-600">{{ trans('Start') }}:</span>
+                  <span v-if="getTimingConfig(schedule, 'start_on_first_login')" class="ml-2 px-2 py-0.5 rounded bg-green-100 text-green-700 text-xs font-medium">
+                    {{ trans('When participant logs in') }}
+                  </span>
+                  <span v-else class="ml-2 font-medium text-gray-900">{{ formatDateTime(getTimingConfig(schedule, 'start_date_time')) }}</span>
+                </div>
+
+                <!-- End Date -->
+                <div class="flex items-center text-sm">
+                  <svg class="w-4 h-4 mr-2 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.707-10.293a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L9.414 11H13a1 1 0 100-2H9.414l1.293-1.293z" clip-rule="evenodd"/></svg>
+                  <span class="text-gray-600">{{ trans('End') }}:</span>
+                  <span v-if="getTimingConfig(schedule, 'use_dynamic_end_date')" class="ml-2 px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-xs font-medium">
+                    {{ trans('Auto-calculated from submissions') }}
+                  </span>
+                  <span v-else-if="getTimingConfig(schedule, 'end_date_time')" class="ml-2 font-medium text-gray-900">{{ formatDateTime(getTimingConfig(schedule, 'end_date_time')) }}</span>
+                  <span v-else class="ml-2 text-gray-400">{{ trans('Not set') }}</span>
+                </div>
+
+                <!-- Daily Window (for repeating) -->
+                <div v-if="schedule.type === 'repeating' && getTimingConfig(schedule, 'daily_start_time')" class="flex items-center text-sm">
+                  <svg class="w-4 h-4 mr-2 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+                  <span class="text-gray-600">{{ trans('Daily window') }}:</span>
+                  <span class="ml-2 font-medium text-gray-900">{{ getTimingConfig(schedule, 'daily_start_time') }} - {{ getTimingConfig(schedule, 'daily_end_time') }}</span>
                 </div>
               </div>
-              <div v-if="schedule.type === 'repeating' && getTimingConfig(schedule, 'end_date_time')" class="flex items-start">
-                <svg class="w-4 h-4 mr-2 mt-0.5 text-red-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
-                </svg>
-                <div>
-                  <span class="font-medium text-gray-700">{{ trans('End') }}:</span>
-                  <span class="ml-2 text-gray-900">{{ formatDateTime(getTimingConfig(schedule, 'end_date_time')) }}</span>
+
+              <!-- Right Column: Settings -->
+              <div class="space-y-2">
+                <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ trans('Settings') }}</h5>
+
+                <!-- Submissions Info -->
+                <div v-if="schedule.type === 'repeating'" class="flex flex-wrap items-center gap-3 text-sm">
+                  <span v-if="getTimingConfig(schedule, 'max_daily_submits')" class="inline-flex items-center">
+                    <svg class="w-4 h-4 mr-1 text-purple-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg>
+                    <span class="text-gray-600">{{ trans('Max daily') }}:</span>
+                    <span class="ml-1 font-medium text-gray-900">{{ getTimingConfig(schedule, 'max_daily_submits') }}</span>
+                  </span>
+                  <span v-if="getTimingConfig(schedule, 'max_total_submits')" class="inline-flex items-center">
+                    <svg class="w-4 h-4 mr-1 text-indigo-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg>
+                    <span class="text-gray-600">{{ trans('Total') }}:</span>
+                    <span class="ml-1 font-medium text-gray-900">{{ getTimingConfig(schedule, 'max_total_submits') }}</span>
+                  </span>
                 </div>
-              </div>
-              <div v-if="getNotificationConfig(schedule, 'show_notifications')" class="flex items-start">
-                <svg class="w-4 h-4 mr-2 mt-0.5 text-blue-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
-                </svg>
-                <div>
-                  <span class="font-medium text-gray-700">{{ trans('Notifications') }}:</span>
-                  <span class="ml-2 text-gray-900">{{ getNotificationConfig(schedule, 'notification_text') || trans('Enabled') }}</span>
+
+                <!-- Interval & Break (for repeating) -->
+                <div v-if="schedule.type === 'repeating' && (getTimingConfig(schedule, 'daily_interval_duration') || getTimingConfig(schedule, 'min_break_between'))" class="flex flex-wrap items-center gap-3 text-sm">
+                  <span v-if="getTimingConfig(schedule, 'daily_interval_duration')" class="inline-flex items-center">
+                    <svg class="w-4 h-4 mr-1 text-cyan-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+                    <span class="text-gray-600">{{ trans('Interval') }}:</span>
+                    <span class="ml-1 font-medium text-gray-900">{{ getTimingConfig(schedule, 'daily_interval_duration') }}h</span>
+                  </span>
+                  <span v-if="getTimingConfig(schedule, 'min_break_between')" class="inline-flex items-center">
+                    <svg class="w-4 h-4 mr-1 text-orange-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 000 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>
+                    <span class="text-gray-600">{{ trans('Min break') }}:</span>
+                    <span class="ml-1 font-medium text-gray-900">{{ getTimingConfig(schedule, 'min_break_between') }}m</span>
+                  </span>
                 </div>
-              </div>
-              <div v-if="schedule.type === 'repeating' && getTimingConfig(schedule, 'max_daily_submits')" class="flex items-start">
-                <svg class="w-4 h-4 mr-2 mt-0.5 text-purple-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
-                </svg>
-                <div>
-                  <span class="font-medium text-gray-700">{{ trans('Max Daily') }}:</span>
-                  <span class="ml-2 text-gray-900">{{ getTimingConfig(schedule, 'max_daily_submits') }} {{ trans('submissions') }}</span>
-                </div>
-              </div>
-              <div v-if="schedule.type === 'repeating' && getTimingConfig(schedule, 'daily_start_time')" class="flex items-start">
-                <svg class="w-4 h-4 mr-2 mt-0.5 text-amber-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
-                </svg>
-                <div>
-                  <span class="font-medium text-gray-700">{{ trans('Daily Window') }}:</span>
-                  <span class="ml-2 text-gray-900">{{ getTimingConfig(schedule, 'daily_start_time') }} - {{ getTimingConfig(schedule, 'daily_end_time') }}</span>
-                </div>
-              </div>
-              <div v-if="schedule.type === 'repeating' && getTimingConfig(schedule, 'daily_interval_duration')" class="flex items-start">
-                <svg class="w-4 h-4 mr-2 mt-0.5 text-cyan-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
-                </svg>
-                <div>
-                  <span class="font-medium text-gray-700">{{ trans('Interval Duration') }}:</span>
-                  <span class="ml-2 text-gray-900">{{ getTimingConfig(schedule, 'daily_interval_duration') }} {{ trans('hours') }}</span>
-                </div>
-              </div>
-              <div v-if="schedule.type === 'repeating' && getTimingConfig(schedule, 'min_break_between')" class="flex items-start">
-                <svg class="w-4 h-4 mr-2 mt-0.5 text-orange-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
-                </svg>
-                <div>
-                  <span class="font-medium text-gray-700">{{ trans('Min Break') }}:</span>
-                  <span class="ml-2 text-gray-900">{{ getTimingConfig(schedule, 'min_break_between') }} {{ trans('minutes') }}</span>
-                </div>
-              </div>
-              <div v-if="schedule.type === 'repeating' && getTimingConfig(schedule, 'quest_available_at')" class="flex items-start">
-                <svg class="w-4 h-4 mr-2 mt-0.5 text-teal-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
-                </svg>
-                <div>
-                  <span class="font-medium text-gray-700">{{ trans('Available At') }}:</span>
-                  <span class="ml-2 text-gray-900">{{ getTimingConfig(schedule, 'quest_available_at') === 'startOfInterval' ? trans('Start of interval') : trans('Random time') }}</span>
-                </div>
-              </div>
-              <div v-if="getNotificationConfig(schedule, 'show_progress_bar')" class="flex items-start">
-                <svg class="w-4 h-4 mr-2 mt-0.5 text-indigo-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                </svg>
-                <div>
-                  <span class="text-gray-700">{{ trans('Progress bar enabled') }}</span>
+
+                <!-- Toggles Row -->
+                <div class="flex flex-wrap items-center gap-2 pt-1">
+                  <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium" :class="getNotificationConfig(schedule, 'show_notifications') ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-400'">
+                    <svg class="w-3.5 h-3.5 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg>
+                    {{ trans('Notifications') }}
+                  </span>
+                  <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium" :class="getNotificationConfig(schedule, 'show_progress_bar') ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-400'">
+                    <svg class="w-3.5 h-3.5 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                    {{ trans('Progress bar') }}
+                  </span>
+                  <span v-if="schedule.is_ios_data_donation" class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-700 text-white">
+                    iOS Data Donation
+                  </span>
+                  <span v-if="schedule.is_android_data_donation" class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-green-600 text-white">
+                    Android Data Donation
+                  </span>
                 </div>
               </div>
             </div>
@@ -435,6 +439,32 @@ export default {
       if (typeof dateTime === 'string') return dateTime;
       if (typeof dateTime === 'object' && dateTime.date && dateTime.time) {
         return `${dateTime.date} ${dateTime.time}`;
+      }
+      return 'N/A';
+    },
+
+    formatDateTimeCompact(dateTime) {
+      if (!dateTime) return 'N/A';
+      if (typeof dateTime === 'string') {
+        // Parse date string like "2025-01-15" or "15.01.2025"
+        const parts = dateTime.includes('-') ? dateTime.split('-') : dateTime.split('.');
+        if (parts.length === 3) {
+          const day = dateTime.includes('-') ? parts[2] : parts[0];
+          const month = dateTime.includes('-') ? parts[1] : parts[1];
+          return `${day}/${month}`;
+        }
+        return dateTime;
+      }
+      if (typeof dateTime === 'object' && dateTime.date) {
+        const date = dateTime.date;
+        const parts = date.includes('-') ? date.split('-') : date.split('.');
+        if (parts.length === 3) {
+          const day = date.includes('-') ? parts[2] : parts[0];
+          const month = date.includes('-') ? parts[1] : parts[1];
+          const time = dateTime.time ? ` ${dateTime.time}` : '';
+          return `${day}/${month}${time}`;
+        }
+        return dateTime.time ? `${date} ${dateTime.time}` : date;
       }
       return 'N/A';
     }

@@ -87,6 +87,7 @@
         </div>
     </div>
 
+    @if(!$project->isMartProject())
     <div class="relative flex items-start my-2">
         <div class="flex items-center h-5">
             <input v-model="newcase.backendcase"
@@ -99,6 +100,7 @@
 
         </div>
     </div>
+    @endif
 
     <div class="relative flex items-start my-2">
         <div class="flex items-center h-5">
@@ -196,6 +198,7 @@
                 </div>
             </div>
 
+            @if(!$project->isMartProject())
             <div class="pt-6">
                 <div class="flow-root px-6 pb-8 rounded-lg bg-gray-50">
                     <div class="-mt-6">
@@ -211,11 +214,12 @@
                         </div>
                         <h3 class="mt-8 text-lg font-medium tracking-tight text-gray-900">{{__('Backend Cases')}}</h3>
                         <p class="mt-5 text-base text-gray-500">
-                            {{__('Data for backend cases can only be entered via MeTag Analyze, they are not accessible from the MeTag mobile app. They don’t have a duration setting because they can be created, filled out and consulted at any time in the backend.')}}
+                            {{__("Data for backend cases can only be entered via MeTag Analyze, they are not accessible from the MeTag mobile app. They don't have a duration setting because they can be created, filled out and consulted at any time in the backend.")}}
                         </p>
                     </div>
                 </div>
             </div>
+            @endif
 
         </div>
     </div>

@@ -57,6 +57,8 @@ class MartQuestionnaireController extends Controller
             'type' => 'required|in:single,repeating',
             'start_date_time' => 'nullable|array',
             'end_date_time' => 'nullable|array',
+            'start_on_first_login' => 'nullable|boolean',
+            'use_dynamic_end_date' => 'nullable|boolean',
             'show_progress_bar' => 'boolean',
             'show_notifications' => 'boolean',
             'notification_text' => 'nullable|string',
@@ -72,7 +74,7 @@ class MartQuestionnaireController extends Controller
             'show_after_repeating' => 'nullable|array',
             'questions' => 'required|array',
             'questions.*.text' => 'required|string',
-            'questions.*.type' => 'required|in:scale,text,one choice,multiple choice',
+            'questions.*.type' => 'required|in:number,range,text,textarea,one choice,multiple choice',
             'questions.*.mandatory' => 'required|boolean',
             'questions.*.config' => 'nullable|array',
         ]);
@@ -84,7 +86,13 @@ class MartQuestionnaireController extends Controller
         }
 
         // Calculate end_date_time if max_total_submits is provided for repeating questionnaires
+        // Skip if start_on_first_login is true (dates will be calculated at participant's first login)
+        $startOnFirstLogin = $validated['start_on_first_login'] ?? false;
+        $useDynamicEndDate = $validated['use_dynamic_end_date'] ?? false;
+
         if ($validated['type'] === 'repeating' &&
+            ! $startOnFirstLogin &&
+            ! $useDynamicEndDate &&
             isset($validated['max_total_submits']) &&
             $validated['max_total_submits'] > 0 &&
             isset($validated['start_date_time']) &&
@@ -110,6 +118,8 @@ class MartQuestionnaireController extends Controller
             $timingConfig = [
                 'start_date_time' => $validated['start_date_time'] ?? null,
                 'end_date_time' => $validated['end_date_time'] ?? null,
+                'start_on_first_login' => $validated['start_on_first_login'] ?? false,
+                'use_dynamic_end_date' => $validated['use_dynamic_end_date'] ?? false,
                 'daily_interval_duration' => $validated['daily_interval_duration'] ?? null,
                 'min_break_between' => $validated['min_break_between'] ?? null,
                 'max_daily_submits' => $validated['max_daily_submits'] ?? null,
@@ -203,14 +213,11 @@ class MartQuestionnaireController extends Controller
         $validated = $request->validate([
             'introductory_text' => 'nullable|string',
             'questions' => 'required|array',
-            'questions.*.uuid' => 'required|string',
+            'questions.*.uuid' => 'nullable|string',
             'questions.*.text' => 'required|string',
-            'questions.*.type' => 'required|in:scale,text,one choice,multiple choice',
+            'questions.*.type' => 'required|in:number,range,text,textarea,one choice,multiple choice',
             'questions.*.mandatory' => 'required|boolean',
             'questions.*.config' => 'nullable|array',
-            'questions.*.is_ios_data_collection' => 'nullable|boolean',
-            'questions.*.is_android_data_collection' => 'nullable|boolean',
-            'questions.*.item_group' => 'nullable|string',
         ]);
 
         DB::connection('mart')->beginTransaction();
@@ -222,27 +229,55 @@ class MartQuestionnaireController extends Controller
                 $schedule->save();
             }
 
-            foreach ($validated['questions'] as $questionData) {
-                $question = MartQuestion::find($questionData['uuid']);
+            // Track which UUIDs we've processed to detect deleted questions
+            $processedUuids = [];
 
-                if (! $question || $question->schedule_id !== $schedule->id) {
-                    throw new \Exception("Question {$questionData['uuid']} not found in this schedule");
+            foreach ($validated['questions'] as $index => $questionData) {
+                if (!empty($questionData['uuid'])) {
+                    // Update existing question
+                    $question = MartQuestion::find($questionData['uuid']);
+
+                    if (! $question || $question->schedule_id !== $schedule->id) {
+                        throw new \Exception("Question {$questionData['uuid']} not found in this schedule");
+                    }
+
+                    // Update question (automatically creates history and increments version)
+                    $saved = $question->updateQuestion([
+                        'text' => $questionData['text'],
+                        'type' => $questionData['type'],
+                        'config' => $questionData['config'] ?? [],
+                        'is_mandatory' => $questionData['mandatory'],
+                    ]);
+
+                    if (!$saved) {
+                        throw new \Exception("Failed to save question {$questionData['uuid']}");
+                    }
+
+                    // Update position
+                    $question->position = $index + 1;
+                    $question->save();
+
+                    $processedUuids[] = $questionData['uuid'];
+                } else {
+                    // Create new question
+                    $newQuestion = MartQuestion::create([
+                        'schedule_id' => $schedule->id,
+                        'position' => $index + 1,
+                        'text' => $questionData['text'],
+                        'type' => $questionData['type'],
+                        'config' => $questionData['config'] ?? [],
+                        'is_mandatory' => $questionData['mandatory'],
+                        'version' => 1,
+                    ]);
+
+                    $processedUuids[] = $newQuestion->uuid;
                 }
-
-                // Update question (automatically creates history and increments version)
-                $question->updateQuestion([
-                    'text' => $questionData['text'],
-                    'type' => $questionData['type'],
-                    'config' => $questionData['config'] ?? [],
-                    'is_mandatory' => $questionData['mandatory'],
-                ]);
-
-                // Update the new fields directly (these don't need versioning)
-                $question->is_ios_data_collection = $questionData['is_ios_data_collection'] ?? false;
-                $question->is_android_data_collection = $questionData['is_android_data_collection'] ?? false;
-                $question->item_group = $questionData['item_group'] ?? null;
-                $question->save();
             }
+
+            // Delete questions that were removed (not in the request)
+            $schedule->questions()
+                ->whereNotIn('uuid', $processedUuids)
+                ->delete();
 
             DB::connection('mart')->commit();
 

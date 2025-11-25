@@ -12,11 +12,14 @@ class ProjectOptionsResource extends JsonResource
 
     protected $schedules;
 
-    public function __construct($resource, $martConfig = null, $schedules = null)
+    protected $caseId;
+
+    public function __construct($resource, $martConfig = null, $schedules = null, $caseId = null)
     {
         parent::__construct($resource);
         $this->martConfig = $martConfig;
         $this->schedules = $schedules;
+        $this->caseId = $caseId;
     }
 
     public function toArray($request)
@@ -38,9 +41,9 @@ class ProjectOptionsResource extends JsonResource
         if ($this->schedules) {
             foreach ($this->schedules as $schedule) {
                 if ($schedule->isSingle()) {
-                    $singleQuestionnaires[] = $schedule->toMobileFormat();
+                    $singleQuestionnaires[] = $schedule->toMobileFormat($this->caseId);
                 } else {
-                    $repeatingQuestionnaires[] = $schedule->toMobileFormat();
+                    $repeatingQuestionnaires[] = $schedule->toMobileFormat($this->caseId);
                 }
             }
         }
