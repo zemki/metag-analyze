@@ -139,7 +139,7 @@
 
             <!-- Status Filter -->
             <select v-model="statusFilter" @change="loadCases"
-                    class="text-sm border border-gray-300 rounded-md px-3 py-1.5 bg-white focus:outline-hidden focus:ring-blue-500 focus:border-blue-500">
+                    class="text-sm border border-gray-300 rounded-md pl-3 pr-8 py-1.5 bg-white focus:outline-hidden focus:ring-blue-500 focus:border-blue-500">
               <option value="">All Status</option>
               <option value="active">Active</option>
               <option value="completed">Completed</option>
@@ -148,7 +148,7 @@
 
             <!-- Sort Options -->
             <select v-model="sortBy" @change="loadCases"
-                    class="text-sm border border-gray-300 rounded-md px-3 py-1.5 bg-white focus:outline-hidden focus:ring-blue-500 focus:border-blue-500">
+                    class="text-sm border border-gray-300 rounded-md pl-3 pr-8 py-1.5 bg-white focus:outline-hidden focus:ring-blue-500 focus:border-blue-500">
               <option value="created_at">Created Date</option>
               <option value="name">Name</option>
               <option value="user_id">User</option>
@@ -166,7 +166,7 @@
 
             <!-- Per Page -->
             <select v-model="perPage" @change="loadCases"
-                    class="text-sm border border-gray-300 rounded-md px-3 py-1.5 bg-white focus:outline-hidden focus:ring-blue-500 focus:border-blue-500">
+                    class="text-sm border border-gray-300 rounded-md pl-3 pr-8 py-1.5 bg-white focus:outline-hidden focus:ring-blue-500 focus:border-blue-500">
               <option value="25">25</option>
               <option value="50">50</option>
               <option value="100">100</option>
