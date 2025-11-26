@@ -281,6 +281,7 @@
         :schedule="selectedSchedule"
         :project-id="projectId"
         :next-questionnaire-id="getNextQuestionnaireId()"
+        :all-schedules="schedules"
         @close="closeScheduleDialog"
         @saved="handleScheduleSaved"
     />

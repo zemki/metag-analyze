@@ -6,12 +6,15 @@ use App\Setting;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Grid;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Schema;
+use Illuminate\Support\HtmlString;
 
 class Settings extends Page implements HasForms
 {
@@ -53,9 +56,26 @@ class Settings extends Page implements HasForms
     {
         return $schema
             ->components([
-                Checkbox::make('mart_enabled')
-                    ->label('Enable MART Projects')
-                    ->helperText('Allow users to create MART (Mobile Assessment Research Tool) projects'),
+                Grid::make(2)
+                    ->schema([
+                        Checkbox::make('mart_enabled')
+                            ->label('Enable MART Projects')
+                            ->helperText('Allow users to create MART (Mobile Assessment Research Tool) projects'),
+
+                        Placeholder::make('mart_warning')
+                            ->label('')
+                            ->content(new HtmlString('
+                                <div class="rounded-lg border border-warning-400 bg-warning-50 dark:bg-warning-950 dark:border-warning-700 p-4 text-sm">
+                                    <p class="font-semibold text-warning-700 dark:text-warning-400">⚠️ Database Required</p>
+                                    <p class="mt-1 text-warning-600 dark:text-warning-500">MART requires a separate database. Before enabling:</p>
+                                    <ol class="list-decimal ml-5 mt-2 text-warning-600 dark:text-warning-500 space-y-1">
+                                        <li>Create a new MySQL database for MART</li>
+                                        <li>Configure DB_MART_* variables in .env</li>
+                                        <li>Run: php artisan migrate</li>
+                                    </ol>
+                                </div>
+                            ')),
+                    ]),
 
                 TextInput::make('max_studies_per_user')
                     ->label('Max Studies Per User')

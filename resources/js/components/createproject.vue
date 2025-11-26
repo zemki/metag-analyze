@@ -125,37 +125,37 @@
 
         <!-- Additional Inputs Count Section -->
         <div>
-          <label for="ninputs" class="block text-sm font-medium text-gray-700">
-            Number of additional inputs
-          </label>
-
-          <input type="hidden" :value="JSON.stringify(newProject.inputs)" name="inputs"/>
-
-          <div class="relative flex flex-row w-64 h-10 mt-1 bg-transparent rounded-lg">
-            <button
-                type="button"
-                class="w-20 h-full text-gray-600 bg-gray-300 rounded-l outline-hidden cursor-pointer hover:text-gray-700 hover:bg-gray-400"
-                @click="decrementInputs"
-            >
-              <span class="m-auto text-2xl font-thin">−</span>
-            </button>
-            <input
-                v-model.number="newProject.ninputs"
-                type="number"
-                min="0"
-                max="3"
-                class="flex items-center w-full font-semibold text-center text-gray-700 bg-white outline-hidden focus:outline-hidden text-md hover:text-black focus:text-black md:text-base cursor-default"
-                name="ninputs"
-                id="ninputs"
-            />
-            <button
-                type="button"
-                class="w-20 h-full text-gray-600 bg-gray-300 rounded-r cursor-pointer hover:text-gray-700 hover:bg-gray-400"
-                @click="incrementInputs"
-            >
-              <span class="m-auto text-2xl font-thin">+</span>
-            </button>
+          <div class="flex items-center justify-between">
+            <label for="ninputs" class="block text-sm font-medium text-gray-700">
+              Number of additional inputs (0-3)
+            </label>
+            <div class="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
+              <button
+                  type="button"
+                  :disabled="newProject.ninputs <= 0"
+                  @click="decrementInputs"
+                  class="w-8 h-8 flex items-center justify-center rounded-md transition-colors duration-150"
+                  :class="newProject.ninputs > 0
+                    ? 'bg-blue-500 text-white hover:bg-blue-600'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
+              >
+                &minus;
+              </button>
+              <span class="w-8 text-center font-medium">{{ newProject.ninputs }}</span>
+              <button
+                  type="button"
+                  :disabled="newProject.ninputs >= 3"
+                  @click="incrementInputs"
+                  class="w-8 h-8 flex items-center justify-center rounded-md transition-colors duration-150"
+                  :class="newProject.ninputs < 3
+                    ? 'bg-blue-500 text-white hover:bg-blue-600'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
+              >
+                &plus;
+              </button>
+            </div>
           </div>
+          <input type="hidden" :value="JSON.stringify(newProject.inputs)" name="inputs"/>
         </div>
         <!-- Entity Name Field -->
         <div>

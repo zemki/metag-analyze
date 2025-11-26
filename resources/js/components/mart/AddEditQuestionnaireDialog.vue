@@ -118,6 +118,56 @@
                 </span>
               </div>
 
+              <!-- Show After Repeating Questionnaire - Only for single questionnaires -->
+              <div v-if="formData.type === 'single' && repeatingQuestionnaires.length > 0" class="space-y-3 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                <div class="flex items-center">
+                  <input
+                      v-model="formData.use_show_after_repeating"
+                      type="checkbox"
+                      id="use_show_after_repeating"
+                      class="h-4 w-4 text-purple-600 focus:ring-purple-400 border-gray-300 rounded"
+                  />
+                  <label for="use_show_after_repeating" class="ml-2 block text-sm font-medium text-purple-900">
+                    {{ trans('Show after completing a repeating questionnaire') }}
+                  </label>
+                </div>
+                <p class="text-xs text-purple-700">
+                  {{ trans('This single questionnaire will only appear after the participant has completed a minimum number of submissions from a repeating questionnaire.') }}
+                </p>
+
+                <div v-if="formData.use_show_after_repeating" class="ml-6 space-y-3">
+                  <div>
+                    <label class="block text-sm font-medium text-purple-800">{{ trans('Select Repeating Questionnaire') }}</label>
+                    <select
+                        v-model="formData.show_after_repeating_quest_id"
+                        class="mt-1 block w-full px-3 py-2 border border-purple-300 rounded-md shadow-xs focus:ring-purple-500 focus:border-purple-500 bg-white"
+                    >
+                      <option :value="null" disabled>{{ trans('Select a questionnaire...') }}</option>
+                      <option
+                          v-for="q in repeatingQuestionnaires"
+                          :key="q.questionnaire_id"
+                          :value="q.questionnaire_id"
+                      >
+                        {{ q.name }} (ID: {{ q.questionnaire_id }})
+                      </option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-purple-800">{{ trans('Minimum completions required') }}</label>
+                    <input
+                        v-model.number="formData.show_after_amount"
+                        type="number"
+                        min="1"
+                        class="mt-1 block w-full px-3 py-2 border border-purple-300 rounded-md shadow-xs focus:ring-purple-500 focus:border-purple-500"
+                    />
+                    <p class="mt-1 text-xs text-purple-600">
+                      {{ trans('This questionnaire will appear after the participant completes at least this many submissions.') }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <!-- Date/Time Settings -->
               <div class="space-y-3">
                 <div class="flex justify-between items-center">
@@ -199,6 +249,65 @@
                 <p v-if="formData.use_dynamic_end_date && !calculatedEndDate" class="ml-6 text-xs text-orange-600">
                   {{ trans('Fill in Start Date, Max Total Submits, and Max Daily Submits to auto-calculate end date') }}
                 </p>
+
+                <!-- Formula Display (Toggleable) -->
+                <div v-if="formData.use_dynamic_end_date" class="ml-6 mt-3">
+                  <button
+                      type="button"
+                      @click="showFormula = !showFormula"
+                      class="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 transition-colors"
+                  >
+                    <svg
+                        class="w-4 h-4 transition-transform"
+                        :class="{ 'rotate-90': showFormula }"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                    {{ trans('Show calculation formula') }}
+                  </button>
+                  <div v-if="showFormula" class="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div class="font-mono text-sm text-blue-900 space-y-1">
+                      <div class="flex items-center gap-2">
+                        <span class="text-blue-600">Duration</span>
+                        <span>=</span>
+                        <span class="text-blue-500 font-bold">[</span>
+                        <span class="px-2 py-0.5 bg-white rounded border border-blue-200" :class="formData.max_total_submits ? 'text-blue-900' : 'text-gray-400'">
+                          {{ formData.max_total_submits || '?' }}
+                        </span>
+                        <span>÷</span>
+                        <span class="px-2 py-0.5 bg-white rounded border border-blue-200" :class="formData.max_daily_submits ? 'text-blue-900' : 'text-gray-400'">
+                          {{ formData.max_daily_submits || '?' }}
+                        </span>
+                        <span class="text-blue-500 font-bold">]</span>
+                        <span>=</span>
+                        <span class="px-2 py-0.5 bg-green-100 rounded border border-green-300 font-semibold" :class="calculatedDurationDays ? 'text-green-800' : 'text-gray-400'">
+                          {{ calculatedDurationDays || '?' }} {{ trans('days') }}
+                        </span>
+                      </div>
+                      <div class="flex items-center gap-2 pt-1">
+                        <span class="text-blue-600">End Date</span>
+                        <span>=</span>
+                        <span class="px-2 py-0.5 bg-white rounded border border-blue-200" :class="formData.start_on_first_login ? 'text-amber-600 italic' : (formData.start_date_time.date ? 'text-blue-900' : 'text-gray-400')">
+                          {{ formData.start_on_first_login ? trans('First Login') : (formData.start_date_time.date || '?') }}
+                        </span>
+                        <span>+</span>
+                        <span class="px-2 py-0.5 bg-white rounded border border-blue-200" :class="calculatedDurationDays ? 'text-blue-900' : 'text-gray-400'">
+                          {{ calculatedDurationDays || '?' }}
+                        </span>
+                        <span>=</span>
+                        <span class="px-2 py-0.5 bg-green-100 rounded border border-green-300 font-semibold" :class="calculatedEndDate ? 'text-green-800' : 'text-gray-400'">
+                          {{ calculatedEndDate || '?' }}
+                        </span>
+                      </div>
+                    </div>
+                    <p class="text-xs text-blue-600 mt-2">
+                      <span class="font-bold">[ ]</span> = {{ trans('round up to nearest whole number') }}
+                    </p>
+                  </div>
+                </div>
               </div>
 
               <!-- End Date/Time (for repeating) -->
@@ -206,9 +315,6 @@
                 <div>
                   <label class="block text-sm font-medium text-gray-700">
                     {{ trans('End Date') }} *
-                    <span v-if="formData.use_dynamic_end_date && calculatedEndDate" class="text-xs text-gray-500 font-normal ml-2">
-                      ({{ trans('Auto-calculated') }}: {{ calculatedEndDate }})
-                    </span>
                   </label>
                   <input
                       v-model="formData.end_date_time.date"
@@ -860,12 +966,17 @@ export default {
     nextQuestionnaireId: {
       type: Number,
       required: true
+    },
+    allSchedules: {
+      type: Array,
+      default: () => []
     }
   },
 
   data() {
     return {
       saving: false,
+      showFormula: false,
       formData: {
         questionnaire_id: this.nextQuestionnaireId,
         name: '',
@@ -875,6 +986,9 @@ export default {
         end_date_time: { date: '', time: '21:00' },
         start_on_first_login: false,
         use_dynamic_end_date: false,
+        use_show_after_repeating: false,
+        show_after_repeating_quest_id: null,
+        show_after_amount: 1,
         show_progress_bar: true,
         show_notifications: true,
         notification_text: '',
@@ -895,6 +1009,16 @@ export default {
   computed: {
     isEditMode() {
       return this.schedule !== null;
+    },
+
+    repeatingQuestionnaires() {
+      // Filter to only repeating questionnaires, excluding the current one if editing
+      return this.allSchedules.filter(s => {
+        if (s.type !== 'repeating') return false;
+        // Exclude current schedule if we're editing it (can't reference itself)
+        if (this.isEditMode && s.id === this.schedule.id) return false;
+        return true;
+      });
     },
 
     isValid() {
@@ -926,6 +1050,14 @@ export default {
       return true;
     },
 
+    calculatedDurationDays() {
+      // Calculate duration in days from max_total_submits and max_daily_submits
+      if (this.formData.max_total_submits && this.formData.max_daily_submits) {
+        return Math.ceil(this.formData.max_total_submits / this.formData.max_daily_submits);
+      }
+      return null;
+    },
+
     calculatedEndDate() {
       // Auto-calculate end date when checkbox is enabled and max_total_submits is provided
       if (
@@ -934,7 +1066,7 @@ export default {
         this.formData.max_total_submits &&
         this.formData.max_daily_submits
       ) {
-        const durationDays = Math.ceil(this.formData.max_total_submits / this.formData.max_daily_submits);
+        const durationDays = this.calculatedDurationDays;
 
         // If start_on_first_login is true, we can't calculate exact date but can show duration
         if (this.formData.start_on_first_login) {
@@ -1130,6 +1262,13 @@ export default {
         if (timing.use_dynamic_end_date !== undefined) {
           this.formData.use_dynamic_end_date = timing.use_dynamic_end_date;
         }
+
+        // Load show_after_repeating settings (for single questionnaires)
+        if (timing.show_after_repeating) {
+          this.formData.use_show_after_repeating = true;
+          this.formData.show_after_repeating_quest_id = timing.show_after_repeating.repeatingQuestId || null;
+          this.formData.show_after_amount = timing.show_after_repeating.showAfterAmount || 1;
+        }
       }
 
       // Load notification configuration
@@ -1304,18 +1443,28 @@ export default {
           return questionData;
         });
 
+        // Build show_after_repeating object if enabled
+        const showAfterRepeating = this.formData.use_show_after_repeating && this.formData.show_after_repeating_quest_id
+          ? {
+              repeatingQuestId: this.formData.show_after_repeating_quest_id,
+              showAfterAmount: this.formData.show_after_amount || 1
+            }
+          : null;
+
+        // Build payload without UI-only fields
+        const { use_show_after_repeating, show_after_repeating_quest_id, show_after_amount, ...formDataWithoutUiFields } = this.formData;
+        const payload = {
+          ...formDataWithoutUiFields,
+          show_after_repeating: showAfterRepeating,
+          questions: processedQuestions
+        };
+
         if (this.isEditMode) {
           // Update questions, settings, and introductory text
-          await window.axios.put(`/questionnaires/${this.schedule.id}/questions`, {
-            ...this.formData,
-            questions: processedQuestions
-          });
+          await window.axios.put(`/questionnaires/${this.schedule.id}/questions`, payload);
         } else {
           // Create new questionnaire
-          await window.axios.post(`/projects/${this.projectId}/questionnaires`, {
-            ...this.formData,
-            questions: processedQuestions
-          });
+          await window.axios.post(`/projects/${this.projectId}/questionnaires`, payload);
         }
 
         this.$emit('saved');
