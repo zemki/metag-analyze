@@ -1,55 +1,42 @@
-# Metag-Analyze Documentation
+# Metag Analyze Documentation
 
-Mobile experience sampling platform for MART data collection.
+Research platform for mobile experience sampling and media diaries.
 
-See [Installation Guide](./INSTALLATION.md) for setup instructions.
-
-See [Architecture Overview](./ARCHITECTURE.md) for system design and structure.
-
-See [MART API](./MART/) for mobile integration documentation.
+- [Installation Guide](./INSTALLATION.md) - Setup instructions
+- [Architecture Overview](./ARCHITECTURE.md) - Tech stack and design
+- [Admin Guide](./ADMIN_GUIDE.md) - Admin panel usage
+- [MART Documentation](./MART/) - Mobile app API
 
 ## Commands
 
 ### Development
 ```bash
-npm run dev              # Start Vite dev server
-npm run build           # Production build
-vendor/bin/pest         # Run tests
-```
-
-### Testing
-```bash
-vendor/bin/pest                    # Run all tests
-vendor/bin/pest --filter=TestName  # Run specific test
-npm run test:unit                  # Frontend tests
-npm run lint:check                 # Check linting
-npm run format:check              # Check formatting
+vendor/bin/pest              # Run tests
+npm run build                # Production build (user runs npm run dev)
+./vendor/bin/pint            # Format PHP code
 ```
 
 ### Database
 ```bash
-php artisan migrate                 # Run migrations
-php artisan migrate:status          # Check migration status
-php artisan db:seed                # Seed database
+php artisan migrate                    # Run migrations
+php artisan migrate:status             # Check status
+php artisan migrate:fresh-all --seed   # Reset both databases (local only)
 ```
 
-### Background Services
+### Artisan
 ```bash
-php artisan queue:work              # Queue worker
-php artisan reverb:start            # WebSocket server
+php artisan queue:work       # Process queue jobs
+php artisan reverb:start     # WebSocket server
 ```
 
-### Scheduled Tasks
-Configured in `app/Console/Kernel.php`:
-- Queue flush - Daily at midnight
-- Notification dispatch - As configured
+## Testing
 
-## Documentation
-
-- [Installation Guide](./INSTALLATION.md) - Setup instructions
-- [Architecture Overview](./ARCHITECTURE.md) - Tech stack and design
-- [MART API](./MART/) - Mobile API documentation
+```bash
+vendor/bin/pest                        # All tests
+vendor/bin/pest --filter=TestName      # Specific test
+vendor/bin/pest tests/Feature/         # Feature tests only
+```
 
 ---
 
-**Laravel**: 11.x | **PHP**: 8.3+ | **Vue**: 3.x | **MySQL**: 8.0+
+**Laravel**: 11.x | **PHP**: 8.3+ | **Vue**: 3 | **Tailwind**: 4

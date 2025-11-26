@@ -69,13 +69,8 @@ class EntryController extends Controller
         ]);
 
         // Convert Unix timestamps to MySQL datetime format if needed
-        // Mobile app sends Unix timestamps (seconds), check if it's numeric and not already a datetime string
-        if (is_numeric($attributes[self::BEGIN]) && strlen($attributes[self::BEGIN]) == 10) {
-            $attributes[self::BEGIN] = date('Y-m-d H:i:s', $attributes[self::BEGIN]);
-        }
-        if (is_numeric($attributes['end']) && strlen($attributes['end']) == 10) {
-            $attributes['end'] = date('Y-m-d H:i:s', $attributes['end']);
-        }
+        $attributes[self::BEGIN] = $this->convertTimestampToDatetime($attributes[self::BEGIN]);
+        $attributes['end'] = $this->convertTimestampToDatetime($attributes['end']);
 
         $isComingFromBackend = is_numeric($attributes[self::MEDIA_ID]);
 
@@ -138,13 +133,8 @@ class EntryController extends Controller
         ]);
 
         // Convert Unix timestamps to MySQL datetime format if needed
-        // Mobile app sends Unix timestamps (seconds), check if it's numeric and not already a datetime string
-        if (is_numeric($attributes[self::BEGIN]) && strlen($attributes[self::BEGIN]) == 10) {
-            $attributes[self::BEGIN] = date('Y-m-d H:i:s', $attributes[self::BEGIN]);
-        }
-        if (is_numeric($attributes['end']) && strlen($attributes['end']) == 10) {
-            $attributes['end'] = date('Y-m-d H:i:s', $attributes['end']);
-        }
+        $attributes[self::BEGIN] = $this->convertTimestampToDatetime($attributes[self::BEGIN]);
+        $attributes['end'] = $this->convertTimestampToDatetime($attributes['end']);
 
         if (is_string($attributes[self::MEDIA_ID])) {
             $attributes[self::MEDIA_ID] = Media::firstOrCreate(['name' => $attributes[self::MEDIA_ID]])->id;
@@ -222,5 +212,34 @@ class EntryController extends Controller
         }
 
         return response('entry deleted', 200);
+    }
+
+    /**
+     * Convert Unix timestamp to MySQL datetime format.
+     * Handles both seconds (10 digits) and milliseconds (13 digits).
+     *
+     * @param mixed $value The value to convert
+     * @return string The datetime string in Y-m-d H:i:s format, or original value if not a timestamp
+     */
+    private function convertTimestampToDatetime($value): string
+    {
+        if (!is_numeric($value)) {
+            return $value;
+        }
+
+        $length = strlen((string) $value);
+
+        // 10 digits = Unix timestamp in seconds
+        if ($length === 10) {
+            return date('Y-m-d H:i:s', (int) $value);
+        }
+
+        // 13 digits = Unix timestamp in milliseconds
+        if ($length === 13) {
+            return date('Y-m-d H:i:s', (int) ($value / 1000));
+        }
+
+        // Return as-is if not a recognized timestamp format
+        return $value;
     }
 }

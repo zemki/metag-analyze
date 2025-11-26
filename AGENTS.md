@@ -219,6 +219,55 @@ if ($project->hasMartData()) {
 - Page structure: Include both `id` and `pageId` fields
 - Participant data: Optional fields added when `participant_id` provided
 
+### Question Text HTML Support (UPDATED: 2025-11-26)
+
+**Feature**: Question text supports HTML formatting for rich text display in the mobile app.
+
+- **Storage**: `mart_questions.text` is TEXT column (no length limit)
+- **Validation**: No sanitization - HTML tags preserved as-is
+- **Supported tags**: `<b>`, `<i>`, `<u>`, `<br>`, `<p>`, etc.
+- **UI hint**: Shown below question text field in AddEditQuestionnaireDialog.vue
+
+**Note**: The mobile app must render HTML. No WYSIWYG editor - researchers type HTML manually.
+
+### Question Image/Video URLs (UPDATED: 2025-11-26)
+
+**Feature**: Questions can have optional image and/or video URLs that are displayed alongside the question text in the mobile app.
+
+**Database Columns (MART DB):**
+- `mart_questions.image_url` - VARCHAR, nullable, researcher-provided image URL
+- `mart_questions.video_url` - VARCHAR, nullable, researcher-provided video URL
+- `mart_question_history.image_url/video_url` - Preserved in version history
+
+**API Output** (per `martTypes.ts` QuestionnaireItem):
+```json
+{
+  "itemId": 1,
+  "scaleId": 1,
+  "text": "Rate this image",
+  "imageUrl": "https://example.com/image.jpg",
+  "videoUrl": "https://example.com/video.mp4",
+  "options": { ... }
+}
+```
+
+**Validation:**
+- URLs must be valid format (validated with Laravel `url` rule)
+- Max length: 2048 characters
+- Both fields are optional (nullable)
+- Can have image only, video only, or both
+
+**Key Files:**
+- `app/Mart/MartQuestion.php` - Model with image_url/video_url fillable
+- `app/Http/Resources/Mart/QuestionSheetResource.php` - API output (imageUrl/videoUrl)
+- `app/Http/Controllers/MartQuestionnaireController.php` - Validation and storage
+- `resources/js/components/mart/AddEditQuestionnaireDialog.vue` - Frontend form fields
+
+**Important:**
+- These are researcher-provided URLs to display media WITH the question
+- NOT for participant file uploads (that's a separate feature)
+- URLs are preserved in MartQuestionHistory when questions are updated
+
 ### Dynamic Start/End Date Calculation (UPDATED: 2025-11-25)
 
 **Feature**: Questionnaire start and end dates can be calculated dynamically per-participant based on their first login.

@@ -87,9 +87,12 @@ class ProjectOptionsResource extends JsonResource
                     'initialHoursOfAndroidStats' => $projectOptions['initialHoursOfAndroidStats'] ?? 24,
                     'overlapAndroidStatsHours' => $projectOptions['overlapAndroidStatsHours'] ?? 2,
                     'pages' => $this->pages()->pluck('id')->toArray(),
-                    'pagesToShowInMenu' => $this->pages()->pluck('id')->toArray(), // All pages shown in menu for now
+                    'pagesToShowInMenu' => $this->pages()->where('show_in_menu', true)->orderBy('sort_order')->pluck('id')->toArray(),
                     'pagesToShowOnFirstAppStart' => $this->pages()->where('show_on_first_app_start', true)->orderBy('sort_order')->pluck('id')->toArray(),
-                    'successPage' => $this->getSuccessPageId(),
+                    'successPage' => $this->getPageIdByType('success'),
+                    'androidStatsPermissionPage' => $this->getPageIdByType('android_stats_permission'),
+                    'androidNotificationPermissionPage' => $this->getPageIdByType('android_notification_permission'),
+                    'iOSNotificationPermissionPage' => $this->getPageIdByType('ios_notification_permission'),
                     // Add questionnaire schedules
                     'singleQuestionnaires' => $singleQuestionnaires,
                     'repeatingQuestionnaires' => $repeatingQuestionnaires,
@@ -193,19 +196,20 @@ class ProjectOptionsResource extends JsonResource
     }
 
     /**
-     * Get the success page ID for this project.
+     * Get a page ID by its type for this project.
      *
+     * @param string $pageType One of: 'success', 'android_stats_permission',
+     *                         'android_notification_permission', 'ios_notification_permission'
      * @return int|null
      */
-    private function getSuccessPageId()
+    private function getPageIdByType(string $pageType): ?int
     {
-        // Get pages through MartProject relationship (MART database)
         $martProject = $this->martProject();
         if (!$martProject) {
             return null;
         }
 
-        $successPage = $martProject->pages()->where('is_success_page', true)->first();
-        return $successPage ? $successPage->id : null;
+        $page = $martProject->pages()->where('page_type', $pageType)->first();
+        return $page ? $page->id : null;
     }
 }

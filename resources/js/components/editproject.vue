@@ -157,6 +157,69 @@
 
     <!-- MART Project Sections -->
     <div v-if="isMartProject" class="space-y-6">
+      <!-- Data Collection Settings Section -->
+      <div class="pt-8 space-y-6">
+        <div class="pb-4 border-b border-gray-200">
+          <h3 class="text-lg font-medium text-gray-900">{{ trans('Data Collection Settings') }}</h3>
+          <p class="mt-2 text-sm text-gray-600">
+            {{ trans('Configure automatic data collection for this project.') }}
+          </p>
+        </div>
+
+        <!-- Collect Android Stats Toggle -->
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-4">
+          <div class="flex items-start">
+            <div class="flex items-center h-5">
+              <input
+                  type="checkbox"
+                  id="collect-android-stats"
+                  v-model="projectData.collectAndroidStats"
+                  :disabled="!editable"
+                  class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+              />
+            </div>
+            <div class="ml-3">
+              <label for="collect-android-stats" class="text-sm font-medium text-gray-900">
+                {{ trans('Collect Android Stats') }}
+              </label>
+              <p class="text-xs text-gray-500">
+                {{ trans('Enable automatic collection of Android event log data in the background.') }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Additional settings shown when collectAndroidStats is enabled -->
+          <div v-if="projectData.collectAndroidStats" class="ml-7 pt-3 border-t border-gray-200 space-y-3">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-medium text-gray-700">{{ trans('Initial hours to collect') }}</label>
+                <input
+                    type="number"
+                    v-model.number="projectData.initialHoursOfAndroidStats"
+                    :disabled="!editable"
+                    min="1"
+                    max="168"
+                    class="mt-1 block w-full px-3 py-2 text-sm rounded-md border-gray-300 shadow-xs focus:border-green-500 focus:ring focus:ring-green-200"
+                />
+                <p class="text-xs text-gray-400 mt-1">{{ trans('Hours of historical data on first collection') }}</p>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-700">{{ trans('Overlap hours') }}</label>
+                <input
+                    type="number"
+                    v-model.number="projectData.overlapAndroidStatsHours"
+                    :disabled="!editable"
+                    min="0"
+                    max="24"
+                    class="mt-1 block w-full px-3 py-2 text-sm rounded-md border-gray-300 shadow-xs focus:border-green-500 focus:ring focus:ring-green-200"
+                />
+                <p class="text-xs text-gray-400 mt-1">{{ trans('Overlap to ensure no data is missed') }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Questionnaires Section -->
       <div class="pt-8 space-y-6">
         <div class="pb-4 border-b border-gray-200">
@@ -284,6 +347,100 @@
               <label :for="'page-first-start-' + index" class="ml-2 block text-sm text-gray-700">
                 {{ trans('Show this page on first app start') }}
               </label>
+            </div>
+
+            <!-- Show in App Menu -->
+            <div class="flex items-center">
+              <input
+                  type="checkbox"
+                  :id="'page-show-in-menu-' + index"
+                  v-model="page.showInMenu"
+                  :disabled="!editable"
+                  class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
+              />
+              <label :for="'page-show-in-menu-' + index" class="ml-2 block text-sm text-gray-700">
+                {{ trans('Show in app menu') }}
+              </label>
+            </div>
+
+            <!-- Page Type (Special Purpose) -->
+            <div class="pt-3 border-t border-gray-200">
+              <label class="block text-sm font-medium text-gray-700 mb-2">{{ trans('Special Page Purpose') }}</label>
+              <p class="text-xs text-gray-500 mb-2">{{ trans('Assign a special purpose to this page. Only one page per type allowed.') }}</p>
+              <div class="space-y-2">
+                <div class="flex items-center">
+                  <input
+                      type="radio"
+                      :id="'page-type-none-' + index"
+                      :name="'page-type-' + index"
+                      value=""
+                      v-model="page.pageType"
+                      :disabled="!editable"
+                      class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  />
+                  <label :for="'page-type-none-' + index" class="ml-2 text-sm text-gray-700">
+                    {{ trans('Regular Page') }}
+                  </label>
+                </div>
+                <div class="flex items-center">
+                  <input
+                      type="radio"
+                      :id="'page-type-success-' + index"
+                      :name="'page-type-' + index"
+                      value="success"
+                      v-model="page.pageType"
+                      :disabled="!editable || hasPageType('success', index)"
+                      class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  />
+                  <label :for="'page-type-success-' + index" class="ml-2 text-sm text-gray-700" :class="{'text-gray-400': hasPageType('success', index)}">
+                    {{ trans('Success Page') }}
+                    <span class="text-xs text-gray-400">{{ trans('(shown after questionnaire completion)') }}</span>
+                  </label>
+                </div>
+                <div class="flex items-center">
+                  <input
+                      type="radio"
+                      :id="'page-type-android-stats-' + index"
+                      :name="'page-type-' + index"
+                      value="android_stats_permission"
+                      v-model="page.pageType"
+                      :disabled="!editable || hasPageType('android_stats_permission', index)"
+                      class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
+                  />
+                  <label :for="'page-type-android-stats-' + index" class="ml-2 text-sm text-gray-700" :class="{'text-gray-400': hasPageType('android_stats_permission', index)}">
+                    {{ trans('Android Stats Permission') }}
+                    <span class="text-xs text-gray-400">{{ trans('(instructions for log data access)') }}</span>
+                  </label>
+                </div>
+                <div class="flex items-center">
+                  <input
+                      type="radio"
+                      :id="'page-type-android-notif-' + index"
+                      :name="'page-type-' + index"
+                      value="android_notification_permission"
+                      v-model="page.pageType"
+                      :disabled="!editable || hasPageType('android_notification_permission', index)"
+                      class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300"
+                  />
+                  <label :for="'page-type-android-notif-' + index" class="ml-2 text-sm text-gray-700" :class="{'text-gray-400': hasPageType('android_notification_permission', index)}">
+                    {{ trans('Android Notification Permission') }}
+                  </label>
+                </div>
+                <div class="flex items-center">
+                  <input
+                      type="radio"
+                      :id="'page-type-ios-notif-' + index"
+                      :name="'page-type-' + index"
+                      value="ios_notification_permission"
+                      v-model="page.pageType"
+                      :disabled="!editable || hasPageType('ios_notification_permission', index)"
+                      class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300"
+                  />
+                  <label :for="'page-type-ios-notif-' + index" class="ml-2 text-sm text-gray-700" :class="{'text-gray-400': hasPageType('ios_notification_permission', index)}">
+                    {{ trans('iOS Notification Permission') }}
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -521,6 +678,10 @@ export default {
         media: [],
         questionnaireName: "",
         pages: [],
+        // MART Android Stats settings
+        collectAndroidStats: false,
+        initialHoursOfAndroidStats: 24,
+        overlapAndroidStatsHours: 2,
       },
     };
   },
@@ -613,10 +774,18 @@ export default {
           
           // Extract questionnaire name from MART config
           this.projectData.questionnaireName = martConfig?.questionnaireName || '';
-          
-          // Extract pages from MART config
-          this.projectData.pages = martConfig?.projectOptions?.pages || [];
-          
+
+          // Extract pages from MART config (ensure each page has pageType)
+          this.projectData.pages = (martConfig?.projectOptions?.pages || []).map(page => ({
+            ...page,
+            pageType: page.pageType || ''
+          }));
+
+          // Extract Android Stats settings from MART config
+          this.projectData.collectAndroidStats = martConfig?.projectOptions?.collectAndroidStats ?? false;
+          this.projectData.initialHoursOfAndroidStats = martConfig?.projectOptions?.initialHoursOfAndroidStats ?? 24;
+          this.projectData.overlapAndroidStatsHours = martConfig?.projectOptions?.overlapAndroidStatsHours ?? 2;
+
           this.projectData.inputs = martQuestions.map(input => {
             const inputObj = {
               name: input.name || '',
@@ -769,12 +938,21 @@ export default {
         name: '',
         content: '',
         buttonText: 'Continue',
-        showOnFirstAppStart: false
+        showOnFirstAppStart: false,
+        showInMenu: false,
+        pageType: ''
       });
     },
 
     removeMartPage(index) {
       this.projectData.pages.splice(index, 1);
+    },
+
+    // Check if a page type is already used by another page
+    hasPageType(type, currentIndex) {
+      return this.projectData.pages.some((page, index) =>
+        index !== currentIndex && page.pageType === type
+      );
     },
 
     // Utility Methods
@@ -924,12 +1102,20 @@ export default {
               martConfig.projectOptions = {};
             }
             martConfig.projectOptions.pages = this.projectData.pages.map((page, index) => ({
+              id: page.id || null, // Include ID for existing pages
               name: page.name,
               content: page.content,
               showOnFirstAppStart: page.showOnFirstAppStart,
+              showInMenu: page.showInMenu,
               buttonText: page.buttonText,
+              pageType: page.pageType || null,
               sortOrder: index
             }));
+
+            // Save Android Stats settings
+            martConfig.projectOptions.collectAndroidStats = this.projectData.collectAndroidStats;
+            martConfig.projectOptions.initialHoursOfAndroidStats = this.projectData.initialHoursOfAndroidStats;
+            martConfig.projectOptions.overlapAndroidStatsHours = this.projectData.overlapAndroidStatsHours;
           }
           
           const processedQuestions = this.projectData.inputs.map(input => {

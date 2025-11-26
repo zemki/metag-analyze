@@ -148,10 +148,13 @@ class ProjectDuplicationMartTest extends TestCase
             ]),
         ]);
 
-        // Create MART project in MART DB
-        $martProject = MartProject::create([
+        // Create MART project in MART DB (use firstOrCreate since MART DB doesn't rollback)
+        $martProject = MartProject::firstOrCreate([
             'main_project_id' => $originalProject->id,
         ]);
+
+        // Clean up any existing pages from previous test runs
+        MartPage::where('mart_project_id', $martProject->id)->delete();
 
         // Create MART pages in MART DB
         $page1 = MartPage::create([

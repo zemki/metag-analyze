@@ -88,7 +88,7 @@
                   </button>
                   <button
                       type="button"
-                      @click="formData.type = 'repeating'"
+                      @click="setTypeRepeating"
                       :class="[
                         'p-4 border-2 rounded-lg text-left transition-all',
                         formData.type === 'repeating'
@@ -102,8 +102,8 @@
                 </div>
               </div>
 
-              <!-- Start on First Login Checkbox -->
-              <div class="flex items-center p-3 bg-green-50 rounded-lg border border-green-200">
+              <!-- Start on First Login Checkbox - Only for single questionnaires -->
+              <div v-if="formData.type === 'single'" class="flex items-center p-3 bg-green-50 rounded-lg border border-green-200">
                 <input
                     v-model="formData.start_on_first_login"
                     type="checkbox"
@@ -388,30 +388,53 @@
               <!-- Data Donation Settings -->
               <div class="space-y-3 p-4 bg-purple-50 rounded-lg border border-purple-200">
                 <h4 class="text-sm font-medium text-gray-900">{{ trans('Data Donation Settings') }}</h4>
-                <p class="text-xs text-gray-600">{{ trans('Mark this questionnaire as a data donation questionnaire for device statistics collection.') }}</p>
+                <p class="text-xs text-gray-600">{{ trans('Mark this questionnaire as a data donation questionnaire for device statistics collection. Only one questionnaire per project can be marked for each platform.') }}</p>
 
-                <div class="flex items-center">
-                  <input
-                      v-model="formData.is_ios_data_donation"
-                      type="checkbox"
-                      id="is_ios_data_donation"
-                      class="h-4 w-4 text-purple-500 focus:ring-purple-400 border-gray-300 rounded"
-                  />
-                  <label for="is_ios_data_donation" class="ml-2 block text-sm text-gray-700">
-                    {{ trans('iOS Data Donation Questionnaire') }}
-                  </label>
-                </div>
+                <div class="space-y-2">
+                  <div class="flex items-center">
+                    <input
+                        v-model="dataDonationType"
+                        type="radio"
+                        id="data_donation_none"
+                        value="none"
+                        class="h-4 w-4 text-purple-500 focus:ring-purple-400 border-gray-300"
+                    />
+                    <label for="data_donation_none" class="ml-2 block text-sm text-gray-700">
+                      {{ trans('Not a data donation questionnaire') }}
+                    </label>
+                  </div>
 
-                <div class="flex items-center">
-                  <input
-                      v-model="formData.is_android_data_donation"
-                      type="checkbox"
-                      id="is_android_data_donation"
-                      class="h-4 w-4 text-purple-500 focus:ring-purple-400 border-gray-300 rounded"
-                  />
-                  <label for="is_android_data_donation" class="ml-2 block text-sm text-gray-700">
-                    {{ trans('Android Data Donation Questionnaire') }}
-                  </label>
+                  <div class="flex items-center">
+                    <input
+                        v-model="dataDonationType"
+                        type="radio"
+                        id="data_donation_ios"
+                        value="ios"
+                        class="h-4 w-4 text-purple-500 focus:ring-purple-400 border-gray-300"
+                    />
+                    <label for="data_donation_ios" class="ml-2 block text-sm text-gray-700">
+                      <span class="inline-flex items-center">
+                        <svg class="w-4 h-4 mr-1 text-gray-600" fill="currentColor" viewBox="0 0 24 24"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                        {{ trans('iOS Data Donation Questionnaire') }}
+                      </span>
+                    </label>
+                  </div>
+
+                  <div class="flex items-center">
+                    <input
+                        v-model="dataDonationType"
+                        type="radio"
+                        id="data_donation_android"
+                        value="android"
+                        class="h-4 w-4 text-purple-500 focus:ring-purple-400 border-gray-300"
+                    />
+                    <label for="data_donation_android" class="ml-2 block text-sm text-gray-700">
+                      <span class="inline-flex items-center">
+                        <svg class="w-4 h-4 mr-1 text-green-600" fill="currentColor" viewBox="0 0 24 24"><path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85-.29-.15-.65-.06-.83.22l-1.88 3.24c-1.39-.59-2.94-.92-4.56-.92-1.6 0-3.15.32-4.53.9L5.47 5.67c-.17-.29-.53-.39-.83-.24-.3.16-.43.54-.27.85L6.23 9.5C3.27 11.17 1.36 14.1 1 17.5h22c-.36-3.38-2.27-6.3-5.4-8.02zM7 15c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm10 0c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/></svg>
+                        {{ trans('Android Data Donation Questionnaire') }}
+                      </span>
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
@@ -495,6 +518,35 @@
                         class="mt-1 block w-full px-4 py-3 rounded-md shadow-xs border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
                         :placeholder="trans('Enter your question')"
                     ></textarea>
+                    <p class="mt-1 text-xs text-gray-500">{{ trans('HTML formatting supported (e.g., <b>, <i>, <br>)') }}</p>
+                  </div>
+
+                  <!-- Image/Video URLs -->
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700">{{ trans('Image URL (Optional)') }}</label>
+                      <input
+                          type="url"
+                          v-model="question.imageUrl"
+                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                          :placeholder="trans('https://example.com/image.jpg')"
+                      />
+                      <p class="mt-1 text-xs text-gray-500">
+                        {{ trans('Image shown above the question') }}
+                      </p>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700">{{ trans('Video URL (Optional)') }}</label>
+                      <input
+                          type="url"
+                          v-model="question.videoUrl"
+                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                          :placeholder="trans('https://example.com/video.mp4')"
+                      />
+                      <p class="mt-1 text-xs text-gray-500">
+                        {{ trans('Video shown above the question') }}
+                      </p>
+                    </div>
                   </div>
 
                   <!-- Randomization Group -->
@@ -526,8 +578,8 @@
                     </p>
                   </div>
 
-                  <!-- Mandatory Checkbox -->
-                  <div class="flex items-center">
+                  <!-- Mandatory Checkbox (not shown for display type) -->
+                  <div v-if="question.type !== 'display'" class="flex items-center">
                     <input
                         type="checkbox"
                         :id="'mandatory-' + index"
@@ -547,6 +599,7 @@
                         class="mt-1 block w-full px-4 py-3 rounded-md shadow-xs border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
                     >
                       <option disabled value="">{{ trans('Select type...') }}</option>
+                      <option value="display">{{ trans('Display Text Only') }}</option>
                       <option value="text">{{ trans('Text Field') }}</option>
                       <option value="textarea">{{ trans('Text Area') }}</option>
                       <option value="number">{{ trans('Number') }}</option>
@@ -554,6 +607,9 @@
                       <option value="radio">{{ trans('Single Choice') }}</option>
                       <option value="checkbox">{{ trans('Multiple Choice') }}</option>
                     </select>
+                    <p v-if="question.type === 'display'" class="mt-1 text-xs text-blue-600">
+                      {{ trans('This item will show text without requiring an answer (instructions, headers, etc.)') }}
+                    </p>
                   </div>
 
                   <!-- Placeholder (for text/textarea) -->
@@ -923,6 +979,30 @@ export default {
         return Math.floor(totalMinutes / intervalMinutes);
       }
       return 0;
+    },
+
+    dataDonationType: {
+      get() {
+        if (this.formData.is_ios_data_donation) return 'ios';
+        if (this.formData.is_android_data_donation) return 'android';
+        return 'none';
+      },
+      set(value) {
+        this.formData.is_ios_data_donation = value === 'ios';
+        this.formData.is_android_data_donation = value === 'android';
+      }
+    }
+  },
+
+  watch: {
+    numberOfIntervals(newValue) {
+      // Auto-set max_daily_submits when interval count changes (only for repeating questionnaires)
+      if (this.formData.type === 'repeating' && newValue > 0) {
+        // Only auto-update if current value exceeds new max or if it's the default
+        if (this.formData.max_daily_submits > newValue || this.formData.max_daily_submits === 6) {
+          this.formData.max_daily_submits = newValue;
+        }
+      }
     }
   },
 
@@ -941,6 +1021,12 @@ export default {
       return window.trans[key] === "" ? key : window.trans[key];
     },
 
+    setTypeRepeating() {
+      this.formData.type = 'repeating';
+      // Reset start_on_first_login since it's not applicable for repeating questionnaires
+      this.formData.start_on_first_login = false;
+    },
+
     loadScheduleData() {
       // Load questions from schedule with UUID-based structure
       this.formData.questions = (this.schedule.questions || []).map(q => {
@@ -952,6 +1038,8 @@ export default {
         return {
           uuid: q.uuid,  // Include UUID for updates
           text: q.text || '',
+          imageUrl: q.image_url || '',
+          videoUrl: q.video_url || '',
           type: this.mapBackendTypeToFormType(q.type) || '',
           mandatory: q.is_mandatory !== undefined ? q.is_mandatory : true,
           randomizationGroupId: q.randomizationGroupId || null,
@@ -1060,11 +1148,20 @@ export default {
           this.formData.notification_text = notif.notification_text;
         }
       }
+
+      // Load data donation settings (mutually exclusive)
+      if (this.schedule.is_ios_data_donation) {
+        this.formData.is_ios_data_donation = true;
+        this.formData.is_android_data_donation = false;
+      } else if (this.schedule.is_android_data_donation) {
+        this.formData.is_ios_data_donation = false;
+        this.formData.is_android_data_donation = true;
+      }
     },
 
     // Map backend/DB types to form types
-    // DB stores: number, range, text, textarea, one choice, multiple choice
-    // Form uses: number, range, text, textarea, radio, checkbox
+    // DB stores: number, range, text, textarea, one choice, multiple choice, display
+    // Form uses: number, range, text, textarea, radio, checkbox, display
     mapBackendTypeToFormType(backendType) {
       const mapping = {
         'text': 'text',
@@ -1072,14 +1169,15 @@ export default {
         'number': 'number',
         'range': 'range',
         'one choice': 'radio',
-        'multiple choice': 'checkbox'
+        'multiple choice': 'checkbox',
+        'display': 'display'
       };
       return mapping[backendType] || 'text';
     },
 
     // Map form types to backend/DB types
-    // DB stores: number, range, text, textarea, one choice, multiple choice
-    // Mobile API expects: number, range, text, textarea, radio, checkbox
+    // DB stores: number, range, text, textarea, one choice, multiple choice, display
+    // Mobile API expects: number, range, text, textarea, radio, checkbox (display has no scale)
     mapFormTypeToBackendType(formType) {
       const mapping = {
         'text': 'text',
@@ -1087,7 +1185,8 @@ export default {
         'number': 'number',
         'range': 'range',
         'radio': 'one choice',
-        'checkbox': 'multiple choice'
+        'checkbox': 'multiple choice',
+        'display': 'display'
       };
       return mapping[formType] || 'text';
     },
@@ -1095,6 +1194,8 @@ export default {
     addQuestion() {
       this.formData.questions.push({
         text: '',
+        imageUrl: '',
+        videoUrl: '',
         type: '',
         mandatory: false,
         randomizationGroupId: null,
@@ -1184,6 +1285,8 @@ export default {
 
           const questionData = {
             text: q.text,
+            image_url: q.imageUrl || null,
+            video_url: q.videoUrl || null,
             type: backendType,
             mandatory: q.mandatory,
             config: config,

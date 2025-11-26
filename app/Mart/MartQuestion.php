@@ -13,6 +13,7 @@ use Illuminate\Support\Str;
  * Represents individual questions within MART questionnaires.
  *
  * Question Types:
+ * - 'display': Display text only (no answer required, itemId/scaleId are null in API)
  * - 'number': Numeric input field (sends type='number' with minValue/maxValue to mobile)
  * - 'range': Range slider (sends type='range' with rangeOptions to mobile)
  * - 'text': Single-line text input field
@@ -64,6 +65,8 @@ class MartQuestion extends Model
         'schedule_id',
         'position',
         'text',
+        'image_url',
+        'video_url',
         'type',
         'config',
         'is_mandatory',
@@ -131,6 +134,8 @@ class MartQuestion extends Model
             'question_uuid' => $this->uuid,
             'version' => $this->version,
             'text' => $this->text,
+            'image_url' => $this->image_url,
+            'video_url' => $this->video_url,
             'type' => $this->type,
             'config' => $this->config,
             'is_mandatory' => $this->is_mandatory,
@@ -142,6 +147,8 @@ class MartQuestion extends Model
 
         // Update question with new data
         $this->text = $newData['text'] ?? $this->text;
+        $this->image_url = $newData['image_url'] ?? $this->image_url;
+        $this->video_url = $newData['video_url'] ?? $this->video_url;
         $this->type = $newData['type'] ?? $this->type;
         $this->config = $newData['config'] ?? $this->config;
         $this->is_mandatory = $newData['is_mandatory'] ?? $this->is_mandatory;

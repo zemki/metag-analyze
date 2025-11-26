@@ -1,292 +1,107 @@
 # MART API Reference
 
-## Authentication
+Base URL: `/mart-api` (authenticated) and `/api/mart` (auth flow)
 
-All requests require Bearer token authentication:
+## Authentication Flow
 
+Three-screen authentication process:
+
+### Screen 1: Check Email
 ```
-Authorization: Bearer [token]
-Content-Type: application/json
-Accept: application/json
+POST /api/mart/check-email
+```
+```json
+{ "email": "user@example.com" }
+```
+Response: `{ "email": "...", "emailExists": true/false }`
+
+### Screen 1b: Register (if new user)
+```
+POST /api/mart/send-password-setup
+```
+Sends password setup email.
+
+### Screen 2: Check Password
+```
+POST /api/mart/check-password
+```
+```json
+{ "email": "...", "password": "..." }
+```
+Response: `{ "bearerToken": "...", "refreshToken": "..." }`
+
+### Screen 3: Check Project Access
+```
+POST /api/mart/check-access
+```
+```json
+{ "email": "...", "projectId": 123 }
+```
+Auto-creates case if user has access.
+
+### Token Refresh
+```
+POST /api/mart/refresh
+Authorization: Bearer {refreshToken}
 ```
 
-## Endpoints
+## Authenticated Endpoints
 
-### 1. Get Project Structure
+All require: `Authorization: Bearer {token}`
 
-Retrieves complete project configuration including questionnaires and scheduling.
+### Get Project Structure
+```
+GET /mart-api/projects/{id}/structure
+GET /mart-api/projects/{id}/structure?participant_id={id}
+```
+Returns complete project configuration, questionnaires, scales, and pages.
 
-**Endpoint:** `GET /mart-api/projects/{project_id}/structure`
-
-**Response:**
+### Submit Entry
+```
+POST /mart-api/cases/{id}/submit
+```
 ```json
 {
-  "data": {
-    "projectOptions": {
-      "projectId": 1,
-      "projectName": "Daily Wellbeing Study",
-      "options": {
-        "startDateAndTime": {
-          "date": "01.04.2025",
-          "time": "09:00"
-        },
-        "endDateAndTime": {
-          "date": "01.05.2025",
-          "time": "21:00"
-        },
-        "repeatingQuestionnaires": [
-          {
-            "questionnaireId": 1,
-            "type": "repeating",
-            "dailyIntervalDuration": 4,
-            "maxDailySubmits": 6,
-            "minBreakBetweenQuestionnaire": 180,
-            "dailyStartTime": "09:00",
-            "dailyEndTime": "21:00",
-            "questAvailableAt": "randomTimeWithinInterval",
-            "showProgressBar": true,
-            "showNotifications": true,
-            "notificationText": "Time for your check-in!"
-          }
-        ],
-        "singleQuestionnaires": [
-          {
-            "questionnaireId": 2,
-            "type": "single",
-            "startDateAndTime": {
-              "date": "15.04.2025",
-              "time": "17:00"
-            }
-          }
-        ]
-      }
-    },
-    "questionnaires": [
-      {
-        "projectId": 1,
-        "questionnaireId": 1,
-        "name": "Daily Check-in",
-        "items": [
-          {
-            "itemId": 1,
-            "scaleId": 1,
-            "text": "How are you feeling right now?",
-            "required": true,
-            "options": {
-              "randomizationGroupId": null
-            }
-          }
-        ]
-      }
-    ],
-    "scales": [
-      {
-        "projectId": 1,
-        "scaleId": 1,
-        "options": {
-          "type": "radio",
-          "radioOptions": [
-            {"value": 0, "text": "Very bad"},
-            {"value": 1, "text": "Bad"},
-            {"value": 2, "text": "Neutral"},
-            {"value": 3, "text": "Good"},
-            {"value": 4, "text": "Very good"}
-          ]
-        }
-      }
-    ]
-  }
-}
-```
-
-### 2. Submit Entry Data
-
-Submits participant responses for a questionnaire.
-
-**Endpoint:** `POST /mart-api/cases/{case_id}/submit`
-
-**Request Body:**
-```json
-{
-  "projectId": 1,
   "questionnaireId": 1,
-  "userId": "user@example.com",
-  "participantId": "participant-123",
-  "sheetId": 1,
-  "questionnaireStarted": 1725280800000,
-  "questionnaireDuration": 120000,
-  "answers": {
-    "1": 3,              // Radio/scale answer
-    "2": [0, 2, 5],      // Multiple choice
-    "3": "Text answer"   // Text input
-  },
-  "timezone": "Europe/Berlin",
-  "timestamp": 1725280920000
+  "projectId": 1,
+  "answers": { "uuid-1": ["value"], "uuid-2": ["value"] },
+  "timestamp": 1234567890,
+  "timezone": "Europe/Berlin"
 }
 ```
 
-**Success Response:**
-```json
-{
-  "success": true,
-  "entry_id": 486,
-  "message": "Entry created successfully"
-}
+### Store Device Info
+```
+POST /mart-api/device-infos
 ```
 
-### 3. Submit Device Information
-
-Stores device information for analytics.
-
-**Endpoint:** `POST /mart-api/device-infos`
-
-**Request Body:**
-```json
-{
-  "caseId": 5,
-  "deviceInfo": {
-    "platform": "iOS",
-    "version": "16.5",
-    "model": "iPhone 14",
-    "appVersion": "1.2.0"
-  }
-}
+### Submit Stats
 ```
-
-### 4. Submit App Statistics
-
-Tracks app usage statistics.
-
-**Endpoint:** `POST /mart-api/stats`
-
-**Request Body:**
-```json
-{
-  "caseId": 5,
-  "stats": {
-    "sessionDuration": 300,
-    "questionnairesCompleted": 2,
-    "timestamp": 1725280920000
-  }
-}
+POST /mart-api/stats
 ```
+Android usage/event statistics.
 
-## Question Types
-
-### Radio/Scale
-```json
-{
-  "type": "radio",
-  "radioOptions": [
-    {"value": 0, "text": "Option 1"},
-    {"value": 1, "text": "Option 2"}
-  ]
-}
+### File Upload
 ```
-**Answer format:** Single integer value
-
-### Multiple Choice
-```json
-{
-  "type": "checkbox",
-  "checkboxOptions": [
-    {"value": 0, "text": "Option A"},
-    {"value": 1, "text": "Option B"},
-    {"value": 2, "text": "Option C"}
-  ]
-}
+POST /mart-api/cases/{id}/files
 ```
-**Answer format:** Array of selected values `[0, 2]`
+For photo/audio/video uploads in questionnaire answers.
 
-### Text Input
-```json
-{
-  "type": "text",
-  "maxLength": 500
-}
-```
-**Answer format:** String value
+## Rate Limits
 
-### Number Range
-```json
-{
-  "type": "number",
-  "minValue": 0,
-  "maxValue": 10,
-  "defaultValue": 5
-}
-```
-**Answer format:** Integer value
+| Endpoint | Limit |
+|----------|-------|
+| check-email | 5/minute |
+| send-password-setup | 3/10 minutes |
+| check-password | 10/minute |
+| check-access | 10/minute |
+| refresh | 10/minute |
 
-## Validation Rules
+## Error Responses
 
-### Case Status
-- Only `pending` or `active` cases accept submissions
-- `completed` cases return 422 error
-
-### Answer Validation
-- Radio questions: Single integer value required
-- Multiple choice: Array of integers
-- Text: String within maxLength
-- Number: Integer within min/max range
-- Required fields must be answered
-
-### Common Validation Errors
-```json
-{
-  "success": false,
-  "message": "Validation failed",
-  "errors": [
-    "Question 1: Answer is required",
-    "Question 3: Answer must be between 0 and 10"
-  ]
-}
-```
-
-## Error Handling
-
-### HTTP Status Codes
-- `200`: Success
-- `401`: Unauthorized (invalid token)
-- `404`: Resource not found
-- `422`: Validation error
-- `500`: Server error
-
-### Common Issues
-
-**Invalid Token**
-```json
-{"message": "Unauthenticated."}
-```
-Solution: Check token in Authorization header
-
-**Case Completed**
-```json
-{
-  "success": false,
-  "message": "Case is completed and no longer accepting submissions"
-}
-```
-Solution: Use active case or create new one
-
-## Mobile Integration Tips
-
-### Handle Network Failures
-- Implement retry logic with exponential backoff
-- Store submissions locally when offline
-- Sync when connection restored
-
-### Time Synchronization
-- Use device timezone for display
-- Send UTC timestamps to server
-- Include timezone in submission
-
-### Notification Scheduling
-- Parse questionnaire schedules
-- Calculate next notification time
-- Respect quiet hours (dailyStartTime/dailyEndTime)
-
-## Rate Limiting
-- Default: 60 requests per minute
-- Submissions: 10 per minute per case
-- Structure endpoint: Cached for 5 minutes
+| Code | Meaning |
+|------|---------|
+| 401 | Invalid/expired token |
+| 403 | Access denied |
+| 422 | Validation error |
+| 429 | Rate limit exceeded |

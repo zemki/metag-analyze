@@ -514,6 +514,11 @@ class ProjectController extends Controller
             }
         }
 
+        // Sync MART pages from JSON config to database
+        if ($project->isMartProject()) {
+            $this->syncMartPages($project);
+        }
+
         // Handle media and entity synchronization
         // Only process media if useEntity is true or it's a legacy project
         $useEntity = $attributes['use_entity'] ?? true; // Default to true for legacy projects
@@ -556,6 +561,18 @@ class ProjectController extends Controller
             $copy->media()->sync($project->media()->get());
 
             if ($isMartProject) {
+                // Clean up any orphaned MartProject for this ID (can happen if main DB rolled back but MART didn't)
+                // This is safe in production because auto-increment IDs don't repeat
+                $orphanedMartProject = MartProject::where('main_project_id', $copy->id)->first();
+                if ($orphanedMartProject) {
+                    // Delete orphaned schedules and their questions
+                    $orphanedScheduleIds = MartSchedule::where('mart_project_id', $orphanedMartProject->id)->pluck('id');
+                    MartQuestion::whereIn('schedule_id', $orphanedScheduleIds)->delete();
+                    MartSchedule::where('mart_project_id', $orphanedMartProject->id)->delete();
+                    MartPage::where('mart_project_id', $orphanedMartProject->id)->delete();
+                    $orphanedMartProject->delete();
+                }
+
                 // Create new MART project for the copy
                 $newMartProject = MartProject::create([
                     'main_project_id' => $copy->id,
@@ -755,6 +772,78 @@ class ProjectController extends Controller
         json_decode($string);
 
         return json_last_error() === JSON_ERROR_NONE;
+    }
+
+    /**
+     * Sync MART pages from JSON config to the database.
+     *
+     * @param Project $project The project to sync pages for
+     * @return void
+     */
+    private function syncMartPages(Project $project): void
+    {
+        $martProject = $project->martProject();
+        if (!$martProject) {
+            return;
+        }
+
+        // Get pages from JSON config
+        $inputs = json_decode($project->inputs, true);
+        $martConfig = null;
+        if (is_array($inputs)) {
+            foreach ($inputs as $input) {
+                if (isset($input['type']) && $input['type'] === 'mart') {
+                    $martConfig = $input;
+                    break;
+                }
+            }
+        }
+
+        $pagesFromJson = $martConfig['projectOptions']['pages'] ?? [];
+
+        // Get existing pages from database
+        $existingPages = MartPage::forProject($martProject->id)->get()->keyBy('id');
+
+        // Track which pages we've processed
+        $processedPageIds = [];
+
+        DB::connection('mart')->beginTransaction();
+        try {
+            foreach ($pagesFromJson as $index => $pageData) {
+                $pageAttributes = [
+                    'mart_project_id' => $martProject->id,
+                    'name' => $pageData['name'] ?? '',
+                    'content' => $pageData['content'] ?? '',
+                    'button_text' => $pageData['buttonText'] ?? 'Continue',
+                    'show_on_first_app_start' => $pageData['showOnFirstAppStart'] ?? false,
+                    'show_in_menu' => $pageData['showInMenu'] ?? false,
+                    'page_type' => $pageData['pageType'] ?? null,
+                    'sort_order' => $pageData['sortOrder'] ?? $index,
+                ];
+
+                // If page has an ID and exists, update it
+                if (isset($pageData['id']) && $existingPages->has($pageData['id'])) {
+                    $page = $existingPages->get($pageData['id']);
+                    $page->update($pageAttributes);
+                    $processedPageIds[] = $page->id;
+                } else {
+                    // Create new page
+                    $newPage = MartPage::create($pageAttributes);
+                    $processedPageIds[] = $newPage->id;
+                }
+            }
+
+            // Delete pages that are no longer in the JSON
+            $pagesToDelete = $existingPages->keys()->diff($processedPageIds);
+            if ($pagesToDelete->isNotEmpty()) {
+                MartPage::whereIn('id', $pagesToDelete)->delete();
+            }
+
+            DB::connection('mart')->commit();
+        } catch (\Exception $e) {
+            DB::connection('mart')->rollBack();
+            \Log::error('Failed to sync MART pages: ' . $e->getMessage());
+        }
     }
 
     /**

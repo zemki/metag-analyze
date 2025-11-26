@@ -23,6 +23,15 @@ class MartPage extends Model
     /**
      * The attributes that are mass assignable.
      */
+    /**
+     * Page type constants for special purpose pages.
+     * Only one page per type is allowed per project.
+     */
+    public const PAGE_TYPE_SUCCESS = 'success';
+    public const PAGE_TYPE_ANDROID_STATS_PERMISSION = 'android_stats_permission';
+    public const PAGE_TYPE_ANDROID_NOTIFICATION_PERMISSION = 'android_notification_permission';
+    public const PAGE_TYPE_IOS_NOTIFICATION_PERMISSION = 'ios_notification_permission';
+
     protected $fillable = [
         'mart_project_id',
         'name',
@@ -31,6 +40,8 @@ class MartPage extends Model
         'button_text',
         'sort_order',
         'is_success_page',
+        'show_in_menu',
+        'page_type',
     ];
 
     /**
@@ -39,6 +50,7 @@ class MartPage extends Model
     protected $casts = [
         'show_on_first_app_start' => 'boolean',
         'is_success_page' => 'boolean',
+        'show_in_menu' => 'boolean',
         'sort_order' => 'integer',
     ];
 

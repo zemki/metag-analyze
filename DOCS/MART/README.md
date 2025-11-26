@@ -1,43 +1,60 @@
-# MART API Documentation
+# MART Documentation
 
-Mobile API for Experience Sampling Method (ESM) studies with the Metag mobile app.
+MART (Mobile Assessment Research Tool) is the mobile experience sampling component of Metag Analyze.
 
-## Quick Reference
+## Overview
 
-- **Base URL**: `https://metag-analyze.test/mart-api`
-- **Authentication**: Bearer Token
-- **Format**: JSON
+MART enables researchers to:
+- Create questionnaire schedules (single or repeating)
+- Collect device information and usage statistics
+- Track participant responses with version control
+- Support dynamic study dates per participant
 
 ## Documentation
 
-- **[API Reference](./API.md)** - Complete endpoint documentation
-- **[Testing Guide](./TESTING.md)** - Setup and testing instructions
+- [API Reference](./API.md) - Endpoints and authentication
+- [Data Mapping](./DATA_MAPPING.md) - How API types map to database
 
-## Quick Start
+## Key Concepts
 
-```bash
-# Get project structure
-curl -X GET "https://metag-analyze.test/mart-api/projects/1/structure" \
-  -H "Authorization: Bearer mart_test_token_2025"
+### Questionnaire Types
 
-# Submit entry
-curl -X POST "https://metag-analyze.test/mart-api/cases/5/submit" \
-  -H "Authorization: Bearer mart_test_token_2025" \
-  -H "Content-Type: application/json" \
-  -d '{"projectId": 1, "questionnaireId": 1, ...}'
-```
+| Type | Description |
+|------|-------------|
+| Single | Shown once at a specific date/time |
+| Repeating | Shown multiple times within a date range |
 
-## Key Features
+### Question Types
 
-- Real-time questionnaire delivery
-- Flexible scheduling (repeating, single, event-based)
-- Multiple question types (radio, checkbox, text, number)
-- Offline support with sync
-- Device statistics tracking
+| Type | Description |
+|------|-------------|
+| `radio` | Single choice |
+| `checkbox` | Multiple choice |
+| `range` | Numeric slider |
+| `rangeValues` | Labeled slider |
+| `text` | Short text input |
+| `textarea` | Long text input |
+| `number` | Numeric input |
+| `photoUpload` | Camera/gallery photo |
+| `audioUpload` | Audio recording |
+| `videoUpload` | Video recording |
 
-## Important Format Requirements
+### Page Types
 
-- **Dates**: `DD.MM.YYYY` (e.g., "31.03.2025")
-- **Times**: 24-hour `HH:MM` (e.g., "14:30")
-- **Response Keys**: `questionnaires` NOT `questionSheets`
-- **ID Fields**: `questionnaireId` NOT `sheetId`
+| Type | Purpose |
+|------|---------|
+| `success` | Shown after questionnaire completion |
+| `android_stats_permission` | Android log data access instructions |
+| `android_notification_permission` | Android notification permission |
+| `ios_notification_permission` | iOS notification permission |
+
+## Database
+
+MART uses a separate database (`mart` connection) with tables:
+- `mart_projects` - Links to main projects
+- `mart_schedules` - Questionnaire configurations
+- `mart_questions` - Questions with UUID tracking
+- `mart_entries` - Submission metadata
+- `mart_answers` - Individual responses
+- `mart_pages` - Information pages
+- `mart_case_schedules` - Per-participant date overrides

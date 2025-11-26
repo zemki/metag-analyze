@@ -71,6 +71,10 @@ class EntryController extends Controller
             self::INPUTS => 'nullable',
         ]);
 
+        // Convert Unix timestamps to MySQL datetime format if needed
+        $attributes[self::BEGIN] = $this->convertTimestampToDatetime($attributes[self::BEGIN]);
+        $attributes['end'] = $this->convertTimestampToDatetime($attributes['end']);
+
         // Only process entity_id if it's provided (when use_entity is true)
         if (isset($attributes[self::ENTITY_ID]) && $attributes[self::ENTITY_ID] !== null) {
             $isComingFromBackend = is_numeric($attributes[self::ENTITY_ID]);
@@ -147,6 +151,10 @@ class EntryController extends Controller
             self::ENTITY_ID => $entityRule,
             self::INPUTS => 'nullable',
         ]);
+
+        // Convert Unix timestamps to MySQL datetime format if needed
+        $attributes[self::BEGIN] = $this->convertTimestampToDatetime($attributes[self::BEGIN]);
+        $attributes['end'] = $this->convertTimestampToDatetime($attributes['end']);
 
         // Only process entity_id if it's provided (when use_entity is true)
         if (isset($attributes[self::ENTITY_ID]) && $attributes[self::ENTITY_ID] !== null) {
@@ -229,5 +237,34 @@ class EntryController extends Controller
         }
 
         return response('entry deleted', 200);
+    }
+
+    /**
+     * Convert Unix timestamp to MySQL datetime format.
+     * Handles both seconds (10 digits) and milliseconds (13 digits).
+     *
+     * @param mixed $value The value to convert
+     * @return string The datetime string in Y-m-d H:i:s format, or original value if not a timestamp
+     */
+    private function convertTimestampToDatetime($value): string
+    {
+        if (! is_numeric($value)) {
+            return $value;
+        }
+
+        $length = strlen((string) $value);
+
+        // 10 digits = Unix timestamp in seconds
+        if ($length === 10) {
+            return date('Y-m-d H:i:s', (int) $value);
+        }
+
+        // 13 digits = Unix timestamp in milliseconds
+        if ($length === 13) {
+            return date('Y-m-d H:i:s', (int) ($value / 1000));
+        }
+
+        // Return as-is if not a recognized timestamp format
+        return $value;
     }
 }

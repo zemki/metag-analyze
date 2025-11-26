@@ -29,6 +29,8 @@ class MartQuestionHistory extends Model
         'question_uuid',
         'version',
         'text',
+        'image_url',
+        'video_url',
         'type',
         'config',
         'is_mandatory',

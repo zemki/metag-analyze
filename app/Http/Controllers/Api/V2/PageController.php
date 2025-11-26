@@ -49,8 +49,10 @@ class PageController extends Controller
             'name' => 'required|string|max:255',
             'content' => 'required|string',
             'show_on_first_app_start' => 'boolean',
+            'show_in_menu' => 'boolean',
             'button_text' => 'required|string|max:255',
             'sort_order' => 'integer|min:0',
+            'page_type' => 'nullable|string|in:success,android_stats_permission,android_notification_permission,ios_notification_permission',
         ]);
 
         // Get or create MART project
@@ -134,8 +136,10 @@ class PageController extends Controller
             'name' => 'string|max:255',
             'content' => 'string',
             'show_on_first_app_start' => 'boolean',
+            'show_in_menu' => 'boolean',
             'button_text' => 'string|max:255',
             'sort_order' => 'integer|min:0',
+            'page_type' => 'nullable|string|in:success,android_stats_permission,android_notification_permission,ios_notification_permission',
         ]);
 
         $page->update($attributes);

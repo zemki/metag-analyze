@@ -27,17 +27,31 @@ class QuestionSheetResource extends JsonResource
         if ($this->questions && $this->martConfig) {
             // MART project - use provided questions
             foreach ($this->questions as $index => $question) {
-                $items[] = [
-                    'itemId' => $index + 1,
-                    'scaleId' => $index + 1,
+                $questionType = $question['type'] ?? 'text';
+                $isDisplayOnly = $questionType === 'display';
+
+                $item = [
+                    // Per martTypes.ts: itemId/scaleId are null for display-only items (text without question)
+                    'itemId' => $isDisplayOnly ? null : $index + 1,
+                    'scaleId' => $isDisplayOnly ? null : $index + 1,
                     'text' => $question['text'] ?? $question['name'] ?? '',
                     'options' => [
                         'randomizationGroupId' => $question['randomizationGroupId'] ?? null,
                         'randomizeAnswers' => $question['randomizeAnswers'] ?? false,
                         'itemGroup' => $question['item_group'] ?? null,
-                        'noValueAllowed' => $question['noValueAllowed'] ?? false,
+                        'noValueAllowed' => $isDisplayOnly ? true : ($question['noValueAllowed'] ?? false),
                     ],
                 ];
+
+                // Add image/video URLs if present (per martTypes.ts)
+                if (!empty($question['image_url'])) {
+                    $item['imageUrl'] = $question['image_url'];
+                }
+                if (!empty($question['video_url'])) {
+                    $item['videoUrl'] = $question['video_url'];
+                }
+
+                $items[] = $item;
             }
 
             $questionnaireName = $this->martConfig['questionnaireName'] ?? ($this->name . ' Questions');

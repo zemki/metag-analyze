@@ -65,6 +65,7 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified', 'LoggedUser']],
     Route::post('/projects/{project}/questionnaires', 'MartQuestionnaireController@store');
     Route::put('/questionnaires/{schedule}/questions', 'MartQuestionnaireController@updateQuestions');
     Route::get('/questionnaires/{schedule}/history', 'MartQuestionnaireController@history');
+    Route::delete('/questionnaires/{schedule}', 'MartQuestionnaireController@destroy');
 
     /**
      * Case Routes

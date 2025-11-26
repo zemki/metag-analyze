@@ -461,8 +461,8 @@ class ApiController extends Controller
             $timing = $schedule->timing_config ?? [];
             $overrides = [];
 
-            // Calculate start date if start_on_first_login is true
-            if ($timing['start_on_first_login'] ?? false) {
+            // Calculate start date if start_on_first_login is true (only for single questionnaires)
+            if (($timing['start_on_first_login'] ?? false) && $schedule->type === 'single') {
                 $overrides['start_date_time'] = [
                     'date' => $case->first_login_at->format('Y-m-d'),
                     'time' => $timing['daily_start_time'] ?? '09:00',

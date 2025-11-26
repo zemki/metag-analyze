@@ -8,6 +8,7 @@ use App\Http\Resources\Mart\MartStructureResource;
 use App\Mart\MartAnswer;
 use App\Mart\MartDeviceInfo;
 use App\Mart\MartEntry;
+use App\Mart\MartFile;
 use App\Mart\MartProject;
 use App\Mart\MartSchedule;
 use App\Mart\MartStat;
@@ -241,6 +242,7 @@ class MartApiController extends Controller
 
             // Step 3: Create MART answers for each question
             $questions = $schedule->questions->keyBy('position');
+            $fileIdsToLink = [];
 
             foreach ($request->answers as $itemId => $answerValue) {
                 // Convert itemId to position: itemId = position + 1, so position = itemId - 1
@@ -249,11 +251,35 @@ class MartApiController extends Controller
                 $question = $questions->get($position);
 
                 if ($question) {
+                    // Check if this is a file-type answer (contains file UUIDs)
+                    // File answers are arrays of UUIDs for upload-type questions
+                    if ($question->type === 'photoUpload' || $question->type === 'videoUpload' ||
+                        $question->type === 'audioUpload' || $question->type === 'fileUpload') {
+                        // Collect file IDs to link to entry
+                        $fileIds = is_array($answerValue) ? $answerValue : [$answerValue];
+                        foreach ($fileIds as $fileId) {
+                            if (is_string($fileId) && preg_match('/^[0-9a-f-]{36}$/i', $fileId)) {
+                                $fileIdsToLink[] = $fileId;
+                            }
+                        }
+                    }
+
                     MartAnswer::create([
                         'entry_id' => $martEntry->id,
                         'question_uuid' => $question->uuid,
                         'question_version' => $question->version,
                         'answer_value' => is_array($answerValue) ? json_encode($answerValue) : $answerValue,
+                    ]);
+                }
+            }
+
+            // Step 4: Link uploaded files to the entry
+            if (!empty($fileIdsToLink)) {
+                $linkResults = MartFileController::linkFilesToEntry($fileIdsToLink, $martEntry->id, $case->id);
+                if (!empty($linkResults['errors'])) {
+                    \Log::warning('Some files could not be linked to entry', [
+                        'entry_id' => $martEntry->id,
+                        'errors' => $linkResults['errors'],
                     ]);
                 }
             }
@@ -642,8 +668,8 @@ class MartApiController extends Controller
             $timing = $schedule->timing_config ?? [];
             $overrides = [];
 
-            // Calculate start date if start_on_first_login is true
-            if ($timing['start_on_first_login'] ?? false) {
+            // Calculate start date if start_on_first_login is true (only for single questionnaires)
+            if (($timing['start_on_first_login'] ?? false) && $schedule->type === 'single') {
                 $overrides['start_date_time'] = [
                     'date' => $case->first_login_at->format('Y-m-d'),
                     'time' => $timing['daily_start_time'] ?? '09:00',

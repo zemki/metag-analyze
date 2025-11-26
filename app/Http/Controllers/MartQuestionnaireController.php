@@ -74,10 +74,30 @@ class MartQuestionnaireController extends Controller
             'show_after_repeating' => 'nullable|array',
             'questions' => 'required|array',
             'questions.*.text' => 'required|string',
-            'questions.*.type' => 'required|in:number,range,text,textarea,one choice,multiple choice',
+            'questions.*.image_url' => 'nullable|url|max:2048',
+            'questions.*.video_url' => 'nullable|url|max:2048',
+            'questions.*.type' => 'required|in:number,range,text,textarea,one choice,multiple choice,display',
             'questions.*.mandatory' => 'required|boolean',
             'questions.*.config' => 'nullable|array',
         ]);
+
+        // Enforce mutual exclusivity: only one data donation type allowed
+        $isIos = $validated['is_ios_data_donation'] ?? false;
+        $isAndroid = $validated['is_android_data_donation'] ?? false;
+        if ($isIos && $isAndroid) {
+            return response()->json([
+                'success' => false,
+                'message' => 'A questionnaire can only be designated as iOS OR Android data donation, not both.',
+            ], 422);
+        }
+
+        // Reject start_on_first_login for repeating questionnaires
+        if ($validated['type'] === 'repeating' && ($validated['start_on_first_login'] ?? false)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Start on first login is not supported for repeating questionnaires.',
+            ], 422);
+        }
 
         // Get or create MART project
         $martProject = $project->martProject();
@@ -155,6 +175,8 @@ class MartQuestionnaireController extends Controller
                     'schedule_id' => $schedule->id,
                     'position' => $index + 1,
                     'text' => $questionData['text'],
+                    'image_url' => $questionData['image_url'] ?? null,
+                    'video_url' => $questionData['video_url'] ?? null,
                     'type' => $questionData['type'],
                     'config' => $questionData['config'] ?? [],
                     'is_mandatory' => $questionData['mandatory'],
@@ -221,6 +243,8 @@ class MartQuestionnaireController extends Controller
             'show_progress_bar' => 'nullable|boolean',
             'show_notifications' => 'nullable|boolean',
             'notification_text' => 'nullable|string',
+            'is_ios_data_donation' => 'nullable|boolean',
+            'is_android_data_donation' => 'nullable|boolean',
             'daily_interval_duration' => 'nullable|integer',
             'min_break_between' => 'nullable|integer',
             'max_daily_submits' => 'nullable|integer',
@@ -231,10 +255,32 @@ class MartQuestionnaireController extends Controller
             'questions' => 'required|array',
             'questions.*.uuid' => 'nullable|string',
             'questions.*.text' => 'required|string',
-            'questions.*.type' => 'required|in:number,range,text,textarea,one choice,multiple choice',
+            'questions.*.image_url' => 'nullable|url|max:2048',
+            'questions.*.video_url' => 'nullable|url|max:2048',
+            'questions.*.type' => 'required|in:number,range,text,textarea,one choice,multiple choice,display',
             'questions.*.mandatory' => 'required|boolean',
             'questions.*.config' => 'nullable|array',
         ]);
+
+        // Enforce mutual exclusivity: only one data donation type allowed
+        $isIos = $validated['is_ios_data_donation'] ?? false;
+        $isAndroid = $validated['is_android_data_donation'] ?? false;
+        if ($isIos && $isAndroid) {
+            return response()->json([
+                'success' => false,
+                'message' => 'A questionnaire can only be designated as iOS OR Android data donation, not both.',
+            ], 422);
+        }
+
+        // Reject start_on_first_login for repeating questionnaires
+        $effectiveType = $validated['type'] ?? $schedule->type;
+        $effectiveStartOnLogin = $validated['start_on_first_login'] ?? ($schedule->timing_config['start_on_first_login'] ?? false);
+        if ($effectiveType === 'repeating' && $effectiveStartOnLogin) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Start on first login is not supported for repeating questionnaires.',
+            ], 422);
+        }
 
         DB::connection('mart')->beginTransaction();
 
@@ -281,6 +327,14 @@ class MartQuestionnaireController extends Controller
                 $schedule->notification_config = $currentNotif;
             }
 
+            // Update data donation fields (mutually exclusive)
+            if (array_key_exists('is_ios_data_donation', $validated)) {
+                $schedule->is_ios_data_donation = $validated['is_ios_data_donation'];
+            }
+            if (array_key_exists('is_android_data_donation', $validated)) {
+                $schedule->is_android_data_donation = $validated['is_android_data_donation'];
+            }
+
             $schedule->save();
 
             // Track which UUIDs we've processed to detect deleted questions
@@ -298,6 +352,8 @@ class MartQuestionnaireController extends Controller
                     // Update question (automatically creates history and increments version)
                     $saved = $question->updateQuestion([
                         'text' => $questionData['text'],
+                        'image_url' => $questionData['image_url'] ?? null,
+                        'video_url' => $questionData['video_url'] ?? null,
                         'type' => $questionData['type'],
                         'config' => $questionData['config'] ?? [],
                         'is_mandatory' => $questionData['mandatory'],
@@ -318,6 +374,8 @@ class MartQuestionnaireController extends Controller
                         'schedule_id' => $schedule->id,
                         'position' => $index + 1,
                         'text' => $questionData['text'],
+                        'image_url' => $questionData['image_url'] ?? null,
+                        'video_url' => $questionData['video_url'] ?? null,
                         'type' => $questionData['type'],
                         'config' => $questionData['config'] ?? [],
                         'is_mandatory' => $questionData['mandatory'],
@@ -384,5 +442,62 @@ class MartQuestionnaireController extends Controller
             'success' => true,
             'questions' => $historyData,
         ]);
+    }
+
+    /**
+     * Delete a questionnaire (schedule) and its questions.
+     * Preserves MartQuestionHistory for data integrity.
+     */
+    public function destroy(MartSchedule $schedule)
+    {
+        // Get main project for authorization
+        $martProject = $schedule->martProject;
+        $mainProject = $martProject->mainProject();
+
+        if (! $mainProject) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Main project not found',
+            ], 404);
+        }
+
+        $this->authorize('update', $mainProject);
+
+        DB::connection('mart')->beginTransaction();
+
+        try {
+            // Delete per-case schedule overrides (if table exists)
+            try {
+                \App\Mart\MartCaseSchedule::where('schedule_id', $schedule->id)->delete();
+            } catch (\Illuminate\Database\QueryException $e) {
+                // Table may not exist in some environments, skip silently
+                \Log::debug('MartCaseSchedule table not found, skipping deletion');
+            }
+
+            // Delete questions (MartQuestionHistory is preserved - it uses question_uuid, not foreign key)
+            $schedule->questions()->delete();
+
+            // Delete the schedule itself
+            $schedule->delete();
+
+            DB::connection('mart')->commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Questionnaire deleted successfully',
+            ]);
+        } catch (\Exception $e) {
+            DB::connection('mart')->rollBack();
+
+            \Log::error('Failed to delete questionnaire', [
+                'schedule_id' => $schedule->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete questionnaire: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }

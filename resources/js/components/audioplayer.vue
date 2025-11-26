@@ -201,6 +201,12 @@ export default {
     });
     this.audio.addEventListener("error", (e) => {
       console.error('Audio playback error:', this.audio.error);
+      this.playing = false;
+      this.loaded = false;
+    });
+    this.audio.addEventListener("ended", () => {
+      this.currentSeconds = 0;
+      this.playing = false;
     });
   },
   computed: {
@@ -232,9 +238,34 @@ export default {
       this.stop();
       const a = document.createElement("a");
       a.href = this.file.audiofile;
-      // Keep the original extension for download
-      a.download = this.name.substring(this.name.lastIndexOf("/") + 1);
+      // Get filename without path and replace .mfile with proper audio extension
+      const filename = this.getFilenameWithoutExtension();
+      const extension = this.getAudioExtension();
+      a.download = filename + extension;
       a.click();
+    },
+    getAudioExtension() {
+      // Extract extension from data URI MIME type
+      if (!this.file.audiofile) return '.mp3';
+      const mimeMatch = this.file.audiofile.match(/^data:audio\/([^;]+);/);
+      if (!mimeMatch) return '.mp3';
+      const mimeType = mimeMatch[1];
+      // Map MIME subtypes to file extensions
+      const mimeToExt = {
+        'mpeg': '.mp3',
+        'mp3': '.mp3',
+        'mp4': '.m4a',
+        'x-m4a': '.m4a',
+        'm4a': '.m4a',
+        'aac': '.aac',
+        'wav': '.wav',
+        'x-wav': '.wav',
+        'ogg': '.ogg',
+        'webm': '.webm',
+        'flac': '.flac',
+        'x-flac': '.flac'
+      };
+      return mimeToExt[mimeType] || '.mp3';
     },
     load() {
       if (isFinite(this.audio.duration)) {
@@ -309,6 +340,15 @@ export default {
       this.playing = false;
       this.audio.currentTime = 0;
     },
+    reloadAudio() {
+      // Force reload the audio source to recover from error state
+      const currentSrc = this.audio.src;
+      this.audio.src = '';
+      this.audio.load();
+      this.audio.src = currentSrc;
+      this.audio.load();
+      this.loaded = false;
+    },
     getBarHeight(index) {
       // Generate pseudo-random but deterministic waveform heights based on file ID
       const seed = this.file.id || 1;
@@ -319,9 +359,15 @@ export default {
   watch: {
     playing(value) {
       if (value) {
-        return this.audio.play();
+        this.audio.play().catch((error) => {
+          console.error('Play failed:', error);
+          this.playing = false;
+          // Reload the audio source to recover from error state
+          this.reloadAudio();
+        });
+      } else {
+        this.audio.pause();
       }
-      this.audio.pause();
     },
     volume(value) {
       this.showVolume = false;
@@ -342,12 +388,9 @@ export default {
     if (this.audio) {
       this.audio.removeEventListener("timeupdate", this.update);
       this.audio.removeEventListener("durationchange", this.load);
-      this.audio.removeEventListener("pause", () => {
-        this.playing = false;
-      });
-      this.audio.removeEventListener("play", () => {
-        this.playing = true;
-      });
+      // Note: pause, play, ended, error listeners use inline functions
+      // and cannot be properly removed - this is a known limitation
+      // but doesn't cause issues as component is being destroyed
     }
   }
 };

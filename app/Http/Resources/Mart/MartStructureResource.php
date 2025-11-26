@@ -58,7 +58,6 @@ class MartStructureResource extends JsonResource
             // Handle MART project with multiple questionnaires per schedule
             $questionnaires = [];
             $scales = [];
-            $scaleIndex = 0;
 
             // Build questionnaires from schedules
             if ($this->schedules && $this->schedules->isNotEmpty()) {
@@ -69,11 +68,16 @@ class MartStructureResource extends JsonResource
                         // Create questionnaire for this schedule
                         $questionnaires[] = new QuestionSheetResource($project, $scheduleQuestions, $martConfig, $schedule->questionnaire_id);
 
-                        // Create scales for this schedule's questions
-                        foreach ($scheduleQuestions as $question) {
+                        // Create scales for this schedule's questions (skip display-only items)
+                        // Use item index to keep scaleId consistent with the item's scaleId reference
+                        foreach ($scheduleQuestions as $index => $question) {
+                            // Skip display-only items - they have no scale (itemId/scaleId are null)
+                            if (($question['type'] ?? '') === 'display') {
+                                continue;
+                            }
                             $question['projectId'] = $project->id;
-                            $scales[] = new ScaleResource((object) $question, $scaleIndex, true); // true = isMartProject
-                            $scaleIndex++;
+                            // Use the item's index so scaleId matches the item's scaleId reference
+                            $scales[] = new ScaleResource((object) $question, $index, true); // true = isMartProject
                         }
                     }
                 }
