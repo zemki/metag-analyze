@@ -249,11 +249,19 @@ class Project extends Model
     }
 
     /**
-     * @return HasMany
+     * Get MART pages through the MartProject relationship.
+     * This delegates to MartProject's pages() for correct cross-DB query.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
      */
     public function pages()
     {
-        return $this->hasMany(MartPage::class)->ordered();
+        $martProject = $this->martProject();
+        if ($martProject) {
+            return $martProject->pages()->ordered();
+        }
+        // Return empty query if no MART project
+        return MartPage::where('mart_project_id', 0);
     }
 
     /**
