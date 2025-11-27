@@ -754,18 +754,8 @@ export default {
           params.append('status', this.statusFilter);
         }
 
-        const response = await fetch(`/projects/${this.project.id}/cases?${params}`, {
-          headers: {
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
+        const response = await axios.get(`/projects/${this.project.id}/cases`, { params: Object.fromEntries(params) });
+        const data = response.data;
         this.cases = data.data || [];
         this.pagination = {
           current_page: data.current_page,
@@ -936,16 +926,9 @@ export default {
 
     async deleteCase(caseItem) {
       try {
-        const response = await fetch(`/cases/${caseItem.id}`, {
-          method: 'DELETE',
-          headers: {
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-          }
-        });
+        const response = await axios.delete(`/cases/${caseItem.id}`);
 
-        if (response.ok) {
+        if (response.status === 200) {
           // Remove from local list
           this.cases = this.cases.filter(c => c.id !== caseItem.id);
           this.totalCasesCount--;

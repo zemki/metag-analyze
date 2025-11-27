@@ -22,6 +22,20 @@ import mitt from "mitt";
 // Create a global event emitter
 export const emitter = mitt();
 
+// Get productionUrl from meta tag at runtime (extracts path from APP_URL)
+function getProductionUrl() {
+  const metaTag = document.head.querySelector('meta[name="base-url"]');
+  if (metaTag && metaTag.content) {
+    try {
+      const url = new URL(metaTag.content);
+      return url.pathname.replace(/\/$/, ''); // Remove trailing slash
+    } catch (e) {
+      return '';
+    }
+  }
+  return '';
+}
+
 // Initialize Alpine.js
 window.Alpine = Alpine;
 Alpine.start();
@@ -40,8 +54,7 @@ const app = createApp({
   // The root instance needs to provide data and methods for components that expect them
   data() {
     return {
-      productionUrl:
-        import.meta.env.VITE_ENV_MODE === "production" ? "/metag" : "",
+      productionUrl: getProductionUrl(),
       showEmailChangeModal: false,
       moment: moment,
       selectedProjectPage: 0,
@@ -886,15 +899,13 @@ const app = createApp({
   },
   provide() {
     return {
-      productionUrl:
-        import.meta.env.VITE_ENV_MODE === "production" ? "/metag" : "",
+      productionUrl: getProductionUrl(),
     };
   },
 });
 
 // Add global properties for Vue 3
-app.config.globalProperties.productionUrl =
-  import.meta.env.VITE_ENV_MODE === "production" ? "/metag" : "";
+app.config.globalProperties.productionUrl = getProductionUrl();
 app.config.globalProperties.emitter = emitter;
 app.config.globalProperties.trans = function (key) {
   // Ensure window.trans exists and is an object
