@@ -402,11 +402,7 @@ const app = createApp({
       const self = this;
 
       axios
-        .delete(
-          `${
-            window.location.origin + this.productionUrl
-          }/cases/${case_id}/entries/${entry_id}`
-        )
+        .delete(`/cases/${case_id}/entries/${entry_id}`)
         .then((response) => {
           setTimeout(() => {
             self.loading = false;
@@ -436,22 +432,17 @@ const app = createApp({
 
       const self = this;
       axios
-        .post(
-          `${window.location.origin + this.productionUrl}/cases/${
-            this.newentry.case_id
-          }/entries`,
-          {
-            case_id: this.newentry.case_id,
-            inputs: this.newentry.data.inputs,
-            begin: moment(this.newentry.data.start).format(
-              "YYYY-MM-DD HH:mm:ss.SSSSSS"
-            ),
-            end: moment(this.newentry.data.end).format(
-              "YYYY-MM-DD HH:mm:ss.SSSSSS"
-            ),
-            media_id: this.newentry.data.media_id,
-          }
-        )
+        .post(`/cases/${this.newentry.case_id}/entries`, {
+          case_id: this.newentry.case_id,
+          inputs: this.newentry.data.inputs,
+          begin: moment(this.newentry.data.start).format(
+            "YYYY-MM-DD HH:mm:ss.SSSSSS"
+          ),
+          end: moment(this.newentry.data.end).format(
+            "YYYY-MM-DD HH:mm:ss.SSSSSS"
+          ),
+          media_id: this.newentry.data.media_id,
+        })
         .then((response) => {
           self.showSnackbarMessage(self.trans("Entry successfully sent."));
         })
@@ -475,22 +466,17 @@ const app = createApp({
 
       const self = this;
       axios
-        .post(
-          `${window.location.origin + this.productionUrl}/cases/${
-            this.newentry.case_id
-          }/entries`,
-          {
-            case_id: this.newentry.case_id,
-            inputs: this.newentry.data.inputs,
-            begin: moment(this.newentry.data.start).format(
-              "YYYY-MM-DD HH:mm:ss.SSSSSS"
-            ),
-            end: moment(this.newentry.data.end).format(
-              "YYYY-MM-DD HH:mm:ss.SSSSSS"
-            ),
-            media_id: this.newentry.data.media_id,
-          }
-        )
+        .post(`/cases/${this.newentry.case_id}/entries`, {
+          case_id: this.newentry.case_id,
+          inputs: this.newentry.data.inputs,
+          begin: moment(this.newentry.data.start).format(
+            "YYYY-MM-DD HH:mm:ss.SSSSSS"
+          ),
+          end: moment(this.newentry.data.end).format(
+            "YYYY-MM-DD HH:mm:ss.SSSSSS"
+          ),
+          media_id: this.newentry.data.media_id,
+        })
         .then((response) => {
           self.showSnackbarMessage(self.trans("Entry successfully sent."));
           self.newentry.data.inputs = {};
@@ -530,22 +516,17 @@ const app = createApp({
 
       const self = this;
       axios
-        .patch(
-          `${window.location.origin + this.productionUrl}/cases/${
-            this.editentry.case_id
-          }/entries/${this.editentry.id}`,
-          {
-            case_id: this.editentry.case_id,
-            inputs: this.editentry.data.inputs,
-            begin: moment(this.editentry.data.start).format(
-              "YYYY-MM-DD HH:mm:ss.SSSSSS"
-            ),
-            end: moment(this.editentry.data.end).format(
-              "YYYY-MM-DD HH:mm:ss.SSSSSS"
-            ),
-            media_id: this.editentry.data.media_id,
-          }
-        )
+        .patch(`/cases/${this.editentry.case_id}/entries/${this.editentry.id}`, {
+          case_id: this.editentry.case_id,
+          inputs: this.editentry.data.inputs,
+          begin: moment(this.editentry.data.start).format(
+            "YYYY-MM-DD HH:mm:ss.SSSSSS"
+          ),
+          end: moment(this.editentry.data.end).format(
+            "YYYY-MM-DD HH:mm:ss.SSSSSS"
+          ),
+          media_id: this.editentry.data.media_id,
+        })
         .then((response) => {
           self.showSnackbarMessage(self.trans("Entry successfully updated."));
           setTimeout(() => window.location.reload(), 500);
@@ -843,15 +824,10 @@ const app = createApp({
     detachUser(userToDetach, project) {
       const self = this;
       axios
-        .post(
-          `${window.location.origin + self.productionUrl}/projects/invite/${
-            userToDetach.id
-          }`,
-          {
-            email: userToDetach.email,
-            project,
-          }
-        )
+        .post(`/projects/invite/${userToDetach.id}`, {
+          email: userToDetach.email,
+          project,
+        })
         .then((response) => {
           self.showSnackbarMessage(self.trans(response.data.message));
 

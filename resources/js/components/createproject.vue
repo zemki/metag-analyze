@@ -644,7 +644,7 @@ export default {
       };
 
       // Submit the form via Axios
-      window.axios.post(this.productionUrl + '/projects', formData)
+      window.axios.post('/projects', formData)
           .then(response => {
             // Handle successful response
             window.location.href = this.productionUrl + '/projects';
@@ -826,7 +826,7 @@ export default {
           isMart: true,
         };
 
-        const response = await window.axios.post(this.productionUrl + '/projects', formData);
+        const response = await window.axios.post('/projects', formData);
 
         // Success! Redirect to projects page
         window.location.href = this.productionUrl + '/projects';

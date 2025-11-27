@@ -292,12 +292,7 @@ export default {
       this.showDeleteModal = false;
 
       window.axios
-          .delete(
-              `${window.location.origin + productionUrl}/cases/${
-                  self.caseid
-              }/files/${self.file.id}`,
-              {file: self.file.id}
-          )
+          .delete(`/cases/${self.caseid}/files/${self.file.id}`, {file: self.file.id})
           .then((response) => {
             self.stop();
             self.showSnackbar(response.data.message);

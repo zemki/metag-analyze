@@ -1184,7 +1184,7 @@ export default {
           this.projectData.media = [];
         }
 
-        const response = await window.axios.patch(this.productionUrl+`/projects/${submitData.id}`, submitData);
+        const response = await window.axios.patch(`/projects/${submitData.id}`, submitData);
 
         // Controller returns simple string response
         this.showSnackbarMessage(response.data);

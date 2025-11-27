@@ -668,25 +668,18 @@ export default {
     };
 
     const entrySaveAndClose = () => {
-      // Get productionUrl from props or default to empty string
-      const productionUrl = props.productionUrl || "";
       window.axios
-        .post(
-          `${window.location.origin + productionUrl}/cases/${
-            props.cases.id
-          }/entries`,
-          {
-            case_id: props.cases.id,
-            inputs: editentry.data.inputs,
-            begin: moment(editentry.data.start).format(
-              "YYYY-MM-DD HH:mm:ss.SSSSSS"
-            ),
-            end: moment(editentry.data.end).format(
-              "YYYY-MM-DD HH:mm:ss.SSSSSS"
-            ),
-            media_id: editentry.data.media,
-          }
-        )
+        .post(`/cases/${props.cases.id}/entries`, {
+          case_id: props.cases.id,
+          inputs: editentry.data.inputs,
+          begin: moment(editentry.data.start).format(
+            "YYYY-MM-DD HH:mm:ss.SSSSSS"
+          ),
+          end: moment(editentry.data.end).format(
+            "YYYY-MM-DD HH:mm:ss.SSSSSS"
+          ),
+          media_id: editentry.data.media,
+        })
         .then((response) => {
           showSnackbarMessage(trans("Entry successfully sent."));
           setTimeout(() => window.location.reload(), 500);
@@ -725,25 +718,18 @@ export default {
       if (editentry.actuallysave) {
         entrySaveAndClose();
       } else {
-        // Get productionUrl from props or default to empty string
-        const productionUrl = props.productionUrl || "";
         window.axios
-          .patch(
-            `${window.location.origin + productionUrl}/cases/${
-              editentry.case_id
-            }/entries/${editentry.id}`,
-            {
-              case_id: editentry.case_id,
-              inputs: editentry.data.inputs,
-              begin: moment(editentry.data.start).format(
-                "YYYY-MM-DD HH:mm:ss.SSSSSS"
-              ),
-              end: moment(editentry.data.end).format(
-                "YYYY-MM-DD HH:mm:ss.SSSSSS"
-              ),
-              media_id: editentry.data.media,
-            }
-          )
+          .patch(`/cases/${editentry.case_id}/entries/${editentry.id}`, {
+            case_id: editentry.case_id,
+            inputs: editentry.data.inputs,
+            begin: moment(editentry.data.start).format(
+              "YYYY-MM-DD HH:mm:ss.SSSSSS"
+            ),
+            end: moment(editentry.data.end).format(
+              "YYYY-MM-DD HH:mm:ss.SSSSSS"
+            ),
+            media_id: editentry.data.media,
+          })
           .then((response) => {
             showSnackbarMessage(trans("Entry successfully updated."));
             setTimeout(() => window.location.reload(), 500);

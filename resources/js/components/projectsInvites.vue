@@ -116,8 +116,6 @@ export default {
 
             window.axios
                 .post(
-                    window.location.origin +
-                    this.productionUrl +
                     "/projects/invite",
                     {
                         email: this.toInvite,
@@ -154,10 +152,7 @@ export default {
         detachUser(userToDetach) {
             window.axios
                 .post(
-                    window.location.origin +
-                    this.productionUrl +
-                    "/projects/invite/" +
-                    userToDetach.id,
+                    "/projects/invite/" + userToDetach.id,
                     {email: userToDetach.email, project: this.project}
                 )
                 .then((response) => {

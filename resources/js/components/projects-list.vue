@@ -269,10 +269,7 @@ export default {
       const self = this;
       window.axios
           .post(
-              window.location.origin +
-              this.productionUrl +
-              "/projects/invite/" +
-              self.leaveProjectUserId,
+              "/projects/invite/" + self.leaveProjectUserId,
               {
                 email: self.loggedUser.email,
                 study: self.leaveProjectStudyId,
@@ -343,7 +340,7 @@ export default {
       const self = this;
 
       window.axios
-          .delete(this.productionUrl + '/projects/' + self.deleteProjectId, {data: self.deleteProjectId})
+          .delete('/projects/' + self.deleteProjectId, {data: self.deleteProjectId})
           .then((response) => {
             setTimeout(() => {
               self.loading = false;

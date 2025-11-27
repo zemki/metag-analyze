@@ -406,7 +406,7 @@ export default {
         notification: notification,
       };
       window.axios
-        .post(this.productionUrl + "/users/deletenotification", data)
+        .post("/users/deletenotification", data)
         .then((response) => {
           if (response.message) this.response = response.message;
           else {
@@ -449,7 +449,7 @@ export default {
           cases: oneCase,
         };
         window.axios
-          .post(this.productionUrl + "/users/notify", data)
+          .post("/users/notify", data)
           .then((response) => {
             if (response.message) this.response = response.message;
             else {
@@ -483,7 +483,7 @@ export default {
         };
 
         window.axios
-          .post(this.productionUrl + "/users/plannotification", data)
+          .post("/users/plannotification", data)
           .then((response) => {
             if (response.message) this.response = response.message;
             else {
@@ -528,7 +528,7 @@ export default {
         cases: cases,
       };
       window.axios
-        .post(this.productionUrl + "/users/cleanuplastnotification", data)
+        .post("/users/cleanuplastnotification", data)
         .then((response) => {
           if (response.message) this.response = response.message;
           else {
