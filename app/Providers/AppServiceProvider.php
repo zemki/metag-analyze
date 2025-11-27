@@ -3,9 +3,11 @@
 namespace App\Providers;
 
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -17,6 +19,20 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         Schema::defaultStringLength(191);
+
+        // Configure Livewire routes for subdirectory deployment (production only)
+        if (App::environment('production')) {
+            Livewire::setScriptRoute(function ($handle) {
+                return Route::get('/metag/livewire/livewire.min.js', $handle)
+                    ->middleware(['web']);
+            });
+
+            Livewire::setUpdateRoute(function ($handle) {
+                return Route::post('/metag/livewire/update', $handle)
+                    ->middleware(['web']);
+            });
+        }
+
         if (App::environment('local')) {
             // The environment is local
             View::composer(['telescope::layout'], function ($view) {
