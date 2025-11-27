@@ -64,7 +64,7 @@
             <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span class="text-xs font-medium text-gray-600">{{ trans('Max Total Submits') }}</span>
+            <span class="text-xs font-medium text-gray-600">{{ trans('Per Participant') }}</span>
           </div>
           <div class="text-lg font-bold text-gray-900">{{ maxTotalSubmits }}</div>
         </div>
@@ -286,12 +286,12 @@ export default {
         });
       }
 
-      // Info: Dynamic end date
+      // Info: Dynamic end date - per participant
       if (this.useDynamicEndDate && this.maxTotalSubmits && this.maxDailySubmits) {
         const durationDays = Math.ceil(this.maxTotalSubmits / this.maxDailySubmits);
         warnings.push({
           type: 'info',
-          message: this.trans('End date will be calculated as {days} days after start date (based on {total} total submits / {daily} daily submits).', {
+          message: this.trans('Each participant\'s end date = their login date + {days} days ({total} opportunities / {daily} daily max).', {
             days: durationDays,
             total: this.maxTotalSubmits,
             daily: this.maxDailySubmits

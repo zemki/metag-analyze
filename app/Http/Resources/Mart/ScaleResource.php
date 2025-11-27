@@ -71,6 +71,10 @@ class ScaleResource extends JsonResource
                         'type' => $type,
                         'radioOptions' => $options,
                     ];
+                    // Add custom label for "Other" option if present
+                    if ($type === 'radioWithText' && isset($config['otherOptionLabel']) && ! empty($config['otherOptionLabel'])) {
+                        $scaleOptions['otherOptionLabel'] = $config['otherOptionLabel'];
+                    }
                     break;
 
                 case 'multiple choice':
@@ -89,6 +93,10 @@ class ScaleResource extends JsonResource
                         'type' => $type,
                         'checkboxOptions' => $options,
                     ];
+                    // Add custom label for "Other" option if present
+                    if ($type === 'checkboxWithText' && isset($config['otherOptionLabel']) && ! empty($config['otherOptionLabel'])) {
+                        $scaleOptions['otherOptionLabel'] = $config['otherOptionLabel'];
+                    }
                     break;
 
                 case 'text':

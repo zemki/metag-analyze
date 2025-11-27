@@ -361,8 +361,6 @@ class ProjectCasesController extends Controller
 
             return $return;
         }, $inputs);
-        // $inputsa = array_column($inputs, 'name');
-        // dd($data['availableInputs']);
         $inputsToFilter = [];
         foreach ($data['availableInputs'] as $key => $availableInput) {
             if (! in_array($availableInput->name, $inputs)) {

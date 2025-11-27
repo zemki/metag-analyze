@@ -5,7 +5,7 @@
       <div class="fixed inset-0 bg-gray-500/75 transition-opacity z-40"></div>
 
       <!-- Modal panel -->
-      <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full relative z-50">
+      <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl sm:w-full relative z-50">
         <!-- Header -->
         <div class="bg-white px-6 py-4 border-b border-gray-200">
           <div class="flex items-center justify-between">
@@ -102,8 +102,8 @@
                 </div>
               </div>
 
-              <!-- Start on First Login Checkbox - Only for single questionnaires -->
-              <div v-if="formData.type === 'single'" class="p-3 bg-green-50 rounded-lg border border-green-200">
+              <!-- Start on First Login Checkbox - Available for all questionnaire types -->
+              <div class="p-3 bg-green-50 rounded-lg border border-green-200">
                 <div class="flex items-center">
                   <input
                       v-model="formData.start_on_first_login"
@@ -258,11 +258,11 @@
                       class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
                   />
                   <label for="use_dynamic_end_date" class="ml-2 block text-sm text-gray-700">
-                    {{ trans('Calculate end date dynamically based on total submissions') }}
+                    {{ trans('Calculate individual end dates per participant') }}
                   </label>
                 </div>
                 <p v-if="formData.use_dynamic_end_date && !calculatedEndDate" class="ml-6 text-xs text-orange-600">
-                  {{ trans('Fill in Start Date, Max Total Submits, and Max Daily Submits to auto-calculate end date') }}
+                  {{ trans('Fill in Start Date, Submission Opportunities per Participant, and Max Daily Submits to auto-calculate') }}
                 </p>
 
                 <!-- Formula Display (Toggleable) -->
@@ -284,6 +284,9 @@
                     {{ trans('Show calculation formula') }}
                   </button>
                   <div v-if="showFormula" class="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p class="text-xs text-amber-700 font-medium mb-2">
+                      {{ trans('Example calculation per participant (actual dates calculated at login):') }}
+                    </p>
                     <div class="font-mono text-sm text-blue-900 space-y-1">
                       <div class="flex items-center gap-2">
                         <span class="text-blue-600">Duration</span>
@@ -440,7 +443,7 @@
                     </p>
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700">{{ trans('Max Total Submits') }}</label>
+                    <label class="block text-sm font-medium text-gray-700">{{ trans('Submission Opportunities per Participant') }}</label>
                     <input
                         v-model.number="formData.max_total_submits"
                         type="number"
@@ -448,7 +451,7 @@
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
                     />
                     <p class="mt-1 text-xs text-gray-500">
-                      {{ trans('Maximum total submissions across all days.') }}
+                      {{ trans('Total submission opportunities each participant will have across all days.') }}
                       <span class="block mt-0.5 text-gray-400">{{ trans('End date will be calculated based on this value') }}</span>
                     </p>
                   </div>
@@ -861,6 +864,19 @@
                         {{ trans('Include "Other" option with text field') }}
                       </label>
                     </div>
+                    <!-- Custom label for "Other" option -->
+                    <div v-if="question.includeOtherOption" class="mt-2 ml-6">
+                      <label class="block text-sm font-medium text-gray-700">{{ trans('"Other" Option Label') }}</label>
+                      <input
+                          type="text"
+                          v-model="question.otherOptionLabel"
+                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                          :placeholder="trans('e.g., Other, Sonstiges, Autre...')"
+                      />
+                      <p class="mt-1 text-xs text-gray-500">
+                        {{ trans('Custom label text shown for the "Other" option. Leave empty for default.') }}
+                      </p>
+                    </div>
                   </div>
 
                   <!-- Timer Options (applies to all question types) -->
@@ -1218,8 +1234,8 @@ export default {
     numberOfIntervals(newValue) {
       // Auto-set max_daily_submits when interval count changes (only for repeating questionnaires)
       if (this.formData.type === 'repeating' && newValue > 0) {
-        // Only auto-update if current value exceeds new max or if it's the default
-        if (this.formData.max_daily_submits > newValue || this.formData.max_daily_submits === 6) {
+        // Auto-set if empty, exceeds new max, or was the old default
+        if (!this.formData.max_daily_submits || this.formData.max_daily_submits > newValue || this.formData.max_daily_submits === 6) {
           this.formData.max_daily_submits = newValue;
         }
       }
@@ -1268,6 +1284,7 @@ export default {
           randomizationGroupId: q.randomizationGroupId || null,
           randomizeAnswers: q.randomizeAnswers || false,
           includeOtherOption: config.includeOtherOption || false,
+          otherOptionLabel: config.otherOptionLabel || '',
           itemGroup: q.item_group || null,
           useTimer: !!timer.time,
           timerSeconds: timer.time || 30,
@@ -1436,6 +1453,7 @@ export default {
         randomizationGroupId: null,
         randomizeAnswers: false,
         includeOtherOption: false,
+        otherOptionLabel: '',
         itemGroup: null,
         useTimer: false,
         timerSeconds: 30,
@@ -1497,9 +1515,12 @@ export default {
             }
           } else if (q.type === 'radio' || q.type === 'checkbox') {
             config.options = q.answers.filter(a => a.trim());
-            // Include "Other" text field option flag
+            // Include "Other" text field option flag and custom label
             if (q.includeOtherOption) {
               config.includeOtherOption = true;
+              if (q.otherOptionLabel) {
+                config.otherOptionLabel = q.otherOptionLabel;
+              }
             }
           } else if (q.type === 'text' || q.type === 'textarea') {
             // Add placeholder for text/textarea types

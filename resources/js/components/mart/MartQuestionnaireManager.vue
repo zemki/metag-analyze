@@ -138,11 +138,11 @@
                 </div>
 
                 <!-- End Date - hide for single questionnaires unless end date is set -->
-                <div v-if="schedule.type === 'repeating' || getTimingConfig(schedule, 'end_date_time') || getTimingConfig(schedule, 'use_dynamic_end_date')" class="flex items-center text-sm">
+                <div v-if="schedule.type === 'repeating' || hasEndDate(schedule) || getTimingConfig(schedule, 'use_dynamic_end_date')" class="flex items-center text-sm">
                   <svg class="w-4 h-4 mr-2 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.707-10.293a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L9.414 11H13a1 1 0 100-2H9.414l1.293-1.293z" clip-rule="evenodd"/></svg>
                   <span class="text-gray-600">{{ trans('End') }}:</span>
                   <span v-if="getTimingConfig(schedule, 'use_dynamic_end_date')" class="ml-2 px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-xs font-medium">
-                    {{ trans('Auto-calculated from submissions') }}
+                    {{ trans('Calculated per participant from their login') }}
                   </span>
                   <span v-else-if="getTimingConfig(schedule, 'end_date_time')" class="ml-2 font-medium text-gray-900">{{ formatDateTime(getTimingConfig(schedule, 'end_date_time')) }}</span>
                   <span v-else class="ml-2 text-gray-400">{{ trans('Not set') }}</span>
@@ -502,6 +502,16 @@ export default {
     getTimingConfig(schedule, key) {
       if (!schedule.timing_config) return null;
       return schedule.timing_config[key];
+    },
+
+    hasEndDate(schedule) {
+      const endDateTime = this.getTimingConfig(schedule, 'end_date_time');
+      if (!endDateTime) return false;
+      // Handle string format
+      if (typeof endDateTime === 'string') return !!endDateTime;
+      // Handle object format { date: '', time: '' }
+      if (typeof endDateTime === 'object') return !!endDateTime.date;
+      return false;
     },
 
     getNotificationConfig(schedule, key) {

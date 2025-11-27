@@ -541,7 +541,7 @@ export default {
     },
   },
   mounted() {
-    console.log('MART Enabled prop value:', this.martEnabled, 'Type:', typeof this.martEnabled);
+    // Component mounted
   },
 
   data() {
