@@ -243,7 +243,7 @@
                     <line v-if="caseItem.qr_token_revoked_at" x1="3" y1="3" x2="21" y2="21" stroke-width="2"/>
                   </svg>
                 </button>
-                <button v-if="isCreator && !localProject.is_mart_project"
+                <button v-if="isCreator && !localProject.is_mart_project && calculateStatusFromDate(caseItem) !== 'completed'"
                         @click.stop="showCloseCaseModal(caseItem)"
                         class="p-1 text-gray-400 hover:text-orange-600"
                         title="Close Case Early">
