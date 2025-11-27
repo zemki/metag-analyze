@@ -841,11 +841,11 @@ export default {
       );
     };
     const distinctPath = () => {
-      return props.cases.project.id + "/distinctcases/" + props.cases.id;
+      return props.productionUrl + "/" + props.cases.project.id + "/distinctcases/" + props.cases.id;
     };
 
     const groupedCasesPath = () => {
-      return props.cases.project.id + "/groupedcases/" + props.cases.id;
+      return props.productionUrl + "/" + props.cases.project.id + "/groupedcases/" + props.cases.id;
     };
 
     const getScaleRange = (question) => {

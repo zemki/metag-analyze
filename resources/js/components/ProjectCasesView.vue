@@ -910,7 +910,7 @@ export default {
     },
 
     exportCase(caseItem) {
-      window.open(`/cases/${caseItem.id}/export`, '_blank');
+      window.open(`${this.productionUrl}/cases/${caseItem.id}/export`, '_blank');
     },
 
     confirmDeleteCase(caseItem) {
