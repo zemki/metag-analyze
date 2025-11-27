@@ -381,6 +381,7 @@
             <SelectedCase
               :project-inputs="parsedProjectInputs"
               :cases="selectedCase"
+              :api-v2-cutoff-date="apiV2CutoffDate"
             />
             <!-- DEBUG: Let's see what projectInputs contains -->
             <div v-if="false" class="debug p-4 bg-red-100 text-xs">

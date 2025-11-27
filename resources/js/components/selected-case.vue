@@ -245,7 +245,7 @@
           </div>
           <div class="sm:flex sm:justify-between sm:items-baseline">
             <h3 class="text-base font-medium">
-              <span class="text-gray-500">{{ trans("Entity") }}: </span>
+              <span class="text-gray-500">{{ entityLabel }}: </span>
               <span class="text-gray-900">{{ entry.media }}</span>
             </h3>
             <p
@@ -364,7 +364,7 @@
                     <div class="p-2 text-justify text-gray-400">
                       <div class="sm:flex sm:justify-between sm:items-baseline">
                         <h3 class="text-base font-medium">
-                          <span class="text-gray-500">{{ (cases.project?.entity_name || 'Media') }}:</span>
+                          <span class="text-gray-500">{{ entityLabel }}:</span>
                           <span class="text-gray-900">{{
                             entry.mediaforFirstValue
                           }}</span>
@@ -559,6 +559,10 @@ export default {
       type: String,
       default: "",
     },
+    apiV2CutoffDate: {
+      type: String,
+      default: "2025-03-21",
+    },
   },
   emits: ["update:selectedCase"],
   setup(props) {
@@ -579,6 +583,20 @@ export default {
       }
       return dateValue;
     };
+
+    // Check if project is legacy (created before API v2 cutoff date)
+    const isLegacyProject = computed(() => {
+      if (!props.cases?.project?.created_at) return false;
+      const projectDate = new Date(props.cases.project.created_at);
+      const cutoffDate = new Date(props.apiV2CutoffDate);
+      return projectDate < cutoffDate;
+    });
+
+    // Get the entity/media label based on project type
+    const entityLabel = computed(() => {
+      if (isLegacyProject.value) return 'Media';
+      return props.cases?.project?.entity_name || 'Entity';
+    });
 
     const editentry = reactive({
       id: 0,
@@ -915,6 +933,7 @@ export default {
       groupedCasesPath,
       getScaleRange,
       isCorruptedAudioData,
+      entityLabel,
     };
   },
 };
