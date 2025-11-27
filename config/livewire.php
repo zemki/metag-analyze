@@ -11,19 +11,7 @@ return [
     |
     */
 
-    'asset_url' => env('APP_URL', null),
-
-    /*
-    |---------------------------------------------------------------------------
-    | App URL
-    |---------------------------------------------------------------------------
-    |
-    | This value sets the base URL for Livewire's endpoints (updates, file uploads).
-    | Required when app is deployed in a subdirectory.
-    |
-    */
-
-    'app_url' => env('APP_URL', null),
+    'asset_url' => env('LIVEWIRE_ASSET_URL', null),
 
     /*
     |---------------------------------------------------------------------------
