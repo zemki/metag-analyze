@@ -5,13 +5,14 @@ namespace Tests;
 use App\Cases;
 use App\Project;
 use App\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\DB;
 
 abstract class TestCase extends BaseTestCase
 {
-    use CreatesApplication,RefreshDatabase,WithFaker;
+    use CreatesApplication, DatabaseTransactions, WithFaker;
 
     public User $user;
 
@@ -19,7 +20,18 @@ abstract class TestCase extends BaseTestCase
 
     public Cases $case;
 
-    public function setUp(): void
+    /**
+     * Specify which database connections should be wrapped in transactions.
+     * Only use mysql connection to avoid "Too many connections" errors.
+     *
+     * @return array
+     */
+    protected function connectionsToTransact()
+    {
+        return ['mysql'];
+    }
+
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -40,6 +52,15 @@ abstract class TestCase extends BaseTestCase
             'user_id' => $this->user->id,
             'duration' => 'value:24|days:1',
         ]);
+    }
+
+    protected function tearDown(): void
+    {
+        // Explicitly disconnect to release connections
+        DB::disconnect('mysql');
+        DB::disconnect('mart');
+
+        parent::tearDown();
     }
 
     protected function create_user()

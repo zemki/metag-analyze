@@ -4,6 +4,9 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Project extends Model
 {
@@ -14,7 +17,15 @@ class Project extends Model
      */
     protected $fillable = [
         'name', 'description', 'duration', 'created_by', 'is_locked', 'inputs',
+        'entity_name', 'use_entity', // New entity-related fields
     ];
+
+    /**
+     * In-memory cache for MART project to avoid repeated DB queries
+     *
+     * @var \App\Mart\MartProject|false|null
+     */
+    protected $martProjectCache = null;
 
     // this is a recommended way to declare event handlers
     public static function boot()
@@ -22,7 +33,14 @@ class Project extends Model
         parent::boot();
         static::deleting(function ($project) {
             $project->invited()->detach();
-            // if the user created the project
+
+            // Delete MART data if exists (cascade handles related tables)
+            $martProject = \App\Mart\MartProject::where('main_project_id', $project->id)->first();
+            if ($martProject) {
+                $martProject->delete();
+            }
+
+            // if the user created the project, delete main DB data
             if ($project->created_by === auth()->user()->id && $project->cases->count() > 0) {
                 foreach ($project->cases as $case) {
                     foreach ($case->entries as $entry) {
@@ -189,15 +207,25 @@ class Project extends Model
     }
 
     /**
+     * Check if the project can be edited.
+     * MART projects are always editable (questions support versioning).
+     * Non-MART projects are locked once cases exist.
+     *
      * @return bool
      */
     public function isEditable()
     {
+        // MART projects are always editable (questions support versioning)
+        if ($this->isMartProject()) {
+            return true;
+        }
+
+        // Non-MART projects are locked once cases exist
         return $this->cases()->count() === 0;
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function cases()
     {
@@ -205,7 +233,7 @@ class Project extends Model
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function notBackendcases()
     {
@@ -213,11 +241,81 @@ class Project extends Model
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     * @return BelongsToMany
      */
     public function media()
     {
         return $this->belongsToMany(Media::class, 'media_projects');
+    }
+
+    /**
+     * Get MART pages through the MartProject relationship.
+     * This delegates to MartProject's pages() for correct cross-DB query.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function pages()
+    {
+        $martProject = $this->martProject();
+        if ($martProject) {
+            return $martProject->pages()->ordered();
+        }
+        // Return empty query if no MART project
+        return MartPage::where('mart_project_id', 0);
+    }
+
+    /**
+     * Check if this is a MART project
+     *
+     * @return bool
+     */
+    public function isMartProject()
+    {
+        $inputs = json_decode($this->inputs, true);
+
+        if (is_array($inputs)) {
+            foreach ($inputs as $input) {
+                if (isset($input['type']) && $input['type'] === 'mart') {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Get the MART project from the MART database (cross-DB query).
+     * Returns null if this is not a MART project or no MART data exists.
+     * Results are cached in-memory to avoid repeated queries during the same request.
+     *
+     * @return \App\Mart\MartProject|null
+     */
+    public function martProject()
+    {
+        // Check if we've already queried this during the request
+        if ($this->martProjectCache === null) {
+            try {
+                // Query and cache result (false = not found, to distinguish from null = not checked)
+                $this->martProjectCache = \App\Mart\MartProject::where('main_project_id', $this->id)->first() ?: false;
+            } catch (\Exception $e) {
+                // MART tables don't exist yet (database not migrated)
+                $this->martProjectCache = false;
+            }
+        }
+
+        // Return null if not found (false indicates "checked but not found")
+        return $this->martProjectCache === false ? null : $this->martProjectCache;
+    }
+
+    /**
+     * Check if this project has MART data in the MART database.
+     *
+     * @return bool
+     */
+    public function hasMartData()
+    {
+        return $this->martProject() !== null;
     }
 
     /**
@@ -229,7 +327,7 @@ class Project extends Model
     }
 
     /**
-     * @return Model|\Illuminate\Database\Eloquent\Relations\BelongsTo|object|null
+     * @return Model|BelongsTo|object|null
      */
     public function created_by()
     {
@@ -245,7 +343,7 @@ class Project extends Model
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     * @return BelongsToMany
      */
     public function invited()
     {

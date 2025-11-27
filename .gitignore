@@ -22,7 +22,7 @@ package-lock.json
 # Build assets
 /public/build
 /public/*.js
-*.css
+/public/*.css
 
 # IDE & Editors
 /.idea
@@ -48,5 +48,17 @@ changes.txt
 Homestead.yaml
 Homestead.json
 /public/vendor
+
+# AI Documentation (contains sensitive project info)
+CLAUDE.md
+/context/
+.claude/
+/.playwright-mcp
+/context
+/context
+
+# Cache files
 *.cache
+
+# MART API specification (user-managed)
 DOCS/martTypes.ts

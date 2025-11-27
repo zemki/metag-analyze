@@ -24,6 +24,8 @@ class EntryController extends Controller
 
     protected const MEDIA_ID = 'media_id';
 
+    protected const ENTITY_ID = 'entity_id';
+
     protected const INPUTS = 'inputs';
 
     protected const ENTRIES = 'entries';
@@ -49,6 +51,15 @@ class EntryController extends Controller
             request()->merge([self::MEDIA_ID => request()->media]);
         }
 
+        // if request has "entity_id" key, use it instead of media_id
+        if (request()->has(self::ENTITY_ID)) {
+            request()->merge([self::MEDIA_ID => request()->input(self::ENTITY_ID)]);
+        }
+        // if request has "entity" key, also use it for media_id (older field name for compatibility)
+        if (request()->has('entity')) {
+            request()->merge([self::MEDIA_ID => request()->entity]);
+        }
+
         $attributes = request()->validate([
             self::BEGIN => self::REQUIRED,
             'end' => self::REQUIRED,
@@ -56,6 +67,10 @@ class EntryController extends Controller
             self::MEDIA_ID => self::REQUIRED,
             self::INPUTS => 'nullable',
         ]);
+
+        // Convert Unix timestamps to MySQL datetime format if needed
+        $attributes[self::BEGIN] = $this->convertTimestampToDatetime($attributes[self::BEGIN]);
+        $attributes['end'] = $this->convertTimestampToDatetime($attributes['end']);
 
         $isComingFromBackend = is_numeric($attributes[self::MEDIA_ID]);
 
@@ -94,6 +109,21 @@ class EntryController extends Controller
     public function update(Cases $case, Entry $entry)
     {
         $this->authorize('update', [Entry::class, $entry]);
+
+        // if request has "media" key, assign it to the key "media_id"
+        if (request()->has('media')) {
+            request()->merge([self::MEDIA_ID => request()->media]);
+        }
+
+        // if request has "entity_id" key, use it instead of media_id
+        if (request()->has(self::ENTITY_ID)) {
+            request()->merge([self::MEDIA_ID => request()->input(self::ENTITY_ID)]);
+        }
+        // if request has "entity" key, also use it for media_id (older field name for compatibility)
+        if (request()->has('entity')) {
+            request()->merge([self::MEDIA_ID => request()->entity]);
+        }
+
         $attributes = request()->validate([
             self::BEGIN => self::REQUIRED,
             'end' => self::REQUIRED,
@@ -101,6 +131,11 @@ class EntryController extends Controller
             self::MEDIA_ID => self::REQUIRED,
             self::INPUTS => 'nullable',
         ]);
+
+        // Convert Unix timestamps to MySQL datetime format if needed
+        $attributes[self::BEGIN] = $this->convertTimestampToDatetime($attributes[self::BEGIN]);
+        $attributes['end'] = $this->convertTimestampToDatetime($attributes['end']);
+
         if (is_string($attributes[self::MEDIA_ID])) {
             $attributes[self::MEDIA_ID] = Media::firstOrCreate(['name' => $attributes[self::MEDIA_ID]])->id;
         }
@@ -177,5 +212,34 @@ class EntryController extends Controller
         }
 
         return response('entry deleted', 200);
+    }
+
+    /**
+     * Convert Unix timestamp to MySQL datetime format.
+     * Handles both seconds (10 digits) and milliseconds (13 digits).
+     *
+     * @param mixed $value The value to convert
+     * @return string The datetime string in Y-m-d H:i:s format, or original value if not a timestamp
+     */
+    private function convertTimestampToDatetime($value): string
+    {
+        if (!is_numeric($value)) {
+            return $value;
+        }
+
+        $length = strlen((string) $value);
+
+        // 10 digits = Unix timestamp in seconds
+        if ($length === 10) {
+            return date('Y-m-d H:i:s', (int) $value);
+        }
+
+        // 13 digits = Unix timestamp in milliseconds
+        if ($length === 13) {
+            return date('Y-m-d H:i:s', (int) ($value / 1000));
+        }
+
+        // Return as-is if not a recognized timestamp format
+        return $value;
     }
 }

@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Action;
 use App\Cases;
 use App\Entry;
+use App\Notifications\CustomVerifyEmail;
 use App\Project;
 use App\User;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 
 class AdminController extends Controller
 {
@@ -49,7 +51,7 @@ class AdminController extends Controller
     }
 
     /**
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function deletedeviceid(User $user)
     {
@@ -69,7 +71,7 @@ class AdminController extends Controller
     }
 
     /**
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function resetapitoken(User $user)
     {
@@ -85,7 +87,7 @@ class AdminController extends Controller
 
     public function sendEmailVerificationNotification()
     {
-        $this->notify(new \App\Notifications\CustomVerifyEmail);
+        $this->notify(new CustomVerifyEmail);
     }
 
     public function listForNewsletter()

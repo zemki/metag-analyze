@@ -70,7 +70,7 @@
                     </label>
                     <input type="text" name="media_id"
                            v-model="newentry.data.media_id"
-                           class="bg-white focus:outline-none focus:ring border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none leading-normal"></input>
+                           class="bg-white focus:outline-hidden focus:ring border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none leading-normal"></input>
 
                 </div>
                 <h1 class="text-2xl font-bold text-center my-4 uppercase tracking-wide text-gray-700">Inputs</h1>
@@ -80,7 +80,7 @@
                     </label>
                     <input type="text" v-if="value.type === 'text'" :name="'text'+value.name"
                            v-model="newentry.data.inputs[value.name]"
-                           class="bg-white focus:outline-none focus:ring border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none leading-normal "></input>
+                           class="bg-white focus:outline-hidden focus:ring border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none leading-normal "></input>
                     <b-taginput
                             :data=value.answers
                             autocomplete
@@ -93,7 +93,7 @@
                     <div class="relative"  v-if="value.type === 'one choice'">
                         <select
                                 v-model="newentry.data.inputs[value.name]"
-                                class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" >
+                                class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-hidden focus:bg-white focus:border-gray-500" >
                             <option v-for="answer in value.answers" :value="answer">@{{answer}}</option>
                         </select>
                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
@@ -104,7 +104,7 @@
                     <div class="relative"  v-if="value.type === 'scale'">
                         <select
                                 v-model="newentry.data.inputs[value.name]"
-                                class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" >
+                                class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-hidden focus:bg-white focus:border-gray-500" >
                             <option value="1">1</option>
                             <option value="2">2</option>
                             <option value="3">3</option>

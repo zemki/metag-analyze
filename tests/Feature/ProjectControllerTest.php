@@ -7,14 +7,12 @@ use App\Entry;
 use App\Project;
 use App\Role;
 use App\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ProjectControllerTest extends TestCase
 {
-    use RefreshDatabase;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -29,7 +27,7 @@ class ProjectControllerTest extends TestCase
         }
     }
 
-    public function testIndex()
+    public function test_index()
     {
         $user = User::factory()->researcher()->create();
         $project = Project::factory()->create(['created_by' => $user->id]);
@@ -42,7 +40,7 @@ class ProjectControllerTest extends TestCase
         $response->assertViewHas('projects');
     }
 
-    public function testShow()
+    public function test_show()
     {
         $user = User::factory()->researcher()->create();
         $project = Project::factory()->create(['created_by' => $user->id]);
@@ -54,7 +52,7 @@ class ProjectControllerTest extends TestCase
         $response->assertViewHas('project');
     }
 
-    public function testDestroyProject()
+    public function test_destroy_project()
     {
         $user = User::factory()->researcher()->create();
         $otherUser = User::factory()->researcher()->create();
@@ -79,7 +77,7 @@ class ProjectControllerTest extends TestCase
         $this->assertDatabaseHas('projects', ['id' => $project->id]);
     }
 
-    public function testDestroyCaseWithMultipleCases()
+    public function test_destroy_case_with_multiple_cases()
     {
         $x = 5; // Define x number of cases here.
 
@@ -114,7 +112,7 @@ class ProjectControllerTest extends TestCase
         }
     }
 
-    public function testDestroyProjectWithMultipleInvitedUsers()
+    public function test_destroy_project_with_multiple_invited_users()
     {
         $x = 5; // Define x number of users here.
 
@@ -137,7 +135,7 @@ class ProjectControllerTest extends TestCase
         $this->assertDatabaseMissing('projects', ['id' => $project->id]);
     }
 
-    public function testCreateProjectWithCasesAndEntries()
+    public function test_create_project_with_cases_and_entries()
     {
 
         $user = User::factory()->researcher()->create();
@@ -155,7 +153,7 @@ class ProjectControllerTest extends TestCase
 
     }
 
-    public function testDestroyProjectWithCasesAndEntries()
+    public function test_destroy_project_with_cases_and_entries()
     {
 
         $user = User::factory()->researcher()->create();

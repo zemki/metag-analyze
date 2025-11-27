@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Notifications\researcherNotificationToUser;
+use App\Notifications\VerificationEmail;
 use App\Project;
 use App\User;
 use DB;
@@ -94,7 +95,7 @@ class UserController extends Controller
 
     public function sendEmailVerificationNotification()
     {
-        $this->notify(new \App\Notifications\VerificationEmail);
+        $this->notify(new VerificationEmail);
     }
 
     /**

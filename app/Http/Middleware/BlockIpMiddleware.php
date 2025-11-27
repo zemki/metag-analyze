@@ -3,22 +3,43 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class BlockIpMiddleware
 {
-    public array $blockIps = ['45.93.9.139', '193.168.141.21', '45.86.86.223'];
+    /**
+     * Get the list of blocked IP addresses from environment configuration.
+     *
+     * @return array
+     */
+    protected function getBlockedIps(): array
+    {
+        $blockedIps = env('BLOCKED_IPS', '');
+
+        if (empty($blockedIps)) {
+            return [];
+        }
+
+        // Parse comma-separated IPs and trim whitespace
+        return array_filter(
+            array_map('trim', explode(',', $blockedIps)),
+            fn($ip) => !empty($ip)
+        );
+    }
 
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse)  $next
-     * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
+     * @param  Closure(Request):((Response|RedirectResponse))  $next
+     * @return Response|RedirectResponse
      */
     public function handle(Request $request, Closure $next)
     {
+        $blockedIps = $this->getBlockedIps();
 
-        if (in_array($request->ip(), $this->blockIps)) {
+        if (!empty($blockedIps) && in_array($request->ip(), $blockedIps)) {
             abort(403, 'Nope.');
         }
 

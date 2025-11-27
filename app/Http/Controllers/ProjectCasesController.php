@@ -44,7 +44,7 @@ class ProjectCasesController extends Controller
         }
         $data['entries']['media'] = $mediaValues;
         $data['entries']['availablemedia'] = $availableMedia;
-        //$data['entries']['inputs'] = $inputValues;
+        // $data['entries']['inputs'] = $inputValues;
         $data['entries']['availableinputs'] = $availableInputs;
         $data['case'] = $case;
         $data['project'] = $project;
@@ -83,7 +83,7 @@ class ProjectCasesController extends Controller
                         array_push($inputEntry['inputs'], (object) $tempEntryInputs);
                     }
                 } elseif (strlen($answer) > 1) {
-                    //text & file
+                    // text & file
                     $tempEntryInputs['id'] = $entry['id'];
                     $tempEntryInputs['name'] = $question !== 'file' ? $answer : 'file';
                     foreach ($data['availableInputs'] as $key => $availableInput) {
@@ -177,7 +177,13 @@ class ProjectCasesController extends Controller
                 }
 
                 $user = User::createIfDoesNotExists(User::firstOrNew(['email' => $singleEmail]), request('sendanywayemail'), request('sendanywayemailsubject'), request('sendanywayemailmessage'));
-                $case = $project->addCase($caseName, request('duration'));
+
+                // For MART projects, use a default duration since duration is not applicable
+                $duration = $project->isMartProject()
+                    ? 'value:0|days:0|lastDay:' . Carbon::now()->addYear()->format('Y-m-d')
+                    : request('duration');
+
+                $case = $project->addCase($caseName, $duration);
                 $case->addUser($user);
                 $message .= $user->email . " has been invited. \n";
             }
@@ -207,11 +213,19 @@ class ProjectCasesController extends Controller
         if (request('backendCase')) {
             return;
         }
-        request()->validate([
+
+        // Base validation rules
+        $rules = [
             'name' => 'required',
             'email' => 'required',
-            'duration' => 'required',
-        ]);
+        ];
+
+        // Only require duration for non-MART projects
+        if (! $project->isMartProject()) {
+            $rules['duration'] = 'required';
+        }
+
+        request()->validate($rules);
 
         $emails = Helper::multiexplode([';', ',', ' '], $email);
 
@@ -225,7 +239,7 @@ class ProjectCasesController extends Controller
 
         if (! request('backendCase') && count($invalidEmails) > 0) {
 
-            throw new \Exception(__('Not valid emails: ') . implode(',', $invalidEmails));
+            throw new Exception(__('Not valid emails: ') . implode(',', $invalidEmails));
         }
     }
 
@@ -239,7 +253,7 @@ class ProjectCasesController extends Controller
             $message = $this->createCases($project);
 
             return redirect($project->path())->with(['message' => $message, 'message_type' => 'success']);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
 
             return redirect($project->path() . '/cases/new')
                 ->withErrors(['message' => $e->getMessage()])
@@ -306,9 +320,14 @@ class ProjectCasesController extends Controller
                 continue;
             }
 
-            // Add each input name only once, regardless of type
-            // Multi-choice answers will be comma-separated in a single column
-            array_push($headings, $input->name);
+            $isMultipleOrOneChoice = property_exists($input, 'numberofanswer') && $input->numberofanswer > 0;
+            if ($isMultipleOrOneChoice) {
+                for ($i = 0; $i < $input->numberofanswer; $i++) {
+                    array_push($headings, $input->name);
+                }
+            } else {
+                array_push($headings, $input->name);
+            }
         }
 
         return $headings;
@@ -342,8 +361,6 @@ class ProjectCasesController extends Controller
 
             return $return;
         }, $inputs);
-        // $inputsa = array_column($inputs, 'name');
-        // dd($data['availableInputs']);
         $inputsToFilter = [];
         foreach ($data['availableInputs'] as $key => $availableInput) {
             if (! in_array($availableInput->name, $inputs)) {
@@ -376,5 +393,248 @@ class ProjectCasesController extends Controller
         ];
 
         return $data;
+    }
+
+    /**
+     * Generate QR code for case
+     *
+     * @param Cases $case
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function generateQRCode(Cases $case)
+    {
+        $project = $case->project;
+
+        // Authorize user owns project
+        if (auth()->user()->notOwnerNorInvited($project) && !auth()->user()->isAdmin()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Validate project is NOT MART
+        if ($project->isMartProject()) {
+            return response()->json(['error' => 'QR codes not available for MART projects'], 403);
+        }
+
+        // Validate project is API v2
+        $apiV2CutoffDate = \App\Setting::get('api_v2_cutoff_date');
+        if ($apiV2CutoffDate && $project->created_at < $apiV2CutoffDate) {
+            return response()->json(['error' => 'QR codes only available for API v2 projects'], 403);
+        }
+
+        // Validate case has assigned user
+        if (!$case->user_id || !$case->user) {
+            return response()->json(['error' => 'Cannot generate QR code for case without assigned user'], 400);
+        }
+
+        // Check if any QR token already exists (valid or revoked), return it
+        if ($case->qr_token_uuid) {
+            $url = "metagapp://login?token={$case->qr_token_uuid}";
+            $qrCode = (string) \SimpleSoftwareIO\QrCode\Facades\QrCode::size(300)->format('svg')->generate($url);
+
+            return response()->json([
+                'uuid' => $case->qr_token_uuid,
+                'url' => $url,
+                'qr_code' => $qrCode,
+                'generated_at' => $case->qr_token_generated_at,
+                'case_id' => $case->id,
+                'case_name' => $case->name,
+                'participant_email' => $case->user->email,
+                'is_revoked' => !is_null($case->qr_token_revoked_at),
+                'revoked_at' => $case->qr_token_revoked_at,
+                'revoked_reason' => $case->qr_token_revoked_reason,
+            ]);
+        }
+
+        // Generate new UUID
+        $uuid = (string) \Illuminate\Support\Str::uuid();
+
+        // Create encrypted data
+        $data = [
+            'email' => $case->user->email,
+            'password' => $case->user->password, // Already bcrypt hashed
+            'case_id' => $case->id,
+            'generated_at' => now()->toIso8601String()
+        ];
+        $encrypted = Crypt::encryptString(json_encode($data));
+
+        // Save to database
+        $case->update([
+            'qr_token_uuid' => $uuid,
+            'qr_encrypted_data' => $encrypted,
+            'qr_token_generated_at' => now(),
+            'qr_token_revoked_at' => null,
+            'qr_token_revoked_reason' => null
+        ]);
+
+        // Generate QR code image
+        $url = "metagapp://login?token={$uuid}";
+        $qrCode = (string) \SimpleSoftwareIO\QrCode\Facades\QrCode::size(300)->format('svg')->generate($url);
+
+        return response()->json([
+            'uuid' => $uuid,
+            'url' => $url,
+            'qr_code' => $qrCode,
+            'generated_at' => $case->qr_token_generated_at,
+            'case_id' => $case->id,
+            'case_name' => $case->name,
+            'participant_email' => $case->user->email,
+            'is_revoked' => false,
+            'revoked_at' => null,
+            'revoked_reason' => null,
+        ]);
+    }
+
+    /**
+     * Regenerate QR code for case
+     *
+     * @param Cases $case
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function regenerateQRCode(Cases $case)
+    {
+        $project = $case->project;
+
+        // Authorize user owns project
+        if (auth()->user()->notOwnerNorInvited($project) && !auth()->user()->isAdmin()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Revoke existing QR if valid
+        if ($case->hasValidQRToken()) {
+            $case->revokeQRToken('Regenerated by user');
+        }
+
+        // Generate new QR code
+        return $this->generateQRCode($case);
+    }
+
+    /**
+     * Revoke QR code for case
+     *
+     * @param Cases $case
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function revokeQRCode(Cases $case)
+    {
+        $project = $case->project;
+
+        // Authorize user owns project
+        if (auth()->user()->notOwnerNorInvited($project) && !auth()->user()->isAdmin()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $reason = request('reason', 'Manually revoked');
+
+        $case->update([
+            'qr_token_revoked_at' => now(),
+            'qr_token_revoked_reason' => $reason
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'QR code revoked successfully'
+        ]);
+    }
+
+    /**
+     * Un-revoke (re-enable) QR code for case
+     *
+     * @param Cases $case
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function unrevokeQRCode(Cases $case)
+    {
+        $project = $case->project;
+
+        // Authorize user owns project
+        if (auth()->user()->notOwnerNorInvited($project) && !auth()->user()->isAdmin()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Check if QR code exists and is revoked
+        if (!$case->qr_token_uuid) {
+            return response()->json(['error' => 'No QR code exists for this case'], 400);
+        }
+
+        if (is_null($case->qr_token_revoked_at)) {
+            return response()->json(['error' => 'QR code is not revoked'], 400);
+        }
+
+        $case->update([
+            'qr_token_revoked_at' => null,
+            'qr_token_revoked_reason' => null
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'QR code re-enabled successfully'
+        ]);
+    }
+
+    /**
+     * Close a case early by setting its last day to yesterday
+     * Admin/owner only action for non-MART projects
+     *
+     * @param Cases $case
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function closeEarly(Cases $case)
+    {
+        $project = $case->project;
+
+        // Authorize user owns project or is admin
+        if (auth()->user()->notOwnerNorInvited($project) && !auth()->user()->isAdmin()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Block MART projects (similar to QR code feature)
+        if ($project->isMartProject()) {
+            return response()->json(['error' => 'Cannot close MART project cases early'], 403);
+        }
+
+        // Validate math challenge answer
+        $request = request();
+        $request->validate([
+            'math_answer' => 'required|integer',
+            'expected_answer' => 'required|integer'
+        ]);
+
+        if ((int)$request->math_answer !== (int)$request->expected_answer) {
+            return response()->json(['error' => 'Incorrect math answer'], 422);
+        }
+
+        // Parse the current duration string
+        $duration = $case->duration;
+
+        // Extract existing values
+        $value = Helper::get_string_between($duration, 'value:', '|');
+        $days = Helper::get_string_between($duration, 'days:', '|');
+        $firstDay = Helper::get_string_between($duration, 'firstDay:', '|');
+
+        // If no firstDay, try startDay (legacy format)
+        if (!$firstDay) {
+            $firstDay = Helper::get_string_between($duration, 'startDay:', '|');
+            $firstDayKey = 'startDay';
+        } else {
+            $firstDayKey = 'firstDay';
+        }
+
+        // Set lastDay to yesterday
+        $yesterday = date('d.m.Y', strtotime('yesterday'));
+
+        // Reconstruct duration string
+        $newDuration = "value:{$value}|days:{$days}|lastDay:{$yesterday}|{$firstDayKey}:{$firstDay}";
+
+        // Update case
+        $case->update([
+            'duration' => $newDuration
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Case closed successfully',
+            'new_last_day' => $yesterday,
+            'status' => $case->fresh()->getStatus()->value
+        ]);
     }
 }

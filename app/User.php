@@ -6,10 +6,13 @@ use App\Mail\VerificationEmail;
 use App\Notifications\notifyUserforNewCaseWhenAlreadyRegistered;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasName;
+use Filament\Panel;
 use Helper;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Http\Request;
@@ -17,7 +20,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Mail;
 
-class User extends Authenticatable implements FilamentUser, HasName, MustVerifyEmail
+class User extends Authenticatable implements MustVerifyEmail, FilamentUser, HasName
 {
     use HasFactory, Notifiable, SoftDeletes;
 
@@ -56,16 +59,6 @@ class User extends Authenticatable implements FilamentUser, HasName, MustVerifyE
     protected $hidden = [
         'password', 'remember_token',
     ];
-
-    public function getFilamentName(): string
-    {
-        return $this->email;
-    }
-
-    public function canAccessFilament(): bool
-    {
-        return in_array($this->email, config('utilities.adminemails'));
-    }
 
     public static function boot()
     {
@@ -157,6 +150,37 @@ class User extends Authenticatable implements FilamentUser, HasName, MustVerifyE
     }
 
     /**
+     * Determine if the user can access the Filament admin panel.
+     *
+     * @param  Panel  $panel
+     * @return bool
+     */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->isAdmin();
+    }
+
+    /**
+     * Get the user's display name for Filament.
+     *
+     * @return string
+     */
+    public function getFilamentName(): string
+    {
+        return $this->email ?? 'Unknown User';
+    }
+
+    /**
+     * Get the user's avatar URL for Filament.
+     *
+     * @return string|null
+     */
+    public function getFilamentAvatarUrl(): ?string
+    {
+        return null;
+    }
+
+    /**
      * @return BelongsToMany
      */
     public function roles()
@@ -189,7 +213,7 @@ class User extends Authenticatable implements FilamentUser, HasName, MustVerifyE
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function case()
     {
@@ -197,7 +221,7 @@ class User extends Authenticatable implements FilamentUser, HasName, MustVerifyE
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function actions()
     {
@@ -210,7 +234,7 @@ class User extends Authenticatable implements FilamentUser, HasName, MustVerifyE
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     * @return HasOne
      */
     public function latestCase()
     {
@@ -231,7 +255,7 @@ class User extends Authenticatable implements FilamentUser, HasName, MustVerifyE
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function projects()
     {
@@ -239,7 +263,7 @@ class User extends Authenticatable implements FilamentUser, HasName, MustVerifyE
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     * @return HasOne
      */
     public function profile()
     {

@@ -24,6 +24,7 @@ use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
 use Illuminate\Foundation\Http\Middleware\ValidatePostSize;
+use Illuminate\Http\Middleware\HandleCors;
 use Illuminate\Http\Middleware\SetCacheHeaders;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Routing\Middleware\ThrottleRequests;
@@ -46,7 +47,7 @@ class Kernel extends HttpKernel
         TrimStrings::class,
         ConvertEmptyStringsToNull::class,
         TrustProxies::class,
-        \Illuminate\Http\Middleware\HandleCors::class,
+        HandleCors::class,
     ];
 
     /**
@@ -66,7 +67,7 @@ class Kernel extends HttpKernel
             BlockIpMiddleware::class,
         ],
         'api' => [
-            'throttle:60,1',
+            'throttle:120,1',
             'bindings',
         ],
     ];

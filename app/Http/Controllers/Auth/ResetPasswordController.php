@@ -88,7 +88,7 @@ class ResetPasswordController extends Controller
         } elseif (! Hash::check($request->token, $tokenData->token)) {
             return view('auth.passwords.email', ['message' => 'Token mismatch']);
         }
-        //Delete the token
+        // Delete the token
         DB::table('password_resets')->where('email', $request->email)
             ->delete();
         $user = User::where('email', '=', $request->email)->first();

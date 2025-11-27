@@ -1,6 +1,6 @@
 @if ($paginator->hasPages())
 <div>
-  <nav class="relative z-0 inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+  <nav class="relative z-0 inline-flex -space-x-px rounded-md shadow-xs" aria-label="Pagination">
     @if (!$paginator->onFirstPage())
     <a href="{{ $paginator->previousPageUrl() }}"
       class="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50">

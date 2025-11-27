@@ -66,14 +66,14 @@
             <div class="flex flex-wrap">
                 <div class="sm:w-1/4 pr-4 pl-4">
                     <select name="replace"
-                            class="block appearance-none w-1/3 bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500 my-2">
+                            class="block appearance-none w-1/3 bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-hidden focus:bg-white focus:border-gray-500 my-2">
                         <option value="0">Append new translations</option>
                         <option value="1">Replace existing translations</option>
                     </select>
                 </div>
                 <div class="sm:w-1/5 pr-4 pl-4">
                     <button type="submit"
-                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring my-2"
+                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-hidden focus:ring my-2"
                             data-disable-with="Loading..">Import
                         groups
                     </button>
@@ -88,7 +88,7 @@
         <div class="mb-4">
             <input type="hidden" name="_token" value="<?php echo csrf_token(); ?>">
             <button type="submit"
-                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring my-2"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-hidden focus:ring my-2"
                     data-disable-with="Searching..">Find translations in files
             </button>
         </div>
@@ -101,7 +101,7 @@
               data-confirm="Are you sure you want to publish the translations group '<?php echo $group ?>? This will overwrite existing language files.">
             <input type="hidden" name="_token" value="<?php echo csrf_token(); ?>">
             <button type="submit"
-                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-hidden focus:ring"
                     data-disable-with="Publishing..">Publish translations
             </button>
             <a href="<?= action('\Barryvdh\TranslationManager\Controller@getIndex') ?>"
@@ -117,7 +117,7 @@
                 translations. If no groups are visisble, make sure you have run
                 the migrations and imported the translations.</p>
             <select name="group" id="group"
-                    class="group-select block appearance-none w-1/3 bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500 my-2">
+                    class="group-select block appearance-none w-1/3 bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-hidden focus:bg-white focus:border-gray-500 my-2">
                 <?php foreach($groups as $key => $value): ?>
                     <option
                         value="<?php echo $key ?>"<?php echo $key == $group ? ' selected' : '' ?>><?php echo $value ?></option>
@@ -128,12 +128,12 @@
             <label class="block text-gray-500 font-bold md:text-left mt-5 md:mb-0 pr-4">Enter a new group name and
                 start edit translations in that group</label>
             <input type="text"
-                   class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-1/3 py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
+                   class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-1/3 py-2 px-4 text-gray-700 leading-tight focus:outline-hidden focus:bg-white focus:border-purple-500"
                    name="new-group"/>
         </div>
         <div class="mb-4">
             <input type="submit"
-                   class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring mt-2"
+                   class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-hidden focus:ring mt-2"
                    name="add-group" value="Add and edit keys"/>
         </div>
     </form>
@@ -145,13 +145,13 @@
             <label class="block text-gray-500 font-bold md:text-left mb-0 pr-4 mt-4">Add new keys to this
                 group</label>
             <textarea
-                class="mt-0 bg-gray-200 appearance-none border-2 border-gray-200 rounded w-1/3 py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
+                class="mt-0 bg-gray-200 appearance-none border-2 border-gray-200 rounded w-1/3 py-2 px-4 text-gray-700 leading-tight focus:outline-hidden focus:bg-white focus:border-purple-500"
                 rows="3" name="keys"
                 placeholder="Add 1 key per line, without the group prefix"></textarea>
 
             <div class="mb-4">
                 <input type="submit" value="Add keys"
-                       class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring mt-2">
+                       class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-hidden focus:ring mt-2">
             </div>
         </form>
         <hr>
@@ -179,7 +179,7 @@
 
                         <td>
                             <a href="#edit"
-                               class="bg-gray-200 appearance-none border-2 border-gray-200 rounded py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500 editable status-<?php echo $t ? $t->status : 0 ?> locale-<?php echo $locale ?>"
+                               class="bg-gray-200 appearance-none border-2 border-gray-200 rounded py-2 px-4 text-gray-700 leading-tight focus:outline-hidden focus:bg-white focus:border-purple-500 editable status-<?php echo $t ? $t->status : 0 ?> locale-<?php echo $locale ?>"
                                data-locale="<?php echo $locale ?>"
                                data-name="<?php echo $locale . "|" . htmlentities($key, ENT_QUOTES, 'UTF-8', false) ?>"
                                data-type="textarea" data-pk="<?php echo $t ? $t->id : 0 ?>"
@@ -238,11 +238,11 @@
                     <div class="flex flex-wrap">
                         <div class="sm:w-1/4 pr-4 pl-4">
                             <input type="text" name="new-locale"
-                                   class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-1/3 py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"/>
+                                   class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-1/3 py-2 px-4 text-gray-700 leading-tight focus:outline-hidden focus:bg-white focus:border-purple-500"/>
                         </div>
                         <div class="sm:w-1/5 pr-4 pl-4">
                             <button type="submit"
-                                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring mt-2"
+                                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-hidden focus:ring mt-2"
                                     data-disable-with="Adding..">Add new
                                 locale
                             </button>
@@ -259,7 +259,7 @@
                   data-confirm="Are you sure you want to publish all translations group? This will overwrite existing language files.">
                 <input type="hidden" name="_token" value="<?php echo csrf_token(); ?>">
                 <button type="submit"
-                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring mt-2"
+                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-hidden focus:ring mt-2"
                         data-disable-with="Publishing..">Publish all
                 </button>
             </form>

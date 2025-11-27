@@ -2,11 +2,14 @@
 
 namespace App;
 
+use App\Enums\CaseStatus;
 use App\Helpers\Helper;
-use DB;
+use App\Notifications\researcherNotificationToUser;
+use App\Setting;
 use File;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Notifications\DatabaseNotificationCollection;
 use JetBrains\PhpStorm\Pure;
 
@@ -40,6 +43,12 @@ class Cases extends Model
     protected $appends = ['entries_count'];
 
     protected $guarded = [];
+
+    protected $casts = [
+        'first_login_at' => 'datetime',
+        'qr_token_generated_at' => 'datetime',
+        'qr_token_revoked_at' => 'datetime',
+    ];
 
     public static function boot()
     {
@@ -178,8 +187,11 @@ class Cases extends Model
      *
      * @return false|string
      */
-    public static function calculateDuration(int $datetime, $caseDuration)
+    public static function calculateDuration(?int $datetime, $caseDuration)
     {
+        // Default to current timestamp if datetime is not provided (e.g., QR code login)
+        $datetime = $datetime ?? time();
+
         $sub = substr($caseDuration, strpos($caseDuration, ':') + strlen(':'), strlen($caseDuration));
         $realDuration = (int) substr($sub, 0, strpos($sub, '|'));
 
@@ -187,7 +199,7 @@ class Cases extends Model
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function project()
     {
@@ -237,11 +249,116 @@ class Cases extends Model
         $this->user()->associate($user);
         $this->save();
 
+        // Auto-create planned notifications for MART projects with repeating questionnaires
+        $this->createAutoNotificationsForMartProject($user);
+
         return $user;
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * Create automatic planned notifications for MART projects with repeating questionnaires
+     */
+    private function createAutoNotificationsForMartProject($user)
+    {
+        $project = $this->project;
+
+        // First, try to use new questionnaire schedules system from MART database
+        $martProject = $project->martProject();
+        if ($martProject) {
+            $schedules = \App\Mart\MartSchedule::forProject($martProject->id)->get();
+            if ($schedules->isNotEmpty()) {
+                $this->createNotificationsFromSchedules($user, $schedules);
+
+                return;
+            }
+        }
+
+        // Fallback to legacy notification config for backward compatibility
+        $inputs = json_decode($project->inputs, true);
+
+        if (! $inputs || ! is_array($inputs)) {
+            return;
+        }
+
+        // Find MART configuration
+        $martConfig = null;
+        foreach ($inputs as $input) {
+            if (isset($input['type']) && $input['type'] === 'mart') {
+                $martConfig = $input;
+                break;
+            }
+        }
+
+        if (! $martConfig || ! isset($martConfig['projectOptions'])) {
+            return;
+        }
+
+        $options = $martConfig['projectOptions'];
+
+        // Check if this is a repeating questionnaire with notification config (legacy)
+        if (isset($options['questionnaireType']) &&
+            $options['questionnaireType'] === 'repeating' &&
+            isset($options['notificationConfig']) &&
+            $options['notificationConfig']['enabled']) {
+
+            $notificationConfig = $options['notificationConfig'];
+
+            // Create the planning string in the format expected by the system
+            $frequency = $this->mapFrequencyToText($notificationConfig['frequency']);
+            $planningText = $frequency . ' at 09:00'; // Default time, can be customized
+
+            // Create planned notification (legacy format)
+            $user->notify(new researcherNotificationToUser([
+                'title' => 'Study Reminder',
+                'message' => $notificationConfig['text'] ?? 'You have a new questionnaire available',
+                'case' => ['id' => $this->id],
+                'planning' => $planningText,
+            ]));
+        }
+    }
+
+    /**
+     * Create notifications from new questionnaire schedules system
+     */
+    public function createNotificationsFromSchedules($user, $schedules)
+    {
+        foreach ($schedules as $schedule) {
+            $notificationConfig = $schedule->notification_config ?? [];
+            $timingConfig = $schedule->timing_config ?? [];
+
+            if ($schedule->type === 'repeating' && ($notificationConfig['show_notifications'] ?? false)) {
+                // Create the planning string in the format expected by the system
+                $planningText = 'Every day at '.($timingConfig['daily_start_time'] ?? '09:00');
+
+                // Create planned notification with questionnaire ID
+                $user->notify(new researcherNotificationToUser([
+                    'title' => $schedule->name ?? 'Study Reminder',
+                    'message' => $notificationConfig['notification_text'] ?? 'You have a new questionnaire available',
+                    'case' => ['id' => $this->id],
+                    'questionnaire_id' => $schedule->questionnaire_id,
+                    'planning' => $planningText,
+                ]));
+            }
+        }
+    }
+
+    /**
+     * Map frequency values to text format expected by notification system
+     */
+    private function mapFrequencyToText($frequency)
+    {
+        $mapping = [
+            'daily' => 'Every day',
+            'every-2-days' => 'Every 2 days',
+            'every-3-days' => 'Every 3 days',
+            'weekly' => 'Every week',
+        ];
+
+        return $mapping[$frequency] ?? 'Every day';
+    }
+
+    /**
+     * @return BelongsTo
      */
     public function user()
     {
@@ -312,6 +429,12 @@ class Cases extends Model
     #[Pure]
     public function isBackend(): bool
     {
+        // For MART projects, cases are never considered "backend"
+        // since they're designed for mobile app usage
+        if ($this->project && $this->project->isMartProject()) {
+            return false;
+        }
+
         return Helper::get_string_between($this->duration, 'value:', '|') == 0;
     }
 
@@ -322,7 +445,6 @@ class Cases extends Model
 
     public function plannedNotifications()
     {
-        //return DB::select('SELECT *  FROM notifications WHERE data NOT LIKE ? and data LIKE ? and data LIKE ?', ['%"planning":false%', '%planning%', '%"case":' . $this->id . '%']);
 
         return Notification::whereJsonDoesntContain('data->planning', false)
             ->where('data->case', $this->id)
@@ -339,6 +461,52 @@ class Cases extends Model
     }
 
     /**
+     * Get the current status of this case
+     */
+    public function getStatus(): CaseStatus
+    {
+        // Backend cases (standard projects only)
+        if ($this->isBackend()) {
+            return CaseStatus::BACKEND;
+        }
+
+        $now = strtotime(date('Y-m-d H:i:s'));
+        $lastDay = $this->lastDay();
+        $firstDay = $this->firstDay();
+
+        // If no lastDay set or before firstDay, it's pending
+        if (empty($lastDay) || ($firstDay && $now < strtotime($firstDay))) {
+            return CaseStatus::PENDING;
+        }
+
+        // If past lastDay, it's completed
+        if ($now > strtotime($lastDay)) {
+            return CaseStatus::COMPLETED;
+        }
+
+        // Otherwise it's active
+        return CaseStatus::ACTIVE;
+    }
+
+    /**
+     * Check if case is accessible for data entry/viewing
+     * For MART projects: only completed cases are accessible
+     * For standard projects: active and completed cases are accessible
+     */
+    public function isAccessible(): bool
+    {
+        $status = $this->getStatus();
+
+        if ($this->project && $this->project->isMartProject()) {
+            // MART projects: only completed cases are accessible
+            return $status === CaseStatus::COMPLETED;
+        }
+
+        // Standard projects: active and completed cases are accessible
+        return $status === CaseStatus::ACTIVE || $status === CaseStatus::COMPLETED;
+    }
+
+    /**
      * Accessor for entries_count, which is the count of entries
      *
      * @return int
@@ -346,5 +514,56 @@ class Cases extends Model
     public function getEntriesCountAttribute()
     {
         return $this->entries()->count();
+    }
+
+    /**
+     * Check if case has a valid (non-revoked) QR token
+     *
+     * @return bool
+     */
+    public function hasValidQRToken(): bool
+    {
+        return !is_null($this->qr_token_uuid)
+            && is_null($this->qr_token_revoked_at);
+    }
+
+    /**
+     * Revoke the QR token
+     *
+     * @param string|null $reason
+     * @return void
+     */
+    public function revokeQRToken(string $reason = null): void
+    {
+        $this->update([
+            'qr_token_revoked_at' => now(),
+            'qr_token_revoked_reason' => $reason ?? 'Revoked'
+        ]);
+    }
+
+    /**
+     * Check if case can generate QR code (API v2, non-MART, has user)
+     *
+     * @return bool
+     */
+    public function canGenerateQRCode(): bool
+    {
+        // Must have assigned user
+        if (!$this->user_id || !$this->user) {
+            return false;
+        }
+
+        // Must not be MART project
+        if ($this->project->isMartProject()) {
+            return false;
+        }
+
+        // Must be API v2 project
+        $cutoffDate = Setting::get('api_v2_cutoff_date');
+        if ($cutoffDate && $this->project->created_at < $cutoffDate) {
+            return false;
+        }
+
+        return true;
     }
 }

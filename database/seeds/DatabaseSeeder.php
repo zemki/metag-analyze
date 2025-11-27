@@ -14,6 +14,49 @@ class DatabaseSeeder extends Seeder
 
         $this->call(RolesTableSeeder::class);
         $this->call(UserRoleTableSeeder::class);
-        $this->call(ProjectCaseUserEntrySeeder::class);
+
+        // Seed MART authentication user
+        $this->call(MartAuthSeeder::class);
+
+        // Seed Playwright test user
+        $this->call(PlaywrightUserSeeder::class);
+
+        // Always seed media first
+        $this->call(MediaSeeder::class);
+
+        // Ask user which seeder to run
+        $choice = $this->command->choice(
+            'Which data seeder would you like to run?',
+            ['Interactive (original)', 'Realistic (new)', 'MART Projects', 'Combined (Realistic + MART)', 'Staging MART Setup', 'All'],
+            4 // Default to 'Staging MART Setup'
+        );
+
+        switch ($choice) {
+            case 'Interactive (original)':
+                $this->call(ProjectCaseUserEntrySeeder::class);
+                break;
+            case 'Realistic (new)':
+                $this->call(RealisticDataSeeder::class);
+                break;
+            case 'MART Projects':
+                $this->call('MartProjectSeeder');
+                break;
+            case 'Combined (Realistic + MART)':
+                $this->command->info('Running Combined Data Seeder...');
+                $this->command->info('Creating realistic standard projects...');
+                $this->call(RealisticDataSeeder::class);
+                $this->command->info('Creating MART/ESM projects...');
+                $this->call('MartProjectSeeder');
+                $this->command->info('Combined seeding completed!');
+                break;
+            case 'Staging MART Setup':
+                $this->call(StagingMartSeeder::class);
+                break;
+            case 'All':
+                $this->call(ProjectCaseUserEntrySeeder::class);
+                $this->call(RealisticDataSeeder::class);
+                $this->call('MartProjectSeeder');
+                break;
+        }
     }
 }

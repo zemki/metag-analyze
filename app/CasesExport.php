@@ -41,21 +41,48 @@ class CasesExport implements FromCollection, WithHeadings, WithMapping
             }
             $jsonInputs = json_decode($entry->inputs);
             foreach ($this->headings() as $heading) {
-                // Initialize all headings with empty string
-                $tempValuesArray[$heading] = '';
+                // print the question as many times as you have answer to question
+                if (count(array_keys($this->headings(), $heading)) > 1) {
+                    $tempValuesArray[$heading] = [];
+                    foreach (array_keys($this->headings(), $heading) as $key) {
+                        array_push($tempValuesArray[$heading], $this->headings()[$key]);
+                    }
+                } else {
+                    $tempValuesArray[$heading] = '';
+                }
             }
             $tempValuesArray['#'] = $entry->id;
             foreach ($jsonInputs as $key => $input) {
-                if ($key === 'firstValue' || $key === 'file') {
+                if ($key === 'firstValue') {
                     continue;
                 }
+                $index = [];
+                $numberOfAnswersByQuestion = $project->getNumberOfAnswersByQuestion($key);
+                if ($numberOfAnswersByQuestion > 0) {
+                    if ($input != null) {
+                        if (! is_array($input)) {
+                            $input = [$input];
+                        }
 
-                // If input is an array, join it with commas (for multiple choice)
-                // Otherwise, use the value as-is
-                if (is_array($input)) {
-                    $tempValuesArray[$key] = implode(', ', $input);
+                        foreach ($input as $value) {
+                            $index[array_search($value, $projectInputNames[$key])] = $value;
+                        }
+                        for ($i = 0; $i < $numberOfAnswersByQuestion; $i++) {
+                            $tempValuesArray[$key][$i] = [];
+                            if (array_key_exists($i, $index)) {
+                                array_push($tempValuesArray[$key][$i], $index[$i]);
+                            } else {
+                                array_push($tempValuesArray[$key][$i], '');
+                            }
+                        }
+                    } else {
+                        for ($i = 0; $i < $numberOfAnswersByQuestion; $i++) {
+                            $tempValuesArray[$key][$i] = [];
+                            array_push($tempValuesArray[$key][$i], '');
+                        }
+                    }
                 } else {
-                    $tempValuesArray[$key] = $input ?? '';
+                    $tempValuesArray[$key] = $input;
                 }
             }
         }

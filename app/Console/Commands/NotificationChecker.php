@@ -3,6 +3,10 @@
 namespace App\Console\Commands;
 
 use App\Cases;
+use App\Entry;
+use App\Mart\MartProject;
+use App\Mart\MartSchedule;
+use App\MartQuestionnaireSchedule;
 use App\Notifications\researcherNotificationToUser;
 use DB;
 use Illuminate\Console\Command;
@@ -71,12 +75,23 @@ class NotificationChecker extends Command
                 $timeFromDatabase = strtotime($case->user->profile->last_notification_at);
                 $nowMinusTimeFromDatabase = time() - $timeFromDatabase;
                 $acceptanceWindow = 10;
-                $enoughTimeHasPassed = $nowMinusTimeFromDatabase + $acceptanceWindow >= $differenceBetweenLastNotification;
-                if ($enoughTimeHasPassed) {
-                    $this->sendNotification($case, $notification, $notificationSent);
+                // Enhanced logic for questionnaire-aware scheduling
+                if (isset($notification->data->questionnaire_id)) {
+                    $shouldSend = $this->shouldSendQuestionnaireNotification($case, $notification);
+                    if ($shouldSend) {
+                        $this->sendNotification($case, $notification, $notificationSent);
+                    } else {
+                        $notificationCheckedButNotSent++;
+                    }
                 } else {
-                    $notificationCheckedButNotSent++;
-                    $this->info('notification already sent last ' . ($differenceBetweenLastNotification / 60 / 60) . 'h');
+                    // Legacy logic for backward compatibility
+                    $enoughTimeHasPassed = $nowMinusTimeFromDatabase + $acceptanceWindow >= $differenceBetweenLastNotification;
+                    if ($enoughTimeHasPassed) {
+                        $this->sendNotification($case, $notification, $notificationSent);
+                    } else {
+                        $notificationCheckedButNotSent++;
+                        $this->info('notification already sent last ' . ($differenceBetweenLastNotification / 60 / 60) . 'h');
+                    }
                 }
             }
         }
@@ -91,6 +106,65 @@ class NotificationChecker extends Command
     }
 
     /**
+     * Check if questionnaire notification should be sent based on schedule rules
+     */
+    private function shouldSendQuestionnaireNotification(Cases $case, $notification): bool
+    {
+        $questionnaireId = $notification->data->questionnaire_id;
+
+        // Get MART project and schedule from MART database
+        $martProject = $case->project->martProject();
+        if (! $martProject) {
+            return false; // No MART project, don't send
+        }
+
+        $schedule = MartSchedule::forProject($martProject->id)
+            ->where('questionnaire_id', $questionnaireId)
+            ->first();
+
+        if (! $schedule) {
+            return false; // No schedule found, don't send
+        }
+
+        // Check if we're within the daily time window
+        $currentTime = date('H:i');
+        $startTime = $schedule->timing_config['daily_start_time'] ?? '00:00';
+        $endTime = $schedule->timing_config['daily_end_time'] ?? '23:59';
+
+        if ($currentTime < $startTime || $currentTime > $endTime) {
+            return false; // Outside daily window
+        }
+
+        // Check daily submission limits for repeating questionnaires
+        $maxDailySubmits = $schedule->timing_config['max_daily_submits'] ?? null;
+        if ($schedule->type === 'repeating' && $maxDailySubmits) {
+            $todayStart = date('Y-m-d 00:00:00');
+            $todayEntries = Entry::where('case_id', $case->id)
+                ->where('created_at', '>=', $todayStart)
+                ->whereJsonContains('inputs->_mart_metadata->questionnaire_id', $questionnaireId)
+                ->count();
+
+            if ($todayEntries >= $maxDailySubmits) {
+                return false; // Daily limit reached
+            }
+        }
+
+        // Check minimum break between questionnaires
+        $minBreakBetween = $schedule->timing_config['min_break_between'] ?? null;
+        if ($minBreakBetween && $case->user->profile->last_notification_at) {
+            $lastNotificationTime = strtotime($case->user->profile->last_notification_at);
+            $minBreakSeconds = $minBreakBetween * 60; // Convert minutes to seconds
+            $timeSinceLastNotification = time() - $lastNotificationTime;
+
+            if ($timeSinceLastNotification < $minBreakSeconds) {
+                return false; // Not enough time passed since last notification
+            }
+        }
+
+        return true; // All checks passed
+    }
+
+    /**
      * @param  object|Builder|Cases|null  $case
      */
     private function sendNotification(?Cases $case, mixed $notification, int &$notificationSent): void
@@ -98,8 +172,20 @@ class NotificationChecker extends Command
         $user = $case->user;
         $user->profile->last_notification_at = date('Y-m-d H:i:s');
         $user->profile->save();
-        $user->notify(new researcherNotificationToUser(['title' => $notification->data->title, 'message' => $notification->data->message, 'case' => $case]));
-        $this->info('Notification sent to ' . $user->email);
+
+        // Include questionnaire_id in notification if available
+        $notificationData = [
+            'title' => $notification->data->title,
+            'message' => $notification->data->message,
+            'case' => $case,
+        ];
+
+        if (isset($notification->data->questionnaire_id)) {
+            $notificationData['questionnaire_id'] = $notification->data->questionnaire_id;
+        }
+
+        $user->notify(new researcherNotificationToUser($notificationData));
+        $this->info('Notification sent to ' . $user->email . (isset($notification->data->questionnaire_id) ? " (questionnaire: {$notification->data->questionnaire_id})" : ''));
         $notificationSent++;
     }
 }

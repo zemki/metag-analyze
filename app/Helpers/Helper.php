@@ -30,18 +30,89 @@ class Helper
     }
 
     /**
-     * return extension of base64 file
+     * Securely extract and validate file extension from base64 data URI
      *
-     * @param  string  $uri  base64 file uri
-     * @return string image extension
+     * SECURITY: This method validates the actual file content using finfo
+     * to prevent MIME type spoofing attacks. Only whitelisted file types
+     * are allowed (audio and image formats for research data collection).
+     *
+     * @param  string  $uri  base64 file data URI (e.g., data:audio/mpeg;base64,...)
+     * @return string  Validated file extension (e.g., 'mp3', 'jpg')
+     *
+     * @throws \InvalidArgumentException if file type is not allowed or invalid
      */
     public static function extension($uri)
     {
-        $img = explode(',', $uri);
-        $ini = substr($img[0], 11);
-        $type = explode(';', $ini);
+        // Whitelist of allowed MIME types to file extensions
+        // Only audio and image formats used for research data collection
+        $allowedMimeTypes = [
+            // Audio formats
+            'audio/mpeg' => 'mp3',
+            'audio/mp3' => 'mp3',
+            'audio/x-mpeg' => 'mp3',
+            'audio/mp4' => 'm4a',
+            'audio/x-m4a' => 'm4a',
+            'audio/aac' => 'aac',
+            'audio/x-hx-aac-adts' => 'aac',
+            'audio/wav' => 'wav',
+            'audio/x-wav' => 'wav',
+            'audio/wave' => 'wav',
+            'audio/ogg' => 'ogg',
+            'audio/webm' => 'webm',
+            'audio/flac' => 'flac',
+            // Image formats
+            'image/jpeg' => 'jpg',
+            'image/jpg' => 'jpg',
+            'image/png' => 'png',
+            'image/gif' => 'gif',
+            'image/webp' => 'webp',
+            'image/svg+xml' => 'svg',
+        ];
 
-        return $type[0];
+        try {
+            // Split data URI into header and data parts
+            $parts = explode(',', $uri, 2);
+            if (count($parts) !== 2) {
+                throw new \InvalidArgumentException('Invalid data URI format');
+            }
+
+            // Decode the base64 data
+            $data = base64_decode($parts[1], true);
+            if ($data === false) {
+                throw new \InvalidArgumentException('Invalid base64 encoding');
+            }
+
+            // Use finfo to detect the ACTUAL MIME type from file content
+            // This prevents MIME type spoofing attacks
+            $finfo = new \finfo(FILEINFO_MIME_TYPE);
+            $detectedMimeType = $finfo->buffer($data);
+
+            // Normalize MIME type (remove charset if present)
+            $detectedMimeType = strtolower(explode(';', $detectedMimeType)[0]);
+
+            // Check if the detected MIME type is in our whitelist
+            if (!isset($allowedMimeTypes[$detectedMimeType])) {
+                throw new \InvalidArgumentException(
+                    "File type not allowed. Detected MIME type: {$detectedMimeType}. ".
+                    'Only audio and image files are permitted for research data collection.'
+                );
+            }
+
+            // Return the safe, validated extension
+            return $allowedMimeTypes[$detectedMimeType];
+
+        } catch (\Exception $e) {
+            // Log the security incident
+            \Log::warning('File upload security validation failed', [
+                'error' => $e->getMessage(),
+                'uri_header' => substr($uri, 0, 50), // Log only header, not full data
+            ]);
+
+            // Throw exception to prevent insecure file storage
+            throw new \InvalidArgumentException(
+                'File validation failed: ' . $e->getMessage()
+            );
+        }
     }
 
     /**

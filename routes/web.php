@@ -1,4 +1,5 @@
 <?php
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -48,6 +49,7 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified', 'LoggedUser']],
     Route::post('/projects', 'ProjectController@store')->name('projects');
     Route::get('/projects/new', 'ProjectController@create');
     Route::get('/projects/{project}', 'ProjectController@show');
+    Route::get('/projects/{project}/cases', 'ProjectController@getCases');
     Route::patch('/projects/{project}', 'ProjectController@update');
     Route::delete('/projects/{project}', 'ProjectController@destroy')->name('projects.destroy');
 
@@ -55,6 +57,15 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified', 'LoggedUser']],
     Route::post('/projects/invite', 'ProjectController@inviteUser');
     Route::post('/projects/invite/{user}', 'ProjectController@removeFromProject');
     Route::get('/projects/{project}/duplicate', 'ProjectController@duplicate');
+
+    /**
+     * MART Questionnaire Routes
+     */
+    Route::get('/projects/{project}/questionnaires', 'MartQuestionnaireController@index');
+    Route::post('/projects/{project}/questionnaires', 'MartQuestionnaireController@store');
+    Route::put('/questionnaires/{schedule}/questions', 'MartQuestionnaireController@updateQuestions');
+    Route::get('/questionnaires/{schedule}/history', 'MartQuestionnaireController@history');
+    Route::delete('/questionnaires/{schedule}', 'MartQuestionnaireController@destroy');
 
     /**
      * Case Routes
@@ -65,11 +76,26 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified', 'LoggedUser']],
     Route::post('/projects/{project}/cases', 'ProjectCasesController@store');
     Route::get('/projects/{project}/distinctcases/{case}', 'ProjectCasesController@distinctshow');
     Route::get('/projects/{project}/groupedcases/{case}', 'ProjectCasesController@groupedshow');
+    Route::get('/projects/{project}/treemap', 'ProjectController@treemap');
     Route::get('/cases/{case}/export', 'ProjectCasesController@export');
     Route::patch('/projects/{project}/cases/{case}', 'ProjectCasesController@update');
     Route::delete('/cases/{case}', 'ProjectCasesController@destroy')->name('cases.destroy');
     Route::get('/cases/{case}/files', 'FileCasesController@index');
+    Route::get('/files/{file}', 'FileCasesController@show'); // Web route for audio player
     Route::delete('/cases/{case}/files/{file}', 'FileCasesController@destroy');
+
+    /**
+     * QR Code Routes (API v2 non-MART projects only)
+     */
+    Route::get('/cases/{case}/qrcode', 'ProjectCasesController@generateQRCode');
+    Route::post('/cases/{case}/qrcode/regenerate', 'ProjectCasesController@regenerateQRCode');
+    Route::post('/cases/{case}/qrcode/revoke', 'ProjectCasesController@revokeQRCode');
+    Route::post('/cases/{case}/qrcode/unrevoke', 'ProjectCasesController@unrevokeQRCode');
+
+    /**
+     * Case Management Routes (Admin only)
+     */
+    Route::post('/cases/{case}/close-early', 'ProjectCasesController@closeEarly');
 
     /**
      * User Routes

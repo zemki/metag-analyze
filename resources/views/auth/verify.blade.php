@@ -48,7 +48,7 @@
                     @csrf
                 </form>
                 <a href="#"
-                    class="rounded-md bg-blue-500 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500" onclick="event.preventDefault();document.getElementById('resend-form').submit();">{{ __('click here to request another') }}</a>
+                    class="rounded-md bg-blue-500 px-3.5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-blue-700 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500" onclick="event.preventDefault();document.getElementById('resend-form').submit();">{{ __('click here to request another') }}</a>
                 <a href="#" class="text-sm font-semibold leading-6 text-gray-900" href="{{ route('logout') }}"
                    onclick="event.preventDefault();
                         document.getElementById('logout-form').submit();">{{ __('Logout') }} <span

@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -41,15 +42,15 @@ class AllCasesExport implements FromCollection, WithHeadings, WithMapping
                 if ($ifCaseHasAdditionalInputs) {
                     [$jsonInputs, $tempValuesArray] = $this->formatAssociativeNamesAccordingToHeadings($entry, $tempValuesArray);
 
-                    //$tempValuesArray[self::ENTRY_ID] = $entry->id;
+                    // $tempValuesArray[self::ENTRY_ID] = $entry->id;
                     $tempValuesArray = $this->printValuesInArray($project, $jsonInputs, $tempValuesArray);
                 }
                 $tempValuesArray[self::ENTRY_ID] = $entry->id;
-                
+
                 // Handle missing media safely
                 $media = $entry->media_id ? Media::where('id', $entry->media_id)->first() : null;
                 $tempValuesArray['media'] = $media ? $media->name : '';
-                
+
                 $tempValuesArray['start'] = $entry->begin;
                 $tempValuesArray['end'] = $entry->end;
                 $tempValuesArray['user_id'] = $case->user_id;
@@ -74,8 +75,13 @@ class AllCasesExport implements FromCollection, WithHeadings, WithMapping
         $jsonInputs = json_decode($entry->inputs, true);
         $headings = $this->headings();
         foreach ($headings as $heading) {
-            // Initialize all headings with empty string
-            $tempValuesArray[$heading] = '';
+            // print the question as many times as you have answer to question
+            $headingKeys = array_keys($headings, $heading);
+            if (count($headingKeys) > 1) {
+                $tempValuesArray[$heading] = array_map(fn ($key) => $headings[$key], $headingKeys);
+            } else {
+                $tempValuesArray[$heading] = '';
+            }
         }
 
         return [$jsonInputs, $tempValuesArray];
@@ -106,19 +112,26 @@ class AllCasesExport implements FromCollection, WithHeadings, WithMapping
      */
     private function printValuesInArray($project, $jsonInputs, $tempValuesArray)
     {
+        // build index array to then print the answers in the correct column
+        foreach ($project->getProjectInputNames() as $name) {
+            $projectInputNames[$name] = $project->getAnswersByQuestion($name);
+        }
+
         // Process ALL project input names to ensure all columns are filled
         foreach ($project->getProjectInputNames() as $inputName) {
-            if ($inputName === 'firstValue' || $inputName === 'file') {
+            if ($inputName === 'firstValue') {
                 continue;
             }
+
+            $index = [];
+            $numberOfAnswersByQuestion = $project->getNumberOfAnswersByQuestion($inputName);
+            $questionIsMultipleOrOneChoice = $numberOfAnswersByQuestion > 0;
 
             // Get the input value from jsonInputs, or use empty string if not present
             $input = $jsonInputs[$inputName] ?? '';
 
-            // If input is an array, join it with commas (for multiple choice)
-            // Otherwise, use the value as-is
-            if (is_array($input)) {
-                $tempValuesArray[$inputName] = implode(', ', $input);
+            if ($questionIsMultipleOrOneChoice) {
+                $this->formatMultipleAndOneChoiceValues($tempValuesArray, $input, $index, $projectInputNames, $inputName, $numberOfAnswersByQuestion);
             } else {
                 $tempValuesArray[$inputName] = $input;
             }
@@ -128,7 +141,28 @@ class AllCasesExport implements FromCollection, WithHeadings, WithMapping
     }
 
     /**
-     * @return Project[]|\Illuminate\Support\Collection|\LaravelIdea\Helper\App\_IH_Project_C
+     * This function formats the values of multiple and one choice questions
+     * Multiple answers are comma-separated in a single column
+     */
+    private function formatMultipleAndOneChoiceValues(&$tempValuesArray, $input, array $index, $projectInputNames, $key, $numberOfAnswersByQuestion): void
+    {
+        // Handle empty or null input
+        if (is_null($input) || $input === '' || (is_array($input) && empty($input))) {
+            $tempValuesArray[$key] = '';
+            return;
+        }
+
+        // Ensure input is an array
+        if (! is_array($input)) {
+            $input = [$input];
+        }
+
+        // Join multiple values with comma separator for single column output
+        $tempValuesArray[$key] = implode(', ', $input);
+    }
+
+    /**
+     * @return Project[]|Collection|\LaravelIdea\Helper\App\_IH_Project_C
      */
     public function collection()
     {

@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Helpers\Helper;
 use App\Models\User;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -88,7 +90,7 @@ class AuthServiceProvider extends ServiceProvider
 
             return hash('sha256', $token) === $user->api_token;
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             report($e);
 
             return false;
@@ -102,7 +104,7 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function issueToken(User $user): string
     {
-        $token = \App\Helpers\Helper::random_str(60);
+        $token = Helper::random_str(60);
 
         $user->forceFill([
             'api_token' => hash('sha256', $token),

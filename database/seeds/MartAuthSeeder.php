@@ -1,0 +1,56 @@
+<?php
+
+use App\Role;
+use App\User;
+use Illuminate\Database\Seeder;
+
+class MartAuthSeeder extends Seeder
+{
+    /**
+     * Run the database seeds for MART API authentication.
+     *
+     * @return void
+     */
+    public function run()
+    {
+        // Fixed bearer token for MART testing
+        $token = 'mart_test_token_2025';
+        $hashedToken = hash('sha256', $token);
+
+        // Check if MART user already exists
+        $martUser = User::where('email', 'mart@metag-analyze.test')->first();
+
+        if (! $martUser) {
+            // Create MART API user
+            $martUser = new User;
+            $martUser->email = 'mart@metag-analyze.test';
+            $martUser->password = bcrypt('mart_secure_password_2025');
+            $martUser->api_token = $hashedToken;
+            $martUser->token_expires_at = now()->addYears(5); // Long-lived token for testing
+            $martUser->save();
+
+            // Assign user role
+            $userRole = Role::where('name', 'user')->first();
+            if ($userRole) {
+                $martUser->roles()->sync($userRole);
+            }
+
+            $this->command->info('MART API user created successfully!');
+            $this->command->info('Email: mart@metag-analyze.test');
+            $this->command->info('Password: mart_secure_password_2025');
+            $this->command->info('Bearer Token: ' . $token);
+            $this->command->info('Use this token in Authorization header: Bearer ' . $token);
+            $this->command->info('');
+            $this->command->info('To make this user an admin, add this email to your .env file:');
+            $this->command->info('ADMINS=mart@metag-analyze.test');
+        } else {
+            // Update existing user's token
+            $martUser->api_token = $hashedToken;
+            $martUser->token_expires_at = now()->addYears(5);
+            $martUser->save();
+
+            $this->command->info('MART API user token updated!');
+            $this->command->info('Bearer Token: ' . $token);
+        }
+    }
+}

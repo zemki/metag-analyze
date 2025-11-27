@@ -13,21 +13,22 @@
         <label for="name" class="block text-sm font-medium text-gray-700">{{__('Case Name')}} *</label>
         <div class="mt-2">
             <input type="text" name="name" id="name" v-model="newcase.name" value="{{ old('name') }}"
-                class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                class="block w-full border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
             <span
                 :class="newcase.inputLength.name <= newcase.name.length ? 'text-red-600 text-xs w-auto inline-flex float-right' : 'text-xs text-gray-500 w-auto inline-flex float-right'">@{{newcase.inputLength.name - newcase.name.length}}
                 / @{{newcase.inputLength.name}}</span>
         </div>
     </div>
 
+    @if(!$project->isMartProject())
     <div class="flex full">
         <div class="w-1/3">
             <label for="duration" class="block text-sm font-medium text-gray-700">{{__('Duration')}} *</label>
             <div class="mt-1">
                 <input type="text" name="duration" id="duration" required :disabled="newcase.backendcase"
                     value="{{ old('duration') }}" v-model="newcase.duration.input"
-                    class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    :class="newcase.backendcase ? 'disabled cursor-not-allowed bg-gray-500 opacity-50' : 'bg-white focus:outline-none focus:ring border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none'">
+                    class="block w-full border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    :class="newcase.backendcase ? 'disabled cursor-not-allowed bg-gray-500 opacity-50' : 'bg-white focus:outline-hidden focus:ring border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none'">
             </div>
         </div>
         <div class="flex-shrink-0 w-1/3 ml-2 ">
@@ -35,7 +36,7 @@
                 <label for="duration" class="block text-sm font-medium text-gray-700">{{__('Unit')}}</label>
                 <select id="duration" name="duration" :disabled="newcase.backendcase"
                     v-model="newcase.duration.selectedUnit"
-                    class="block w-full py-2 pl-3 pr-10 mt-1 text-base border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    class="block w-full py-2 pl-3 pr-10 mt-1 text-base border-gray-300 rounded-md focus:outline-hidden focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                     <option>{{__('Select a value')}}</option>
                     <option value="days">{{__('day(s)')}}</option>
                     <option value="week">{{__('week(s)')}}</option>
@@ -54,6 +55,8 @@
         </div>
 
     </div>
+    @endif
+    @if(!$project->isMartProject())
     <div class="relative flex items-start my-2">
         <div class="flex items-center h-5">
             <input v-model="newcase.duration.starts_with_login" :disabled="newcase.backendcase" name="loginStart"
@@ -68,21 +71,23 @@
     <div class="mt-1 sm:mt-0 sm:col-span-2" v-if="!newcase.duration.starts_with_login">
         <label for="backenddate" class="font-medium text-gray-700">{{__('Or it start this day:')}} *</label>
         <input datepicker type="date" v-model="newcase.duration.startdate"
-            class="block w-full max-w-lg border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 active:border-blue-500 sm:text-sm "
+            class="block w-full max-w-lg border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500 active:border-blue-500 sm:text-sm "
             placeholder="{{__('Select date')}}" :min="moment().subtract(1,'day').format('YYYY-MM-DD')">
     </div>
     <input type="hidden" :value="newcase.duration.value" name="duration">
+    @endif
     <div class="relative block my-2">
 
         <label for="user" class="block text-sm font-medium text-gray-700">{{__('User(s)')}} *</label>
         <div class="mt-1">
             <input type="text" name="email" id="email" required :disabled="newcase.backendcase" autocomplete="off"
                 value="{{ old('email') }}"
-                class="block w-full px-4 py-2 leading-normal bg-white border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring"
-                :class="newcase.backendcase ? 'disabled cursor-not-allowed bg-gray-500 opacity-50' : 'bg-white focus:outline-none focus:ring border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none leading-normal'">
+                class="block w-full px-4 py-2 leading-normal bg-white border border-gray-300 rounded-lg appearance-none focus:outline-hidden focus:ring"
+                :class="newcase.backendcase ? 'disabled cursor-not-allowed bg-gray-500 opacity-50' : 'bg-white focus:outline-hidden focus:ring border border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none leading-normal'">
         </div>
     </div>
 
+    @if(!$project->isMartProject())
     <div class="relative flex items-start my-2">
         <div class="flex items-center h-5">
             <input v-model="newcase.backendcase"
@@ -95,6 +100,7 @@
 
         </div>
     </div>
+    @endif
 
     <div class="relative flex items-start my-2">
         <div class="flex items-center h-5">
@@ -126,7 +132,7 @@
         </label>
         <div class="mt-1">
             <input type="text" name="sendanywayemailsubject" id="sendanywayemailsubject" autocomplete="off"
-                class="block w-full px-4 py-2 leading-normal bg-white border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring">
+                class="block w-full px-4 py-2 leading-normal bg-white border border-gray-300 rounded-lg appearance-none focus:outline-hidden focus:ring">
         </div>
     </div>
 
@@ -137,7 +143,7 @@
         </label>
         <div class="mt-1">
             <input type="text" name="sendanywayemailmessage" id="sendanywayemailmessage" autocomplete="off"
-                class="block w-full px-4 py-2 leading-normal bg-white border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring">
+                class="block w-full px-4 py-2 leading-normal bg-white border border-gray-300 rounded-lg appearance-none focus:outline-hidden focus:ring">
         </div>
     </div>
 
@@ -192,6 +198,7 @@
                 </div>
             </div>
 
+            @if(!$project->isMartProject())
             <div class="pt-6">
                 <div class="flow-root px-6 pb-8 rounded-lg bg-gray-50">
                     <div class="-mt-6">
@@ -207,11 +214,12 @@
                         </div>
                         <h3 class="mt-8 text-lg font-medium tracking-tight text-gray-900">{{__('Backend Cases')}}</h3>
                         <p class="mt-5 text-base text-gray-500">
-                            {{__('Data for backend cases can only be entered via MeTag Analyze, they are not accessible from the MeTag mobile app. They don’t have a duration setting because they can be created, filled out and consulted at any time in the backend.')}}
+                            {{__("Data for backend cases can only be entered via MeTag Analyze, they are not accessible from the MeTag mobile app. They don't have a duration setting because they can be created, filled out and consulted at any time in the backend.")}}
                         </p>
                     </div>
                 </div>
             </div>
+            @endif
 
         </div>
     </div>
@@ -221,7 +229,7 @@
     <div class="my-2 text-base">* {{__('required')}}</div>
 
     <button
-        class="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">{{__('Create Case')}}</button>
+        class="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-xs hover:bg-blue-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">{{__('Create Case')}}</button>
 
     <div class="block mt-2">
         <div class="relative px-4 py-3 text-red-700 bg-red-100 border border-red-400 rounded"

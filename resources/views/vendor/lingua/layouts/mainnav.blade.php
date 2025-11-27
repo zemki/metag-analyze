@@ -36,7 +36,7 @@
                 <div class="relative ml-3 focus:r" x-data="{ open: false }">
                     <div>
                         <button type="button" @click="open = !open"
-                            class="flex bg-gray-800 text-sm text-white justify-center align-center focus:outline-none focus:ring-0"
+                            class="flex bg-gray-800 text-sm text-white justify-center align-center focus:outline-hidden focus:ring-0"
                             id="user-menu-button" aria-expanded="false" aria-haspopup="true">
                             <span class="sr-only">Open user menu</span>
                             <div class="p-2 justify-center align-center">{{ auth()->user()->email }}</div>
@@ -45,7 +45,7 @@
                                     alt=""></div>
                         </button>
                     </div>
-                    <div class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                    <div class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-hidden"
                         role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1"
                         x-show="open">
 

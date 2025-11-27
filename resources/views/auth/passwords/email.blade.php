@@ -44,11 +44,11 @@
         <form class="mt-8 space-y-6" action="{{ route('password.email') }}" method="POST">
             <input type="hidden" name="remember" value="true">
             @csrf
-            <div class="-space-y-px rounded-md shadow-sm">
+            <div class="-space-y-px rounded-md shadow-xs">
                 <div>
                     <label for="email-address" class="sr-only">{{ __('E-Mail Address') }}</label>
                     <input id="email-address" name="email" type="email" autocomplete="email"
-                        class="relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-none appearance-none rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                        class="relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-none appearance-none rounded-t-md focus:outline-hidden focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                         value="{{ old('email') }}" required placeholder="{{ __('E-Mail Address') }}">
                 </div>
 
@@ -60,7 +60,7 @@
             @endif
             <div>
                 <button type="submit"
-                    class="relative flex justify-center w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md group hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    class="relative flex justify-center w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md group hover:bg-blue-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3">
                         <!-- Heroicon name: solid/lock-closed -->
                         <svg class="w-5 h-5 text-blue-500 group-hover:text-blue-400" xmlns="http://www.w3.org/2000/svg"

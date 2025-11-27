@@ -4,7 +4,7 @@ import {defineConfig} from "vite";
 import {homedir} from "os";
 import {resolve} from "path";
 import vue from '@vitejs/plugin-vue'
-import postcss from './postcss.config.js';
+import tailwindcss from '@tailwindcss/vite'
 import vitePluginRequire from "vite-plugin-require";
 
 export default defineConfig({
@@ -12,7 +12,7 @@ export default defineConfig({
         laravel({
             input: [
                 "resources/js/app.js",
-                "resources/sass/app.scss",
+                "resources/css/app.css",
             ], refresh: true
         }),
         vue({
@@ -22,18 +22,13 @@ export default defineConfig({
                 }
             }
         }),
+        tailwindcss(),
         vitePluginRequire.default(),
     ],
+    define: {
+        __VUE_PROD_DEVTOOLS__: false,
+    },
     css: {
-        ...postcss,
-        preprocessorOptions: {
-            scss: {
-                // You can add any Sass options needed here
-                // For example, if you need to add global variables:
-                // additionalData: `@import "@/styles/variables.scss";`
-            }
-        },
-        // Use the modern Sass API
         devSourcemap: true,
     },
     build: {
