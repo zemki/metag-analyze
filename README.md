@@ -6,6 +6,7 @@
 <div align="center">
 
 [![Backend Tests](https://github.com/zemki/metag-analyze/actions/workflows/backend_tests.yml/badge.svg)](https://github.com/zemki/metag-analyze/actions/workflows/backend_tests.yml)
+[![DOI](https://zenodo.org/badge/892718535.svg)](https://doi.org/10.5281/zenodo.14237974)
 
 </div>
 
