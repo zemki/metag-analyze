@@ -582,6 +582,7 @@ export default {
     PaginationControls,
     QRCodeModal
   },
+  inject: ['productionUrl'],
   props: {
     project: {
       type: Object,
@@ -665,7 +666,7 @@ export default {
   },
   computed: {
     urlToCreateCase() {
-      return `/projects/${this.project.id}`;
+      return `${this.productionUrl}/projects/${this.project.id}`;
     },
     parsedProjectInputs() {
       // Parse projectInputs if it's a string
