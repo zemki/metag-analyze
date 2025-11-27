@@ -35,20 +35,7 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
       </svg>
       <h3 class="mt-2 text-sm font-medium text-gray-900">{{ trans('No questionnaires yet') }}</h3>
-      <p class="mt-1 text-sm text-gray-500">{{ trans('Get started by creating a new questionnaire.') }}</p>
-      <div class="mt-6">
-        <button
-            v-if="editable"
-            type="button"
-            @click="openAddScheduleDialog"
-            class="inline-flex items-center px-4 py-2 border border-transparent shadow-xs text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-          </svg>
-          {{ trans('Add Questionnaire') }}
-        </button>
-      </div>
+      <p class="mt-1 text-sm text-gray-500">{{ trans('Get started by clicking "Add Questionnaire" above.') }}</p>
     </div>
 
     <!-- Schedules List -->
@@ -150,8 +137,8 @@
                   <span v-else class="ml-2 font-medium text-gray-900">{{ formatDateTime(getTimingConfig(schedule, 'start_date_time')) }}</span>
                 </div>
 
-                <!-- End Date -->
-                <div class="flex items-center text-sm">
+                <!-- End Date - hide for single questionnaires unless end date is set -->
+                <div v-if="schedule.type === 'repeating' || getTimingConfig(schedule, 'end_date_time') || getTimingConfig(schedule, 'use_dynamic_end_date')" class="flex items-center text-sm">
                   <svg class="w-4 h-4 mr-2 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.707-10.293a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L9.414 11H13a1 1 0 100-2H9.414l1.293-1.293z" clip-rule="evenodd"/></svg>
                   <span class="text-gray-600">{{ trans('End') }}:</span>
                   <span v-if="getTimingConfig(schedule, 'use_dynamic_end_date')" class="ml-2 px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-xs font-medium">

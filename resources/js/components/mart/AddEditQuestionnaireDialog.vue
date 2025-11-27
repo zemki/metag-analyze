@@ -103,19 +103,34 @@
               </div>
 
               <!-- Start on First Login Checkbox - Only for single questionnaires -->
-              <div v-if="formData.type === 'single'" class="flex items-center p-3 bg-green-50 rounded-lg border border-green-200">
-                <input
-                    v-model="formData.start_on_first_login"
-                    type="checkbox"
-                    id="start_on_first_login"
-                    class="h-4 w-4 text-green-600 focus:ring-green-400 border-gray-300 rounded"
-                />
-                <label for="start_on_first_login" class="ml-2 block text-sm text-green-900">
-                  {{ trans('Start when participant logs in') }}
-                </label>
-                <span class="ml-2 text-xs text-green-700">
+              <div v-if="formData.type === 'single'" class="p-3 bg-green-50 rounded-lg border border-green-200">
+                <div class="flex items-center">
+                  <input
+                      v-model="formData.start_on_first_login"
+                      type="checkbox"
+                      id="start_on_first_login"
+                      class="h-4 w-4 text-green-600 focus:ring-green-400 border-gray-300 rounded"
+                  />
+                  <label for="start_on_first_login" class="ml-2 block text-sm text-green-900">
+                    {{ trans('Start after participant logs in') }}
+                  </label>
+                </div>
+                <!-- Hours delay input - shown when checkbox is checked -->
+                <div v-if="formData.start_on_first_login" class="mt-3 ml-6 flex items-center space-x-2">
+                  <label class="text-sm text-green-800">{{ trans('Delay after login:') }}</label>
+                  <input
+                      v-model.number="formData.start_hours_after_login"
+                      type="number"
+                      min="0"
+                      max="168"
+                      class="w-20 px-2 py-1 text-sm border border-green-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                  />
+                  <span class="text-sm text-green-800">{{ trans('hours') }}</span>
+                  <span class="text-xs text-green-600">({{ trans('0 = immediately') }})</span>
+                </div>
+                <p v-if="!formData.start_on_first_login" class="mt-1 ml-6 text-xs text-green-700">
                   {{ trans('Each participant will have their own start date based on their first login') }}
-                </span>
+                </p>
               </div>
 
               <!-- Show After Repeating Questionnaire - Only for single questionnaires -->
@@ -288,18 +303,18 @@
                         </span>
                       </div>
                       <div class="flex items-center gap-2 pt-1">
-                        <span class="text-blue-600">End Date</span>
+                        <span class="text-blue-600">End</span>
                         <span>=</span>
                         <span class="px-2 py-0.5 bg-white rounded border border-blue-200" :class="formData.start_on_first_login ? 'text-amber-600 italic' : (formData.start_date_time.date ? 'text-blue-900' : 'text-gray-400')">
-                          {{ formData.start_on_first_login ? trans('First Login') : (formData.start_date_time.date || '?') }}
+                          {{ formData.start_on_first_login ? trans('First Login') : formatStartDateTime }}
                         </span>
                         <span>+</span>
                         <span class="px-2 py-0.5 bg-white rounded border border-blue-200" :class="calculatedDurationDays ? 'text-blue-900' : 'text-gray-400'">
                           {{ calculatedDurationDays || '?' }}
                         </span>
                         <span>=</span>
-                        <span class="px-2 py-0.5 bg-green-100 rounded border border-green-300 font-semibold" :class="calculatedEndDate ? 'text-green-800' : 'text-gray-400'">
-                          {{ calculatedEndDate || '?' }}
+                        <span class="px-2 py-0.5 bg-green-100 rounded border border-green-300 font-semibold" :class="calculatedEndDateTime ? 'text-green-800' : 'text-gray-400'">
+                          {{ calculatedEndDateTime || '?' }}
                         </span>
                       </div>
                     </div>
@@ -491,8 +506,8 @@
                 </div>
               </div>
 
-              <!-- Data Donation Settings -->
-              <div class="space-y-3 p-4 bg-purple-50 rounded-lg border border-purple-200">
+              <!-- Data Donation Settings (only for single questionnaires) -->
+              <div v-if="formData.type === 'single'" class="space-y-3 p-4 bg-purple-50 rounded-lg border border-purple-200">
                 <h4 class="text-sm font-medium text-gray-900">{{ trans('Data Donation Settings') }}</h4>
                 <p class="text-xs text-gray-600">{{ trans('Mark this questionnaire as a data donation questionnaire for device statistics collection. Only one questionnaire per project can be marked for each platform.') }}</p>
 
@@ -561,18 +576,8 @@
 
             <!-- Questions Builder -->
             <div class="pt-6 border-t border-gray-200">
-              <div class="flex justify-between items-center mb-4">
+              <div class="mb-4">
                 <h4 class="text-md font-medium text-gray-900">{{ trans('Questions') }}</h4>
-                <button
-                    type="button"
-                    @click="addQuestion"
-                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200"
-                >
-                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                  </svg>
-                  {{ trans('Add Question') }}
-                </button>
               </div>
 
               <!-- Questions List -->
@@ -588,7 +593,7 @@
                     v-for="(question, index) in formData.questions"
                     :key="index"
                     class="border-2 border-gray-200 rounded-lg p-4 space-y-4 hover:border-blue-300 transition-colors duration-150"
-                    :class="{'border-red-300 bg-red-50': hasQuestionError(index)}"
+                    :class="{'border-red-300 bg-red-50': saveAttempted && hasQuestionError(index)}"
                 >
                   <!-- Question Header -->
                   <div class="flex justify-between items-start">
@@ -735,19 +740,39 @@
                   <!-- Number Options -->
                   <div v-if="question.type === 'number'" class="space-y-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
                     <h4 class="text-sm font-medium text-gray-900">{{ trans('Number Input Options') }}</h4>
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700">{{ trans('Max Digits (Optional)') }}</label>
-                      <input
-                          type="number"
-                          v-model.number="question.config.maxDigits"
-                          min="1"
-                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
-                          :placeholder="trans('e.g., 5 for max 99999')"
-                      />
-                      <p class="mt-1 text-xs text-gray-500">
-                        {{ trans('Maximum number of digits allowed (e.g., 3 allows max 999).') }}
-                      </p>
+                    <div class="grid grid-cols-3 gap-4">
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700">{{ trans('Min Value') }}</label>
+                        <input
+                            type="number"
+                            v-model.number="question.config.minValue"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                            :placeholder="trans('e.g., 0')"
+                        />
+                      </div>
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700">{{ trans('Max Value') }}</label>
+                        <input
+                            type="number"
+                            v-model.number="question.config.maxValue"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                            :placeholder="trans('e.g., 100')"
+                        />
+                      </div>
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700">{{ trans('Max Digits (Optional)') }}</label>
+                        <input
+                            type="number"
+                            v-model.number="question.config.maxDigits"
+                            min="1"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                            :placeholder="trans('e.g., 5')"
+                        />
+                      </div>
                     </div>
+                    <p class="mt-1 text-xs text-gray-500">
+                      {{ trans('Min/Max values limit the allowed range. Max Digits limits input length (e.g., 3 allows max 999).') }}
+                    </p>
                   </div>
 
                   <!-- Range Options -->
@@ -782,6 +807,9 @@
                   <div v-if="question.type === 'radio' || question.type === 'checkbox'" class="space-y-3">
                     <label class="block text-sm font-medium text-gray-700">{{ trans('Options') }}</label>
                     <div v-for="(answer, aIndex) in question.answers" :key="aIndex" class="flex items-center space-x-2">
+                      <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gray-200 text-gray-700 text-sm font-medium flex-shrink-0">
+                        {{ aIndex + 1 }}
+                      </span>
                       <input
                           type="text"
                           v-model="question.answers[aIndex]"
@@ -818,6 +846,19 @@
                       />
                       <label :for="'randomize-answers-' + index" class="ml-2 block text-sm text-gray-700">
                         {{ trans('Randomize answer options') }}
+                      </label>
+                    </div>
+
+                    <!-- Include "Other" Text Field Checkbox -->
+                    <div class="flex items-center mt-2">
+                      <input
+                          type="checkbox"
+                          :id="'include-other-' + index"
+                          v-model="question.includeOtherOption"
+                          class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
+                      />
+                      <label :for="'include-other-' + index" class="ml-2 block text-sm text-gray-700">
+                        {{ trans('Include "Other" option with text field') }}
                       </label>
                     </div>
                   </div>
@@ -885,13 +926,14 @@
                       <div>
                         <label class="block text-sm font-medium text-purple-900">{{ trans('Jump Condition (answer value)') }}</label>
                         <input
-                            type="text"
-                            v-model="question.jumpCondition"
+                            type="number"
+                            v-model.number="question.jumpCondition"
+                            min="1"
                             class="mt-1 block w-full px-3 py-2 border border-purple-300 rounded-md shadow-xs focus:ring-purple-500 focus:border-purple-500"
-                            :placeholder="trans('e.g., 0')"
+                            :placeholder="trans('e.g., 1')"
                         />
                         <p class="mt-1 text-xs text-purple-700">
-                          {{ trans('Answer value that triggers the jump (0-based index).') }}
+                          {{ trans('Enter the option number (shown to the left of each option) that triggers the jump.') }}
                         </p>
                       </div>
 
@@ -911,6 +953,20 @@
                     </div>
                   </div>
                 </div>
+              </div>
+
+              <!-- Add Question Button (at bottom) -->
+              <div class="mt-4">
+                <button
+                    type="button"
+                    @click="addQuestion"
+                    class="w-full inline-flex justify-center items-center px-4 py-3 border-2 border-dashed border-gray-300 text-sm font-medium rounded-lg text-gray-600 bg-gray-50 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600 transition-colors"
+                >
+                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                  </svg>
+                  {{ trans('Add Question') }}
+                </button>
               </div>
             </div>
           </div>
@@ -977,6 +1033,7 @@ export default {
     return {
       saving: false,
       showFormula: false,
+      saveAttempted: false,
       formData: {
         questionnaire_id: this.nextQuestionnaireId,
         name: '',
@@ -985,6 +1042,7 @@ export default {
         start_date_time: { date: '', time: '09:00' },
         end_date_time: { date: '', time: '21:00' },
         start_on_first_login: false,
+        start_hours_after_login: 0,
         use_dynamic_end_date: false,
         use_show_after_repeating: false,
         show_after_repeating_quest_id: null,
@@ -995,8 +1053,8 @@ export default {
         is_ios_data_donation: false,
         is_android_data_donation: false,
         daily_interval_duration: 4,
-        min_break_between: 180,
-        max_daily_submits: 6,
+        min_break_between: 30,
+        max_daily_submits: null,
         max_total_submits: null,
         daily_start_time: '09:00',
         daily_end_time: '21:00',
@@ -1091,6 +1149,36 @@ export default {
       return null;
     },
 
+    formatStartDateTime() {
+      // Format start date and time for formula display
+      const date = this.formData.start_date_time.date;
+      const time = this.formData.start_date_time.time;
+      if (!date) return '?';
+      if (time) {
+        return `${date} ${time}`;
+      }
+      return date;
+    },
+
+    calculatedEndDateTime() {
+      // Return end date with time for formula display
+      if (!this.calculatedEndDate) return null;
+
+      // If it's a relative date (starts with +), just return as-is
+      if (typeof this.calculatedEndDate === 'string' && this.calculatedEndDate.startsWith('+')) {
+        return this.calculatedEndDate;
+      }
+
+      // Include time if start time is set (end time same as start time)
+      const time = this.formData.start_date_time.time;
+      if (time) {
+        // Auto-set end time to match start time
+        this.formData.end_date_time.time = time;
+        return `${this.calculatedEndDate} ${time}`;
+      }
+      return this.calculatedEndDate;
+    },
+
     numberOfIntervals() {
       // Calculate number of intervals based on daily window and interval duration
       if (
@@ -1155,8 +1243,11 @@ export default {
 
     setTypeRepeating() {
       this.formData.type = 'repeating';
-      // Reset start_on_first_login since it's not applicable for repeating questionnaires
+      // Reset settings not applicable for repeating questionnaires
       this.formData.start_on_first_login = false;
+      // Reset data donation since it's only for single questionnaires
+      this.formData.is_ios_data_donation = false;
+      this.formData.is_android_data_donation = false;
     },
 
     loadScheduleData() {
@@ -1176,12 +1267,14 @@ export default {
           mandatory: q.is_mandatory !== undefined ? q.is_mandatory : true,
           randomizationGroupId: q.randomizationGroupId || null,
           randomizeAnswers: q.randomizeAnswers || false,
+          includeOtherOption: config.includeOtherOption || false,
           itemGroup: q.item_group || null,
           useTimer: !!timer.time,
           timerSeconds: timer.time || 30,
           showCountdown: timer.showCountdown !== undefined ? timer.showCountdown : true,
           useJump: !!(jump.jumpCondition !== undefined || jump.jumpOver !== undefined),
-          jumpCondition: jump.jumpCondition !== undefined ? jump.jumpCondition : '',
+          // Convert jumpCondition from 0-based (API) to 1-based (UI)
+          jumpCondition: jump.jumpCondition !== undefined ? parseInt(jump.jumpCondition) + 1 : 1,
           jumpOver: jump.jumpOver !== undefined ? jump.jumpOver : 1,
           placeholder: config.placeholder || '',
           answers: config.options || [],
@@ -1253,9 +1346,12 @@ export default {
           this.formData.quest_available_at = timing.quest_available_at;
         }
 
-        // Load start_on_first_login flag
+        // Load start_on_first_login flag and hours delay
         if (timing.start_on_first_login !== undefined) {
           this.formData.start_on_first_login = timing.start_on_first_login;
+        }
+        if (timing.start_hours_after_login !== undefined) {
+          this.formData.start_hours_after_login = timing.start_hours_after_login;
         }
 
         // Load use_dynamic_end_date flag
@@ -1339,6 +1435,7 @@ export default {
         mandatory: false,
         randomizationGroupId: null,
         randomizeAnswers: false,
+        includeOtherOption: false,
         itemGroup: null,
         useTimer: false,
         timerSeconds: 30,
@@ -1376,6 +1473,7 @@ export default {
     },
 
     async save() {
+      this.saveAttempted = true;
       if (!this.isValid) return;
 
       this.saving = true;
@@ -1399,6 +1497,10 @@ export default {
             }
           } else if (q.type === 'radio' || q.type === 'checkbox') {
             config.options = q.answers.filter(a => a.trim());
+            // Include "Other" text field option flag
+            if (q.includeOtherOption) {
+              config.includeOtherOption = true;
+            }
           } else if (q.type === 'text' || q.type === 'textarea') {
             // Add placeholder for text/textarea types
             if (q.placeholder) {
@@ -1415,9 +1517,10 @@ export default {
           }
 
           // Add jump config if enabled (only for radio/checkbox)
+          // Convert jumpCondition from 1-based (UI) to 0-based (API)
           if (q.useJump && (q.type === 'radio' || q.type === 'checkbox')) {
             config.jump = {
-              jumpCondition: q.jumpCondition,
+              jumpCondition: String(q.jumpCondition - 1),
               jumpOver: q.jumpOver
             };
           }

@@ -268,7 +268,7 @@ if ($project->hasMartData()) {
 - NOT for participant file uploads (that's a separate feature)
 - URLs are preserved in MartQuestionHistory when questions are updated
 
-### Dynamic Start/End Date Calculation (UPDATED: 2025-11-25)
+### Dynamic Start/End Date Calculation (UPDATED: 2025-11-27)
 
 **Feature**: Questionnaire start and end dates can be calculated dynamically per-participant based on their first login.
 
@@ -276,6 +276,7 @@ if ($project->hasMartData()) {
 - `cases.first_login_at` (timestamp) - Tracks when participant first logged in (main DB)
 - `mart_schedules.timing_config` JSON contains flags (MART DB):
   - `start_on_first_login` (boolean) - Set start date when participant logs in
+  - `start_hours_after_login` (integer) - Delay in hours after login before questionnaire starts (0 = immediately)
   - `use_dynamic_end_date` (boolean) - Calculate end date from start + duration
   - `max_total_submits` (integer) - Total submissions across entire study
 - `mart_case_schedules` table (MART DB) - Per-case date overrides:
@@ -287,40 +288,70 @@ if ($project->hasMartData()) {
 **Calculation Formula:**
 ```
 Duration (days) = ceil(max_total_submits / max_daily_submits)
-Start Date = First Login Date (if start_on_first_login)
+Start Date = First Login + start_hours_after_login hours (if start_on_first_login)
 End Date = Start Date + Duration (days) (if use_dynamic_end_date)
 ```
 
 **Data Flow:**
-1. Researcher creates questionnaire with "Start when participant logs in" checked
+1. Researcher creates questionnaire with "Start after participant logs in" checked
    - MART DB: `mart_schedules.timing_config.start_on_first_login = true`
+   - MART DB: `mart_schedules.timing_config.start_hours_after_login = X` (default 0)
 2. Participant logs in for first time
    - Main DB: `cases.first_login_at = now()`
-   - `calculateMartDynamicEndDates()` called in `ApiController.php:449-497`
-   - MART DB: `mart_case_schedules` record created with calculated dates
+   - `calculateMartDynamicEndDates()` called in `ApiController.php:449-500`
+   - MART DB: `mart_case_schedules` record created with calculated dates (including hours delay)
 3. Mobile app requests structure
    - API queries `mart_case_schedules` for per-case overrides
    - Mobile receives concrete dates (DD.MM.YYYY format)
 
 **UI:**
-- "Start when participant logs in" checkbox (green styling, top of form)
+- "Start after participant logs in" checkbox (green styling, top of form)
+- When checked, shows "Delay after login: X hours" input (0-168 range)
 - When checked, start date/time fields are disabled with "(Set on first login)" label
 - "Calculate end date dynamically" checkbox (existing, for end dates)
 - `SchedulePreview.vue` shows info messages about dynamic date settings
 
 **Key Files:**
 - `app/Mart/MartCaseSchedule.php` - Model for per-case date overrides
-- `app/Http/Controllers/ApiController.php:449-497` - `calculateMartDynamicEndDates()`
+- `app/Http/Controllers/ApiController.php:449-500` - `calculateMartDynamicEndDates()` with hours delay
 - `app/Mart/MartSchedule.php:115-166` - `toMobileFormat($caseId)` with override support
 - `app/Http/Controllers/MartApiController.php:47-59` - Case ID lookup and passing
 - `resources/js/components/mart/AddEditQuestionnaireDialog.vue` - Frontend UI
 
 **IMPORTANT - API Contract:**
 - `max_total_submits` is stored in database and used for backend calculations ONLY
-- `max_total_submits` is NOT sent to mobile app via MART API
+- `start_hours_after_login` is used for backend calculations ONLY
+- Mobile does NOT receive these values - only concrete calculated dates
 - Backend calculates concrete start/end dates and sends those to mobile
 - Mobile receives only: `startDateAndTime`, `endDateAndTime`, `maxDailySubmits`
 - Per-case dates override schedule defaults when `participant_id` is provided in API request
+
+### Choice Questions with "Other" Text Field (UPDATED: 2025-11-27)
+
+**Feature**: Single choice (radio) and multiple choice (checkbox) questions can include an "Other" option with a text field for custom answers.
+
+**Database Storage:**
+- `mart_questions.config` JSON contains: `includeOtherOption: true`
+- No separate column - stored in existing config field
+
+**API Output Types (per `martTypes.ts`):**
+- `radio` - Standard single choice
+- `radioWithText` - Single choice with "Other" text field
+- `checkbox` - Standard multiple choice
+- `checkboxWithText` - Multiple choice with "Other" text field
+
+**API Transformation:**
+- Backend stores type as `one choice` or `multiple choice` in database
+- When `config.includeOtherOption` is true, API outputs `radioWithText` or `checkboxWithText`
+- Mobile app receives the `*WithText` type and renders accordingly
+
+**UI:**
+- Checkbox "Include 'Other' option with text field" under choice options
+- Located below "Randomize answer options" in AddEditQuestionnaireDialog.vue
+
+**Key Files:**
+- `app/Http/Resources/Mart/ScaleResource.php` - Type transformation logic (lines 68-92)
+- `resources/js/components/mart/AddEditQuestionnaireDialog.vue` - Frontend checkbox
 
 ### API Testing
 ```bash
@@ -452,6 +483,18 @@ curl -X POST "https://metag-analyze.test/mart-api/cases/5/submit" \
 - Badges are color-coded and show enabled/disabled state
 - Added `formatDateTimeCompact()` method for date display (DD/MM format)
 - Location: `resources/js/components/mart/MartQuestionnaireManager.vue:125-208`
+
+### MART UI Improvements (UPDATED: 2025-11-27)
+- **Project labels**: Renamed "ESM Project" to "MART Project" in project list and creation
+- **Validation UX**: Red validation styling only appears after save attempt (not immediately)
+- **Number question type**: Added Min/Max value inputs for number questions
+- **Choice options**: Added 1-based visible index numbers to choice options
+- **Jump conditions**: Uses 1-based indexing in UI (converts to 0-based for API)
+- **Formula display**: Shows both date AND time in calculation formula
+- **Defaults**: Changed default break from 180 to 30 minutes, max_daily_submits defaults to null
+- **Data Donation**: Hidden for repeating questionnaires (only shown for single)
+- **End date display**: Hidden for single questionnaires unless explicitly set
+- Location: `resources/js/components/mart/AddEditQuestionnaireDialog.vue`
 
 ## Project-Specific Warnings
 

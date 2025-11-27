@@ -65,8 +65,10 @@ class ScaleResource extends JsonResource
                             ];
                         }
                     }
+                    // Use radioWithText if includeOtherOption is enabled
+                    $type = (isset($config['includeOtherOption']) && $config['includeOtherOption']) ? 'radioWithText' : 'radio';
                     $scaleOptions = [
-                        'type' => 'radio',
+                        'type' => $type,
                         'radioOptions' => $options,
                     ];
                     break;
@@ -81,8 +83,10 @@ class ScaleResource extends JsonResource
                             ];
                         }
                     }
+                    // Use checkboxWithText if includeOtherOption is enabled
+                    $type = (isset($config['includeOtherOption']) && $config['includeOtherOption']) ? 'checkboxWithText' : 'checkbox';
                     $scaleOptions = [
-                        'type' => 'checkbox',
+                        'type' => $type,
                         'checkboxOptions' => $options,
                     ];
                     break;

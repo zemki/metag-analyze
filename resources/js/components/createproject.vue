@@ -18,7 +18,7 @@
             this will be reflected in the mobile app.
           </p>
           <p class="mt-5 text-xl text-gray-500" v-if="projectType === 'mart'">
-            ESM projects use advanced questionnaire builders with unlimited questions.
+            MART projects use advanced questionnaire builders with unlimited questions.
             Create custom questionnaires and instruction pages for the MART mobile app.
           </p>
         </div>
@@ -504,7 +504,7 @@
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            {{ isCreatingMartProject ? 'Creating Project...' : 'Create ESM Project' }}
+            {{ isCreatingMartProject ? 'Creating Project...' : 'Create MART Project' }}
           </button>
         </div>
       </div>

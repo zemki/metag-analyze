@@ -42,6 +42,15 @@ How MART API types map to database storage.
 | `dailyEndTime` | `mart_schedules.timing_config->daily_end_time` | JSON |
 | `questAvailableAt` | `mart_schedules.timing_config->availability_mode` | JSON |
 
+### Dynamic Start Date (per-participant)
+
+| Config Field | Database Column | Notes |
+|--------------|-----------------|-------|
+| `start_on_first_login` | `mart_schedules.timing_config->start_on_first_login` | Boolean, single questionnaires only |
+| `start_hours_after_login` | `mart_schedules.timing_config->start_hours_after_login` | Integer (0-168), delay after login |
+
+**Note:** These are backend-only fields. Mobile receives concrete calculated dates, not the configuration.
+
 ### Dynamic Dates (per-participant)
 
 | API Field | Database Column | Table |
@@ -70,10 +79,10 @@ How MART API types map to database storage.
 | `number` | `number` | `minValue`, `maxValue`, `maxDigits` |
 | `text` | `text` | `textOptions.type` |
 | `textarea` | `textarea` | - |
-| `radio` | `one choice` | `answers[]` in config |
-| `checkbox` | `multiple choice` | `answers[]` in config |
-| `radioWithText` | `one choice` | `answers[]` with text option |
-| `checkboxWithText` | `multiple choice` | `answers[]` with text option |
+| `radio` | `one choice` | `options[]` in config |
+| `checkbox` | `multiple choice` | `options[]` in config |
+| `radioWithText` | `one choice` | `options[]` + `includeOtherOption: true` |
+| `checkboxWithText` | `multiple choice` | `options[]` + `includeOtherOption: true` |
 | `range` | `range` | `minValue`, `maxValue`, `steps`, `defaultValue` |
 | `rangeValues` | `range values` | `rangeValueOptions[]` |
 | `photoUpload` | `photo` | `photoUploadOptions` |

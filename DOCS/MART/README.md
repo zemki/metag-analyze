@@ -29,12 +29,14 @@ MART enables researchers to:
 | Type | Description |
 |------|-------------|
 | `radio` | Single choice |
+| `radioWithText` | Single choice with "Other" text field |
 | `checkbox` | Multiple choice |
+| `checkboxWithText` | Multiple choice with "Other" text field |
 | `range` | Numeric slider |
 | `rangeValues` | Labeled slider |
 | `text` | Short text input |
 | `textarea` | Long text input |
-| `number` | Numeric input |
+| `number` | Numeric input (with optional min/max) |
 | `photoUpload` | Camera/gallery photo |
 | `audioUpload` | Audio recording |
 | `videoUpload` | Video recording |

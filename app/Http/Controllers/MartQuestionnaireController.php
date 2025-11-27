@@ -58,6 +58,7 @@ class MartQuestionnaireController extends Controller
             'start_date_time' => 'nullable|array',
             'end_date_time' => 'nullable|array',
             'start_on_first_login' => 'nullable|boolean',
+            'start_hours_after_login' => 'nullable|integer|min:0|max:168',
             'use_dynamic_end_date' => 'nullable|boolean',
             'show_progress_bar' => 'boolean',
             'show_notifications' => 'boolean',
@@ -139,6 +140,7 @@ class MartQuestionnaireController extends Controller
                 'start_date_time' => $validated['start_date_time'] ?? null,
                 'end_date_time' => $validated['end_date_time'] ?? null,
                 'start_on_first_login' => $validated['start_on_first_login'] ?? false,
+                'start_hours_after_login' => $validated['start_hours_after_login'] ?? 0,
                 'use_dynamic_end_date' => $validated['use_dynamic_end_date'] ?? false,
                 'daily_interval_duration' => $validated['daily_interval_duration'] ?? null,
                 'min_break_between' => $validated['min_break_between'] ?? null,
@@ -239,6 +241,7 @@ class MartQuestionnaireController extends Controller
             'start_date_time' => 'nullable|array',
             'end_date_time' => 'nullable|array',
             'start_on_first_login' => 'nullable|boolean',
+            'start_hours_after_login' => 'nullable|integer|min:0|max:168',
             'use_dynamic_end_date' => 'nullable|boolean',
             'show_progress_bar' => 'nullable|boolean',
             'show_notifications' => 'nullable|boolean',
@@ -297,9 +300,9 @@ class MartQuestionnaireController extends Controller
             }
 
             // Update timing config if any timing fields are provided
-            $timingFields = ['start_date_time', 'end_date_time', 'start_on_first_login', 'use_dynamic_end_date',
-                'daily_interval_duration', 'min_break_between', 'max_daily_submits', 'max_total_submits',
-                'daily_start_time', 'daily_end_time', 'quest_available_at'];
+            $timingFields = ['start_date_time', 'end_date_time', 'start_on_first_login', 'start_hours_after_login',
+                'use_dynamic_end_date', 'daily_interval_duration', 'min_break_between', 'max_daily_submits',
+                'max_total_submits', 'daily_start_time', 'daily_end_time', 'quest_available_at'];
 
             $hasTimingUpdates = collect($timingFields)->contains(fn($field) => array_key_exists($field, $validated));
 
