@@ -357,7 +357,7 @@
                   </svg>
                   {{ selectedCase.qr_token_revoked_at ? 'QR Revoked' : 'QR Code' }}
                 </button>
-                <button v-if="isCreator && !localProject.is_mart_project"
+                <button v-if="isCreator && !localProject.is_mart_project && calculateStatusFromDate(selectedCase) !== 'completed'"
                         @click="showCloseCaseModal(selectedCase)"
                         class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-orange-600 bg-orange-50 border border-orange-200 rounded hover:bg-orange-100">
                   <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
