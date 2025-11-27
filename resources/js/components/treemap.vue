@@ -53,6 +53,7 @@
 import Highcharts from 'highcharts';
 import { v4 as uuidv4 } from 'uuid';
 import _ from 'lodash';
+import { parseDate } from '../utils/dateUtils';
 
 export default {
   name: 'Treemap',
@@ -417,7 +418,7 @@ export default {
     prepareYearMonthView(data, rootId) {
       // Group by year first
       const yearGroups = _.groupBy(this.entries, (entry) => {
-        return new Date(entry.begin).getFullYear();
+        return parseDate(entry.begin).getFullYear();
       });
 
       Object.entries(yearGroups).sort().forEach(([year, yearEntries], yearIndex) => {
@@ -438,7 +439,7 @@ export default {
         // Drill down to months
         if (this.currentLevel > 0 && this.drilldownPath[0] === yearId) {
           const monthGroups = _.groupBy(yearEntries, (entry) => {
-            const date = new Date(entry.begin);
+            const date = parseDate(entry.begin);
             return date.getMonth();
           });
 
@@ -462,7 +463,7 @@ export default {
     prepareMonthWeekView(data, rootId) {
       // Group by month
       const monthGroups = _.groupBy(this.entries, (entry) => {
-        const date = new Date(entry.begin);
+        const date = parseDate(entry.begin);
         return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       });
 
@@ -505,7 +506,7 @@ export default {
     prepareWeekDayView(data, rootId) {
       // Group by ISO week
       const weekGroups = _.groupBy(this.entries, (entry) => {
-        const date = new Date(entry.begin);
+        const date = parseDate(entry.begin);
         const year = date.getFullYear();
         const weekNum = this.getISOWeek(date);
         return `${year}-W${String(weekNum).padStart(2, '0')}`;
@@ -530,7 +531,7 @@ export default {
         // Drill down to days
         if (this.currentLevel > 0 && this.drilldownPath[0] === weekId) {
           const dayGroups = _.groupBy(weekEntries, (entry) => {
-            const date = new Date(entry.begin);
+            const date = parseDate(entry.begin);
             return date.getDay();
           });
 
@@ -554,7 +555,7 @@ export default {
     prepareDayHourView(data, rootId) {
       // Group by day
       const dayGroups = _.groupBy(this.entries, (entry) => {
-        const date = new Date(entry.begin);
+        const date = parseDate(entry.begin);
         return date.toISOString().split('T')[0];
       });
 
@@ -583,7 +584,7 @@ export default {
         // Drill down to hours
         if (this.currentLevel > 0 && this.drilldownPath[0] === dayId) {
           const hourGroups = _.groupBy(dayEntries, (entry) => {
-            return new Date(entry.begin).getHours();
+            return parseDate(entry.begin).getHours();
           });
 
           Object.entries(hourGroups).sort((a, b) => Number(a[0]) - Number(b[0])).forEach(([hour, hourEntries]) => {
@@ -689,14 +690,14 @@ export default {
 
     calculateTotalDuration(entries) {
       return entries.reduce((total, entry) => {
-        const duration = (new Date(entry.end) - new Date(entry.begin)) / 1000; // seconds
+        const duration = (parseDate(entry.end) - parseDate(entry.begin)) / 1000; // seconds
         return total + duration;
       }, 0);
     },
 
     groupByWeek(entries) {
       return _.groupBy(entries, (entry) => {
-        const date = new Date(entry.begin);
+        const date = parseDate(entry.begin);
         const startOfYear = new Date(date.getFullYear(), 0, 1);
         const weekNumber = Math.ceil(((date - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7);
         return weekNumber;
@@ -705,7 +706,7 @@ export default {
 
     groupByWeekInMonth(entries) {
       return _.groupBy(entries, (entry) => {
-        const date = new Date(entry.begin);
+        const date = parseDate(entry.begin);
         const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
         const weekOfMonth = Math.ceil((date.getDate() + firstDayOfMonth.getDay()) / 7);
         return weekOfMonth;

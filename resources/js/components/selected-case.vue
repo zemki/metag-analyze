@@ -548,6 +548,19 @@ export default {
     const snackbarMessage = ref("");
     const showSnackbar = ref(false);
 
+    // Helper to sanitize malformed dates (e.g., "2025-11-26 15:20:34.273357.000000")
+    const sanitizeDate = (dateValue) => {
+      if (!dateValue) return dateValue;
+      if (typeof dateValue === 'string') {
+        // Fix double decimal format: "2025-11-26 15:20:34.273357.000000" -> "2025-11-26 15:20:34.273357"
+        const doubleDotMatch = dateValue.match(/^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+)\.\d+$/);
+        if (doubleDotMatch) {
+          return doubleDotMatch[1];
+        }
+      }
+      return dateValue;
+    };
+
     const editentry = reactive({
       id: 0,
       case_id: 0,
@@ -620,10 +633,10 @@ export default {
         // Handle firstValue
         if (entry.inputs && entry.inputs.firstValue) {
           entry.inputs.firstValue.begin_readable = moment(
-            entry.inputs.firstValue.begin
+            sanitizeDate(entry.inputs.firstValue.begin)
           ).format("DD.MM.YYYY HH:mm");
           entry.inputs.firstValue.end_readable = moment(
-            entry.inputs.firstValue.end
+            sanitizeDate(entry.inputs.firstValue.end)
           ).format("DD.MM.YYYY HH:mm");
 
           if (typeof entry.inputs.firstValue.inputs !== "object") {
@@ -647,8 +660,8 @@ export default {
         }
 
         // Set basic timestamps
-        entry.begin_readable = moment(entry.begin).format("DD.MM.YYYY H:m:ss");
-        entry.end_readable = moment(entry.end).format("DD.MM.YYYY H:m:ss");
+        entry.begin_readable = moment(sanitizeDate(entry.begin)).format("DD.MM.YYYY H:m:ss");
+        entry.end_readable = moment(sanitizeDate(entry.end)).format("DD.MM.YYYY H:m:ss");
 
         return entry;
       });
