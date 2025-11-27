@@ -79,7 +79,7 @@
               class="block w-full border-gray-300 rounded-md shadow-xs focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             >
               <option
-                v-for="(answer, indexA) in value.answers.filter(a => a.trim() !== '')"
+                v-for="(answer, indexA) in value.answers.filter(a => a && a.trim() !== '')"
                 :key="indexA"
                 :value="answer"
               >
@@ -95,7 +95,7 @@
               class="block w-full border-gray-300 rounded-md shadow-xs focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             >
               <option
-                v-for="(answer, indexA) in value.answers.filter(a => a.trim() !== '')"
+                v-for="(answer, indexA) in value.answers.filter(a => a && a.trim() !== '')"
                 :key="indexA"
                 :value="answer"
               >
@@ -878,11 +878,11 @@ export default {
       );
     };
     const distinctPath = () => {
-      return props.productionUrl + "/" + props.cases.project.id + "/distinctcases/" + props.cases.id;
+      return props.productionUrl + "/projects/" + props.cases.project.id + "/distinctcases/" + props.cases.id;
     };
 
     const groupedCasesPath = () => {
-      return props.productionUrl + "/" + props.cases.project.id + "/groupedcases/" + props.cases.id;
+      return props.productionUrl + "/projects/" + props.cases.project.id + "/groupedcases/" + props.cases.id;
     };
 
     const getScaleRange = (question) => {
