@@ -19,6 +19,12 @@ window.$ = window.jQuery = jQuery;
 import axios from 'axios';
 window.axios = axios;
 
+// Set base URL from meta tag (handles subdirectory deployments)
+let baseUrl = document.head.querySelector('meta[name="base-url"]');
+if (baseUrl) {
+  window.axios.defaults.baseURL = baseUrl.content;
+}
+
 window.axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
 
 /**
