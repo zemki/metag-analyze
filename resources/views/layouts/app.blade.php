@@ -16,10 +16,6 @@
         @yield('content')
         <snackbar ref="snackbar" :message="snackbarMessage"></snackbar>
     </div>
-
-    <debug-panel />
-
-
 </div>
 
 @yield('pagespecificscripts')
