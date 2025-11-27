@@ -655,13 +655,13 @@ export default {
           // Only set created_for_soundplayer if file_object exists and has created_at
           entry.created_for_soundplayer =
             entry.file_object && entry.file_object.created_at
-              ? moment(entry.file_object.created_at).format("DD.MM.YYYY H:m:ss")
+              ? moment(entry.file_object.created_at).format("DD.MM.YYYY HH:mm:ss")
               : null;
         }
 
         // Set basic timestamps
-        entry.begin_readable = moment(sanitizeDate(entry.begin)).format("DD.MM.YYYY H:m:ss");
-        entry.end_readable = moment(sanitizeDate(entry.end)).format("DD.MM.YYYY H:m:ss");
+        entry.begin_readable = moment(sanitizeDate(entry.begin)).format("DD.MM.YYYY HH:mm:ss");
+        entry.end_readable = moment(sanitizeDate(entry.end)).format("DD.MM.YYYY HH:mm:ss");
 
         return entry;
       });
