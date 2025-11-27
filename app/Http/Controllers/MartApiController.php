@@ -14,7 +14,6 @@ use App\Mart\MartSchedule;
 use App\Mart\MartStat;
 use App\MartQuestionnaireSchedule;
 use App\Project;
-use App\Stat;
 use App\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
