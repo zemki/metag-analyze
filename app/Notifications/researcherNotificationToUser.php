@@ -8,11 +8,7 @@ use Illuminate\Notifications\Notification;
 use JetBrains\PhpStorm\ArrayShape;
 use NotificationChannels\Fcm\FcmChannel;
 use NotificationChannels\Fcm\FcmMessage;
-use NotificationChannels\Fcm\Resources\AndroidConfig;
-use NotificationChannels\Fcm\Resources\AndroidFcmOptions;
-use NotificationChannels\Fcm\Resources\AndroidNotification;
-use NotificationChannels\Fcm\Resources\ApnsConfig;
-use NotificationChannels\Fcm\Resources\ApnsFcmOptions;
+use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
 
 class researcherNotificationToUser extends Notification implements ShouldQueue
 {
@@ -60,22 +56,32 @@ class researcherNotificationToUser extends Notification implements ShouldQueue
 
     public function toFcm($notifiable): FcmMessage
     {
-
-        return FcmMessage::create()
-            ->setNotification(\NotificationChannels\Fcm\Resources\Notification::create()
-                ->title($this->title)
-                ->body($this->message)
+        return (new FcmMessage(
+            notification: new FcmNotification(
+                title: $this->title,
+                body: $this->message
             )
-            ->setAndroid(
-                AndroidConfig::create()
-                    ->setFcmOptions(AndroidFcmOptions::create()->setAnalyticsLabel('analytics_android'))
-                    ->setNotification(AndroidNotification::create()->setColor('#0A0A0A')
-                        ->setSound('default'))
-            )->setApns(
-                ApnsConfig::create()
-                    ->setFcmOptions(ApnsFcmOptions::create()->setAnalyticsLabel('analytics_ios'))->setPayload(['aps' => ['sound' => 'default']])
-            );
-
+        ))->custom([
+            'android' => [
+                'notification' => [
+                    'color' => '#0A0A0A',
+                    'sound' => 'default',
+                ],
+                'fcm_options' => [
+                    'analytics_label' => 'analytics_android',
+                ],
+            ],
+            'apns' => [
+                'payload' => [
+                    'aps' => [
+                        'sound' => 'default',
+                    ],
+                ],
+                'fcm_options' => [
+                    'analytics_label' => 'analytics_ios',
+                ],
+            ],
+        ]);
     }
 
     /**
