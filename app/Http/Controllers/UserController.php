@@ -123,6 +123,15 @@ class UserController extends Controller
     public function notifyDevice(Request $request)
     {
         $user = User::where('id', $request->input('user')['id'])->first();
+
+        if (!$user) {
+            return response()->json(['message' => 'User not found.'], 404);
+        }
+
+        if (!$user->profile) {
+            return response()->json(['message' => 'User profile not found.'], 404);
+        }
+
         $user->profile->last_notification_at = date('Y-m-d H:i:s');
         $user->profile->save();
 

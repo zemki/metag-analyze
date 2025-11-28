@@ -63,8 +63,8 @@ class researcherNotificationToUser extends Notification implements ShouldQueue
 
         return FcmMessage::create()
             ->setNotification(\NotificationChannels\Fcm\Resources\Notification::create()
-                ->setTitle($this->title)
-                ->setBody($this->message)
+                ->title($this->title)
+                ->body($this->message)
             )
             ->setAndroid(
                 AndroidConfig::create()
