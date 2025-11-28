@@ -75,7 +75,12 @@ class Entry extends Model
      */
     public function martEntry()
     {
-        return \App\Mart\MartEntry::where('main_entry_id', $this->id)->first();
+        try {
+            return \App\Mart\MartEntry::where('main_entry_id', $this->id)->first();
+        } catch (\Exception $e) {
+            // MART database may not exist - return null
+            return null;
+        }
     }
 
     /**

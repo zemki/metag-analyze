@@ -35,9 +35,14 @@ class Project extends Model
             $project->invited()->detach();
 
             // Delete MART data if exists (cascade handles related tables)
-            $martProject = \App\Mart\MartProject::where('main_project_id', $project->id)->first();
-            if ($martProject) {
-                $martProject->delete();
+            // Wrapped in try-catch in case MART database doesn't exist yet
+            try {
+                $martProject = \App\Mart\MartProject::where('main_project_id', $project->id)->first();
+                if ($martProject) {
+                    $martProject->delete();
+                }
+            } catch (\Exception $e) {
+                // MART database may not exist - ignore
             }
 
             // if the user created the project, delete main DB data
