@@ -23,6 +23,8 @@ class MartApiController extends Controller
 {
     /**
      * Get project structure for mobile app
+     *
+     * @throws \Illuminate\Auth\AuthenticationException
      */
     public function getProjectStructure(Request $request, Project $project)
     {
@@ -95,6 +97,8 @@ class MartApiController extends Controller
 
     /**
      * Handle submission from mobile app
+     *
+     * @throws \Illuminate\Auth\AuthenticationException
      */
     public function submitEntry(Request $request, Cases $case)
     {
@@ -322,6 +326,8 @@ class MartApiController extends Controller
     /**
      * Store device information from mobile app
      * Now stores in MART database
+     *
+     * @throws \Illuminate\Auth\AuthenticationException
      */
     public function storeDeviceInfo(Request $request)
     {
@@ -369,6 +375,8 @@ class MartApiController extends Controller
     /**
      * Submit usage statistics from mobile app
      * Now stores in MART database
+     *
+     * @throws \Illuminate\Auth\AuthenticationException
      */
     public function submitStats(Request $request)
     {

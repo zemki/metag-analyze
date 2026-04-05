@@ -12,7 +12,7 @@ vendor/bin/pest                    # Run all tests
 vendor/bin/pest --filter=TestName  # Run specific test
 
 # Build & Quality Checks
-npm run build                       # Production build
+npm run build                       # Production build (DO NOT run - production only)
 npm run lint:check                  # Check linting
 npm run format:check                # Check formatting
 npm run test:unit                   # Frontend tests
@@ -37,7 +37,7 @@ php artisan reverb:start            # WebSocket server
 - Use Laravel conventions for backend
 - Use Vue 3 Composition API for components
 - ALWAYS test with `vendor/bin/pest` after backend changes
-- ALWAYS build with `npm run build` after frontend changes
+- Frontend compilation is managed by the user (never run `npm run build` or `npm run dev`)
 - Use `App\Models\Team` not `Laravel\Jetstream\Team` in tests
 - Check neighboring files for patterns before adding dependencies
 
@@ -64,8 +64,7 @@ php artisan reverb:start            # WebSocket server
 
 1. Make changes
 2. Run `vendor/bin/pest` for backend changes
-3. Run `npm run build` for frontend changes
-4. Verify no errors before proceeding
+3. Verify no errors before proceeding
 
 ## Repository Etiquette
 
@@ -157,15 +156,15 @@ if ($martProject) {
 $martEntry = $entry->martEntry(); // Returns MartEntry or null
 
 // Cross-DB transactions
-$mainDbTransaction = DB::connection('mysql')->beginTransaction();
-$martDbTransaction = DB::connection('mart')->beginTransaction();
+DB::connection('mysql')->beginTransaction();
+DB::connection('mart')->beginTransaction();
 try {
     // ... operations ...
-    $mainDbTransaction->commit();
-    $martDbTransaction->commit();
+    DB::connection('mysql')->commit();
+    DB::connection('mart')->commit();
 } catch (\Exception $e) {
-    $mainDbTransaction->rollBack();
-    $martDbTransaction->rollBack();
+    DB::connection('mysql')->rollBack();
+    DB::connection('mart')->rollBack();
 }
 
 // Always check if MART data exists before querying
@@ -502,6 +501,6 @@ curl -X POST "https://metag-analyze.test/mart-api/cases/5/submit" \
 - Per-questionnaire settings: showProgressBar, showNotifications, notificationText
 - Bearer token authentication required for all API calls
 - Test database separate from development database
-- never run npm run build - i will compile the npm run dev
+- Never run `npm run build` or `npm run dev` — the user manages frontend compilation
 - entity is a replacement for media, but the database still has media as table and fields
 - **NEVER use Sass/SCSS** - project migrated to plain CSS with Tailwind v4

@@ -2,11 +2,15 @@
 
 namespace App\Providers;
 
+use Dedoc\Scramble\Scramble;
+use Dedoc\Scramble\Support\Generator\OpenApi;
+use Dedoc\Scramble\Support\Generator\SecurityScheme;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +23,16 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         Schema::defaultStringLength(191);
+
+        // Scramble: Include both MART route prefixes in API docs
+        Scramble::configure()
+            ->routes(function (\Illuminate\Routing\Route $route) {
+                return Str::startsWith($route->uri, 'api/mart/')
+                    || Str::startsWith($route->uri, 'mart-api/');
+            })
+            ->withDocumentTransformers(function (OpenApi $openApi) {
+                $openApi->secure(SecurityScheme::http('bearer'));
+            });
 
         // Configure Livewire routes for subdirectory deployment (production only)
         if (App::environment('production')) {

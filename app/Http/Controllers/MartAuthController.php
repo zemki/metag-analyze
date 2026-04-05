@@ -32,6 +32,8 @@ class MartAuthController extends Controller
      * Screen 1: Check if email exists
      *
      * @return JsonResponse
+     *
+     * @throws \Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException
      */
     public function checkEmail(\App\Http\Requests\MartEmailCheckRequest $request)
     {
@@ -64,6 +66,8 @@ class MartAuthController extends Controller
      * This is called when user clicks "Register" button after seeing emailExists: false
      *
      * @return JsonResponse
+     *
+     * @throws \Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException
      */
     public function sendPasswordSetup(Request $request)
     {
@@ -156,6 +160,9 @@ class MartAuthController extends Controller
      * Returns bearerToken and refreshToken on success.
      *
      * @return JsonResponse
+     *
+     * @throws \Illuminate\Auth\AuthenticationException
+     * @throws \Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException
      */
     public function checkPassword(Request $request)
     {
@@ -255,6 +262,9 @@ class MartAuthController extends Controller
      * and auto-creates a case for the user in this project if needed.
      *
      * @return JsonResponse
+     *
+     * @throws \Illuminate\Auth\AuthenticationException
+     * @throws \Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException
      */
     public function checkAccess(Request $request)
     {
@@ -358,6 +368,9 @@ class MartAuthController extends Controller
      * invalidating the old refresh token.
      *
      * @return JsonResponse
+     *
+     * @throws \Illuminate\Auth\AuthenticationException
+     * @throws \Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException
      */
     public function refreshToken(Request $request)
     {

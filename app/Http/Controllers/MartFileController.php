@@ -15,6 +15,8 @@ class MartFileController extends Controller
      * Upload a file for a MART questionnaire answer.
      *
      * Files are uploaded before submission, then referenced by UUID in the submit.
+     *
+     * @throws \Illuminate\Auth\AuthenticationException
      */
     public function store(Request $request, Cases $case): JsonResponse
     {
@@ -130,6 +132,8 @@ class MartFileController extends Controller
 
     /**
      * Retrieve a file by ID.
+     *
+     * @throws \Illuminate\Auth\AuthenticationException
      */
     public function show(Request $request, MartFile $martFile): \Symfony\Component\HttpFoundation\Response
     {
@@ -191,6 +195,8 @@ class MartFileController extends Controller
 
     /**
      * Delete a file (only if not yet linked to an entry).
+     *
+     * @throws \Illuminate\Auth\AuthenticationException
      */
     public function destroy(Request $request, MartFile $martFile): JsonResponse
     {
