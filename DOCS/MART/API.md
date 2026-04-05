@@ -91,8 +91,8 @@ For photo/audio/video uploads in questionnaire answers.
 
 | Endpoint | Limit |
 |----------|-------|
-| check-email | 5/minute |
-| send-password-setup | 3/10 minutes |
+| check-email | 10/minute |
+| send-password-setup | 5/10 minutes |
 | check-password | 10/minute |
 | check-access | 10/minute |
 | refresh | 10/minute |

@@ -10,6 +10,7 @@ use App\Http\Middleware\CheckAdminArea;
 use App\Http\Middleware\CheckForMaintenanceMode;
 use App\Http\Middleware\CheckGroup;
 use App\Http\Middleware\EncryptCookies;
+use App\Http\Middleware\ForceJsonResponse;
 use App\Http\Middleware\LoggedUser;
 use App\Http\Middleware\RedirectIfAuthenticated;
 use App\Http\Middleware\RefreshApiToken;
@@ -95,6 +96,7 @@ class Kernel extends HttpKernel
         'haspowers' => CheckAdminArea::class,
         'RefreshApiToken' => RefreshApiToken::class,
         'LoggedUser' => LoggedUser::class,
+        'force.json' => ForceJsonResponse::class,
     ];
 
     /**

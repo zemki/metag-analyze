@@ -41,14 +41,15 @@ Route::post('send-password-setup', 'ApiController@sendPasswordSetup')->middlewar
 // These endpoints implement a multi-step authentication flow for MART mobile apps:
 // Screen 1: Email check → Screen 2: Password check → Screen 3: Project access check
 // Each screen validates the previous screen was completed (using cache)
-Route::prefix('mart')->group(function () {
+Route::prefix('mart')->middleware('force.json')->group(function () {
     // Screen 1: Check if email exists
     Route::post('check-email', 'MartAuthController@checkEmail')
-        ->middleware('throttle:5,1');
+        ->middleware('throttle:10,1');
 
     // Screen 1: Send password setup email (for new users who click "Register")
+    // Stricter limit because it triggers outbound emails
     Route::post('send-password-setup', 'MartAuthController@sendPasswordSetup')
-        ->middleware('throttle:3,10');
+        ->middleware('throttle:5,10');
 
     // Screen 2: Authenticate with password and get tokens
     // Requires email to be checked in Screen 1 (within 1 minute)
