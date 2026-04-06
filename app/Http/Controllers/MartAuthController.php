@@ -31,6 +31,11 @@ class MartAuthController extends Controller
     /**
      * Screen 1: Check if email exists
      *
+     * First step of the 3-screen auth flow. Checks if the email is registered.
+     * Stores result in cache for 1 minute (required by Screen 2).
+     *
+     * @unauthenticated
+     *
      * @return JsonResponse
      *
      * @throws \Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException
@@ -61,9 +66,12 @@ class MartAuthController extends Controller
     }
 
     /**
-     * Screen 1: Send password setup email (for new users)
+     * Screen 1b: Send password setup email
      *
-     * This is called when user clicks "Register" button after seeing emailExists: false
+     * For new users after check-email returns emailExists: false.
+     * Requires email check within the last minute.
+     *
+     * @unauthenticated
      *
      * @return JsonResponse
      *
@@ -154,10 +162,12 @@ class MartAuthController extends Controller
     }
 
     /**
-     * Screen 2: Check password and return authentication tokens
+     * Screen 2: Check password
      *
-     * Validates email was checked in Screen 1, then authenticates user.
-     * Returns bearerToken and refreshToken on success.
+     * Validates email was checked in Screen 1 (within 1 minute).
+     * Returns bearerToken (30-day) and refreshToken (7-day).
+     *
+     * @unauthenticated
      *
      * @return JsonResponse
      *
@@ -256,10 +266,12 @@ class MartAuthController extends Controller
     }
 
     /**
-     * Screen 3: Check project access and auto-create case
+     * Screen 3: Check project access
      *
-     * Validates password was checked in Screen 2, verifies project is MART,
-     * and auto-creates a case for the user in this project if needed.
+     * Validates password was checked in Screen 2 (within 5 minutes).
+     * Auto-creates a participant case and returns participantId and caseId.
+     *
+     * @unauthenticated
      *
      * @return JsonResponse
      *
@@ -362,10 +374,12 @@ class MartAuthController extends Controller
     }
 
     /**
-     * Refresh access token using refresh token
+     * Refresh access token
      *
-     * Implements token rotation: issues new access token AND new refresh token,
-     * invalidating the old refresh token.
+     * Token rotation: send refreshToken in request body (not as header).
+     * Returns new bearerToken and refreshToken, invalidating the old ones.
+     *
+     * @unauthenticated
      *
      * @return JsonResponse
      *

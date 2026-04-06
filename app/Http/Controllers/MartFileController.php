@@ -124,6 +124,7 @@ class MartFileController extends Controller
         return response()->json([
             'success' => true,
             'file_id' => $martFile->id,
+            'fileUrl' => "/mart-api/files/{$martFile->id}",
             'file_type' => $martFile->file_type,
             'mime_type' => $martFile->mime_type,
             'size' => $martFile->size,

@@ -133,4 +133,10 @@ return [
     ],
 
     'extensions' => [],
+
+    /*
+     * Comma-separated emails allowed to view API docs in non-local environments.
+     * Users must be logged in via the web app.
+     */
+    'allowed_emails' => env('API_DOCS_ALLOWED_EMAILS', ''),
 ];

@@ -359,4 +359,53 @@ class MartApiTest extends TestCase
         $this->assertEquals(1, $caseCount);
     }
 
+    /** @test */
+    public function it_returns_403_with_hint_for_mismatched_access()
+    {
+        $request = new \Illuminate\Http\Request([
+            'projectId' => $this->project->id,
+            'userId' => 'test@example.com',
+            'participantId' => 'WRONG_PARTICIPANT_ID',
+            'os' => 'android',
+            'osVersion' => '14',
+            'model' => 'Pixel 7',
+            'manufacturer' => 'Google',
+            'timestamp' => now()->timestamp * 1000,
+            'timezone' => 'Europe/Berlin',
+        ]);
+
+        $controller = new \App\Http\Controllers\MartApiController;
+        $response = $controller->storeDeviceInfo($request);
+
+        $responseData = $response->getData(true);
+        $this->assertEquals(403, $response->getStatusCode());
+        $this->assertFalse($responseData['success']);
+        $this->assertArrayHasKey('hint', $responseData);
+        $this->assertStringContainsString('check-access', $responseData['hint']);
+    }
+
+    /** @test */
+    public function it_returns_404_with_hint_for_unknown_user()
+    {
+        $request = new \Illuminate\Http\Request([
+            'projectId' => $this->project->id,
+            'userId' => 'nonexistent@example.com',
+            'participantId' => 'Participant_001',
+            'os' => 'android',
+            'osVersion' => '14',
+            'model' => 'Pixel 7',
+            'manufacturer' => 'Google',
+            'timestamp' => now()->timestamp * 1000,
+            'timezone' => 'Europe/Berlin',
+        ]);
+
+        $controller = new \App\Http\Controllers\MartApiController;
+        $response = $controller->storeDeviceInfo($request);
+
+        $responseData = $response->getData(true);
+        $this->assertEquals(404, $response->getStatusCode());
+        $this->assertArrayHasKey('hint', $responseData);
+        $this->assertStringContainsString('email', $responseData['hint']);
+    }
+
 }

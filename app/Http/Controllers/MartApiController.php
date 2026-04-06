@@ -24,6 +24,10 @@ class MartApiController extends Controller
     /**
      * Get project structure for mobile app
      *
+     * Returns complete project configuration including questionnaires, questions,
+     * scales, pages, and participant-specific data (submissions, device info).
+     * Pass participant_id as query param to include participant data.
+     *
      * @throws \Illuminate\Auth\AuthenticationException
      */
     public function getProjectStructure(Request $request, Project $project)
@@ -325,7 +329,10 @@ class MartApiController extends Controller
 
     /**
      * Store device information from mobile app
-     * Now stores in MART database
+     *
+     * Stores or updates device info in MART database. Requires userId (email),
+     * projectId, and participantId to match an existing case created during
+     * the check-access auth step.
      *
      * @throws \Illuminate\Auth\AuthenticationException
      */
@@ -374,7 +381,10 @@ class MartApiController extends Controller
 
     /**
      * Submit usage statistics from mobile app
-     * Now stores in MART database
+     *
+     * Stores Android usage/event stats or iOS stats in MART database.
+     * Requires userId (email), projectId, and participantId to match an
+     * existing case created during the check-access auth step.
      *
      * @throws \Illuminate\Auth\AuthenticationException
      */
@@ -465,6 +475,7 @@ class MartApiController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'User not found',
+                'hint' => 'The userId field must be the email address used during authentication.',
             ], 404);
         }
 
@@ -478,6 +489,7 @@ class MartApiController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'User does not have access to this project',
+                'hint' => 'Verify that userId (email), projectId, and participantId match a case created during the check-access step.',
             ], 403);
         }
 
