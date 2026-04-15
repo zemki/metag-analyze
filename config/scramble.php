@@ -1,6 +1,6 @@
 <?php
 
-use Dedoc\Scramble\Http\Middleware\RestrictedDocsAccess;
+use App\Http\Middleware\DocsBasicAuth;
 
 return [
     /*
@@ -129,14 +129,15 @@ return [
 
     'middleware' => [
         'web',
-        RestrictedDocsAccess::class,
+        DocsBasicAuth::class,
     ],
 
     'extensions' => [],
 
     /*
-     * Comma-separated emails allowed to view API docs in non-local environments.
-     * Users must be logged in via the web app.
+     * HTTP Basic Auth credentials for /docs/api.
+     * When API_DOCS_PASSWORD is empty, the docs route returns 503 (fails closed).
      */
-    'allowed_emails' => env('API_DOCS_ALLOWED_EMAILS', ''),
+    'docs_user' => env('API_DOCS_USER', 'docs'),
+    'docs_password' => env('API_DOCS_PASSWORD'),
 ];

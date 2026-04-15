@@ -8,6 +8,7 @@ use App\Mart\MartFile;
 use App\Mart\MartProject;
 use App\Project;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -78,6 +79,78 @@ class MartFileUploadTest extends TestCase
             'file_type' => 'photo',
             'mime_type' => 'image/png',
         ], 'mart');
+    }
+
+    /** @test */
+    public function it_can_upload_a_file_via_multipart()
+    {
+        $controller = new MartFileController();
+
+        $pngContent = base64_decode($this->getTestPngBase64());
+        $uploadedFile = UploadedFile::fake()->createWithContent('photo.png', $pngContent);
+
+        $request = Request::create('/mart-api/cases/1/files', 'POST', [
+            'file_type' => 'photo',
+        ], [], [
+            'file' => $uploadedFile,
+        ]);
+
+        $response = $controller->store($request, $this->case);
+        $responseData = $response->getData(true);
+
+        $this->assertTrue($responseData['success']);
+        $this->assertEquals('photo', $responseData['file_type']);
+        $this->assertEquals('image/png', $responseData['mime_type']);
+        $this->assertArrayHasKey('file_id', $responseData);
+        $this->assertEquals("/mart-api/files/{$responseData['file_id']}", $responseData['fileUrl']);
+
+        $this->assertDatabaseHas('mart_files', [
+            'case_id' => $this->case->id,
+            'project_id' => $this->project->id,
+            'file_type' => 'photo',
+            'mime_type' => 'image/png',
+            'original_name' => 'photo.png',
+        ], 'mart');
+    }
+
+    /** @test */
+    public function it_infers_file_type_from_mime_in_multipart_mode()
+    {
+        $controller = new MartFileController();
+
+        $pngContent = base64_decode($this->getTestPngBase64());
+        $uploadedFile = UploadedFile::fake()->createWithContent('photo.png', $pngContent);
+
+        // No file_type sent — controller must infer 'photo' from image/png
+        $request = Request::create('/mart-api/cases/1/files', 'POST', [], [], [
+            'file' => $uploadedFile,
+        ]);
+
+        $response = $controller->store($request, $this->case);
+        $responseData = $response->getData(true);
+
+        $this->assertTrue($responseData['success']);
+        $this->assertEquals('photo', $responseData['file_type']);
+        $this->assertEquals('image/png', $responseData['mime_type']);
+    }
+
+    /** @test */
+    public function it_infers_file_type_from_mime_in_base64_mode()
+    {
+        $controller = new MartFileController();
+
+        // No file_type sent — controller must infer 'photo' from image/png
+        $request = new Request([
+            'file' => $this->getTestPngBase64(),
+            'original_name' => 'photo.png',
+        ]);
+
+        $response = $controller->store($request, $this->case);
+        $responseData = $response->getData(true);
+
+        $this->assertTrue($responseData['success']);
+        $this->assertEquals('photo', $responseData['file_type']);
+        $this->assertEquals('image/png', $responseData['mime_type']);
     }
 
     /** @test */

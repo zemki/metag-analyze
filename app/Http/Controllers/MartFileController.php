@@ -12,19 +12,27 @@ use Illuminate\Support\Facades\Log;
 class MartFileController extends Controller
 {
     /**
-     * Upload a file for a MART questionnaire answer.
+     * Upload a file
      *
-     * Files are uploaded before submission, then referenced by UUID in the submit.
+     * Accepts either multipart/form-data (field: `file`) or a JSON body with
+     * base64-encoded content. When `file_type` is omitted, it is inferred from
+     * the detected MIME type. Files are uploaded before submission, then
+     * referenced by UUID in the submit.
      *
      * @throws \Illuminate\Auth\AuthenticationException
      */
     public function store(Request $request, Cases $case): JsonResponse
     {
-        // Validate request
+        // Detect upload mode: multipart vs JSON base64
+        $isMultipart = $request->hasFile('file');
+
+        // Validate request — rules differ based on upload mode
         $request->validate([
             'question_uuid' => 'nullable|string', // Optional - can link later
-            'file_type' => 'required|in:photo,video,audio,document',
-            'file' => 'required|string', // Base64 encoded content
+            'file_type' => 'nullable|in:photo,video,audio,document',
+            'file' => $isMultipart
+                ? 'required|file|max:' . ((int) (MartFile::MAX_FILE_SIZE / 1024)) // KB
+                : 'required|string', // base64
             'original_name' => 'nullable|string|max:255',
         ]);
 
@@ -45,13 +53,20 @@ class MartFileController extends Controller
             ], 400);
         }
 
-        // Decode base64 file content
-        $fileContent = base64_decode($request->file, true);
-        if ($fileContent === false) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid base64 encoded file content',
-            ], 400);
+        // Read file content based on upload mode
+        if ($isMultipart) {
+            $uploadedFile = $request->file('file');
+            $fileContent = file_get_contents($uploadedFile->getRealPath());
+            $originalName = $request->original_name ?? $uploadedFile->getClientOriginalName();
+        } else {
+            $fileContent = base64_decode($request->file, true);
+            if ($fileContent === false) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid base64 encoded file content',
+                ], 400);
+            }
+            $originalName = $request->original_name;
         }
 
         // Validate file size (50MB max)
@@ -74,12 +89,21 @@ class MartFileController extends Controller
             ], 400);
         }
 
-        // Validate MIME type against allowed types for the file type
-        if (!MartFile::isAllowedMimeType($request->file_type, $detectedMimeType)) {
+        // Resolve file_type: use explicit value if provided, else infer from MIME
+        $fileType = $request->file_type ?? MartFile::fileTypeForMime($detectedMimeType);
+        if (!$fileType) {
             return response()->json([
                 'success' => false,
-                'message' => "MIME type '{$detectedMimeType}' is not allowed for file type '{$request->file_type}'",
-                'allowed_types' => MartFile::ALLOWED_MIME_TYPES[$request->file_type] ?? [],
+                'message' => "MIME type '{$detectedMimeType}' is not in the allowed whitelist",
+            ], 422);
+        }
+
+        // Validate MIME type against allowed types for the resolved file type
+        if (!MartFile::isAllowedMimeType($fileType, $detectedMimeType)) {
+            return response()->json([
+                'success' => false,
+                'message' => "MIME type '{$detectedMimeType}' is not allowed for file type '{$fileType}'",
+                'allowed_types' => MartFile::ALLOWED_MIME_TYPES[$fileType] ?? [],
             ], 422);
         }
 
@@ -93,12 +117,12 @@ class MartFileController extends Controller
             'case_id' => $case->id,
             'project_id' => $project->id,
             'question_uuid' => $request->question_uuid,
-            'file_type' => $request->file_type,
+            'file_type' => $fileType,
             'mime_type' => $detectedMimeType,
-            'original_name' => $request->original_name,
+            'original_name' => $originalName,
             'storage_path' => $storagePath,
             'size' => $fileSize,
-            'metadata' => $this->extractMetadata($fileContent, $request->file_type, $detectedMimeType),
+            'metadata' => $this->extractMetadata($fileContent, $fileType, $detectedMimeType),
         ]);
 
         // Store encrypted file
@@ -116,9 +140,10 @@ class MartFileController extends Controller
             'file_id' => $martFile->id,
             'case_id' => $case->id,
             'project_id' => $project->id,
-            'file_type' => $request->file_type,
+            'file_type' => $fileType,
             'mime_type' => $detectedMimeType,
             'size' => $fileSize,
+            'upload_mode' => $isMultipart ? 'multipart' : 'base64',
         ]);
 
         return response()->json([
@@ -195,7 +220,10 @@ class MartFileController extends Controller
     }
 
     /**
-     * Delete a file (only if not yet linked to an entry).
+     * Delete a file
+     *
+     * Only files that have not yet been linked to an entry can be deleted.
+     * Returns 400 if the file is already attached to a submission.
      *
      * @throws \Illuminate\Auth\AuthenticationException
      */

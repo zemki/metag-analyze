@@ -270,6 +270,27 @@ class MartFile extends Model
     }
 
     /**
+     * Infer the file_type bucket (photo, video, audio, document) from a MIME type.
+     *
+     * Returns null if the MIME is not in the whitelist. When a MIME type appears
+     * in multiple buckets (e.g. image/jpeg is listed under both photo and document),
+     * the first match wins, following the order declared in ALLOWED_MIME_TYPES.
+     *
+     * @param  string  $mimeType
+     * @return string|null
+     */
+    public static function fileTypeForMime(string $mimeType): ?string
+    {
+        foreach (self::ALLOWED_MIME_TYPES as $fileType => $allowedMimes) {
+            if (in_array($mimeType, $allowedMimes, true)) {
+                return $fileType;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Detect MIME type from file content.
      *
      * @param string $content Raw file content

@@ -5,9 +5,14 @@
 > quick-start flow guide. For exact request/response schemas, refer to the
 > interactive docs.
 
-Base URL: `/mart-api` (authenticated) and `/api/mart` (auth flow)
+The MART API lives at two URL prefixes:
 
-All MART API endpoints return JSON responses. No `Accept: application/json` header is required.
+| Prefix       | Purpose                    | Auth                            |
+|--------------|----------------------------|---------------------------------|
+| `/api/mart`  | Auth flow (email/password) | None (per-IP rate limited)      |
+| `/mart-api`  | Project data & files       | `Authorization: Bearer {token}` |
+
+All endpoints return JSON. No `Accept: application/json` header is required.
 
 ---
 
@@ -151,8 +156,17 @@ All require: `Authorization: Bearer {bearerToken}`
 GET /mart-api/projects/{projectId}/structure
 GET /mart-api/projects/{projectId}/structure?participant_id={participantId}
 ```
-Returns complete project configuration: questionnaires, questions, scales, pages, and
-participant-specific data (submissions, device info) when `participant_id` is provided.
+Returns project configuration: questionnaires, questions, scales, and pages.
+
+**Query params:**
+- `participant_id` *(optional)* — when provided, the response also includes per-case data
+  (submissions, device info) and applies per-case date overrides to schedules.
+  If omitted and the request is Bearer-authenticated, the controller falls back to the
+  authenticated user's case (auto-creating one if none exists).
+
+**Errors:**
+- `401` — Missing or invalid Bearer token
+- `404` — Project has no MART data
 
 ### Submit Entry
 ```
@@ -171,6 +185,25 @@ POST /mart-api/cases/{caseId}/submit
   "timezone": "Europe/Berlin"
 }
 ```
+`answers` is an **object** keyed by `itemId` (1-based question index), not an array.
+Values can be numbers (scale), arrays (multiple choice), strings (text), or file UUIDs
+returned from File Upload.
+
+> **Deprecated:** `sheetId` is accepted for backward compatibility but ignored.
+> Use `questionnaireId` instead.
+
+**Response (200):**
+```json
+{ "success": true, "entry_id": 42, "message": "Entry created successfully" }
+```
+
+**Errors:**
+- `400` — Case does not belong to `projectId`
+- `401` — Missing or invalid Bearer token
+- `404` — Project or questionnaire schedule not found
+- `422` — Validation error, or case is completed / not accepting submissions
+  (response includes `case_status`)
+- `500` — Cross-DB transaction failed (both main and MART DBs rolled back)
 
 ### Store Device Info
 ```
@@ -189,7 +222,18 @@ POST /mart-api/device-infos
   "timezone": "Europe/Berlin"
 }
 ```
-**Important:** `userId`, `projectId`, and `participantId` must match the case created during `check-access`. A mismatch returns `403` with a `hint` field explaining what to verify.
+`userId`, `projectId`, and `participantId` must match the case created during `check-access`.
+
+**Response (200):**
+```json
+{ "success": true, "message": "Device information stored successfully", "device_info_id": 1 }
+```
+
+**Errors:**
+- `401` — Missing or invalid Bearer token
+- `403` — `userId` / `participantId` / `projectId` do not match an existing case
+- `404` — User not found
+- `422` — Validation error (missing or invalid fields)
 
 ### Submit Stats
 ```
@@ -207,12 +251,39 @@ POST /mart-api/stats
   "iOSStats": {}
 }
 ```
-Same access requirements as device-infos.
+At least one of `androidUsageStats`, `androidEventStats`, or `iOSStats` should be provided
+(all three are nullable). Same access requirements as device-infos.
+
+**Response (200):**
+```json
+{ "success": true, "stat_id": 1, "message": "Stats submitted successfully" }
+```
+
+**Errors:**
+- `401` — Missing or invalid Bearer token
+- `403` — `userId` / `participantId` / `projectId` do not match an existing case
+- `404` — User or MART project not found
+- `422` — Validation error
 
 ### File Upload
 ```
 POST /mart-api/cases/{caseId}/files
 ```
+
+Two upload modes are supported. Pick whichever fits your client:
+
+**Mode A — multipart/form-data** *(recommended for mobile)*
+```
+Content-Type: multipart/form-data
+```
+| Field           | Type   | Required | Notes                                        |
+|-----------------|--------|----------|----------------------------------------------|
+| `file`          | file   | yes      | Raw binary upload                             |
+| `file_type`     | string | no       | Inferred from detected MIME when omitted      |
+| `question_uuid` | string | no       | Link to a specific question                   |
+| `original_name` | string | no       | Falls back to the uploaded file's client name |
+
+**Mode B — application/json (base64)**
 ```json
 {
   "file_type": "photo",
@@ -221,10 +292,28 @@ POST /mart-api/cases/{caseId}/files
   "original_name": "photo.jpg"
 }
 ```
-- `file_type`: one of `photo`, `video`, `audio`, `document`
-- `file`: base64-encoded file content
+- `file` — plain base64, no `data:` URI prefix
+- `file_type` is optional; inferred from detected MIME when omitted
+
+**Common rules (both modes):**
+- `file_type` — one of `photo`, `video`, `audio`, `document`
+- `question_uuid` *(optional)* — link the file to a specific question; can also be linked
+  later when the submission is sent
 - Max size: 50MB
-- Files are encrypted at rest
+- Files are validated by actual content (not declared MIME) and encrypted at rest
+- When a MIME type maps to multiple buckets (e.g. `image/jpeg` → `photo` or `document`),
+  the first match wins in declaration order (`photo` wins over `document`). Send
+  `file_type` explicitly if you need the other bucket.
+
+**Allowed MIME types:**
+| `file_type` | Accepted MIME types |
+|-------------|---------------------|
+| `photo`     | image/jpeg, image/png, image/gif, image/webp |
+| `video`     | video/mp4, video/quicktime, video/webm |
+| `audio`     | audio/mpeg, audio/mp4, audio/aac, audio/wav, audio/ogg, audio/webm, audio/flac |
+| `document`  | application/pdf |
+
+Files not matching the whitelist are rejected with `422` and logged.
 
 **Response (201):**
 ```json
@@ -240,11 +329,24 @@ POST /mart-api/cases/{caseId}/files
 Use `file_id` (UUID) in questionnaire answer values for file-type questions.
 Use `fileUrl` to retrieve the file via `GET /mart-api/files/{file_id}`.
 
+**Errors:**
+- `400` — Case does not belong to a MART project, or base64 decode failed (base64 mode only)
+- `401` — Missing or invalid Bearer token
+- `422` — Validation error, or file content is not in the allowed MIME whitelist,
+  or file exceeds 50MB
+- `500` — File storage failure
+
 ### Retrieve File
 ```
 GET /mart-api/files/{fileId}
 ```
-Returns the decrypted file content with appropriate MIME type headers.
+Returns the decrypted file binary with the original `Content-Type` header.
+Authorization: the authenticated user must own the case that uploaded the file.
+
+**Errors:**
+- `401` — Missing or invalid Bearer token
+- `403` — User does not own the case linked to the file
+- `404` — File not found
 
 ### Delete File
 ```
@@ -252,25 +354,97 @@ DELETE /mart-api/files/{fileId}
 ```
 Only files that have not been linked to a submission can be deleted.
 
+**Response (200):**
+```json
+{ "success": true, "message": "File deleted successfully" }
+```
+
+**Errors:**
+- `400` — File is already linked to a submission
+- `401` — Missing or invalid Bearer token
+- `403` — User does not own the case linked to the file
+- `404` — File not found
+
 ---
 
 ## Rate Limits
 
-| Endpoint | Limit |
-|----------|-------|
-| check-email | 10/minute |
-| send-password-setup | 5/10 minutes |
-| check-password | 10/minute |
-| check-access | 10/minute |
-| refresh | 10/minute |
+All auth-flow endpoints are rate-limited per IP. Exceeding the limit returns `429 Too Many Requests`.
+
+| Endpoint                    | Limit          |
+|-----------------------------|----------------|
+| `check-email`               | 5 / minute     |
+| `send-password-setup`       | 3 / 10 minutes |
+| `check-password`            | 10 / minute    |
+| `check-access`              | 10 / minute    |
+| `refresh`                   | 10 / minute    |
+
+Authenticated `/mart-api/*` endpoints are not individually rate-limited.
+
+---
+
+## Authentication
+
+All `/mart-api/*` endpoints require the header:
+```
+Authorization: Bearer {bearerToken}
+```
+A missing or invalid token returns `401`:
+```json
+{ "message": "Unauthenticated." }
+```
+
+When you receive `401` on an authenticated endpoint, exchange your `refreshToken` at
+`POST /api/mart/refresh` to get a fresh pair. Both tokens are rotated on every refresh —
+the old `refreshToken` is invalidated immediately.
+
+Auth-flow endpoints (`/api/mart/*`) do **not** require a Bearer token; they use cached
+flow state (see Screen 1 / 2 / 3 above) plus per-IP rate limits.
+
+---
 
 ## Error Responses
 
+### Status codes
+
 | Code | Meaning |
 |------|---------|
-| 400 | Bad request (invalid input) |
-| 401 | Invalid/expired token |
-| 403 | Access denied or flow validation failed (check `hint` field) |
-| 404 | Resource not found |
-| 422 | Validation error (check `errors` field) |
-| 429 | Rate limit exceeded |
+| 400  | Bad request (invalid input, failed base64, wrong project) |
+| 401  | Missing / invalid / expired Bearer token |
+| 403  | Access denied or auth-flow validation failed |
+| 404  | Resource (project, case, user, file, schedule) not found |
+| 422  | Validation error — see `errors` field for per-field messages |
+| 429  | Rate limit exceeded |
+| 500  | Server error (e.g. cross-DB transaction rollback) |
+
+### Error shapes
+
+The two namespaces use different error shapes — handle both in your client.
+
+**Auth-flow endpoints** (`/api/mart/*`) return:
+```json
+{
+  "error": "Flow validation failed",
+  "message": "Please check your email first",
+  "step": "email_check_required"
+}
+```
+The optional `step` field tells the client which screen to return to.
+
+**Data endpoints** (`/mart-api/*`) return:
+```json
+{
+  "success": false,
+  "message": "Case does not belong to the specified project"
+}
+```
+Validation errors (`422`) on both namespaces additionally include an `errors` object:
+```json
+{
+  "message": "The userId field is required.",
+  "errors": {
+    "userId": ["The userId field is required."],
+    "participantId": ["The participantId field is required."]
+  }
+}
+```
