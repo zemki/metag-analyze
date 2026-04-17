@@ -8,6 +8,8 @@ use App\Project;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
 class MartFileController extends Controller
 {
@@ -23,15 +25,13 @@ class MartFileController extends Controller
      */
     public function store(Request $request, Cases $case): JsonResponse
     {
-        // Detect upload mode: multipart vs JSON base64
         $isMultipart = $request->hasFile('file');
 
-        // Validate request — rules differ based on upload mode
         $request->validate([
             'question_uuid' => 'nullable|string', // Optional - can link later
-            'file_type' => 'nullable|in:photo,video,audio,document',
+            'file_type' => 'nullable|in:' . implode(',', array_keys(MartFile::ALLOWED_MIME_TYPES)),
             'file' => $isMultipart
-                ? 'required|file|max:' . ((int) (MartFile::MAX_FILE_SIZE / 1024)) // KB
+                ? 'required|file|max:' . MartFile::maxSizeInKilobytes()
                 : 'required|string', // base64
             'original_name' => 'nullable|string|max:255',
         ]);
@@ -53,7 +53,6 @@ class MartFileController extends Controller
             ], 400);
         }
 
-        // Read file content based on upload mode
         if ($isMultipart) {
             $uploadedFile = $request->file('file');
             $fileContent = file_get_contents($uploadedFile->getRealPath());
@@ -90,7 +89,8 @@ class MartFileController extends Controller
         }
 
         // Resolve file_type: use explicit value if provided, else infer from MIME
-        $fileType = $request->file_type ?? MartFile::fileTypeForMime($detectedMimeType);
+        $explicitFileType = $request->file_type;
+        $fileType = $explicitFileType ?? MartFile::fileTypeForMime($detectedMimeType);
         if (!$fileType) {
             return response()->json([
                 'success' => false,
@@ -98,8 +98,9 @@ class MartFileController extends Controller
             ], 422);
         }
 
-        // Validate MIME type against allowed types for the resolved file type
-        if (!MartFile::isAllowedMimeType($fileType, $detectedMimeType)) {
+        // Only re-validate when the client supplied an explicit bucket —
+        // inferred buckets are already proven correct by fileTypeForMime().
+        if ($explicitFileType && !MartFile::isAllowedMimeType($fileType, $detectedMimeType)) {
             return response()->json([
                 'success' => false,
                 'message' => "MIME type '{$detectedMimeType}' is not allowed for file type '{$fileType}'",
@@ -211,12 +212,23 @@ class MartFileController extends Controller
         $extension = MartFile::getExtensionFromMime($martFile->mime_type);
         $filename = $martFile->original_name ?? "file-{$martFile->id}.{$extension}";
 
-        // Return file with appropriate headers
-        return response($content)
+        // Return file with appropriate headers.
+        // Content-Disposition is built via ResponseHeaderBag::makeDisposition() so the
+        // user-controlled `original_name` is safely quoted and non-ASCII names are
+        // RFC 5987-encoded (filename*=UTF-8''...) — same pattern Laravel uses in
+        // ResponseFactory::download() / streamDownload().
+        $response = response($content)
             ->header('Content-Type', $martFile->mime_type)
             ->header('Content-Length', $martFile->size)
-            ->header('Content-Disposition', 'inline; filename="' . $filename . '"')
             ->header('Cache-Control', 'private, max-age=3600');
+
+        $response->headers->set('Content-Disposition', $response->headers->makeDisposition(
+            ResponseHeaderBag::DISPOSITION_INLINE,
+            $filename,
+            str_replace('%', '', Str::ascii($filename))
+        ));
+
+        return $response;
     }
 
     /**

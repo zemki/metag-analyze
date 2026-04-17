@@ -343,6 +343,10 @@ GET /mart-api/files/{fileId}
 Returns the decrypted file binary with the original `Content-Type` header.
 Authorization: the authenticated user must own the case that uploaded the file.
 
+The response uses `Content-Disposition: inline` with the stored `original_name`.
+Filenames containing non-ASCII or special characters are encoded per RFC 5987
+(`filename*=UTF-8''...`), matching Laravel's built-in behavior for file responses.
+
 **Errors:**
 - `401` — Missing or invalid Bearer token
 - `403` — User does not own the case linked to the file

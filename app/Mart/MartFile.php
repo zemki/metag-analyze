@@ -142,6 +142,14 @@ class MartFile extends Model
     public const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
     /**
+     * Maximum file size expressed in kilobytes (for Laravel's `max:` validation rule).
+     */
+    public static function maxSizeInKilobytes(): int
+    {
+        return (int) (self::MAX_FILE_SIZE / 1024);
+    }
+
+    /**
      * Boot function to auto-generate UUID.
      */
     protected static function boot()
