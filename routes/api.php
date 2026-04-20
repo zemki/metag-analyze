@@ -49,7 +49,7 @@ Route::prefix('mart')->middleware('force.json')->group(function () {
     // Screen 1: Send password setup email (for new users who click "Register")
     // Stricter limit because it triggers outbound emails
     Route::post('send-password-setup', 'MartAuthController@sendPasswordSetup')
-        ->middleware('throttle:5,10');
+        ->middleware('throttle:10,10');
 
     // Screen 2: Authenticate with password and get tokens
     // Requires email to be checked in Screen 1 (within 1 minute)

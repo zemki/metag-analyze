@@ -162,8 +162,16 @@ class MartFileController extends Controller
      *
      * @throws \Illuminate\Auth\AuthenticationException
      */
-    public function show(Request $request, MartFile $martFile): \Symfony\Component\HttpFoundation\Response
+    public function show(Request $request, string $martFileId): \Symfony\Component\HttpFoundation\Response
     {
+        $martFile = MartFile::find($martFileId);
+        if (!$martFile) {
+            return response()->json([
+                'success' => false,
+                'message' => 'File not found',
+            ], 404);
+        }
+
         // Verify the authenticated user has access to this file
         // The user should have a case linked to the same project
         $user = $request->user();
@@ -239,8 +247,16 @@ class MartFileController extends Controller
      *
      * @throws \Illuminate\Auth\AuthenticationException
      */
-    public function destroy(Request $request, MartFile $martFile): JsonResponse
+    public function destroy(Request $request, string $martFileId): JsonResponse
     {
+        $martFile = MartFile::find($martFileId);
+        if (!$martFile) {
+            return response()->json([
+                'success' => false,
+                'message' => 'File not found',
+            ], 404);
+        }
+
         // Verify access
         $user = $request->user();
         if (!$user) {

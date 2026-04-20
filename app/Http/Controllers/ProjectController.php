@@ -354,7 +354,7 @@ class ProjectController extends Controller
         if ($project->isMartProject()) {
             DB::connection('mart')->beginTransaction();
             try {
-                MartProject::create([
+                MartProject::firstOrCreate([
                     'main_project_id' => $project->id,
                 ]);
                 DB::connection('mart')->commit();
@@ -703,6 +703,12 @@ class ProjectController extends Controller
         if (auth()->user()->notOwnerNorInvited($project)) {
             abort(403, 'you can\'t see the data of this project.');
         }
+
+        if ($project->isMartProject()) {
+            return (new \App\Exports\Mart\MartProjectExport($project))
+                ->download($project->name . ' - MART data.xlsx');
+        }
+
         $headings = Project::getProjectInputHeadings($project);
 
         return (new AllCasesExport($project->id, $headings))->download('cases from ' . $project->name . ' project.xlsx');

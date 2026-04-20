@@ -12,6 +12,6 @@ Route::middleware(['force.json', 'auth:api'])->group(function () {
 
     // File upload endpoints for MART questionnaire answers
     Route::post('/cases/{case}/files', [MartFileController::class, 'store']);
-    Route::get('/files/{martFile}', [MartFileController::class, 'show']);
-    Route::delete('/files/{martFile}', [MartFileController::class, 'destroy']);
+    Route::get('/files/{martFileId}', [MartFileController::class, 'show']);
+    Route::delete('/files/{martFileId}', [MartFileController::class, 'destroy']);
 });
