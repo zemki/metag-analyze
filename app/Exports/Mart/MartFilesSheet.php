@@ -13,9 +13,12 @@ class MartFilesSheet implements FromCollection, WithHeadings, WithMapping, WithT
 {
     protected int $mainProjectId;
 
-    public function __construct(int $mainProjectId)
+    protected ?int $caseId;
+
+    public function __construct(int $mainProjectId, ?int $caseId = null)
     {
         $this->mainProjectId = $mainProjectId;
+        $this->caseId = $caseId;
     }
 
     public function title(): string
@@ -25,8 +28,13 @@ class MartFilesSheet implements FromCollection, WithHeadings, WithMapping, WithT
 
     public function collection(): Collection
     {
-        return MartFile::where('project_id', $this->mainProjectId)
-            ->orderBy('case_id')
+        $query = MartFile::where('project_id', $this->mainProjectId);
+
+        if ($this->caseId) {
+            $query->where('case_id', $this->caseId);
+        }
+
+        return $query->orderBy('case_id')
             ->orderBy('created_at')
             ->get();
     }

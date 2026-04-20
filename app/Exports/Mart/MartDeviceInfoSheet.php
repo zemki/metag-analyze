@@ -14,9 +14,12 @@ class MartDeviceInfoSheet implements FromCollection, WithHeadings, WithMapping, 
 {
     protected array $scheduleIds;
 
-    public function __construct(array $scheduleIds)
+    protected ?string $participantId;
+
+    public function __construct(array $scheduleIds, ?string $participantId = null)
     {
         $this->scheduleIds = $scheduleIds;
+        $this->participantId = $participantId;
     }
 
     public function title(): string
@@ -26,11 +29,13 @@ class MartDeviceInfoSheet implements FromCollection, WithHeadings, WithMapping, 
 
     public function collection(): Collection
     {
-        // Get participant IDs from entries in this project's schedules
-        $participantIds = MartEntry::whereIn('schedule_id', $this->scheduleIds)
-            ->distinct()
-            ->pluck('participant_id')
-            ->toArray();
+        // Get participant IDs: single participant or all from project's schedules
+        $participantIds = $this->participantId
+            ? [$this->participantId]
+            : MartEntry::whereIn('schedule_id', $this->scheduleIds)
+                ->distinct()
+                ->pluck('participant_id')
+                ->toArray();
 
         return MartDeviceInfo::whereIn('participant_id', $participantIds)
             ->orderBy('participant_id')

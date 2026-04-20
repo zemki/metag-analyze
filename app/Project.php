@@ -95,6 +95,10 @@ class Project extends Model
         $availableAnswers = [];
         $idForInputs = 1;
         foreach ($inputs as $input) {
+            // Skip MART configuration object
+            if (property_exists($input, 'type') && $input->type === 'mart') {
+                continue;
+            }
             $tempObj = [];
             if ($input->type === 'scale') {
                 $tempArray = [];
@@ -143,6 +147,10 @@ class Project extends Model
         }
         $item = null;
         foreach (json_decode($this->inputs) as $input) {
+            // Skip MART configuration object
+            if (property_exists($input, 'type') && $input->type === 'mart') {
+                continue;
+            }
             if ($name === $input->name) {
                 $item = $input;
                 break;
@@ -182,6 +190,10 @@ class Project extends Model
         }
         $item = null;
         foreach (json_decode($this->inputs) as $input) {
+            // Skip MART configuration object
+            if (property_exists($input, 'type') && $input->type === 'mart') {
+                continue;
+            }
             if ($question === $input->name) {
                 $item = property_exists($input, 'numberofanswer') ? $input->numberofanswer : null;
                 break;
@@ -202,6 +214,10 @@ class Project extends Model
         $item = null;
         $inputs = json_decode($this->inputs);
         foreach ($inputs as $input) {
+            // Skip MART configuration object
+            if (property_exists($input, 'type') && $input->type === 'mart') {
+                continue;
+            }
             if ($question === $input->name) {
                 $item = property_exists($input, 'answers') ? $input->answers : null;
                 break;

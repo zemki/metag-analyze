@@ -358,7 +358,7 @@ class StagingMartSeeder extends Seeder
             $this->command->line("    \"sheetId\": 1,");
             $this->command->line("    \"questionnaireStarted\": " . (now()->timestamp * 1000) . ",");
             $this->command->line("    \"questionnaireDuration\": 120000,");
-            $this->command->line("    \"answers\": {\"0\": 7, \"1\": [0, 2], \"2\": \"Test note\"},");
+            $this->command->line("    \"answers\": {\"1\": 7, \"2\": [0, 2], \"3\": \"Test note\"},");
             $this->command->line("    \"timestamp\": " . (now()->timestamp * 1000) . ",");
             $this->command->line("    \"timezone\": \"Europe/Berlin\"");
             $this->command->line("  }'");

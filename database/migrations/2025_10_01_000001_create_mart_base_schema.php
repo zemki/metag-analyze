@@ -9,24 +9,38 @@ return new class extends Migration
     /**
      * Run the migrations.
      * Creates all MART tables in the separate MART database.
+     *
+     * Note: Tables are dropped first so that `migrate:fresh` properly resets
+     * the MART database (which lives on a separate connection).
      */
     public function up(): void
     {
+        // Drop existing MART tables in reverse FK order (same as down)
+        // This ensures migrate:fresh properly resets the MART database
+        Schema::connection('mart')->dropIfExists('mart_device_info');
+        Schema::connection('mart')->dropIfExists('mart_stats');
+        Schema::connection('mart')->dropIfExists('mart_answers');
+        Schema::connection('mart')->dropIfExists('mart_entries');
+        Schema::connection('mart')->dropIfExists('mart_pages');
+        Schema::connection('mart')->dropIfExists('mart_question_history');
+        Schema::connection('mart')->dropIfExists('mart_questions');
+        Schema::connection('mart')->dropIfExists('mart_case_schedules');
+        Schema::connection('mart')->dropIfExists('mart_files');
+        Schema::connection('mart')->dropIfExists('mart_schedules');
+        Schema::connection('mart')->dropIfExists('mart_projects');
+
         // Create mart_projects table - links to main.projects
-        if (!Schema::connection('mart')->hasTable('mart_projects')) {
-            Schema::connection('mart')->create('mart_projects', function (Blueprint $table) {
+        Schema::connection('mart')->create('mart_projects', function (Blueprint $table) {
             $table->id();
             $table->unsignedInteger('main_project_id'); // References main.projects.id (no FK - cross-DB)
             $table->timestamps();
 
             $table->index('main_project_id');
             $table->unique('main_project_id'); // One-to-one with main project
-            });
-        }
+        });
 
         // Create mart_schedules table - questionnaire schedules with improved structure
-        if (!Schema::connection('mart')->hasTable('mart_schedules')) {
-            Schema::connection('mart')->create('mart_schedules', function (Blueprint $table) {
+        Schema::connection('mart')->create('mart_schedules', function (Blueprint $table) {
             $table->id();
             $table->foreignId('mart_project_id')->constrained()->onDelete('cascade');
             $table->integer('questionnaire_id'); // Mobile app reference ID
@@ -47,12 +61,10 @@ return new class extends Migration
 
             $table->unique(['mart_project_id', 'questionnaire_id']);
             $table->index('type');
-            });
-        }
+        });
 
         // Create mart_questions table - individual questions with UUIDs
-        if (!Schema::connection('mart')->hasTable('mart_questions')) {
-            Schema::connection('mart')->create('mart_questions', function (Blueprint $table) {
+        Schema::connection('mart')->create('mart_questions', function (Blueprint $table) {
             $table->uuid('uuid')->primary();
             $table->foreignId('schedule_id')->constrained('mart_schedules')->onDelete('cascade');
             $table->integer('position'); // Order within schedule
@@ -65,12 +77,10 @@ return new class extends Migration
 
             $table->index(['schedule_id', 'position']);
             $table->index('version');
-            });
-        }
+        });
 
         // Create mart_question_history table - tracks question changes
-        if (!Schema::connection('mart')->hasTable('mart_question_history')) {
-            Schema::connection('mart')->create('mart_question_history', function (Blueprint $table) {
+        Schema::connection('mart')->create('mart_question_history', function (Blueprint $table) {
             $table->id();
             $table->uuid('question_uuid'); // References mart_questions.uuid (no FK - for flexibility)
             $table->integer('version');
@@ -81,12 +91,10 @@ return new class extends Migration
             $table->timestamp('changed_at');
 
             $table->index(['question_uuid', 'version']);
-            });
-        }
+        });
 
         // Create mart_pages table - instruction pages
-        if (!Schema::connection('mart')->hasTable('mart_pages')) {
-            Schema::connection('mart')->create('mart_pages', function (Blueprint $table) {
+        Schema::connection('mart')->create('mart_pages', function (Blueprint $table) {
             $table->id();
             $table->foreignId('mart_project_id')->constrained()->onDelete('cascade');
             $table->string('name'); // Page title
@@ -97,12 +105,10 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['mart_project_id', 'sort_order']);
-            });
-        }
+        });
 
         // Create mart_entries table - submission metadata
-        if (!Schema::connection('mart')->hasTable('mart_entries')) {
-            Schema::connection('mart')->create('mart_entries', function (Blueprint $table) {
+        Schema::connection('mart')->create('mart_entries', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('main_entry_id'); // References main.entries.id (no FK - cross-DB)
             $table->foreignId('schedule_id')->constrained('mart_schedules')->onDelete('cascade');
@@ -119,12 +125,10 @@ return new class extends Migration
             $table->unique('main_entry_id'); // One-to-one with main entry
             $table->index(['schedule_id', 'participant_id']);
             $table->index('questionnaire_id');
-            });
-        }
+        });
 
         // Create mart_answers table - individual answers linked to question UUIDs
-        if (!Schema::connection('mart')->hasTable('mart_answers')) {
-            Schema::connection('mart')->create('mart_answers', function (Blueprint $table) {
+        Schema::connection('mart')->create('mart_answers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('entry_id')->constrained('mart_entries')->onDelete('cascade');
             $table->uuid('question_uuid'); // References mart_questions.uuid (no FK - historical flexibility)
@@ -134,12 +138,10 @@ return new class extends Migration
 
             $table->index(['entry_id', 'question_uuid']);
             $table->index(['question_uuid', 'question_version']);
-            });
-        }
+        });
 
         // Create mart_stats table - usage statistics
-        if (!Schema::connection('mart')->hasTable('mart_stats')) {
-            Schema::connection('mart')->create('mart_stats', function (Blueprint $table) {
+        Schema::connection('mart')->create('mart_stats', function (Blueprint $table) {
             $table->id();
             $table->foreignId('mart_project_id')->constrained()->onDelete('cascade');
             $table->string('participant_id'); // From main.cases.name
@@ -156,12 +158,10 @@ return new class extends Migration
 
             $table->index(['mart_project_id', 'participant_id']);
             $table->index('timestamp');
-            });
-        }
+        });
 
         // Create mart_device_info table - device information per participant
-        if (!Schema::connection('mart')->hasTable('mart_device_info')) {
-            Schema::connection('mart')->create('mart_device_info', function (Blueprint $table) {
+        Schema::connection('mart')->create('mart_device_info', function (Blueprint $table) {
             $table->id();
             $table->string('participant_id'); // From main.cases.name
             $table->string('user_id'); // Email
@@ -174,8 +174,7 @@ return new class extends Migration
 
             $table->index('participant_id');
             $table->index('user_id');
-            });
-        }
+        });
     }
 
     /**

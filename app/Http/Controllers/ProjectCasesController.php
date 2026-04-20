@@ -303,9 +303,16 @@ class ProjectCasesController extends Controller
         if (auth()->user()->notOwnerNorInvited($case->project)) {
             abort(403, __('you can\'t see the data of this project.'));
         }
+
+        // MART projects use separate export (data lives in MART database)
+        if ($case->project->isMartProject()) {
+            return (new \App\Exports\Mart\MartProjectExport($case->project, $case))
+                ->download($case->project->name . ' - ' . $case->name . ' - MART data.xlsx');
+        }
+
         $headings = $this->getProjectInputHeadings($case->project);
 
-        return (new CasesExport($case->id, $headings))->download('case.xlsx');
+        return (new CasesExport($case->id, $headings))->download($case->name . '.xlsx');
     }
 
     private function getProjectInputHeadings(Project $project): array

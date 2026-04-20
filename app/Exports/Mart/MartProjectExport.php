@@ -2,6 +2,7 @@
 
 namespace App\Exports\Mart;
 
+use App\Cases;
 use App\Project;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
@@ -12,9 +13,12 @@ class MartProjectExport implements WithMultipleSheets
 
     protected Project $project;
 
-    public function __construct(Project $project)
+    protected ?Cases $case;
+
+    public function __construct(Project $project, ?Cases $case = null)
     {
         $this->project = $project;
+        $this->case = $case;
     }
 
     public function sheets(): array
@@ -33,11 +37,15 @@ class MartProjectExport implements WithMultipleSheets
         $projectId = $martProject->id;
         $mainProjectId = $this->project->id;
 
+        // For single-case export, filter by participant_id and case_id
+        $participantId = $this->case?->name;
+        $caseId = $this->case?->id;
+
         return [
-            new MartEntriesSheet($schedules, $scheduleIds),
-            new MartDeviceInfoSheet($scheduleIds),
-            new MartStatsSheet($projectId),
-            new MartFilesSheet($mainProjectId),
+            new MartEntriesSheet($schedules, $scheduleIds, $participantId),
+            new MartDeviceInfoSheet($scheduleIds, $participantId),
+            new MartStatsSheet($projectId, $participantId),
+            new MartFilesSheet($mainProjectId, $caseId),
         ];
     }
 }

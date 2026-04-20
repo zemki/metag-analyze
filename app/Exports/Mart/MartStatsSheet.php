@@ -13,9 +13,12 @@ class MartStatsSheet implements FromCollection, WithHeadings, WithMapping, WithT
 {
     protected int $martProjectId;
 
-    public function __construct(int $martProjectId)
+    protected ?string $participantId;
+
+    public function __construct(int $martProjectId, ?string $participantId = null)
     {
         $this->martProjectId = $martProjectId;
+        $this->participantId = $participantId;
     }
 
     public function title(): string
@@ -25,8 +28,13 @@ class MartStatsSheet implements FromCollection, WithHeadings, WithMapping, WithT
 
     public function collection(): Collection
     {
-        return MartStat::forProject($this->martProjectId)
-            ->orderBy('participant_id')
+        $query = MartStat::forProject($this->martProjectId);
+
+        if ($this->participantId) {
+            $query->where('participant_id', $this->participantId);
+        }
+
+        return $query->orderBy('participant_id')
             ->orderBy('timestamp')
             ->get();
     }

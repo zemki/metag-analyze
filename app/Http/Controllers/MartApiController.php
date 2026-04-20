@@ -8,11 +8,8 @@ use App\Http\Resources\Mart\MartStructureResource;
 use App\Mart\MartAnswer;
 use App\Mart\MartDeviceInfo;
 use App\Mart\MartEntry;
-use App\Mart\MartFile;
-use App\Mart\MartProject;
 use App\Mart\MartSchedule;
 use App\Mart\MartStat;
-use App\MartQuestionnaireSchedule;
 use App\Project;
 use App\User;
 use Illuminate\Http\JsonResponse;
@@ -392,21 +389,6 @@ class MartApiController extends Controller
     }
 
     /**
-     * Transform MART answers format to MetaG inputs format
-     */
-    private function transformMartAnswersToMetagInputs($martAnswers)
-    {
-        $metagInputs = [];
-
-        foreach ($martAnswers as $questionId => $answer) {
-            // Handle different answer types
-            $metagInputs["question_$questionId"] = $answer;
-        }
-
-        return $metagInputs;
-    }
-
-    /**
      * Store device info
      *
      * Stores or updates device info for a participant. `userId` (email),
@@ -682,100 +664,20 @@ class MartApiController extends Controller
     }
 
     /**
-     * Validate a single answer against its question constraints
-     * Updated to work with MartQuestion model from MART DB
+     * Validate a single answer against its question constraints.
      *
-     * VALIDATION TEMPORARILY DISABLED - accepts any answer type/value
-     * TODO: Re-enable strict validation once frontend data format is finalized
+     * Currently accepts any answer type/value.
+     * TODO: Re-enable strict validation once mobile app data format is finalized.
      */
     private function validateSingleAnswer(
         $answer,
         $question,
         int $questionPosition,
     ): array {
-        // TEMPORARILY DISABLED: Skip all validation to allow flexible answer formats
-        // This allows arrays, strings, numbers, etc. for any question type
-        // Re-enable the code below once frontend sends data in the correct format
         return [
             "valid" => true,
             "errors" => [],
         ];
-
-        /* COMMENTED OUT - STRICT VALIDATION CODE (re-enable later):
-
-        $errors = [];
-        $type = $question->type;
-        $config = $question->config ?? [];
-
-        switch ($type) {
-            case 'one choice':
-                // Must be a single integer within valid range
-                if (! is_int($answer)) {
-                    $errors[] = "Question $questionPosition: Answer must be a single integer for one choice questions";
-                } else {
-                    $validOptions = isset($config['options']) ? array_keys($config['options']) : [];
-                    if (! in_array($answer, $validOptions)) {
-                        $errors[] = "Question $questionPosition: Answer $answer is not a valid option. Valid options: ".implode(', ', $validOptions);
-                    }
-                }
-                break;
-
-            case 'multiple choice':
-                // Must be an array of integers
-                if (! is_array($answer)) {
-                    $errors[] = "Question $questionPosition: Answer must be an array for multiple choice questions";
-                } else {
-                    $validOptions = isset($config['options']) ? array_keys($config['options']) : [];
-                    foreach ($answer as $value) {
-                        if (! is_int($value) || ! in_array($value, $validOptions)) {
-                            $errors[] = "Question $questionPosition: Answer value $value is not valid. Valid options: ".implode(', ', $validOptions);
-                        }
-                    }
-                }
-                break;
-
-            case 'scale':
-                // Must be a number within min/max range
-                if (! is_numeric($answer)) {
-                    $errors[] = "Question $questionPosition: Answer must be a number for scale questions";
-                } else {
-                    $minValue = $config['minValue'] ?? 1;
-                    $maxValue = $config['maxValue'] ?? 10;
-
-                    if ($answer < $minValue || $answer > $maxValue) {
-                        $errors[] = "Question $questionPosition: Answer $answer is out of range ($minValue-$maxValue)";
-                    }
-
-                    // Check if answer respects step increments if defined
-                    if (isset($config['steps']) && $config['steps'] > 1) {
-                        $steps = $config['steps'];
-                        $remainder = ($answer - $minValue) % $steps;
-                        if ($remainder !== 0) {
-                            $errors[] = "Question $questionPosition: Answer $answer does not match step increments of $steps";
-                        }
-                    }
-                }
-                break;
-
-            case 'text':
-                // Must be a string
-                if (! is_string($answer)) {
-                    $errors[] = "Question $questionPosition: Answer must be a string for text questions";
-                } elseif (empty(trim($answer)) && $question->is_mandatory) {
-                    $errors[] = "Question $questionPosition: Text answer cannot be empty for mandatory question";
-                }
-                break;
-
-            default:
-                // Unknown type - allow anything
-                break;
-        }
-
-        return [
-            'valid' => empty($errors),
-            'errors' => $errors,
-        ];
-        */
     }
 
     /**

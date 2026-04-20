@@ -15,16 +15,19 @@ class MartEntriesSheet implements FromCollection, WithHeadings, WithMapping, Wit
 
     protected array $scheduleIds;
 
+    protected ?string $participantId;
+
     /**
      * Ordered list of [schedule_name, question_uuid, question_text] used to build
      * column headings and to map each entry's answers into the correct column.
      */
     protected array $questionMap = [];
 
-    public function __construct(Collection $schedules, array $scheduleIds)
+    public function __construct(Collection $schedules, array $scheduleIds, ?string $participantId = null)
     {
         $this->schedules = $schedules;
         $this->scheduleIds = $scheduleIds;
+        $this->participantId = $participantId;
 
         $this->buildQuestionMap();
     }
@@ -36,9 +39,14 @@ class MartEntriesSheet implements FromCollection, WithHeadings, WithMapping, Wit
 
     public function collection(): Collection
     {
-        return MartEntry::whereIn('schedule_id', $this->scheduleIds)
-            ->with('answers')
-            ->orderBy('participant_id')
+        $query = MartEntry::whereIn('schedule_id', $this->scheduleIds)
+            ->with('answers');
+
+        if ($this->participantId) {
+            $query->where('participant_id', $this->participantId);
+        }
+
+        return $query->orderBy('participant_id')
             ->orderBy('completed_at')
             ->get();
     }

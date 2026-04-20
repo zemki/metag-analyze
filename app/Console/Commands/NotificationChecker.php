@@ -4,9 +4,7 @@ namespace App\Console\Commands;
 
 use App\Cases;
 use App\Entry;
-use App\Mart\MartProject;
 use App\Mart\MartSchedule;
-use App\MartQuestionnaireSchedule;
 use App\Notifications\researcherNotificationToUser;
 use DB;
 use Illuminate\Console\Command;

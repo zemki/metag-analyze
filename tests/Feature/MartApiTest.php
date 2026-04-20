@@ -8,7 +8,6 @@ use App\Mart\MartProject;
 use App\Mart\MartQuestion;
 use App\Mart\MartSchedule;
 use App\MartPage as OldMartPage;
-use App\MartQuestionnaireSchedule;
 use App\Project;
 use App\User;
 use Tests\TestCase;
