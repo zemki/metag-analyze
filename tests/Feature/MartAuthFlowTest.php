@@ -706,4 +706,113 @@ class MartAuthFlowTest extends TestCase
                 'caseId' => $existingCase->id,
             ]);
     }
+
+    /**
+     * ====================
+     * SOFT-DELETE / RE-REGISTRATION TESTS
+     * ====================
+     */
+
+    /** @test */
+    public function it_allows_re_registration_after_admin_soft_deletes_a_user()
+    {
+        Mail::fake();
+
+        // Admin soft-deletes the user
+        $this->testUser->delete();
+        $this->assertSoftDeleted('users', ['id' => $this->testUser->id]);
+
+        // Re-registration: check-email then send-password-setup
+        $this->postJson('/api/mart/check-email', [
+            'email' => 'testuser@example.com',
+        ]);
+
+        $response = $this->postJson('/api/mart/send-password-setup', [
+            'email' => 'testuser@example.com',
+        ]);
+
+        $response->assertStatus(200)->assertJson(['success' => true]);
+
+        // The trashed user is found, and their password_token is regenerated.
+        // The row stays soft-deleted at this stage; restore happens at verification.
+        $this->assertSoftDeleted('users', ['id' => $this->testUser->id]);
+        Mail::assertSent(\App\Mail\VerificationEmail::class);
+    }
+
+    /** @test */
+    public function it_restores_the_user_when_they_set_their_new_password_after_re_invitation()
+    {
+        Mail::fake();
+
+        // Soft-delete and trigger re-invitation
+        $this->testUser->delete();
+        $this->postJson('/api/mart/check-email', ['email' => 'testuser@example.com']);
+        $this->postJson('/api/mart/send-password-setup', ['email' => 'testuser@example.com']);
+
+        // Read the freshly generated password_token from the trashed row
+        $user = User::withTrashed()->where('email', 'testuser@example.com')->first();
+        $this->assertNotNull($user->password_token);
+
+        // Simulate the user clicking the email link and submitting the password form
+        $response = $this->post('/password/new', [
+            'token' => $user->password_token,
+            'password' => 'new-password-456',
+            'password_confirmation' => 'new-password-456',
+        ]);
+
+        $response->assertRedirect('/');
+
+        // After verification: row is restored, email_verified_at is set
+        $user->refresh();
+        $this->assertFalse($user->trashed());
+        $this->assertNotNull($user->email_verified_at);
+        $this->assertNull($user->password_token);
+    }
+
+    /** @test */
+    public function it_still_blocks_re_registration_for_active_verified_users()
+    {
+        // testUser in setUp is already verified and not trashed
+        $this->postJson('/api/mart/check-email', ['email' => 'testuser@example.com']);
+
+        $response = $this->postJson('/api/mart/send-password-setup', [
+            'email' => 'testuser@example.com',
+        ]);
+
+        $response->assertStatus(400)
+            ->assertJson(['error' => 'Email already registered']);
+    }
+
+    /** @test */
+    public function it_returns_email_verified_flag_in_check_email()
+    {
+        // Verified active user
+        $response = $this->postJson('/api/mart/check-email', [
+            'email' => 'testuser@example.com',
+        ]);
+        $response->assertJson(['emailExists' => true, 'emailVerified' => true]);
+
+        // Unverified user
+        User::factory()->create([
+            'email' => 'unverified@example.com',
+            'email_verified_at' => null,
+        ]);
+        $response = $this->postJson('/api/mart/check-email', [
+            'email' => 'unverified@example.com',
+        ]);
+        $response->assertJson(['emailExists' => true, 'emailVerified' => false]);
+
+        // Brand-new email
+        $response = $this->postJson('/api/mart/check-email', [
+            'email' => 'nobody@example.com',
+        ]);
+        $response->assertJson(['emailExists' => false, 'emailVerified' => false]);
+
+        // Soft-deleted user is reported as "doesn't exist"
+        $this->testUser->delete();
+        $response = $this->postJson('/api/mart/check-email', [
+            'email' => 'testuser@example.com',
+        ]);
+        $response->assertJson(['emailExists' => false, 'emailVerified' => false]);
+    }
 }

@@ -75,7 +75,10 @@ class VerificationController extends Controller
 
             return view('errors.resetpassword');
         }
-        $user = User::where('password_token', '=', $request->input('token'))->first();
+        // withTrashed: when an admin-deleted user clicks the link from their
+        // re-invitation email, we need to find their soft-deleted row and
+        // restore it as part of completing the password setup.
+        $user = User::withTrashed()->where('password_token', '=', $request->input('token'))->first();
         if (! $user) {
             $data['error'] = 'Something went wrong, please contact the administrator.';
 
@@ -84,7 +87,8 @@ class VerificationController extends Controller
         $user->password_token = null;
         $user->password = bcrypt($request->input('password'));
         $user->email_verified_at = Date::now();
-        $user->save();
+        // restore() saves internally; otherwise just save the changes above.
+        $user->trashed() ? $user->restore() : $user->save();
 
         return redirect('/');
     }

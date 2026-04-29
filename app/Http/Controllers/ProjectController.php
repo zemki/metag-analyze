@@ -659,7 +659,10 @@ class ProjectController extends Controller
     public function inviteUser(Request $request)
     {
         $project = Project::where('id', $request->input(self::PROJECT))->first();
-        $user = User::where('email', '=', $request->email)->first();
+        // Include soft-deleted users so admin-deleted invitees can be re-invited
+        // without colliding with the UNIQUE email index. Restore happens in
+        // Auth\VerificationController::newpassword once they prove ownership.
+        $user = User::withTrashed()->where('email', '=', $request->email)->first();
         if (! $user) {
             $user = new User;
             $user->email = $request->email;

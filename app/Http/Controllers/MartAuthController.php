@@ -48,8 +48,11 @@ class MartAuthController extends Controller
         // Add random delay to prevent timing attacks
         usleep(random_int(50000, 150000)); // 50-150ms
 
-        // Check if email exists
-        $exists = User::where('email', $email)->exists();
+        // Look up the user including soft-deleted rows so admin-deleted users
+        // are reported as "doesn't exist" (and can re-register cleanly).
+        $user = User::withTrashed()->where('email', $email)->first();
+        $exists = $user && ! $user->trashed();
+        $verified = $exists && (bool) $user->email_verified_at;
 
         // Store in cache for 1 minute (used by Screen 2)
         $cacheKey = 'email_check:'.md5($email.$request->ip());
@@ -62,6 +65,7 @@ class MartAuthController extends Controller
         return response()->json([
             'email' => $email,
             'emailExists' => $exists,
+            'emailVerified' => $verified,
         ], 200);
     }
 
@@ -91,11 +95,6 @@ class MartAuthController extends Controller
         $emailCheck = Cache::get($cacheKey);
 
         if (! $emailCheck) {
-            \Log::warning('Password setup attempted without email check', [
-                'email' => $email,
-                'ip' => $request->ip(),
-            ]);
-
             return response()->json([
                 'error' => 'Flow validation failed',
                 'message' => 'Please check your email first',
@@ -103,14 +102,14 @@ class MartAuthController extends Controller
             ], 403);
         }
 
-        // 3. Check if email already exists and is verified
-        $user = User::where('email', $email)->first();
-        if ($user && $user->email_verified_at) {
-            \Log::warning('Password setup attempted for verified user', [
-                'email' => $email,
-                'ip' => $request->ip(),
-            ]);
-
+        // 3. Look up user including soft-deleted rows so admin-deleted users
+        //    can re-register without colliding with the UNIQUE email index.
+        //    Block only ACTIVE (non-trashed) verified users from re-registering.
+        //    Trashed users stay trashed here; the actual restore() happens in
+        //    Auth\VerificationController::newpassword once the user proves email
+        //    ownership by clicking the link and submitting the password form.
+        $user = User::withTrashed()->where('email', $email)->first();
+        if ($user && ! $user->trashed() && $user->email_verified_at) {
             return response()->json([
                 'error' => 'Email already registered',
                 'message' => 'This email is already registered and verified. Please login.',
@@ -189,11 +188,6 @@ class MartAuthController extends Controller
         $emailCheck = Cache::get($emailCheckKey);
 
         if (! $emailCheck) {
-            \Log::warning('Password check attempted without email check', [
-                'email' => $email,
-                'ip' => $request->ip(),
-            ]);
-
             return response()->json([
                 'error' => 'Flow validation failed',
                 'message' => 'Please check your email first',
@@ -294,12 +288,6 @@ class MartAuthController extends Controller
         $passwordCheck = Cache::get($passwordCheckKey);
 
         if (! $passwordCheck) {
-            \Log::warning('Project access check attempted without password check', [
-                'email' => $email,
-                'project_id' => $projectId,
-                'ip' => $request->ip(),
-            ]);
-
             return response()->json([
                 'error' => 'Flow validation failed',
                 'message' => 'Please login first',
@@ -319,13 +307,6 @@ class MartAuthController extends Controller
         // 4. Get project and verify it's a MART project
         $project = Project::findOrFail($projectId);
         if (! $project->isMartProject()) {
-            \Log::warning('Project access check for non-MART project', [
-                'email' => $email,
-                'project_id' => $projectId,
-                'project_name' => $project->name,
-                'ip' => $request->ip(),
-            ]);
-
             return response()->json([
                 'error' => 'Invalid project',
                 'message' => 'This project ID is not a MART project',
@@ -347,12 +328,6 @@ class MartAuthController extends Controller
                 'created_at' => now(),
             ]);
 
-            \Log::info('Auto-created MART case', [
-                'user_id' => $user->id,
-                'project_id' => $projectId,
-                'case_id' => $case->id,
-                'participant_id' => $case->name,
-            ]);
         }
 
         // 7. Set first_login_at and calculate dynamic dates if not already set

@@ -50,9 +50,20 @@ POST /api/mart/check-email
 ```
 **Response:**
 ```json
-{ "email": "user@example.com", "emailExists": true }
+{ "email": "user@example.com", "emailExists": true, "emailVerified": true }
 ```
-If `emailExists` is `false`, the user can register via Screen 1b.
+
+`emailVerified` is `true` only when the user has both registered and completed
+the password-setup link. Use it to decide where to send the user next:
+
+| `emailExists` | `emailVerified` | Next screen |
+|---|---|---|
+| `false` | `false` | Screen 1b — `/send-password-setup` (new registration) |
+| `true`  | `false` | Screen 1b — `/send-password-setup` (resume registration; user never finished) |
+| `true`  | `true`  | Screen 2 — `/check-password` (login) |
+
+Soft-deleted users are reported as `emailExists: false` so they can re-register
+through Screen 1b cleanly.
 
 ### Screen 1b: Register (if new user)
 ```
