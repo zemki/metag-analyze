@@ -12,12 +12,15 @@ class QuestionSheetResource extends JsonResource
 
     protected $questionnaireId;
 
-    public function __construct($resource, $questions = null, $martConfig = null, $questionnaireId = 1)
+    protected $scheduleName;
+
+    public function __construct($resource, $questions = null, $martConfig = null, $questionnaireId = 1, $scheduleName = null)
     {
         parent::__construct($resource);
         $this->questions = $questions;
         $this->martConfig = $martConfig;
         $this->questionnaireId = $questionnaireId;
+        $this->scheduleName = $scheduleName;
     }
 
     public function toArray($request)
@@ -54,7 +57,11 @@ class QuestionSheetResource extends JsonResource
                 $items[] = $item;
             }
 
-            $questionnaireName = $this->martConfig['questionnaireName'] ?? ($this->name . ' Questions');
+            // Prefer the schedule's own name (per-questionnaire), fall back to the
+            // project-level questionnaireName, then to a generic project-derived label.
+            $questionnaireName = $this->scheduleName
+                ?? $this->martConfig['questionnaireName']
+                ?? ($this->name . ' Questions');
         } else {
             // Standard MetaG project - use inputs
             $inputs = $this->questions ?: json_decode($this->inputs, true);

@@ -407,4 +407,45 @@ class MartApiTest extends TestCase
         $this->assertStringContainsString('email', $responseData['hint']);
     }
 
+    /** @test */
+    public function it_rejects_submit_when_userId_does_not_match_case_owner()
+    {
+        $request = new \Illuminate\Http\Request([
+            'projectId' => $this->project->id,
+            'questionnaireId' => $this->questionnaireId1,
+            'userId' => 'attacker@example.com', // does NOT match case owner
+            'participantId' => $this->case->name,
+            'questionnaireStarted' => now()->timestamp * 1000,
+            'questionnaireDuration' => 300000,
+            'answers' => ['1' => 2],
+            'timestamp' => now()->timestamp * 1000,
+            'timezone' => 'Europe/Berlin',
+        ]);
+
+        $controller = new \App\Http\Controllers\MartApiController;
+        $response = $controller->submitEntry($request, $this->case);
+
+        $this->assertEquals(422, $response->getStatusCode());
+        $responseData = $response->getData(true);
+        $this->assertFalse($responseData['success']);
+        $this->assertEquals('userId does not match the case owner', $responseData['message']);
+    }
+
+    /** @test */
+    public function it_returns_404_when_participant_id_is_invalid()
+    {
+        $request = \Illuminate\Http\Request::create(
+            "/mart-api/projects/{$this->project->id}/structure?participant_id=DOES_NOT_EXIST",
+            'GET'
+        );
+
+        $controller = new \App\Http\Controllers\MartApiController;
+        $response = $controller->getProjectStructure($request, $this->project);
+
+        $this->assertEquals(404, $response->getStatusCode());
+        $responseData = $response->getData(true);
+        $this->assertFalse($responseData['success']);
+        $this->assertStringContainsString('participant_id', $responseData['message']);
+    }
+
 }

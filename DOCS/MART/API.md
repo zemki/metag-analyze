@@ -128,7 +128,11 @@ Auto-creates a participant case if the user doesn't have one in this project.
   "caseId": 456
 }
 ```
-Save `participantId` and `caseId` — they are required for all subsequent API calls.
+Save `participantId` and `caseId`; they are required for all subsequent API calls.
+
+> **Note on `participantId`:** it is a **string** (the case's "P…"-prefixed name, e.g. `P1A2B3C`),
+> not a numeric ID. Endpoints that accept `participantId` reject numeric values.
+> The numeric `caseId` is a separate field and is only used in URL paths (e.g. `/cases/{caseId}/...`).
 
 **Errors:**
 - `403` — Password was not checked first, or project is not a MART project
@@ -174,10 +178,22 @@ Returns project configuration: questionnaires, questions, scales, and pages.
   (submissions, device info) and applies per-case date overrides to schedules.
   If omitted and the request is Bearer-authenticated, the controller falls back to the
   authenticated user's case (auto-creating one if none exists).
+  **If a `participant_id` is provided but does not match any case in the project, the
+  endpoint returns `404`** (it does not silently fall back).
+
+**Per-participant fields in the response:**
+- `repeatingSubmits` and `singleSubmits` are returned as separate arrays, filtered by
+  the schedule's type (`repeating` vs `single`).
+- `lastDataDonationSubmit` is `{ timestamp }` (no `questionnaireId`). It refers to the
+  participant's most recent submission for the schedule flagged `is_ios_data_donation`,
+  not arbitrary stats rows.
+- Each questionnaire in `questionnaires[]` carries its own `name` from its schedule
+  (rather than a single project-level name reused for every questionnaire).
 
 **Errors:**
 - `401` — Missing or invalid Bearer token
-- `404` — Project has no MART data
+- `404` — Project has no MART data, OR `participant_id` was provided but did not match
+  any case in this project
 
 ### Submit Entry
 ```
@@ -212,8 +228,8 @@ returned from File Upload.
 - `400` — Case does not belong to `projectId`
 - `401` — Missing or invalid Bearer token
 - `404` — Project or questionnaire schedule not found
-- `422` — Validation error, or case is completed / not accepting submissions
-  (response includes `case_status`)
+- `422` — Validation error, OR `userId` does not match the case owner's email,
+  OR case is completed / not accepting submissions (response includes `case_status`)
 - `500` — Cross-DB transaction failed (both main and MART DBs rolled back)
 
 ### Store Device Info

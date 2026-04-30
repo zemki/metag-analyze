@@ -57,6 +57,19 @@ class MartApiController extends Controller
             $case = Cases::where("project_id", $project->id)
                 ->where("name", $participantId)
                 ->first();
+
+            // If a participant_id was explicitly provided but doesn't match any
+            // case in this project, fail loudly instead of silently falling back
+            // to the bearer-token user's case.
+            if (!$case) {
+                return response()->json(
+                    [
+                        "success" => false,
+                        "message" => "No case found for the provided participant_id",
+                    ],
+                    404,
+                );
+            }
         }
 
         // Fallback: find case by authenticated user if no participant_id
@@ -137,6 +150,18 @@ class MartApiController extends Controller
                         "Case does not belong to the specified project",
                 ],
                 400,
+            );
+        }
+
+        // Verify the userId in the body matches the case owner. Without this,
+        // any authenticated caller could attribute submissions to any string.
+        if ($case->user && $case->user->email !== $request->userId) {
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "userId does not match the case owner",
+                ],
+                422,
             );
         }
 

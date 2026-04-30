@@ -5,6 +5,7 @@ namespace App\Http\Resources\Mart;
 use App\Entry;
 use App\Mart\MartDeviceInfo;
 use App\Mart\MartEntry;
+use App\Mart\MartSchedule;
 use App\Mart\MartStat;
 use App\User;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -65,8 +66,15 @@ class MartStructureResource extends JsonResource
                     $scheduleQuestions = $schedule->questions ?? [];
 
                     if (!empty($scheduleQuestions)) {
-                        // Create questionnaire for this schedule
-                        $questionnaires[] = new QuestionSheetResource($project, $scheduleQuestions, $martConfig, $schedule->questionnaire_id);
+                        // Create questionnaire for this schedule, passing the schedule's
+                        // own name so each questionnaire is named distinctly in the response.
+                        $questionnaires[] = new QuestionSheetResource(
+                            $project,
+                            $scheduleQuestions,
+                            $martConfig,
+                            $schedule->questionnaire_id,
+                            $schedule->name
+                        );
 
                         // Create scales for this schedule's questions (skip display-only items)
                         // Use item index to keep scaleId consistent with the item's scaleId reference
@@ -97,9 +105,9 @@ class MartStructureResource extends JsonResource
                 'pages' => $pageResources,
                 // Always include these fields (required by martTypes.ts)
                 'deviceInfos' => $this->participantId ? $this->getDeviceInfo($this->participantId) : [],
-                'repeatingSubmits' => $this->participantId ? $this->getSubmissions($this->participantId) : [],
-                'singleSubmits' => $this->participantId ? $this->getSubmissions($this->participantId) : [],
-                'lastDataDonationSubmit' => $this->participantId ? $this->getLastDataDonationSubmit($this->participantId) : null,
+                'repeatingSubmits' => $this->participantId ? $this->getSubmissionsByType($this->participantId, 'repeating') : [],
+                'singleSubmits' => $this->participantId ? $this->getSubmissionsByType($this->participantId, 'single') : [],
+                'lastDataDonationSubmit' => $this->participantId ? $this->getLastDataDonationSubmit($this->participantId, $project) : null,
                 'lastAndroidStatsSubmit' => $this->participantId ? $this->getLastAndroidStatsSubmit($this->participantId) : null,
             ];
 
@@ -124,9 +132,9 @@ class MartStructureResource extends JsonResource
                 'pages' => [], // Standard projects don't have pages
                 // Always include these fields (required by martTypes.ts)
                 'deviceInfos' => $this->participantId ? $this->getDeviceInfo($this->participantId) : [],
-                'repeatingSubmits' => $this->participantId ? $this->getSubmissions($this->participantId) : [],
-                'singleSubmits' => $this->participantId ? $this->getSubmissions($this->participantId) : [],
-                'lastDataDonationSubmit' => $this->participantId ? $this->getLastDataDonationSubmit($this->participantId) : null,
+                'repeatingSubmits' => $this->participantId ? $this->getSubmissionsByType($this->participantId, 'repeating') : [],
+                'singleSubmits' => $this->participantId ? $this->getSubmissionsByType($this->participantId, 'single') : [],
+                'lastDataDonationSubmit' => $this->participantId ? $this->getLastDataDonationSubmit($this->participantId, $project) : null,
                 'lastAndroidStatsSubmit' => $this->participantId ? $this->getLastAndroidStatsSubmit($this->participantId) : null,
             ];
 
@@ -154,12 +162,17 @@ class MartStructureResource extends JsonResource
     }
 
     /**
-     * Get all questionnaire submissions for participant from MART database
+     * Get questionnaire submissions for a participant filtered by schedule type
+     * ('single' or 'repeating'). Joins mart_entries -> mart_schedules so we
+     * can return only the submissions whose schedule matches the requested type.
      */
-    private function getSubmissions($participantId)
+    private function getSubmissionsByType($participantId, string $type)
     {
-        // Query MART database for entries
-        $entries = MartEntry::forParticipant($participantId)->get();
+        $entries = MartEntry::forParticipant($participantId)
+            ->join('mart_schedules', 'mart_entries.schedule_id', '=', 'mart_schedules.id')
+            ->where('mart_schedules.type', $type)
+            ->orderBy('mart_entries.timestamp', 'desc')
+            ->get(['mart_entries.questionnaire_id', 'mart_entries.timestamp']);
 
         return $entries->map(function ($entry) {
             return [
@@ -170,29 +183,34 @@ class MartStructureResource extends JsonResource
     }
 
     /**
-     * Get last data donation questionnaire submission (manual iOS/Android stats)
-     * Returns object per martTypes.ts: { questionnaireId: number, timestamp: number }
-     * Now queries MART database
+     * Get last data donation submission for the participant.
+     *
+     * Scoped to the schedule flagged `is_ios_data_donation = true` for this
+     * project: we look for the most recent MartEntry with that schedule_id.
+     *
+     * Returns { timestamp: number } per martTypes.ts (no questionnaireId).
      */
-    private function getLastDataDonationSubmit($participantId)
+    private function getLastDataDonationSubmit($participantId, $project)
     {
-        // Get last stat submission with iOS or Android stats from MART database
-        $stat = MartStat::forParticipant($participantId)
-            ->where(function ($query) {
-                $query->whereNotNull('ios_stats')
-                    ->orWhereNotNull('android_usage_stats')
-                    ->orWhereNotNull('android_event_stats');
-            })
+        $martProject = $project->martProject();
+        if (!$martProject) {
+            return null;
+        }
+
+        $iosDonationSchedule = MartSchedule::where('mart_project_id', $martProject->id)
+            ->where('is_ios_data_donation', true)
+            ->first();
+
+        if (!$iosDonationSchedule) {
+            return null;
+        }
+
+        $entry = MartEntry::forParticipant($participantId)
+            ->where('schedule_id', $iosDonationSchedule->id)
             ->orderBy('timestamp', 'desc')
             ->first();
 
-        // Return object with questionnaireId and timestamp per martTypes.ts
-        // Note: We don't currently track which questionnaire triggered the stats,
-        // so questionnaireId is null. This matches the optional nature in the type definition.
-        return $stat ? [
-            'questionnaireId' => null,
-            'timestamp' => $stat->timestamp
-        ] : null;
+        return $entry ? ['timestamp' => $entry->timestamp] : null;
     }
 
     /**
