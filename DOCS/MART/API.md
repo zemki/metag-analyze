@@ -130,9 +130,16 @@ Auto-creates a participant case if the user doesn't have one in this project.
 ```
 Save `participantId` and `caseId`; they are required for all subsequent API calls.
 
-> **Note on `participantId`:** it is a **string** (the case's "P…"-prefixed name, e.g. `P1A2B3C`),
-> not a numeric ID. Endpoints that accept `participantId` reject numeric values.
-> The numeric `caseId` is a separate field and is only used in URL paths (e.g. `/cases/{caseId}/...`).
+> **Note on `participantId`:** it is a **string** equal to the case's `name` field.
+> The exact format depends on how the case was created:
+> - When the participant registers via the 3-screen MART auth flow, `check-access`
+>   auto-generates a name in the form `P` + 6 hex chars (e.g. `P1A2B3C`).
+> - Cases created manually in the admin panel, or via the legacy researcher-invite
+>   flow, can have any string as their name (e.g. `participant-003`).
+>
+> Use exactly what `check-access` returns in `participantId` for all subsequent
+> calls, regardless of format. The numeric `caseId` is a separate field used only
+> in URL paths (e.g. `/cases/{caseId}/...`).
 
 **Errors:**
 - `403` — Password was not checked first, or project is not a MART project
