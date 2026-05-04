@@ -40,7 +40,7 @@
           v-model="editentry.data.end"
         />
       </div>
-      <div class="my-2">
+      <div class="my-2" v-if="!isMartProject">
         <label class="text-base font-bold tracking-wide text-gray-700 uppercase">
           {{ trans("Media *") }}
         </label>
@@ -128,7 +128,7 @@
     <div class="flex justify-center flex-shrink-0 py-2" v-if="showCase">
       <!-- Toolbar-->
 
-      <div class="relative z-0 inline-flex sm:space-x-3">
+      <div class="relative z-0 inline-flex sm:space-x-3" v-if="!isMartProject">
         <a
           class=""
           :href="distinctPath()"
@@ -598,6 +598,16 @@ export default {
       return props.cases?.project?.entity_name || 'Entity';
     });
 
+    // True when the project is MART. The graph routes only render
+    // legacy / non-MART entries, so the buttons are hidden for MART.
+    const isMartProject = computed(() => {
+      const raw = props.projectInputs;
+      const inputs = typeof raw === 'string' ? JSON.parse(raw || '[]') : raw;
+      return Array.isArray(inputs)
+        && inputs.length > 0
+        && inputs[0]?.type === 'mart';
+    });
+
     const editentry = reactive({
       id: 0,
       case_id: 0,
@@ -731,15 +741,17 @@ export default {
     };
 
     const mandatoryEntry = () => {
+      // MART projects don't have a media/entity field, so skip that check.
+      const mediaRequired = !isMartProject.value;
       if (editentry.actuallysave) {
         return (
-          editentry.data.media === "" ||
+          (mediaRequired && editentry.data.media === "") ||
           editentry.data.start === "" ||
           editentry.data.end === ""
         );
       } else {
         return (
-          editentry.data.media_id === "" ||
+          (mediaRequired && editentry.data.media_id === "") ||
           editentry.data.start === "" ||
           editentry.data.end === ""
         );
@@ -934,6 +946,7 @@ export default {
       getScaleRange,
       isCorruptedAudioData,
       entityLabel,
+      isMartProject,
     };
   },
 };

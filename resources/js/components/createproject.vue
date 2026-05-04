@@ -416,14 +416,17 @@
           </div>
         </div>
 
-        <!-- Project Schedule -->
+        <!-- Project Availability Window (optional outer dates for the whole study) -->
         <div class="pt-8 space-y-6">
-          <h3 class="text-lg font-medium leading-6 text-gray-900">Project Schedule</h3>
-          
+          <h3 class="text-lg font-medium leading-6 text-gray-900">Project Availability Window</h3>
+          <p class="text-sm text-gray-600">
+            Optional outer window for the whole study. If a start is not set, the project is available right away. If an end is not set, it remains available indefinitely.
+          </p>
+
           <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <!-- Start Date -->
             <div>
-              <label for="mart-start-date" class="block text-sm font-medium text-gray-700">Start Date *</label>
+              <label for="mart-start-date" class="block text-sm font-medium text-gray-700">Start Date (optional)</label>
               <input
                   type="date"
                   id="mart-start-date"
@@ -439,13 +442,14 @@
                   type="time"
                   id="mart-start-time"
                   v-model="martProject.startTime"
+                  :disabled="!martProject.startDate"
                   class="mt-1 block w-full border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               />
             </div>
 
             <!-- End Date -->
             <div>
-              <label for="mart-end-date" class="block text-sm font-medium text-gray-700">End Date *</label>
+              <label for="mart-end-date" class="block text-sm font-medium text-gray-700">End Date (optional)</label>
               <input
                   type="date"
                   id="mart-end-date"
@@ -461,6 +465,7 @@
                   type="time"
                   id="mart-end-time"
                   v-model="martProject.endTime"
+                  :disabled="!martProject.endDate"
                   class="mt-1 block w-full border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               />
             </div>
@@ -804,15 +809,9 @@ export default {
         return;
       }
 
-      if (!this.martProject.startDate) {
-        this.martProject.response = 'Start date is required';
-        return;
-      }
-
-      if (!this.martProject.endDate) {
-        this.martProject.response = 'End date is required';
-        return;
-      }
+      // Start/end dates are optional per spec:
+      // - empty start = project available right away
+      // - empty end = project available indefinitely
 
       // Validation passed, create the MART project
       try {

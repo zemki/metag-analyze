@@ -157,6 +157,62 @@
 
     <!-- MART Project Sections -->
     <div v-if="isMartProject" class="space-y-6">
+      <!-- Project Availability Window (optional outer dates for the whole study) -->
+      <div class="pt-8 space-y-6">
+        <div class="pb-4 border-b border-gray-200">
+          <h3 class="text-lg font-medium text-gray-900">{{ trans('Project Availability Window') }}</h3>
+          <p class="mt-2 text-sm text-gray-600">
+            {{ trans('Optional outer window for the whole study. If a start is not set, the project is available right away. If an end is not set, it remains available indefinitely. Day-to-day questionnaire timing is configured per questionnaire.') }}
+          </p>
+        </div>
+
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">{{ trans('Start date (optional)') }}</label>
+              <input
+                  type="date"
+                  v-model="projectData.projectStartDate"
+                  :disabled="!editable"
+                  class="mt-1 block w-full px-3 py-2 text-sm rounded-md border-gray-300 shadow-xs focus:border-green-500 focus:ring focus:ring-green-200"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">{{ trans('Start time') }}</label>
+              <input
+                  type="time"
+                  v-model="projectData.projectStartTime"
+                  :disabled="!editable || !projectData.projectStartDate"
+                  class="mt-1 block w-full px-3 py-2 text-sm rounded-md border-gray-300 shadow-xs focus:border-green-500 focus:ring focus:ring-green-200"
+              />
+              <p class="text-xs text-gray-400 mt-1">{{ trans('Defaults to 00:00 if a start date is set') }}</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">{{ trans('End date (optional)') }}</label>
+              <input
+                  type="date"
+                  v-model="projectData.projectEndDate"
+                  :disabled="!editable"
+                  class="mt-1 block w-full px-3 py-2 text-sm rounded-md border-gray-300 shadow-xs focus:border-green-500 focus:ring focus:ring-green-200"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">{{ trans('End time') }}</label>
+              <input
+                  type="time"
+                  v-model="projectData.projectEndTime"
+                  :disabled="!editable || !projectData.projectEndDate"
+                  class="mt-1 block w-full px-3 py-2 text-sm rounded-md border-gray-300 shadow-xs focus:border-green-500 focus:ring focus:ring-green-200"
+              />
+              <p class="text-xs text-gray-400 mt-1">{{ trans('Defaults to 23:59 if an end date is set') }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Data Collection Settings Section -->
       <div class="pt-8 space-y-6">
         <div class="pb-4 border-b border-gray-200">
@@ -682,6 +738,12 @@ export default {
         collectAndroidStats: false,
         initialHoursOfAndroidStats: 24,
         overlapAndroidStatsHours: 2,
+        // MART Project Availability Window (both optional;
+        // empty start = available right away, empty end = available indefinitely)
+        projectStartDate: '',
+        projectStartTime: '',
+        projectEndDate: '',
+        projectEndTime: '',
       },
     };
   },
@@ -785,6 +847,12 @@ export default {
           this.projectData.collectAndroidStats = martConfig?.projectOptions?.collectAndroidStats ?? false;
           this.projectData.initialHoursOfAndroidStats = martConfig?.projectOptions?.initialHoursOfAndroidStats ?? 24;
           this.projectData.overlapAndroidStatsHours = martConfig?.projectOptions?.overlapAndroidStatsHours ?? 2;
+
+          // Extract Project Availability Window (both optional)
+          this.projectData.projectStartDate = martConfig?.projectOptions?.startDateAndTime?.date ?? '';
+          this.projectData.projectStartTime = martConfig?.projectOptions?.startDateAndTime?.time ?? '';
+          this.projectData.projectEndDate = martConfig?.projectOptions?.endDateAndTime?.date ?? '';
+          this.projectData.projectEndTime = martConfig?.projectOptions?.endDateAndTime?.time ?? '';
 
           this.projectData.inputs = martQuestions.map(input => {
             const inputObj = {
@@ -1116,6 +1184,26 @@ export default {
             martConfig.projectOptions.collectAndroidStats = this.projectData.collectAndroidStats;
             martConfig.projectOptions.initialHoursOfAndroidStats = this.projectData.initialHoursOfAndroidStats;
             martConfig.projectOptions.overlapAndroidStatsHours = this.projectData.overlapAndroidStatsHours;
+
+            // Save Project Availability Window. If a date is empty we delete
+            // the key entirely so the mobile sees "available right away" /
+            // "available indefinitely" per Roland's spec.
+            if (this.projectData.projectStartDate) {
+              martConfig.projectOptions.startDateAndTime = {
+                date: this.projectData.projectStartDate,
+                time: this.projectData.projectStartTime || '00:00',
+              };
+            } else {
+              delete martConfig.projectOptions.startDateAndTime;
+            }
+            if (this.projectData.projectEndDate) {
+              martConfig.projectOptions.endDateAndTime = {
+                date: this.projectData.projectEndDate,
+                time: this.projectData.projectEndTime || '23:59',
+              };
+            } else {
+              delete martConfig.projectOptions.endDateAndTime;
+            }
           }
           
           const processedQuestions = this.projectData.inputs.map(input => {

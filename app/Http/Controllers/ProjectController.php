@@ -321,15 +321,36 @@ class ProjectController extends Controller
         // If this is a MART project, add the MART marker to inputs
         if (isset($attributes['isMart']) && $attributes['isMart'] === true) {
             $inputs = json_decode($attributes[self::INPUTS], true);
-            $inputs[] = [
+
+            $martConfig = [
                 'type' => 'mart',
                 'name' => 'MART Configuration',
-                'startDate' => $attributes['startDate'] ?? null,
-                'startTime' => $attributes['startTime'] ?? null,
-                'endDate' => $attributes['endDate'] ?? null,
-                'endTime' => $attributes['endTime'] ?? null,
                 'answers' => [],
             ];
+
+            // Project Availability Window — both optional. Per spec, an empty
+            // start means available right away, an empty end means available
+            // indefinitely, so we only include the keys when a date is provided.
+            // Stored under projectOptions to match what ProjectOptionsResource
+            // reads and what editproject.vue writes back.
+            $projectOptions = [];
+            if (! empty($attributes['startDate'])) {
+                $projectOptions['startDateAndTime'] = [
+                    'date' => $attributes['startDate'],
+                    'time' => $attributes['startTime'] ?? '00:00',
+                ];
+            }
+            if (! empty($attributes['endDate'])) {
+                $projectOptions['endDateAndTime'] = [
+                    'date' => $attributes['endDate'],
+                    'time' => $attributes['endTime'] ?? '23:59',
+                ];
+            }
+            if (! empty($projectOptions)) {
+                $martConfig['projectOptions'] = $projectOptions;
+            }
+
+            $inputs[] = $martConfig;
             $attributes[self::INPUTS] = json_encode($inputs);
         }
 
