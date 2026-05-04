@@ -60,11 +60,15 @@ class EntryController extends Controller
             request()->merge([self::MEDIA_ID => request()->entity]);
         }
 
+        // MART projects have no media/entity concept, so make the field optional
+        // when the case belongs to one. The Vue form already hides the input.
+        $isMartProject = $case->project && $case->project->isMartProject();
+
         $attributes = request()->validate([
             self::BEGIN => self::REQUIRED,
             'end' => self::REQUIRED,
             'case_id' => self::REQUIRED,
-            self::MEDIA_ID => self::REQUIRED,
+            self::MEDIA_ID => $isMartProject ? 'nullable' : self::REQUIRED,
             self::INPUTS => 'nullable',
         ]);
 
@@ -72,13 +76,18 @@ class EntryController extends Controller
         $attributes[self::BEGIN] = $this->convertTimestampToDatetime($attributes[self::BEGIN]);
         $attributes['end'] = $this->convertTimestampToDatetime($attributes['end']);
 
-        $isComingFromBackend = is_numeric($attributes[self::MEDIA_ID]);
-
-        if ($isComingFromBackend) {
-            $attributes[self::INPUTS] = json_encode($attributes[self::INPUTS]);
-        } else {
-            $attributes[self::MEDIA_ID] = Media::firstOrCreate(['name' => $attributes[self::MEDIA_ID]])->id;
+        if ($isMartProject) {
+            // Skip the Media::firstOrCreate path entirely for MART.
+            $attributes[self::MEDIA_ID] = null;
             $attributes[self::INPUTS] = json_encode(request()->inputs);
+        } else {
+            $isComingFromBackend = is_numeric($attributes[self::MEDIA_ID]);
+            if ($isComingFromBackend) {
+                $attributes[self::INPUTS] = json_encode($attributes[self::INPUTS]);
+            } else {
+                $attributes[self::MEDIA_ID] = Media::firstOrCreate(['name' => $attributes[self::MEDIA_ID]])->id;
+                $attributes[self::INPUTS] = json_encode(request()->inputs);
+            }
         }
         $entry = Entry::create($attributes);
 
@@ -124,11 +133,15 @@ class EntryController extends Controller
             request()->merge([self::MEDIA_ID => request()->entity]);
         }
 
+        // MART projects have no media/entity concept; the Vue form hides the field
+        // and won't send it. Make the validator optional so the request passes.
+        $isMartProject = $case->project && $case->project->isMartProject();
+
         $attributes = request()->validate([
             self::BEGIN => self::REQUIRED,
             'end' => self::REQUIRED,
             'case_id' => self::REQUIRED,
-            self::MEDIA_ID => self::REQUIRED,
+            self::MEDIA_ID => $isMartProject ? 'nullable' : self::REQUIRED,
             self::INPUTS => 'nullable',
         ]);
 
@@ -136,9 +149,26 @@ class EntryController extends Controller
         $attributes[self::BEGIN] = $this->convertTimestampToDatetime($attributes[self::BEGIN]);
         $attributes['end'] = $this->convertTimestampToDatetime($attributes['end']);
 
-        if (is_string($attributes[self::MEDIA_ID])) {
+        if ($isMartProject) {
+            // Don't touch the existing entry's media_id on a MART update.
+            unset($attributes[self::MEDIA_ID]);
+        } elseif (is_string($attributes[self::MEDIA_ID])) {
             $attributes[self::MEDIA_ID] = Media::firstOrCreate(['name' => $attributes[self::MEDIA_ID]])->id;
         }
+
+        // Defensive: strip junk keys from the inputs payload before persisting.
+        // The Vue form has been seen to create empty / "undefined" / "null"
+        // keys when an input config has no `name` property; "firstValue" is
+        // managed server-side as a re-submission audit trail and must not be
+        // overwritten by client input.
+        if (isset($attributes[self::INPUTS]) && is_array($attributes[self::INPUTS])) {
+            $attributes[self::INPUTS] = array_filter(
+                $attributes[self::INPUTS],
+                fn ($_, $key) => $key !== '' && $key !== 'undefined' && $key !== 'null' && $key !== 'firstValue',
+                ARRAY_FILTER_USE_BOTH
+            );
+        }
+
         $oldInputs = $entry->inputs;
 
         $attributes[self::INPUTS] = json_encode($attributes[self::INPUTS]);

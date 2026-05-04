@@ -274,7 +274,12 @@
               </h3>
             </div>
 
-            <div class="" v-for="(input, indexJ) in entry.inputs" :key="indexJ">
+            <div
+              class=""
+              v-for="(input, indexJ) in entry.inputs"
+              :key="indexJ"
+              v-show="indexJ && indexJ !== 'undefined' && indexJ !== 'null'"
+            >
               <p class="font-bold" v-if="indexJ !== 'firstValue'">
                 {{ indexJ }}
               </p>
@@ -718,7 +723,7 @@ export default {
       window.axios
         .post(`/cases/${props.cases.id}/entries`, {
           case_id: props.cases.id,
-          inputs: editentry.data.inputs,
+          inputs: cleanInputsForSave(editentry.data.inputs),
           begin: moment(editentry.data.start).format(
             "YYYY-MM-DD HH:mm:ss.SSSSSS"
           ),
@@ -758,6 +763,19 @@ export default {
       }
     };
 
+    // Strip keys that should never be persisted on an entry's inputs JSON:
+    // - empty / "undefined" / "null" strings (created when v-model targets an
+    //   input config without a `name` property — e.g. legacy MART config marker)
+    // - "firstValue" (managed server-side as a re-submission audit trail)
+    const cleanInputsForSave = (inputs) => {
+      if (!inputs || typeof inputs !== "object") return inputs;
+      return Object.fromEntries(
+        Object.entries(inputs).filter(([key]) =>
+          key && key !== "undefined" && key !== "null" && key !== "firstValue"
+        )
+      );
+    };
+
     const editEntryAndClose = () => {
       if (mandatoryEntry()) {
         showSnackbarMessage(trans("Check your mandatory entries."));
@@ -770,7 +788,7 @@ export default {
         window.axios
           .patch(`/cases/${editentry.case_id}/entries/${editentry.id}`, {
             case_id: editentry.case_id,
-            inputs: editentry.data.inputs,
+            inputs: cleanInputsForSave(editentry.data.inputs),
             begin: moment(editentry.data.start).format(
               "YYYY-MM-DD HH:mm:ss.SSSSSS"
             ),
@@ -842,6 +860,9 @@ export default {
         const processedInputs = {};
         
         projectInputsArray.forEach(input => {
+          // Skip items without a name (e.g. the MART config marker, malformed
+          // legacy items) so we don't create an "undefined" key on the entry.
+          if (!input || !input.name) return;
           const currentValue = parsedInputs[input.name];
           if (input.type === 'one choice') {
             // Ensure one choice is always an array
