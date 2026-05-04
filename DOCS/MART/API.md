@@ -16,6 +16,20 @@ All endpoints return JSON. No `Accept: application/json` header is required.
 
 ---
 
+## ID Conventions
+
+| Field | Type | What it is |
+|---|---|---|
+| `userId` | string | The participant's email address. Must match the case owner's email. |
+| `participantId` | string | The case's `name` field — any string. Auto-generated as `P` + 6 hex chars (e.g. `P1A2B3C`) when the participant registers via the 3-screen MART auth flow; cases created manually in the admin panel can have any string (e.g. `participant-003`). Use whatever `check-access` returns; do not assume the `P…` format. |
+| `caseId` | integer | The case's numeric primary key, used only inside URL paths (e.g. `/cases/{caseId}/...`). Different from `participantId`. |
+| `projectId` | integer | The project's numeric primary key. |
+| `questionnaireId` | integer | The schedule's questionnaire id (1-based per project). |
+| `bearerToken` | string | 30-day API access token returned by `check-password`. |
+| `refreshToken` | string | 7-day rotation token returned by `check-password`. |
+
+---
+
 ## Testing Setup
 
 Before testing the API, you need a MART project with questionnaires:
@@ -39,7 +53,17 @@ Use the 3-screen flow below to get a bearer token and participantId. You can use
 
 ## Authentication Flow
 
-Three-screen authentication process. Each screen must be completed in order.
+Three-screen authentication process. Each screen must be completed in order, with a time
+window between steps:
+
+| From | To | Window |
+|---|---|---|
+| `check-email` | `send-password-setup` | 60 seconds |
+| `check-email` | `check-password` | 60 seconds |
+| `check-password` | `check-access` | 5 minutes |
+
+Exceeding the window returns `403 Flow validation failed` with a `step` hint pointing
+the client back to the screen it needs to redo.
 
 ### Screen 1: Check Email
 ```
@@ -72,7 +96,6 @@ POST /api/mart/send-password-setup
 ```json
 { "email": "newuser@example.com" }
 ```
-**Requires:** Email must have been checked via `check-email` within the last minute.
 
 **Response:**
 ```json
@@ -81,8 +104,8 @@ POST /api/mart/send-password-setup
 The user receives an email with a link to set their password.
 
 **Errors:**
-- `403` — Email was not checked first (flow validation)
 - `400` — Email already registered and verified
+- `403` — Flow window expired (see Authentication Flow window table)
 
 ### Screen 2: Check Password
 ```
@@ -91,7 +114,6 @@ POST /api/mart/check-password
 ```json
 { "email": "user@example.com", "password": "userpassword" }
 ```
-**Requires:** Email must have been checked via `check-email` within the last minute.
 
 **Response:**
 ```json
@@ -106,7 +128,7 @@ POST /api/mart/check-password
 
 **Errors:**
 - `401` — Invalid email or password
-- `403` — Email was not checked first (flow validation)
+- `403` — Flow window expired (see Authentication Flow window table)
 
 ### Screen 3: Check Project Access
 ```
@@ -115,7 +137,6 @@ POST /api/mart/check-access
 ```json
 { "email": "user@example.com", "projectId": 123 }
 ```
-**Requires:** Password must have been checked via `check-password` within the last 5 minutes.
 
 Auto-creates a participant case if the user doesn't have one in this project.
 
@@ -129,20 +150,10 @@ Auto-creates a participant case if the user doesn't have one in this project.
 }
 ```
 Save `participantId` and `caseId`; they are required for all subsequent API calls.
-
-> **Note on `participantId`:** it is a **string** equal to the case's `name` field.
-> The exact format depends on how the case was created:
-> - When the participant registers via the 3-screen MART auth flow, `check-access`
->   auto-generates a name in the form `P` + 6 hex chars (e.g. `P1A2B3C`).
-> - Cases created manually in the admin panel, or via the legacy researcher-invite
->   flow, can have any string as their name (e.g. `participant-003`).
->
-> Use exactly what `check-access` returns in `participantId` for all subsequent
-> calls, regardless of format. The numeric `caseId` is a separate field used only
-> in URL paths (e.g. `/cases/{caseId}/...`).
+See the [ID Conventions](#id-conventions) table at the top for what each field is.
 
 **Errors:**
-- `403` — Password was not checked first, or project is not a MART project
+- `403` — Flow window expired, or project is not a MART project
 - `404` — User or project not found
 
 ### Token Refresh
@@ -169,16 +180,65 @@ Implements token rotation — both old tokens are invalidated.
 
 ---
 
-## Authenticated Endpoints
+## Using the Bearer Token
 
-All require: `Authorization: Bearer {bearerToken}`
+All `/mart-api/*` endpoints require the header:
+```
+Authorization: Bearer {bearerToken}
+```
+A missing or invalid token returns `401`:
+```json
+{ "message": "Unauthenticated." }
+```
+
+When you receive `401` on an authenticated endpoint, exchange your `refreshToken` at
+`POST /api/mart/refresh` to get a fresh pair. Both tokens are rotated on every refresh,
+and the old `refreshToken` is invalidated immediately.
+
+Auth-flow endpoints (`/api/mart/*`) do **not** require a Bearer token; they use cached
+flow state (see Screen 1 / 2 / 3 above) plus per-IP rate limits.
+
+---
+
+## Authenticated Endpoints
 
 ### Get Project Structure
 ```
 GET /mart-api/projects/{projectId}/structure
 GET /mart-api/projects/{projectId}/structure?participant_id={participantId}
 ```
-Returns project configuration: questionnaires, questions, scales, and pages.
+Returns project configuration: questionnaires, questions, scales, and pages, plus
+per-participant data when `participant_id` is provided.
+
+**Response shape (200):**
+```json
+{
+  "data": {
+    "projectOptions": {
+      "projectId": 1,
+      "projectName": "Study",
+      "options": {
+        "startDateAndTime": { "date": "01.01.2025", "time": "00:00" },
+        "endDateAndTime":   { "date": null,         "time": "23:59" },
+        "collectDeviceInfos": true,
+        "iOSDataDonationQuestionnaire": null,
+        "androidDataDonationQuestionnaire": null,
+        "collectAndroidStats": false
+      }
+    },
+    "questionnaires": [
+      { "questionnaireId": 1, "name": "Daily Check-in", "items": [] }
+    ],
+    "scales": [],
+    "pages": [],
+    "deviceInfos": [],
+    "repeatingSubmits":  [{ "questionnaireId": 1, "timestamp": 1700000120 }],
+    "singleSubmits":     [{ "questionnaireId": 2, "timestamp": 1700090000 }],
+    "lastDataDonationSubmit": { "timestamp": 1700100000 },
+    "lastAndroidStatsSubmit": { "timestamp": 1700100500 }
+  }
+}
+```
 
 **Query params:**
 - `participant_id` *(optional)* — when provided, the response also includes per-case data
@@ -196,6 +256,15 @@ Returns project configuration: questionnaires, questions, scales, and pages.
   not arbitrary stats rows.
 - Each questionnaire in `questionnaires[]` carries its own `name` from its schedule
   (rather than a single project-level name reused for every questionnaire).
+
+**Project Availability Window (`projectOptions.options.startDateAndTime` / `endDateAndTime`):**
+The response always includes both objects with shape `{ date, time }`. Both are optional
+on the researcher side:
+- If the researcher set a date, `date` is a `DD.MM.YYYY` string and `time` is `HH:MM`
+  (`00:00` default for start, `23:59` for end).
+- If the researcher did not set a date, `date` is `null`. A null start means the
+  project is available right away; a null end means it remains available indefinitely.
+The mobile app should treat `null` as "no constraint" on that side of the window.
 
 **Errors:**
 - `401` — Missing or invalid Bearer token
@@ -342,10 +411,10 @@ Content-Type: multipart/form-data
 **Allowed MIME types:**
 | `file_type` | Accepted MIME types |
 |-------------|---------------------|
-| `photo`     | image/jpeg, image/png, image/gif, image/webp |
-| `video`     | video/mp4, video/quicktime, video/webm |
-| `audio`     | audio/mpeg, audio/mp4, audio/aac, audio/wav, audio/ogg, audio/webm, audio/flac |
-| `document`  | application/pdf |
+| `photo`     | image/jpeg, image/png, image/gif, image/webp, image/heic, image/heif |
+| `video`     | video/mp4, video/quicktime, video/webm, video/3gpp, video/x-msvideo |
+| `audio`     | audio/mpeg, audio/mp4, audio/wav, audio/ogg, audio/aac, audio/x-m4a, audio/webm, audio/flac |
+| `document`  | application/pdf, image/jpeg, image/png |
 
 Files not matching the whitelist are rejected with `422` and logged.
 
@@ -421,43 +490,10 @@ Authenticated `/mart-api/*` endpoints are not individually rate-limited.
 
 ---
 
-## Authentication
-
-All `/mart-api/*` endpoints require the header:
-```
-Authorization: Bearer {bearerToken}
-```
-A missing or invalid token returns `401`:
-```json
-{ "message": "Unauthenticated." }
-```
-
-When you receive `401` on an authenticated endpoint, exchange your `refreshToken` at
-`POST /api/mart/refresh` to get a fresh pair. Both tokens are rotated on every refresh —
-the old `refreshToken` is invalidated immediately.
-
-Auth-flow endpoints (`/api/mart/*`) do **not** require a Bearer token; they use cached
-flow state (see Screen 1 / 2 / 3 above) plus per-IP rate limits.
-
----
-
 ## Error Responses
 
-### Status codes
-
-| Code | Meaning |
-|------|---------|
-| 400  | Bad request (invalid input, failed base64, wrong project) |
-| 401  | Missing / invalid / expired Bearer token |
-| 403  | Access denied or auth-flow validation failed |
-| 404  | Resource (project, case, user, file, schedule) not found |
-| 422  | Validation error — see `errors` field for per-field messages |
-| 429  | Rate limit exceeded |
-| 500  | Server error (e.g. cross-DB transaction rollback) |
-
-### Error shapes
-
-The two namespaces use different error shapes — handle both in your client.
+Per-endpoint error codes are listed under each endpoint above. The two namespaces
+use different error shapes — handle both in your client.
 
 **Auth-flow endpoints** (`/api/mart/*`) return:
 ```json
