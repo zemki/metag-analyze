@@ -219,7 +219,7 @@ per-participant data when `participant_id` is provided.
       "projectName": "Study",
       "options": {
         "startDateAndTime": { "date": "01.01.2025", "time": "00:00" },
-        "endDateAndTime":   { "date": null,         "time": "23:59" },
+        "endDateAndTime":   { "date": "01.01.2035", "time": "23:59" },
         "collectDeviceInfos": true,
         "iOSDataDonationQuestionnaire": null,
         "androidDataDonationQuestionnaire": null,
@@ -258,13 +258,19 @@ per-participant data when `participant_id` is provided.
   (rather than a single project-level name reused for every questionnaire).
 
 **Project Availability Window (`projectOptions.options.startDateAndTime` / `endDateAndTime`):**
-The response always includes both objects with shape `{ date, time }`. Both are optional
-on the researcher side:
-- If the researcher set a date, `date` is a `DD.MM.YYYY` string and `time` is `HH:MM`
-  (`00:00` default for start, `23:59` for end).
-- If the researcher did not set a date, `date` is `null`. A null start means the
-  project is available right away; a null end means it remains available indefinitely.
-The mobile app should treat `null` as "no constraint" on that side of the window.
+Both objects always have shape `{ date, time }` with non-null values, so the mobile
+client never has to handle nullability. Both are optional on the researcher side; if
+they're not set, the API supplies sensible defaults:
+
+| Field | If researcher set it | If not set |
+|---|---|---|
+| `startDateAndTime.date` | `DD.MM.YYYY` | the current date in `DD.MM.YYYY` |
+| `startDateAndTime.time` | `HH:MM` | the current time in `HH:MM` |
+| `endDateAndTime.date`   | `DD.MM.YYYY` | the date 10 years from now in `DD.MM.YYYY` |
+| `endDateAndTime.time`   | `HH:MM` (default `23:59`) | `23:59` |
+
+The unset-end default of "+10 years" is the API's way of expressing "available
+indefinitely" while still giving the client a comparable timestamp.
 
 **Errors:**
 - `401` — Missing or invalid Bearer token

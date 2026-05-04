@@ -71,12 +71,22 @@ class ProjectOptionsResource extends JsonResource
                 'projectId' => $this->id,
                 'projectName' => $this->name,
                 'options' => [
+                    // Per spec: always emit usable start/end so the mobile never
+                    // has to handle null. When the researcher hasn't set anything:
+                    // start defaults to "now"; end defaults to ~10 years from now
+                    // (effectively "indefinitely" while still being a comparable
+                    // timestamp on the mobile side).
                     'startDateAndTime' => [
-                        'date' => $this->formatDateForMobile($projectOptions['startDateAndTime']['date'] ?? null),
-                        'time' => $projectOptions['startDateAndTime']['time'] ?? '00:00',
+                        'date' => $this->formatDateForMobile(
+                            $projectOptions['startDateAndTime']['date'] ?? now()->format('Y-m-d')
+                        ),
+                        'time' => $projectOptions['startDateAndTime']['time']
+                            ?? now()->format('H:i'),
                     ],
                     'endDateAndTime' => [
-                        'date' => $this->formatDateForMobile($projectOptions['endDateAndTime']['date'] ?? null),
+                        'date' => $this->formatDateForMobile(
+                            $projectOptions['endDateAndTime']['date'] ?? now()->addYears(10)->format('Y-m-d')
+                        ),
                         'time' => $projectOptions['endDateAndTime']['time'] ?? '23:59',
                     ],
                     'collectDeviceInfos' => $projectOptions['collectDeviceInfos'] ?? true,
