@@ -6,7 +6,7 @@
                     <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
                 </div>
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-                <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:align-middle sm:max-w-lg sm:w-full sm:my-8 sm:p-6 relative z-50">
+                <div :class="['inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:align-middle sm:w-full sm:my-8 sm:p-6 relative z-50', sizeClass]">
                     <div class="sm:flex sm:items-start">
                         <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
                             <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-title">
@@ -56,6 +56,13 @@ export default {
             type: Boolean,
             default: false,
         },
+        // Modal width preset. 'md' is the historical default; 'lg' is used
+        // by the redesigned Edit Entry modal so chip-button rows can breathe.
+        size: {
+            type: String,
+            default: 'md',
+            validator: (v) => ['sm', 'md', 'lg', 'xl'].includes(v),
+        },
     },
     emits: ['confirm', 'cancel', 'update:visible'],
     computed: {
@@ -64,6 +71,14 @@ export default {
                 return 'inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-red-600 border border-transparent rounded-md shadow-xs hover:bg-red-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm';
             }
             return 'inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-xs hover:bg-blue-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm';
+        },
+        sizeClass() {
+            return {
+                sm: 'sm:max-w-md',
+                md: 'sm:max-w-lg',
+                lg: 'sm:max-w-2xl',
+                xl: 'sm:max-w-4xl',
+            }[this.size] || 'sm:max-w-lg';
         },
     },
     mounted() {

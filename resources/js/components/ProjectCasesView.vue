@@ -78,209 +78,123 @@
 
     <!-- Main Content: Email Client Layout -->
     <div class="flex-1 flex flex-col overflow-hidden">
-      <!-- Cases List Panel (Top) -->
-      <div class="bg-white border-b border-gray-200" :style="{ height: casesListHeight + 'px' }">
-        <!-- Cases Header -->
-        <div class="flex items-center justify-between px-6 py-3 border-b border-gray-200 bg-gray-50">
-          <h2 class="text-lg font-semibold text-gray-900">Cases</h2>
-          <span class="text-sm text-gray-500">{{ totalCasesCount }} total</span>
+      <!-- Cases List Panel (Top). Fixed pixel height, but capped in mounted()
+           at 55% of viewport so the entries panel below always has room. -->
+      <div class="bg-white border-b border-gray-200 flex-shrink-0"
+           :style="{ height: casesListHeight + 'px' }">
+        <!-- Cases section bar (redesigned) -->
+        <SectionBar
+          title="Cases"
+          :count="totalCasesCount"
+          singular="case"
+          plural="cases"
+        />
+
+        <!-- Status guide (redesigned) -->
+        <div :style="statusGuideStyle">
+          <span :style="statusGuideLabelStyle">Status guide</span>
+          <span v-for="status in capabilities.visibleStatuses" :key="status"
+                style="display: inline-flex; align-items: center; gap: 6px;">
+            <StatusPill :status="status" />
+            <span style="color: #c4cce0;">—</span>
+            <span>{{ STATUS_NOTES[status] }}</span>
+          </span>
         </div>
 
-        <!-- Status Legend -->
-        <div class="px-6 py-2 border-b border-gray-200 bg-gray-50">
-          <div class="flex items-center gap-1 text-xs">
-            <span class="text-gray-600 font-medium mr-2">Status Guide:</span>
-            <span class="inline-flex items-center px-2 py-0.5 rounded bg-yellow-100 text-yellow-800">
-              Pending
-            </span>
-            <span class="text-gray-400 mx-0.5">-</span>
-            <span class="text-gray-500 text-xs">Case not yet started by user</span>
-            <span class="text-gray-300 mx-2">|</span>
-            <span class="inline-flex items-center px-2 py-0.5 rounded bg-green-100 text-green-800">
-              Active
-            </span>
-            <span class="text-gray-400 mx-0.5">-</span>
-            <span class="text-gray-500 text-xs">Case currently in progress</span>
-            <span class="text-gray-300 mx-2">|</span>
-            <span class="inline-flex items-center px-2 py-0.5 rounded bg-gray-100 text-gray-800">
-              Completed
-            </span>
-            <span class="text-gray-400 mx-0.5">-</span>
-            <span class="text-gray-500 text-xs">Case has ended</span>
-            <span class="text-gray-300 mx-2">|</span>
-            <span class="inline-flex items-center px-2 py-0.5 rounded bg-purple-100 text-purple-800">
-              Backend
-            </span>
-            <span class="text-gray-400 mx-0.5">-</span>
-            <span class="text-gray-500 text-xs">Backend-only case</span>
-          </div>
-        </div>
-
-        <!-- Search and Filters -->
-        <div class="px-6 py-3 border-b border-gray-200 bg-white">
-          <div class="flex flex-wrap gap-4 items-center">
-            <!-- Search Input -->
-            <div class="flex-1 min-w-64">
-              <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                  </svg>
-                </div>
-                <input
-                  v-model="searchQuery"
-                  @input="debouncedSearch"
-                  type="text"
-                  placeholder="Search cases..."
-                  class="block w-full pl-10 pr-3 py-1.5 text-sm border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-hidden focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-            </div>
-
-            <!-- Status Filter -->
-            <select v-model="statusFilter" @change="loadCases"
-                    class="text-sm border border-gray-300 rounded-md pl-3 pr-8 py-1.5 bg-white focus:outline-hidden focus:ring-blue-500 focus:border-blue-500">
-              <option value="">All Status</option>
-              <option value="active">Active</option>
-              <option value="completed">Completed</option>
-              <option value="backend">Backend</option>
-            </select>
-
-            <!-- Sort Options -->
-            <select v-model="sortBy" @change="loadCases"
-                    class="text-sm border border-gray-300 rounded-md pl-3 pr-8 py-1.5 bg-white focus:outline-hidden focus:ring-blue-500 focus:border-blue-500">
-              <option value="created_at">Created Date</option>
-              <option value="name">Name</option>
-              <option value="user_id">User</option>
-              <option value="entries_count">Entries Count</option>
-              <option value="status">Status</option>
-            </select>
-
-            <button @click="toggleSortOrder"
-                    class="p-1.5 border border-gray-300 bg-white rounded-md hover:bg-gray-50 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
-                    :title="sortOrder === 'desc' ? 'Sort Ascending' : 'Sort Descending'">
-              <svg class="h-4 w-4 text-gray-600" :class="{ 'rotate-180': sortOrder === 'desc' }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+        <!-- Search and filters (redesigned) -->
+        <FilterRow>
+          <!-- Search input with embedded icon -->
+          <div :style="searchWrapStyle">
+            <span style="color: #6b7795; display: inline-flex; align-items: center;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="7" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>
-            </button>
-
-            <!-- Per Page -->
-            <select v-model="perPage" @change="loadCases"
-                    class="text-sm border border-gray-300 rounded-md pl-3 pr-8 py-1.5 bg-white focus:outline-hidden focus:ring-blue-500 focus:border-blue-500">
-              <option value="25">25</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-            </select>
+            </span>
+            <input
+              v-model="searchQuery"
+              @input="debouncedSearch"
+              type="text"
+              placeholder="Search cases…"
+              :style="searchInputStyle"
+            />
           </div>
-        </div>
 
-        <!-- Cases List - Compact Email Style -->
-        <div class="overflow-y-auto" :style="{ height: (casesListHeight - 200) + 'px' }">
+          <!-- Status filter -->
+          <select v-model="statusFilter" @change="loadCases" :style="selectStyle">
+            <option value="">All status</option>
+            <option value="pending">Pending</option>
+            <option value="active">Active</option>
+            <option value="completed">Completed</option>
+            <option v-if="capabilities.showBackendStatus" value="backend">Backend</option>
+          </select>
+
+          <!-- Sort field -->
+          <select v-model="sortBy" @change="loadCases" :style="selectStyle">
+            <option value="created_at">Sort: Created</option>
+            <option value="name">Sort: Name</option>
+            <option value="user_id">Sort: User</option>
+            <option value="entries_count">Sort: Entries</option>
+            <option value="status">Sort: Status</option>
+          </select>
+
+          <!-- Sort direction toggle -->
+          <button
+            type="button"
+            @click="toggleSortOrder"
+            :title="sortOrder === 'desc' ? 'Sort ascending' : 'Sort descending'"
+            :style="sortToggleStyle"
+          >
+            <span :style="{ transform: sortOrder === 'asc' ? 'scaleY(-1)' : 'none', display: 'inline-flex' }">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m21 16-4 4-4-4" />
+                <path d="M17 20V4" />
+                <path d="m3 8 4-4 4 4" />
+                <path d="M7 4v16" />
+              </svg>
+            </span>
+          </button>
+
+          <!-- Per page -->
+          <select v-model="perPage" @change="loadCases" :style="selectStyle">
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </FilterRow>
+
+        <!-- Cases list itself (redesigned). overflow-y-scroll forces the
+             scrollbar to be visible at all times, so it's clear there's
+             more content below the visible rows. -->
+        <div class="overflow-y-scroll" :style="{ height: (casesListHeight - 200) + 'px' }">
           <div v-if="loading" class="flex items-center justify-center py-8">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           </div>
 
-          <div v-else-if="cases.length > 0" class="divide-y divide-gray-100">
-            <div v-for="caseItem in cases" :key="caseItem.id"
-                 @click="handleSelectedCase(caseItem)"
-                 :class="[
-                   'px-6 py-3 hover:bg-gray-50 cursor-pointer transition-colors duration-150 flex items-center justify-between',
-                   selectedCase?.id === caseItem.id ? 'bg-blue-50 border-l-4 border-blue-500' : 'border-l-4 border-transparent'
-                 ]">
-              <!-- Case Info -->
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center space-x-3">
-                  <h3 class="text-sm font-medium text-gray-900 truncate">{{ caseItem.name }}</h3>
-                  <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
-                    ID: {{ caseItem.id }}
-                  </span>
-                  <span v-if="caseItem.backend"
-                        class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
-                    Backend
-                  </span>
-                  <span v-else-if="getStatusBadge(caseItem)"
-                        :class="getStatusBadge(caseItem).class"
-                        class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium">
-                    {{ getStatusBadge(caseItem).text }}
-                  </span>
-                </div>
-                <div class="mt-1 flex items-center text-xs text-gray-500 space-x-4">
-                  <span class="flex items-center">
-                    <svg class="flex-shrink-0 mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    {{ getUserDisplayName(caseItem) }}
-                  </span>
-                  <span class="flex items-center">
-                    <svg class="flex-shrink-0 mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    {{ caseItem.entries ? caseItem.entries.length : 0 }} entries
-                  </span>
-                  <span class="text-gray-400">{{ formatDate(caseItem.created_at) }}</span>
-                </div>
-              </div>
-
-              <!-- Quick Actions -->
-              <div class="flex items-center space-x-2 ml-4 relative z-10">
-                <button v-if="caseItem.consultable && caseItem.entries?.length > 0"
-                        @click.stop="exportCase(caseItem)"
-                        class="p-1 text-gray-400 hover:text-blue-600"
-                        title="Export Case">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </button>
-                <button v-if="canShowQRCode(caseItem)"
-                        @click.stop="showQRCodeModal(caseItem)"
-                        :class="caseItem.qr_token_revoked_at ? 'p-1 text-red-500 hover:text-red-700' : 'p-1 text-gray-400 hover:text-green-600'"
-                        :title="caseItem.qr_token_revoked_at ? 'QR Code Revoked' : 'QR Code Login'">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <rect x="3" y="3" width="7" height="7" stroke-width="2"/>
-                    <rect x="14" y="3" width="7" height="7" stroke-width="2"/>
-                    <rect x="3" y="14" width="7" height="7" stroke-width="2"/>
-                    <rect x="14" y="14" width="7" height="7" stroke-width="2"/>
-                    <line v-if="caseItem.qr_token_revoked_at" x1="3" y1="3" x2="21" y2="21" stroke-width="2"/>
-                  </svg>
-                </button>
-                <button v-if="isCreator && !localProject.is_mart_project && calculateStatusFromDate(caseItem) !== 'completed'"
-                        @click.stop="showCloseCaseModal(caseItem)"
-                        class="p-1 text-gray-400 hover:text-orange-600"
-                        title="Close Case Early">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-                <button @click.stop="confirmDeleteCase(caseItem)"
-                        class="p-1 text-gray-400 hover:text-red-600"
-                        title="Delete Case">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
-              </div>
-            </div>
+          <div v-else-if="cases.length > 0">
+            <CaseRow
+              v-for="caseItem in cases"
+              :key="caseItem.id"
+              :case-item="caseItem"
+              :project="localProject"
+              :selected="selectedCase?.id === caseItem.id"
+              :is-creator="isCreator"
+              :status-override="calculateStatusFromDate(caseItem)"
+              @select="handleSelectedCase"
+              @export="exportCase"
+              @qr="showQRCodeModal"
+              @close-early="showCloseCaseModal"
+              @delete="confirmDeleteCase"
+            />
           </div>
 
-          <div v-else class="flex items-center justify-center py-8">
-            <div class="text-center">
-              <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              <h3 class="mt-2 text-sm font-medium text-gray-900">No cases found</h3>
-              <p class="mt-1 text-sm text-gray-500 mb-4">
-                {{ searchQuery || statusFilter ? 'Try adjusting your search or filter criteria.' : 'Get started by creating a new case.' }}
-              </p>
-              <a v-if="!searchQuery && !statusFilter"
-                 :href="urlToCreateCase + '/cases/new'"
-                 class="inline-flex items-center px-4 py-2 border border-transparent shadow-xs text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                Create your first case
-              </a>
-            </div>
-          </div>
+          <CasesEmptyState
+            v-else
+            :filtered="!!(searchQuery || statusFilter)"
+            :create-url="urlToCreateCase + '/cases/new'"
+          />
         </div>
 
         <!-- Pagination -->
@@ -298,101 +212,55 @@
         </div>
       </div>
 
-      <!-- Resize Handle -->
+      <!-- Resize Handle. Always visible, with a clear divider strip and a
+           dotted grip in the middle so it reads as a draggable boundary
+           rather than just a separator line. -->
       <div @mousedown="startResize"
-           class="h-1 bg-gray-200 hover:bg-blue-300 cursor-row-resize flex-shrink-0 relative group">
-        <div class="absolute inset-x-0 -top-1 -bottom-1 group-hover:bg-blue-300 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+           class="flex-shrink-0 cursor-row-resize relative group select-none transition-colors"
+           style="height: 18px; background: #e2e8f0; border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1;"
+           title="Drag to resize the cases list">
+        <!-- Hover highlight overlay (no extra DOM cost) -->
+        <div class="absolute inset-0 group-hover:bg-blue-100 transition-colors pointer-events-none"></div>
+        <!-- Grip dots — six dots arranged in two rows so the affordance is unmistakable -->
+        <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none flex flex-col gap-[3px]">
+          <div class="flex gap-[6px]">
+            <span class="block w-[3px] h-[3px] rounded-full bg-slate-500 group-hover:bg-blue-600 transition-colors"></span>
+            <span class="block w-[3px] h-[3px] rounded-full bg-slate-500 group-hover:bg-blue-600 transition-colors"></span>
+            <span class="block w-[3px] h-[3px] rounded-full bg-slate-500 group-hover:bg-blue-600 transition-colors"></span>
+            <span class="block w-[3px] h-[3px] rounded-full bg-slate-500 group-hover:bg-blue-600 transition-colors"></span>
+            <span class="block w-[3px] h-[3px] rounded-full bg-slate-500 group-hover:bg-blue-600 transition-colors"></span>
+            <span class="block w-[3px] h-[3px] rounded-full bg-slate-500 group-hover:bg-blue-600 transition-colors"></span>
+          </div>
+          <div class="flex gap-[6px]">
+            <span class="block w-[3px] h-[3px] rounded-full bg-slate-500 group-hover:bg-blue-600 transition-colors"></span>
+            <span class="block w-[3px] h-[3px] rounded-full bg-slate-500 group-hover:bg-blue-600 transition-colors"></span>
+            <span class="block w-[3px] h-[3px] rounded-full bg-slate-500 group-hover:bg-blue-600 transition-colors"></span>
+            <span class="block w-[3px] h-[3px] rounded-full bg-slate-500 group-hover:bg-blue-600 transition-colors"></span>
+            <span class="block w-[3px] h-[3px] rounded-full bg-slate-500 group-hover:bg-blue-600 transition-colors"></span>
+            <span class="block w-[3px] h-[3px] rounded-full bg-slate-500 group-hover:bg-blue-600 transition-colors"></span>
+          </div>
+        </div>
       </div>
 
-      <!-- Case Details Panel (Bottom) -->
-      <div class="flex-1 bg-white overflow-hidden">
+      <!-- Case Details Panel (Bottom).
+           The case-detail header (name, status pill, ID, meta, actions) is now
+           rendered inside <SelectedCase> via <CaseDetailStrip>. min-h-0 +
+           flex-1 lets it scroll internally; min-h-[260px] guarantees that even
+           on a short viewport, the strip + a few entries are always visible. -->
+      <div class="flex-1 bg-white overflow-hidden min-h-[260px]">
         <div v-if="selectedCase" class="h-full flex flex-col">
-          <!-- Case Details Header -->
-          <div class="flex-shrink-0 px-6 py-4 border-b border-gray-200">
-            <div class="flex items-start justify-between">
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center space-x-3">
-                  <h1 class="text-xl font-semibold text-gray-900">{{ selectedCase.name }}</h1>
-                  <span v-if="selectedCase.backend"
-                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                    Backend
-                  </span>
-                  <span v-else-if="getStatusBadge(selectedCase)"
-                        :class="getStatusBadge(selectedCase).class"
-                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
-                    {{ getStatusBadge(selectedCase).text }}
-                  </span>
-                </div>
-                <div class="mt-1 flex items-center text-sm text-gray-500">
-                  <svg class="flex-shrink-0 mr-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                  {{ getUserDisplayName(selectedCase) }}
-                  <span class="mx-2">•</span>
-                  {{ selectedCase.entries ? selectedCase.entries.length : 0 }} entries
-                  <span class="mx-2">•</span>
-                  Created {{ formatDate(selectedCase.created_at) }}
-                </div>
-              </div>
-
-              <!-- Case Actions -->
-              <div class="flex items-center space-x-2">
-                <button v-if="selectedCase.consultable && selectedCase.entries?.length > 0"
-                        @click="exportCase(selectedCase)"
-                        class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100">
-                  <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  Export
-                </button>
-                <button v-if="canShowQRCode(selectedCase)"
-                        @click="showQRCodeModal(selectedCase)"
-                        :class="selectedCase.qr_token_revoked_at ? 'inline-flex items-center px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 border border-red-200 rounded hover:bg-red-100' : 'inline-flex items-center px-3 py-1.5 text-xs font-medium text-green-600 bg-green-50 border border-green-200 rounded hover:bg-green-100'">
-                  <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <rect x="3" y="3" width="7" height="7" stroke-width="2"/>
-                    <rect x="14" y="3" width="7" height="7" stroke-width="2"/>
-                    <rect x="3" y="14" width="7" height="7" stroke-width="2"/>
-                    <rect x="14" y="14" width="7" height="7" stroke-width="2"/>
-                    <line v-if="selectedCase.qr_token_revoked_at" x1="3" y1="3" x2="21" y2="21" stroke-width="2"/>
-                  </svg>
-                  {{ selectedCase.qr_token_revoked_at ? 'QR Revoked' : 'QR Code' }}
-                </button>
-                <button v-if="isCreator && !localProject.is_mart_project && calculateStatusFromDate(selectedCase) !== 'completed'"
-                        @click="showCloseCaseModal(selectedCase)"
-                        class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-orange-600 bg-orange-50 border border-orange-200 rounded hover:bg-orange-100">
-                  <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  Close Early
-                </button>
-                <button @click="confirmDeleteCase(selectedCase)"
-                        class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 border border-red-200 rounded hover:bg-red-100">
-                  <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Case Content -->
-          <div class="flex-1 overflow-hidden">
-            <SelectedCase
-              :project-inputs="parsedProjectInputs"
-              :cases="selectedCase"
-              :api-v2-cutoff-date="apiV2CutoffDate"
-              :production-url="productionUrl"
-            />
-            <!-- DEBUG: Let's see what projectInputs contains -->
-            <div v-if="false" class="debug p-4 bg-red-100 text-xs">
-              <strong>ProjectInputs Debug:</strong><br>
-              Type: {{ typeof projectInputs }}<br>
-              IsArray: {{ Array.isArray(projectInputs) }}<br>
-              Length: {{ projectInputs?.length }}<br>
-              Content: {{ JSON.stringify(projectInputs) }}
-            </div>
-          </div>
+          <SelectedCase
+            :project-inputs="parsedProjectInputs"
+            :cases="selectedCase"
+            :api-v2-cutoff-date="apiV2CutoffDate"
+            :production-url="productionUrl"
+            :is-creator="isCreator"
+            @case-export="exportCase"
+            @case-qr="showQRCodeModal"
+            @case-close-early="showCloseCaseModal"
+            @case-delete="confirmDeleteCase"
+            @entries-changed="refreshAfterEntriesChanged"
+          />
         </div>
 
         <!-- Empty State - Only show if there are cases but none selected -->
@@ -572,7 +440,95 @@ import ProjectInvites from './projectsInvites.vue';
 import Modal from './global/modal.vue';
 import PaginationControls from './PaginationControls.vue';
 import QRCodeModal from './QRCodeModal.vue';
+// Redesign primitives (stage 2)
+import StatusPill from './global/StatusPill.vue';
+import SectionBar from './global/SectionBar.vue';
+import FilterRow from './global/FilterRow.vue';
+import CaseRow from './global/CaseRow.vue';
+import CasesEmptyState from './global/CasesEmptyState.vue';
+import { useProjectCapabilities } from '../utils/useProjectCapabilities.js';
 import { emitter } from '../app.js';
+
+// Status note copy used by the inline status-guide legend.
+const STATUS_NOTES = {
+  pending: 'Case not yet started by user',
+  active: 'Case currently in progress',
+  completed: 'Case has ended',
+  backend: 'Backend-only case',
+};
+
+// Reusable inline-style fragments for the redesigned filter row.
+const STATUS_GUIDE_STYLE = {
+  display: 'flex',
+  alignItems: 'center',
+  flexWrap: 'wrap',
+  gap: '14px',
+  padding: '10px 20px',
+  background: '#fbfcfe',
+  borderBottom: '1px solid #e3e8f3',
+  fontSize: '11.5px',
+  color: '#6b7795',
+};
+const STATUS_GUIDE_LABEL_STYLE = {
+  fontWeight: 600,
+  color: '#3b4768',
+  marginRight: '2px',
+};
+// All filter-row controls share the same explicit height (34px) so the
+// search input, native selects, and sort-toggle button line up perfectly.
+const FILTER_CONTROL_HEIGHT = '34px';
+const FILTER_BORDER = '1px solid #e3e8f3';
+
+const SEARCH_WRAP_STYLE = {
+  flex: 1,
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '8px',
+  height: FILTER_CONTROL_HEIGHT,
+  padding: '0 11px',
+  border: FILTER_BORDER,
+  borderRadius: '8px',
+  background: '#ffffff',
+  boxSizing: 'border-box',
+};
+const SEARCH_INPUT_STYLE = {
+  flex: 1,
+  height: '100%',
+  border: 'none',
+  outline: 'none',
+  fontSize: '13px',
+  color: '#0f1b3d',
+  background: 'transparent',
+  fontFamily: 'inherit',
+  padding: 0,
+};
+const SELECT_STYLE = {
+  minWidth: '130px',
+  height: FILTER_CONTROL_HEIGHT,
+  padding: '0 28px 0 10px',
+  border: FILTER_BORDER,
+  borderRadius: '8px',
+  background: '#ffffff',
+  fontSize: '13px',
+  color: '#0f1b3d',
+  cursor: 'pointer',
+  fontFamily: 'inherit',
+  boxSizing: 'border-box',
+};
+const SORT_TOGGLE_STYLE = {
+  width: '36px',
+  height: FILTER_CONTROL_HEIGHT,
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  border: FILTER_BORDER,
+  background: '#ffffff',
+  color: '#3b4768',
+  borderRadius: '8px',
+  cursor: 'pointer',
+  boxSizing: 'border-box',
+  padding: 0,
+};
 
 export default {
   name: 'ProjectCasesView',
@@ -582,7 +538,13 @@ export default {
     ProjectInvites,
     Modal,
     PaginationControls,
-    QRCodeModal
+    QRCodeModal,
+    // Redesign primitives
+    StatusPill,
+    SectionBar,
+    FilterRow,
+    CaseRow,
+    CasesEmptyState,
   },
   inject: ['productionUrl'],
   props: {
@@ -613,10 +575,23 @@ export default {
   },
   data() {
     return {
+      // Redesign primitives — exposed so the template can use them
+      STATUS_NOTES,
+      statusGuideStyle: STATUS_GUIDE_STYLE,
+      statusGuideLabelStyle: STATUS_GUIDE_LABEL_STYLE,
+      searchWrapStyle: SEARCH_WRAP_STYLE,
+      searchInputStyle: SEARCH_INPUT_STYLE,
+      selectStyle: SELECT_STYLE,
+      sortToggleStyle: SORT_TOGGLE_STYLE,
+
       selectedCase: null,
       actionsDropdownOpen: false,
       showProjectSettings: false,
-      casesListHeight: 400, // Initial height in pixels
+      // Initial height in pixels for the cases panel. Bumped/capped in
+      // mounted() so it never eats more than ~60% of the viewport — the
+      // entries panel below needs at least 260px to show the strip + a
+      // few entries. User-resizable via the drag handle below.
+      casesListHeight: 520,
       isResizing: false,
       isLoading: false,
 
@@ -681,7 +656,16 @@ export default {
         }
       }
       return this.projectInputs;
-    }
+    },
+    /**
+     * Project-type capabilities. Centralizes regular vs MART rules so the
+     * template doesn't re-derive `is_mart_project` checks inline.
+     * The composable returns a Vue computed; we unwrap it here to expose
+     * the plain object on the Options API instance.
+     */
+    capabilities() {
+      return useProjectCapabilities(() => this.localProject).value;
+    },
   },
   watch: {
     // Remove automatic prop syncing to prevent overriding our updates
@@ -689,6 +673,15 @@ export default {
   mounted() {
     // Initialize local project copy
     this.localProject = { ...this.project };
+
+    // Cap the cases panel at ~60% of the viewport so the entries panel
+    // below always has room (roughly 260+ px after the page header).
+    // This is a one-time initial fit; the user can override via the drag
+    // handle afterwards.
+    const cap = Math.max(420, Math.round(window.innerHeight * 0.6));
+    if (this.casesListHeight > cap) {
+      this.casesListHeight = cap;
+    }
 
     // Fetch API v2 cutoff date for QR code availability check
     this.fetchApiV2CutoffDate();
@@ -831,47 +824,28 @@ export default {
       this.selectedCase = selectedCase;
     },
 
-    getUserDisplayName(caseData) {
-      if (caseData.user) {
-        if (caseData.user.profile?.name) {
-          return caseData.user.profile.name;
+    /**
+     * Refresh the cases list after a child has changed entries (add /
+     * edit / delete) and keep the same case selected. Avoids the full
+     * page reload the legacy code did, so search / sort / scroll /
+     * panel size are preserved.
+     */
+    async refreshAfterEntriesChanged() {
+      const selectedId = this.selectedCase?.id;
+      await this.loadCases();
+      if (selectedId) {
+        const found = this.cases.find((c) => c.id === selectedId);
+        if (found) {
+          this.handleSelectedCase(found);
+        } else {
+          // The case is no longer in the current page (e.g. filtered out
+          // after delete); clear selection so the right pane shows the
+          // empty state instead of stale data.
+          this.selectedCase = null;
         }
-        return caseData.user.email;
       }
-      return 'No user assigned';
     },
 
-    getStatusBadge(caseData) {
-      if (caseData.backend) {
-        return null;
-      }
-      
-      // Use backend-provided status if available, otherwise fallback to date parsing
-      const status = caseData.status || this.calculateStatusFromDate(caseData);
-      
-      switch (status) {
-        case 'pending':
-          return {
-            text: 'Pending',
-            class: 'bg-yellow-100 text-yellow-800'
-          };
-        case 'active':
-          return {
-            text: 'Active',
-            class: 'bg-green-100 text-green-800'
-          };
-        case 'completed':
-          return {
-            text: 'Completed',
-            class: 'bg-gray-100 text-gray-800'
-          };
-        case 'backend':
-          return null; // Backend cases don't show status badge
-        default:
-          return null;
-      }
-    },
-    
     calculateStatusFromDate(caseData) {
       const now = new Date();
       const lastDay = this.parseDate(caseData.last_day);
@@ -899,15 +873,6 @@ export default {
         return new Date(dateString);
       } catch {
         return null;
-      }
-    },
-
-    formatDate(dateString) {
-      if (!dateString) return 'Unknown';
-      try {
-        return new Date(dateString).toLocaleDateString();
-      } catch {
-        return dateString;
       }
     },
 

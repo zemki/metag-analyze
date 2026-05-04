@@ -3,551 +3,92 @@
     aria-labelledby="message-heading"
     class="flex flex-col flex-1 h-full min-w-0 overflow-hidden xl:order-last"
   >
-    <!-- Modal -->
-    <modal
-      :visible="editentry.modal"
-      :title="editentry.actuallysave ? trans('Add Entry') : trans('Edit Entry')"
-      @confirm="editEntryAndClose"
-      @cancel="toggleEntryModal"
-    >
-      <input type="hidden" :value="editentry.case_id" />
-      <div class="my-2">
-        <label
-          class="text-base font-bold tracking-wide text-gray-700 uppercase"
-        >
-          {{ trans("Start Date/time *") }}
-        </label>
-        <input
-          type="datetime-local"
-          id="begin"
-          name="begin"
-          class="w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-hidden focus:shadow-outline"
-          v-model="editentry.data.start"
-          @input="editentrydateselected('edit')"
+    <!-- Edit / Add Entry modal — extracted to its own component (Stage 4). -->
+    <EditEntryModal
+      v-if="cases && cases.id"
+      :visible="editModalVisible"
+      :entry="editEntry"
+      :case-id="cases.id"
+      :project-inputs="parsedProjectInputs"
+      :is-mart-project="isMartProject"
+      :entity-label="entityLabel"
+      @close="editModalVisible = false"
+      @saved="onEntrySaved"
+    />
+
+    <!-- Case-detail strip — always shown when a case is selected, regardless of consultable state. -->
+    <CaseDetailStrip
+      v-if="selectedCase"
+      :case-item="selectedCase"
+      :project="cases.project"
+      :is-creator="isCreator"
+      :distinct-graph-href="isMartProject ? '' : distinctPath()"
+      :grouped-graph-href="isMartProject ? '' : groupedCasesPath()"
+      :can-add-entry="!!selectedCase.backend"
+      @add-entry="openEditModal()"
+      @export="$emit('case-export', $event)"
+      @qr="$emit('case-qr', $event)"
+      @close-early="$emit('case-close-early', $event)"
+      @delete="$emit('case-delete', $event)"
+    />
+
+    <!-- Entries area: shown whenever a case is selected. Empty / not-consultable
+         states live INSIDE this wrapper so the flex layout always sizes properly. -->
+    <div class="flex-1 min-h-0 overflow-y-auto" v-if="selectedCase">
+      <!-- Mid-stream cases (regular: still active; MART: not yet completed) -->
+      <NotConsultableState
+        v-if="!selectedCase.consultable"
+        :reason="isMartProject ? 'mart-active' : 'active'"
+      />
+
+      <!-- Consultable: show the table or the empty state -->
+      <template v-else>
+        <SectionBar
+          v-if="selectedCase.entries && selectedCase.entries.length > 0"
+          title="Entries"
+          :count="selectedCase.entries.length"
+          singular="entry"
+          plural="entries"
         />
-      </div>
-      <div class="my-2">
-        <label
-          class="text-base font-bold tracking-wide text-gray-700 uppercase"
-        >
-          {{ trans("End Date/time *") }}
-        </label>
-        <input
-          type="datetime-local"
-          id="end"
-          name="end"
-          class="w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-hidden focus:shadow-outline"
-          v-model="editentry.data.end"
+        <EntryTable
+          v-if="selectedCase.entries && selectedCase.entries.length > 0"
+          :entries="selectedCase.entries"
+          :project-inputs="parsedProjectInputs"
+          :project="cases.project"
+          :entity-label="entityLabel"
+          @edit="openEditModal"
+          @delete="confirmDeleteEntry"
         />
-      </div>
-      <div class="my-2" v-if="!isMartProject">
-        <label class="text-base font-bold tracking-wide text-gray-700 uppercase">
-          {{ trans("Media *") }}
-        </label>
-        <input
-          type="text"
-          name="media_id"
-          v-model="editentry.data.media"
-          class="block w-full px-4 py-2 leading-normal bg-white border border-gray-300 rounded-lg appearance-none focus:outline-hidden focus:ring"
-        />
-      </div>
-      <h1
-        class="my-4 text-2xl font-bold tracking-wide text-center text-gray-700 uppercase"
-      >
-        {{ trans("Inputs") }}
-      </h1>
-      <div v-for="(value, index) in projectInputs" :key="index">
-        <label
-          v-if="value.type !== 'audio recording'"
-          class="pb-2 text-base font-bold tracking-wide text-gray-700 uppercase"
-          :class="{ 'required-label': value.mandatory }"
-        >
-          {{ value.mandatory ? `${value.name} *` : value.name }}
-        </label>
-        <input
-          type="text"
-          v-if="value.type === 'text'"
-          :name="'text' + value.name"
-          v-model="editentry.data.inputs[value.name]"
-          class="block w-full px-4 leading-normal bg-white border border-gray-300 rounded-lg appearance-none focus:outline-hidden focus:ring"
-        />
-        <div class="pb-2 sm:col-span-3" v-if="value.type === 'multiple choice'">
-          <div class="mt-1">
-            <select
-              multiple
-              v-model="editentry.data.inputs[value.name]"
-              class="block w-full border-gray-300 rounded-md shadow-xs focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            >
-              <option
-                v-for="(answer, indexA) in value.answers.filter(a => a && a.trim() !== '')"
-                :key="indexA"
-                :value="answer"
-              >
-                {{ answer }}
-              </option>
-            </select>
-          </div>
-        </div>
-        <div class="pb-2 sm:col-span-3" v-if="value.type === 'one choice'">
-          <div class="mt-1">
-            <select
-              v-model="editentry.data.inputs[value.name][0]"
-              class="block w-full border-gray-300 rounded-md shadow-xs focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            >
-              <option
-                v-for="(answer, indexA) in value.answers.filter(a => a && a.trim() !== '')"
-                :key="indexA"
-                :value="answer"
-              >
-                {{ answer }}
-              </option>
-            </select>
-          </div>
-        </div>
-        <div class="sm:col-span-3" v-if="value.type === 'scale'">
-          <div class="mt-1">
-            <select
-              v-model="editentry.data.inputs[value.name]"
-              class="block w-full border-gray-300 rounded-md shadow-xs focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            >
-              <option
-                v-for="n in getScaleRange(value)"
-                :key="n"
-                :value="n"
-              >
-                {{ n }}
-              </option>
-            </select>
-          </div>
-        </div>
-      </div>
-      <div class="my-3 text-base">* {{ trans("required") }}</div>
-    </modal>
-
-    <!-- Top section -->
-    <div class="flex justify-center flex-shrink-0 py-2" v-if="showCase">
-      <!-- Toolbar-->
-
-      <div class="relative z-0 inline-flex sm:space-x-3" v-if="!isMartProject">
-        <a
-          class=""
-          :href="distinctPath()"
-          v-if="selectedCase.entries.length > 0 || selectedCase.backend"
-        >
-          <button
-            type="button"
-            class="relative z-0 inline-flex items-center px-4 py-2 text-sm font-medium text-gray-900 bg-white hover:bg-blue-500 hover:text-white focus:z-10 focus:outline-hidden focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
-          >
-            <svg
-              class="mr-2.5 h-5 w-5 text-gray-400"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="1.5"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"
-              />
-            </svg>
-
-            <span>{{ trans("Distinct Entries Graph") }}</span>
-          </button>
-        </a>
-        <a :href="groupedCasesPath()">
-          <button
-            type="button"
-            class="relative z-0 inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-900 bg-white hover:bg-blue-500 hover:text-white focus:z-10 focus:outline-hidden focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="1.5"
-              stroke="currentColor"
-              class="mr-2.5 h-5 w-5 text-gray-400"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z"
-              />
-            </svg>
-
-            <span>{{ trans("Grouped Entries Graph") }}</span>
-          </button>
-        </a>
-      </div>
-    </div>
-    <div class="flex-1 min-h-0 overflow-y-auto" v-if="showCase">
-      <div class="py-2 bg-white">
-        <div class="px-4 sm:flex sm:justify-between sm:items-baseline">
-          <div class="sm:w-0 sm:flex-1">
-            <div class="flex items-center space-x-3">
-              <h1 id="message-heading" class="text-lg font-medium text-gray-900">
-                {{ selectedCase.name }}
-              </h1>
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                ID: {{ selectedCase.id }}
-              </span>
-            </div>
-            <p class="mt-1 text-sm text-gray-500 truncate">
-              {{
-                selectedCase.user
-                  ? selectedCase.user.email
-                  : trans("No user assigned")
-              }}
-            </p>
-          </div>
-          <div class="flex justify-end sm:mt-0 sm:flex-shrink-0">
-            <button
-              v-if="showCase && selectedCase.backend"
-              type="button"
-              @click="toggleEntryModal()"
-              class="w-full justify-center inline-flex items-center px-2.5 py-1.5 border border-transparent font-medium text-white bg-blue-500 hover:bg-blue-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              {{ trans("Add new entry") }}
-            </button>
-          </div>
-        </div>
-      </div>
-      <div class="bg-white">
-        <div class="px-4 text-center sm:flex">
-          <div class="sm:w-0 sm:flex-1">
-            <h2 id="message-heading" class="text-lg font-medium text-gray-900">
-              {{ trans("ENTRIES") }} - {{ selectedCase.entries.length }}
-            </h2>
-          </div>
-        </div>
-      </div>
-      <!-- Entries section-->
-      <ul
-        role="list"
-        class="p-2 space-y-2 sm:space-y-4"
-        v-if="selectedCase.consultable"
-      >
-        <li
-          v-for="(entry, index) in selectedCase.entries"
-          :key="index"
-          class="px-2 bg-white sm:rounded-lg"
-        >
-          <div class="flex justify-end w-full sm:mt-0 sm:flex-shrink-0">
-            <button
-              v-if="showCase || selectedCase.entries.length > 0"
-              type="button"
-              @click="toggleEntryModal(entry)"
-              class="w-full justify-center inline-flex items-center px-2.5 py-1.5 border border-transparent font-medium text-white bg-blue-500 hover:bg-blue-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              {{ trans("Edit") }}
-            </button>
-          </div>
-          <div class="sm:flex sm:justify-between sm:items-baseline">
-            <h3 class="text-base font-medium">
-              <span class="text-gray-500">{{ entityLabel }}: </span>
-              <span class="text-gray-900">{{ entry.media }}</span>
-            </h3>
-            <p
-              class="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3"
-            >
-              <time :datetime="entry.begin" class="mb-2"
-                ><span class="font-bold">{{ trans("Begin") }}:</span>
-                {{ entry.begin_readable }}
-              </time>
-              <time :datetime="entry.end" class="block"
-                ><span class="font-bold">{{ trans("End") }}: </span>
-                {{ entry.end_readable }}
-              </time>
-            </p>
-          </div>
-          <div
-            class="mt-4 space-y-6 text-sm text-gray-800"
-            v-if="
-              entry.inputs &&
-              (Array.isArray(entry.inputs) || typeof entry.inputs === 'object')
-            "
-          >
-            <div class="w-full text-center">
-              <h3 class="text-lg font-bold text-gray-500">
-                {{ trans("Inputs") }}
-              </h3>
-            </div>
-
-            <div
-              class=""
-              v-for="(input, indexJ) in entry.inputs"
-              :key="indexJ"
-              v-show="indexJ && indexJ !== 'undefined' && indexJ !== 'null'"
-            >
-              <p class="font-bold" v-if="indexJ !== 'firstValue'">
-                {{ indexJ }}
-              </p>
-              <AudioPlayer
-                v-if="indexJ == 'file' && entry.file_object && entry.file_path"
-                :caseid="cases.id"
-                class="w-96 sm:my-2 sm:px-2"
-                :file="entry.file_object"
-                :loop="false"
-                :autoplay="false"
-                :name="entry.file_path"
-                :date="entry.created_for_soundplayer"
-              />
-              <div v-else-if="indexJ == 'file'" class="italic text-gray-500">
-                {{ trans("File was deleted") }}
-              </div>
-              <div v-if="Array.isArray(input)">
-                <p
-                  v-for="(value, indexK) in input"
-                  :key="indexK"
-                  class="first:mr-0 mr-2 inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-500"
-                >
-                  {{ value }}
-                </p>
-              </div>
-              <div v-else-if="isCorruptedAudioData(input)">
-                <p
-                  v-if="indexJ !== 'file' && indexJ !== 'firstValue'"
-                  class="first:mr-0 mr-2 inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-yellow-100 text-yellow-700"
-                >
-                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                  </svg>
-                  {{ trans('Audio file (legacy data - not playable)') }}
-                </p>
-              </div>
-              <div v-else>
-                <p
-                  v-if="indexJ !== 'file' && indexJ !== 'firstValue'"
-                  class="first:mr-0 mr-2 inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-500"
-                >
-                  {{ input }}
-                </p>
-              </div>
-            </div>
-            <div
-              class="w-full mx-auto border border-blue-100 border-solid"
-              v-if="entry.inputs.firstValue"
-            >
-              <div class="overflow-hidden rounded">
-                <!-- accordion-tab  -->
-                <div class="outline-hidden group accordion-section" tabindex="1">
-                  <div
-                    class="relative flex items-center justify-between px-4 py-3 pr-10 transition duration-500 bg-blue-100 cursor-pointer group ease"
-                  >
-                    <div
-                      class="transition duration-500 group-focus:text-gray-800 ease"
-                    >
-                      {{
-                        trans(
-                          "Click to show first entry submitted by user on "
-                        ) + entry.created_at_readable
-                      }}
-                    </div>
-                    <div
-                      class="absolute top-0 right-0 inline-flex items-center justify-center w-8 h-8 mt-2 mb-auto ml-auto mr-2 transition duration-500 transform ease group-focus:-rotate-180"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke-width="1.5"
-                        stroke="currentColor"
-                        class="w-6 h-6"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M19.5 8.25l-7.5 7.5-7.5-7.5"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                  <div
-                    class="px-4 overflow-hidden duration-500 bg-white group-focus:max-h-screen max-h-0 ease"
-                  >
-                    <div class="p-2 text-justify text-gray-400">
-                      <div class="sm:flex sm:justify-between sm:items-baseline">
-                        <h3 class="text-base font-medium">
-                          <span class="text-gray-500">{{ entityLabel }}:</span>
-                          <span class="text-gray-900">{{
-                            entry.mediaforFirstValue
-                          }}</span>
-                        </h3>
-                        <p
-                          class="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3"
-                        >
-                          <time
-                            :datetime="entry.inputs.firstValue.begin"
-                            class="mb-2"
-                            ><span class="font-bold"
-                              >{{ trans("Begin") }}:</span
-                            >
-                            {{ entry.inputs.firstValue.begin_readable }}
-                          </time>
-                          <time
-                            :datetime="entry.inputs.firstValue.end"
-                            class="block"
-                            ><span class="font-bold">{{ trans("End") }}: </span>
-                            {{ entry.inputs.firstValue.end_readable }}
-                          </time>
-                        </p>
-                      </div>
-                      <div
-                        class="mt-4 space-y-6 text-sm text-gray-800"
-                        v-if="
-                          entry.inputs.firstValue.inputs &&
-                          (Array.isArray(entry.inputs.firstValue.inputs) ||
-                            typeof entry.inputs.firstValue.inputs === 'object')
-                        "
-                      >
-                        <div class="w-full text-center">
-                          <h3 class="text-lg font-bold text-gray-500">
-                            {{ trans("Inputs") }}
-                          </h3>
-                        </div>
-
-                        <div
-                          class=""
-                          v-for="(input, indexJ) in entry.inputs.firstValue
-                            .inputs"
-                          :key="indexJ"
-                        >
-                          <p class="font-bold" v-if="indexJ !== 'firstValue'">
-                            {{ indexJ }}
-                          </p>
-                          <audio-player
-                            v-if="
-                              indexJ == 'file' &&
-                              entry.inputs.firstValue &&
-                              entry.inputs.firstValue.file_object
-                            "
-                            :caseid="cases.id"
-                            class="w-96 sm:my-2 sm:px-2"
-                            :file="entry.inputs.firstValue.file_object"
-                            loop="false"
-                            autoplay="false"
-                            :name="entry.inputs.firstValue.file_path"
-                            :date="
-                              entry.inputs.firstValue.created_for_soundplayer ||
-                              ''
-                            "
-                          ></audio-player>
-                          <div
-                            v-else-if="indexJ == 'file'"
-                            class="italic text-red-500"
-                          >
-                            {{ trans("File not available") }}
-                          </div>
-                          <div v-if="Array.isArray(input)">
-                            <p
-                              v-for="(value, indexK) in input"
-                              :key="indexK"
-                              class="first:mr-0 mr-2 inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-500"
-                            >
-                              {{ value }}
-                            </p>
-                          </div>
-                          <div v-else-if="isCorruptedAudioData(input)">
-                            <p
-                              v-if="indexJ !== 'file' && indexJ !== 'firstValue'"
-                              class="first:mr-0 mr-2 inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-yellow-100 text-yellow-700"
-                            >
-                              {{ trans('Audio file (legacy data)') }}
-                            </p>
-                          </div>
-                          <div v-else>
-                            <p
-                              v-if="
-                                indexJ !== 'file' && indexJ !== 'firstValue'
-                              "
-                              class="first:mr-0 mr-2 inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-500"
-                            >
-                              {{ input }}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <!-- accordion-tab -->
-              </div>
-            </div>
-          </div>
-
-          <div class="relative">
-            <div class="absolute inset-0 flex items-center" aria-hidden="true">
-              <div class="w-full border-t border-gray-300"></div>
-            </div>
-            <div class="relative flex justify-center">
-              <span class="px-2 text-gray-500 bg-white">
-                <!-- Heroicon name: mini/plus -->
-                <svg
-                  class="w-5 h-5 text-gray-500"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z"
-                  />
-                </svg>
-              </span>
-            </div>
-          </div>
-        </li>
-      </ul>
-    </div>
-    <div v-else-if="!selectedCase.consultable" class="max-w-xl mx-auto">
-      <div class="p-4 mt-2 rounded-md bg-blue-50">
-        <div class="flex">
-          <div class="flex-shrink-0">
-            <!-- Heroicon name: mini/information-circle -->
-            <svg
-              class="w-5 h-5 text-blue-400"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M19 10.5a8.5 8.5 0 11-17 0 8.5 8.5 0 0117 0zM8.25 9.75A.75.75 0 019 9h.253a1.75 1.75 0 011.709 2.13l-.46 2.066a.25.25 0 00.245.304H11a.75.75 0 010 1.5h-.253a1.75 1.75 0 01-1.709-2.13l.46-2.066a.25.25 0 00-.245-.304H9a.75.75 0 01-.75-.75zM10 7a1 1 0 100-2 1 1 0 000 2z"
-                clip-rule="evenodd"
-              />
-            </svg>
-          </div>
-          <div class="flex-1 ml-3 md:flex md:justify-between">
-            <p class="text-sm text-blue-700">
-              {{
-                trans(
-                  "Case is not consultable because the user is entering entries"
-                )
-              }}
-            </p>
-          </div>
-        </div>
-      </div>
+        <EntriesEmptyState v-else />
+      </template>
     </div>
     <Snackbar v-if="showSnackbar" :message="snackbarMessage" ref="snackbar" />
   </section>
 </template>
 
 <script>
-import { ref, computed, reactive, onBeforeUnmount } from "vue";
+import { ref, computed } from "vue";
 import moment from "moment";
-import Modal from "./global/modal.vue";
 import Snackbar from "./global/snackbar.vue";
-import AudioPlayer from "./audioplayer.vue";
+// Redesign primitives — explicit local imports so the components don't rely
+// on the global registry being picked up correctly across SFC styles.
+import CaseDetailStrip from "./global/CaseDetailStrip.vue";
+import EditEntryModal from "./global/EditEntryModal.vue";
+import EntriesEmptyState from "./global/EntriesEmptyState.vue";
+import NotConsultableState from "./global/NotConsultableState.vue";
+import EntryTable from "./global/EntryTable.vue";
+import SectionBar from "./global/SectionBar.vue";
 
 export default {
   name: "SelectedCase",
   components: {
-    Modal,
     Snackbar,
-    AudioPlayer,
+    CaseDetailStrip,
+    EditEntryModal,
+    EntriesEmptyState,
+    NotConsultableState,
+    EntryTable,
+    SectionBar,
   },
   props: {
     cases: {
@@ -568,11 +109,20 @@ export default {
       type: String,
       default: "2025-03-21",
     },
+    isCreator: {
+      type: Boolean,
+      default: false,
+    },
   },
-  emits: ["update:selectedCase"],
-  setup(props) {
-    const caseIsSet = ref(false);
-    const caseNotEnded = ref(false);
+  emits: [
+    "update:selectedCase",
+    "case-export",
+    "case-qr",
+    "case-close-early",
+    "case-delete",
+    "entries-changed",
+  ],
+  setup(props, { emit }) {
     const snackbarMessage = ref("");
     const showSnackbar = ref(false);
 
@@ -603,42 +153,36 @@ export default {
       return props.cases?.project?.entity_name || 'Entity';
     });
 
+    /**
+     * Defensively parsed projectInputs — accepts either a JSON string or
+     * an already-parsed array. Used by the redesigned EntryTable.
+     */
+    const parsedProjectInputs = computed(() => {
+      const raw = props.projectInputs;
+      if (typeof raw === 'string') {
+        try {
+          return JSON.parse(raw || '[]');
+        } catch {
+          return [];
+        }
+      }
+      return Array.isArray(raw) ? raw : [];
+    });
+
     // True when the project is MART. The graph routes only render
     // legacy / non-MART entries, so the buttons are hidden for MART.
     const isMartProject = computed(() => {
-      const raw = props.projectInputs;
-      const inputs = typeof raw === 'string' ? JSON.parse(raw || '[]') : raw;
-      return Array.isArray(inputs)
-        && inputs.length > 0
-        && inputs[0]?.type === 'mart';
+      const inputs = parsedProjectInputs.value;
+      return inputs.length > 0 && inputs[0]?.type === 'mart';
     });
 
-    const editentry = reactive({
-      id: 0,
-      case_id: 0,
-      inputs: {},
-      modal: false,
-      actuallysave: false,
-      data: {
-        start: new Date(),
-        end: new Date(new Date().setMinutes(new Date().getMinutes() + 1)),
-        media_id: "",
-        media: "",
-        inputs: {},
-      },
-    });
-
-    onBeforeUnmount(() => {
-      caseIsSet.value = false;
-    });
-
-    const showCase = computed(() => {
-      return caseIsSet.value && selectedCase.value?.consultable;
-    });
+    // Edit modal state — the parent owns visibility + which entry is being
+    // edited; the modal component (EditEntryModal) owns the form internals.
+    const editModalVisible = ref(false);
+    const editEntry = ref(null);
 
     const selectedCase = computed(() => {
       if (props.cases && props.cases.name) {
-        caseIsSet.value = true;
         let processedCases = { ...props.cases };
         processedCases.entries = processEntries(props.cases.entries);
         return processedCases;
@@ -666,14 +210,26 @@ export default {
       }, 3000); // Snackbar duration
     };
 
+    /**
+     * Pre-process entries for the EntryTable. Two responsibilities:
+     *   1. Normalize `entry.inputs` (server may send a JSON string).
+     *   2. Add `*_readable` fields the previous-version sub-row reads:
+     *      - `entry.created_at_readable`         (when the row was submitted)
+     *      - `entry.inputs.firstValue.begin_readable` / `.end_readable`
+     *
+     * Date formatting in the table proper (Start/End columns) is handled
+     * by EntryTable itself via `parseEntryDate`/`formatTime`/`formatDate`,
+     * so we don't pre-compute `entry.begin_readable` / `entry.end_readable`
+     * here anymore — those were vestigial fields read only by the legacy
+     * vertical entries list (now removed).
+     */
     const processEntries = (entries = []) => {
       return entries.map((entry) => {
-        // Basic entry data
         entry.created_at_readable = moment(entry.created_at).format(
           "DD.MM.YYYY H:m:ss"
         );
 
-        // Handle inputs parsing
+        // entry.inputs may arrive as a JSON string from the server.
         if (typeof entry.inputs !== "object") {
           try {
             entry.inputs = JSON.parse(entry.inputs);
@@ -682,7 +238,7 @@ export default {
           }
         }
 
-        // Handle firstValue
+        // Previous-version sub-row reads .firstValue.{begin,end}_readable.
         if (entry.inputs && entry.inputs.firstValue) {
           entry.inputs.firstValue.begin_readable = moment(
             sanitizeDate(entry.inputs.firstValue.begin)
@@ -702,214 +258,33 @@ export default {
           }
         }
 
-        // Handle file data safely
-        if (entry.inputs && entry.inputs.file) {
-          // Only set created_for_soundplayer if file_object exists and has created_at
-          entry.created_for_soundplayer =
-            entry.file_object && entry.file_object.created_at
-              ? moment(entry.file_object.created_at).format("DD.MM.YYYY HH:mm:ss")
-              : null;
-        }
-
-        // Set basic timestamps
-        entry.begin_readable = moment(sanitizeDate(entry.begin)).format("DD.MM.YYYY HH:mm:ss");
-        entry.end_readable = moment(sanitizeDate(entry.end)).format("DD.MM.YYYY HH:mm:ss");
-
         return entry;
       });
     };
 
-    const entrySaveAndClose = () => {
-      window.axios
-        .post(`/cases/${props.cases.id}/entries`, {
-          case_id: props.cases.id,
-          inputs: cleanInputsForSave(editentry.data.inputs),
-          begin: moment(editentry.data.start).format(
-            "YYYY-MM-DD HH:mm:ss.SSSSSS"
-          ),
-          end: moment(editentry.data.end).format(
-            "YYYY-MM-DD HH:mm:ss.SSSSSS"
-          ),
-          media_id: editentry.data.media,
-        })
-        .then((response) => {
-          showSnackbarMessage(trans("Entry successfully sent."));
-          setTimeout(() => window.location.reload(), 500);
-        })
-        .catch((error) => {
-          showSnackbarMessage(
-            trans(
-              "There was an error during the request - refresh page and try again"
-            )
-          );
-        });
+    /**
+     * Open the edit modal. Without an entry => "add new" mode; with one =>
+     * edit. The save flow lives entirely inside EditEntryModal; this
+     * component only reacts to the `saved` event.
+     */
+    const openEditModal = (entry = null) => {
+      editEntry.value = entry || null;
+      editModalVisible.value = true;
     };
 
-    const mandatoryEntry = () => {
-      // MART projects don't have a media/entity field, so skip that check.
-      const mediaRequired = !isMartProject.value;
-      if (editentry.actuallysave) {
-        return (
-          (mediaRequired && editentry.data.media === "") ||
-          editentry.data.start === "" ||
-          editentry.data.end === ""
-        );
-      } else {
-        return (
-          (mediaRequired && editentry.data.media_id === "") ||
-          editentry.data.start === "" ||
-          editentry.data.end === ""
-        );
-      }
-    };
-
-    // Strip keys that should never be persisted on an entry's inputs JSON:
-    // - empty / "undefined" / "null" strings (created when v-model targets an
-    //   input config without a `name` property — e.g. legacy MART config marker)
-    // - "firstValue" (managed server-side as a re-submission audit trail)
-    const cleanInputsForSave = (inputs) => {
-      if (!inputs || typeof inputs !== "object") return inputs;
-      return Object.fromEntries(
-        Object.entries(inputs).filter(([key]) =>
-          key && key !== "undefined" && key !== "null" && key !== "firstValue"
-        )
+    /**
+     * Save handler — closes the modal, shows a snackbar, and tells the
+     * parent to refetch so the new entry appears in the table without a
+     * full page reload (preserves search / sort / scroll / modal state).
+     */
+    const onEntrySaved = (payload = {}) => {
+      editModalVisible.value = false;
+      showSnackbarMessage(
+        trans(payload.isAdding ? 'Entry added.' : 'Entry updated.')
       );
+      emit('entries-changed');
     };
 
-    const editEntryAndClose = () => {
-      if (mandatoryEntry()) {
-        showSnackbarMessage(trans("Check your mandatory entries."));
-        return;
-      }
-
-      if (editentry.actuallysave) {
-        entrySaveAndClose();
-      } else {
-        window.axios
-          .patch(`/cases/${editentry.case_id}/entries/${editentry.id}`, {
-            case_id: editentry.case_id,
-            inputs: cleanInputsForSave(editentry.data.inputs),
-            begin: moment(editentry.data.start).format(
-              "YYYY-MM-DD HH:mm:ss.SSSSSS"
-            ),
-            end: moment(editentry.data.end).format(
-              "YYYY-MM-DD HH:mm:ss.SSSSSS"
-            ),
-            media_id: editentry.data.media,
-          })
-          .then((response) => {
-            showSnackbarMessage(trans("Entry successfully updated."));
-            setTimeout(() => window.location.reload(), 500);
-          })
-          .catch((error) => {
-            showSnackbarMessage(
-              trans(
-                "There was an error during the request - double check your data or contact the support."
-              )
-            );
-          });
-      }
-    };
-
-    const formatDateForInput = (date) => {
-      return moment(date)
-        .add(moment(date).utcOffset(), "minutes")
-        .toISOString()
-        .slice(0, 16); // Format as YYYY-MM-DDTHH:mm
-    };
-
-    const clearEditEntryData = () => {
-      editentry.id = 0;
-      editentry.case_id = 0;
-      editentry.inputs = {};
-      editentry.actuallysave = false;
-      editentry.data = {
-        start: new Date(),
-        end: new Date(new Date().setMinutes(new Date().getMinutes() + 1)),
-        media_id: "",
-        media: "",
-        inputs: {},
-      };
-    };
-
-    const toggleEntryModal = (
-      entry = {
-        id: null,
-        case_id: null,
-        inputs: {},
-        data: {},
-        begin: null,
-        end: null,
-      }
-    ) => {
-      if (entry.id !== null) {
-        // Ensure inputs are properly parsed
-        const parsedInputs =
-          typeof entry.inputs === "string"
-            ? JSON.parse(entry.inputs)
-            : entry.inputs;
-
-        editentry.id = entry.id;
-        editentry.case_id = entry.case_id;
-        editentry.inputs = props.projectInputs;
-        
-        // Process the inputs to match expected format
-        const projectInputsArray = typeof props.projectInputs === 'string' 
-          ? JSON.parse(props.projectInputs) 
-          : props.projectInputs;
-        const processedInputs = {};
-        
-        projectInputsArray.forEach(input => {
-          // Skip items without a name (e.g. the MART config marker, malformed
-          // legacy items) so we don't create an "undefined" key on the entry.
-          if (!input || !input.name) return;
-          const currentValue = parsedInputs[input.name];
-          if (input.type === 'one choice') {
-            // Ensure one choice is always an array
-            processedInputs[input.name] = Array.isArray(currentValue) ? currentValue : [currentValue || ''];
-          } else if (input.type === 'multiple choice') {
-            // Ensure multiple choice is always an array
-            processedInputs[input.name] = Array.isArray(currentValue) ? currentValue : (currentValue ? [currentValue] : []);
-          } else if (input.type === 'scale') {
-            // For scale, preserve numeric values including 0, convert to number if string
-            if (currentValue !== undefined && currentValue !== null && currentValue !== '') {
-              processedInputs[input.name] = typeof currentValue === 'number' ? currentValue : parseInt(currentValue, 10);
-            } else {
-              processedInputs[input.name] = '';
-            }
-          } else {
-            // For text, number, etc., ensure we have a value (not undefined)
-            processedInputs[input.name] = currentValue !== undefined && currentValue !== null ? currentValue : '';
-          }
-        });
-        
-        editentry.data.inputs = processedInputs;
-        editentry.data.media_id = entry.media_id;
-        editentry.data.media = entry.media;
-
-        // Ensure dates are properly formatted
-        editentry.data.start = formatDateForInput(entry.begin);
-        editentry.data.end = formatDateForInput(entry.end);
-      } else {
-        editentry.actuallysave = true;
-        editentry.inputs = props.projectInputs;
-        editentry.data.inputs = {};
-      }
-
-      editentry.modal = !editentry.modal;
-
-      if (!editentry.modal) {
-        clearEditEntryData();
-      }
-    };
-
-    const editentrydateselected = (edit = "") => {
-      editentry.data.end = new Date(
-        new Date(editentry.data.start).setMinutes(
-          new Date(editentry.data.start).getMinutes() + 5
-        )
-      );
-    };
     const distinctPath = () => {
       return props.productionUrl + "/projects/" + props.cases.project.id + "/distinctcases/" + props.cases.id;
     };
@@ -918,56 +293,45 @@ export default {
       return props.productionUrl + "/projects/" + props.cases.project.id + "/groupedcases/" + props.cases.id;
     };
 
-    const getScaleRange = (question) => {
-      // For MART questions with martMetadata
-      if (question.martMetadata) {
-        const min = question.martMetadata.minValue || 1;
-        const max = question.martMetadata.maxValue || 5;
-        const steps = question.martMetadata.steps || 1;
-
-        const range = [];
-        for (let i = min; i <= max; i += steps) {
-          range.push(i);
-        }
-        return range;
-      }
-
-      // Default fallback for non-MART questions
-      return [1, 2, 3, 4, 5];
-    };
-
-    // Detect if a value looks like corrupted base64 audio data (lightweight check)
-    const isCorruptedAudioData = (value) => {
-      if (typeof value !== 'string' || value.length < 500) return false;
-      // M4A/MP4 starts with "AAAA" in base64, MP3 with "//uQ" or "SUQz"
-      const start = value.substring(0, 4);
-      return start === 'AAAA' || start === '//uQ' || start === 'SUQz';
+    /**
+     * Confirm + delete a single entry. Wired to EntryTable's @delete event.
+     * Mirrors the existing global app.js confirmdelete/deleteEntry pattern
+     * but scoped to this component so the redesigned table is self-contained.
+     */
+    const confirmDeleteEntry = (entry) => {
+      if (!entry || !entry.id) return;
+      const ok = window.confirm(
+        trans('You are about to delete this entry. Continue?')
+      );
+      if (!ok) return;
+      window.axios
+        .delete(`/cases/${props.cases.id}/entries/${entry.id}`)
+        .then(() => {
+          showSnackbarMessage(trans('Entry deleted.'));
+          emit('entries-changed');
+        })
+        .catch(() => {
+          showSnackbarMessage(
+            trans('There was an error during the request - refresh page and try again')
+          );
+        });
     };
 
     return {
-      caseIsSet,
-      caseNotEnded,
-      editentry,
-      showCase,
+      editModalVisible,
+      editEntry,
+      openEditModal,
+      onEntrySaved,
       selectedCase,
       snackbarMessage,
       showSnackbar,
       trans,
-      showSnackbarMessage,
-      processEntries,
-      entrySaveAndClose,
-      MandatoryEntry: mandatoryEntry,
-      editEntryAndClose,
-      toggleEntryModal,
-      formatDateForInput,
-      clearEditEntryData,
-      editentrydateselected,
       distinctPath,
       groupedCasesPath,
-      getScaleRange,
-      isCorruptedAudioData,
       entityLabel,
       isMartProject,
+      parsedProjectInputs,
+      confirmDeleteEntry,
     };
   },
 };

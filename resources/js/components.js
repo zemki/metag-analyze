@@ -17,6 +17,23 @@ import PaginationControls from "./components/PaginationControls.vue";
 import ProjectCasesView from "./components/ProjectCasesView.vue";
 import EmailChangeModal from "./components/EmailChangeModal.vue";
 
+// Redesign primitives (stages 1+2 of the MeTag Analyze redesign).
+// See design_handoff_metag_redesign/README.md and the
+// useProjectCapabilities composable in ./utils/useProjectCapabilities.js.
+import StatusPill from "./components/global/StatusPill.vue";
+import IDPill from "./components/global/IDPill.vue";
+import QRRevokedBadge from "./components/global/QRRevokedBadge.vue";
+import SectionBar from "./components/global/SectionBar.vue";
+import FilterRow from "./components/global/FilterRow.vue";
+import CaseAction from "./components/global/CaseAction.vue";
+import CaseRow from "./components/global/CaseRow.vue";
+import CasesEmptyState from "./components/global/CasesEmptyState.vue";
+// Stage 3a additions
+import CaseDetailStrip from "./components/global/CaseDetailStrip.vue";
+import EntriesEmptyState from "./components/global/EntriesEmptyState.vue";
+import NotConsultableState from "./components/global/NotConsultableState.vue";
+import EntryTable from "./components/global/EntryTable.vue";
+
 // Create a named export for all components to be used with app.component() in app.js
 export const components = {
   "edit-project": EditProject,
@@ -35,5 +52,20 @@ export const components = {
   "treemap": Treemap,
   "pagination-controls": PaginationControls,
   "project-cases-view": ProjectCasesView,
-  "email-change-modal": EmailChangeModal
+  "email-change-modal": EmailChangeModal,
+
+  // Redesign primitives
+  "status-pill": StatusPill,
+  "id-pill": IDPill,
+  "qr-revoked-badge": QRRevokedBadge,
+  "section-bar": SectionBar,
+  "filter-row": FilterRow,
+  "case-action": CaseAction,
+  "case-row": CaseRow,
+  "cases-empty-state": CasesEmptyState,
+  // Stage 3a
+  "case-detail-strip": CaseDetailStrip,
+  "entries-empty-state": EntriesEmptyState,
+  "not-consultable-state": NotConsultableState,
+  "entry-table": EntryTable,
 };

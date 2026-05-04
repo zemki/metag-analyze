@@ -1,6 +1,72 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/forms";
 
+/*
+ * MeTag Analyze redesign tokens.
+ *
+ * Single source of truth for the redesigned dashboard's color palette,
+ * radii, and shadows. Defined as Tailwind v4 @theme entries so they
+ * generate utility classes (e.g. `text-ink-1`, `bg-surface-tint`,
+ * `rounded-modal`) AND are usable as CSS variables (`var(--color-ink-1)`)
+ * for inline styles in primitives.
+ *
+ * Source: design_handoff_metag_redesign/README.md → "Design tokens".
+ */
+@theme {
+  /* Ink (text) */
+  --color-ink-1: #0f1b3d;
+  --color-ink-2: #3b4768;
+  --color-ink-3: #6b7795;
+
+  /* Lines */
+  --color-line-1: #e3e8f3;
+  --color-line-2: #eef1f8;
+
+  /* Surfaces */
+  --color-surface: #ffffff;
+  --color-surface-tint: #fbfcfe;
+  --color-page-bg: #eef1f8;
+
+  /* Accent (primary action / active states) */
+  --color-accent: #2563eb;
+  --color-accent-dark: #1d4ed8;
+  --color-accent-bg: #eff4ff;
+
+  /* Status pills (paired bg / fg) */
+  --color-status-pending-bg: #fef3c7;
+  --color-status-pending-fg: #92400e;
+  --color-status-active-bg: #dcfce7;
+  --color-status-active-fg: #166534;
+  --color-status-completed-bg: #f1f5f9;
+  --color-status-completed-fg: #334155;
+  --color-status-backend-bg: #ede9fe;
+  --color-status-backend-fg: #5b21b6;
+
+  /* QR revoked / danger badge */
+  --color-revoked-bg: #fef2f2;
+  --color-revoked-fg: #b91c1c;
+  --color-revoked-border: #fecaca;
+
+  /* Warning (close-early hover) */
+  --color-warning-bg: #fffbeb;
+  --color-warning-fg: #a16207;
+  --color-warning-border: #fde68a;
+
+  /* Placeholder */
+  --color-placeholder: #c4cce0;
+
+  /* Radii */
+  --radius-pill: 4px;
+  --radius-control: 6px;
+  --radius-input: 8px;
+  --radius-card: 12px;
+  --radius-modal: 14px;
+
+  /* Shadows */
+  --shadow-modal: 0 24px 64px rgba(15, 27, 61, 0.28),
+    0 2px 6px rgba(15, 27, 61, 0.08);
+}
+
 /* CSS Custom Properties (Variables) */
 :root {
   /* Body */
