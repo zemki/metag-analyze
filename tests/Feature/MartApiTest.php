@@ -284,9 +284,29 @@ class MartApiTest extends TestCase
         $iosTimestamp = 1700000000;
         $androidTimestamp = 1700000500;
 
+        // `mart_entries.main_entry_id` has a UNIQUE constraint, so we need
+        // distinct values for each MartEntry. Create stub Entry rows in
+        // the main DB and use their auto-assigned IDs — the main DB rolls
+        // back via DatabaseTransactions, so this doesn't leave residue.
+        $iosEntry = \App\Entry::create([
+            'case_id' => $this->case->id,
+            'begin' => now()->subMinutes(10),
+            'end' => now()->subMinutes(9),
+            'inputs' => '[]',
+            'media_id' => null,
+        ]);
+        $androidEntry = \App\Entry::create([
+            'case_id' => $this->case->id,
+            'begin' => now()->subMinutes(1),
+            'end' => now(),
+            'inputs' => '[]',
+            'media_id' => null,
+        ]);
+
         \App\Mart\MartEntry::create([
             'schedule_id' => $iosSchedule->id,
             'questionnaire_id' => $iosSchedule->questionnaire_id,
+            'main_entry_id' => $iosEntry->id,
             'participant_id' => $this->case->name,
             'user_id' => 'donation@test.com',
             'started_at' => now()->subMinutes(10),
@@ -299,6 +319,7 @@ class MartApiTest extends TestCase
         \App\Mart\MartEntry::create([
             'schedule_id' => $androidSchedule->id,
             'questionnaire_id' => $androidSchedule->questionnaire_id,
+            'main_entry_id' => $androidEntry->id,
             'participant_id' => $this->case->name,
             'user_id' => 'donation@test.com',
             'started_at' => now()->subMinutes(1),
@@ -364,9 +385,13 @@ class MartApiTest extends TestCase
         $request = \Illuminate\Http\Request::create('/test', 'GET', ['participant_id' => $this->case->name]);
         $controller = new \App\Http\Controllers\MartApiController;
         $resource = $controller->getProjectStructure($request, $this->project);
-        $structureArray = $resource->toArray(null);
+        // `toArray()` returns the resource's top-level array but leaves
+        // nested resources (e.g. ProjectOptionsResource) unresolved.
+        // `response()->getData(true)` forces a JSON round-trip so every
+        // nested resource is flattened to a plain array.
+        $structureArray = $resource->response()->getData(true);
 
-        $singleIds = collect($structureArray['projectOptions']['options']['singleQuestionnaires'])
+        $singleIds = collect($structureArray['data']['projectOptions']['options']['singleQuestionnaires'])
             ->pluck('questionnaireId')
             ->all();
 
@@ -408,11 +433,14 @@ class MartApiTest extends TestCase
         $request = \Illuminate\Http\Request::create('/test', 'GET', ['participant_id' => $this->case->name]);
         $controller = new \App\Http\Controllers\MartApiController;
         $resource = $controller->getProjectStructure($request, $this->project);
-        $structureArray = $resource->toArray(null);
+        // See sibling test for why `response()->getData(true)` rather than
+        // `toArray()` — the latter leaves nested ProjectOptionsResource
+        // unresolved and `$arr['projectOptions']['options']` would be null.
+        $structureArray = $resource->response()->getData(true);
 
         $this->assertEquals(
             $iosQuestionnaireId,
-            $structureArray['projectOptions']['options']['iOSDataDonationQuestionnaire'],
+            $structureArray['data']['projectOptions']['options']['iOSDataDonationQuestionnaire'],
             'iOSDataDonationQuestionnaire should expose the questionnaire_id of the iOS-flagged schedule'
         );
     }
@@ -477,6 +505,11 @@ class MartApiTest extends TestCase
                 ],
             ],
         ]);
+
+        // The controller's authorize() check requires an authenticated user
+        // who can update the project. The test user owns the project (set up
+        // in Tests\TestCase::setUp), so act as them.
+        $this->actingAs($this->user);
 
         $controller = new \App\Http\Controllers\MartQuestionnaireController;
         $controller->updateQuestions($request, $schedule);

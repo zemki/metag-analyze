@@ -128,12 +128,14 @@ class EmailCheckTest extends TestCase
     /** @test */
     public function it_is_rate_limited()
     {
-        // Make multiple requests until we hit rate limit
-        // This test verifies the rate limiter is active
+        // Make multiple requests until we hit the rate limit. The current
+        // limit is 30/min (bumped from 5/min to support researcher testing
+        // workflows), so we loop a bit past that to ensure the throttle
+        // kicks in.
         $hitRateLimit = false;
         $successCount = 0;
 
-        for ($i = 0; $i < 10; $i++) {
+        for ($i = 0; $i < 35; $i++) {
             $response = $this->postJson('/api/check-email', [
                 'email' => "ratelimit{$i}@example.com",
                 'project_id' => $this->martProject->id,
