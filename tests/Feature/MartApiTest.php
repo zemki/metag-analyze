@@ -244,6 +244,251 @@ class MartApiTest extends TestCase
         $this->assertIsNumeric($structureArray['repeatingSubmits'][0]['timestamp']);
     }
 
+    /**
+     * Item 8 from Stefan's round-3 report: `lastDataDonationSubmit` must
+     * reflect the most recent submission to a schedule flagged either
+     * `is_ios_data_donation` OR `is_android_data_donation` (whichever was
+     * submitted later). The previous implementation only scanned the
+     * iOS-flagged schedule, so Android-only donations returned null and
+     * mixed-platform donations returned the wrong timestamp.
+     *
+     * @test
+     */
+    public function it_returns_latest_data_donation_across_ios_and_android_schedules()
+    {
+        $martProject = MartProject::where('main_project_id', $this->project->id)->first();
+
+        $iosSchedule = MartSchedule::create([
+            'mart_project_id' => $martProject->id,
+            'questionnaire_id' => $this->project->id * 1000 + 100,
+            'name' => 'iOS data donation',
+            'type' => 'single',
+            'timing_config' => ['start_date_time' => ['date' => '2025-01-01', 'time' => '09:00']],
+            'notification_config' => [],
+            'is_ios_data_donation' => true,
+        ]);
+
+        $androidSchedule = MartSchedule::create([
+            'mart_project_id' => $martProject->id,
+            'questionnaire_id' => $this->project->id * 1000 + 101,
+            'name' => 'Android data donation',
+            'type' => 'single',
+            'timing_config' => ['start_date_time' => ['date' => '2025-01-01', 'time' => '09:00']],
+            'notification_config' => [],
+            'is_android_data_donation' => true,
+        ]);
+
+        // iOS submitted EARLIER, Android submitted LATER. The fix must
+        // return the Android timestamp; the old iOS-only code would have
+        // returned the iOS one (and on Android-only projects, null).
+        $iosTimestamp = 1700000000;
+        $androidTimestamp = 1700000500;
+
+        \App\Mart\MartEntry::create([
+            'schedule_id' => $iosSchedule->id,
+            'questionnaire_id' => $iosSchedule->questionnaire_id,
+            'participant_id' => $this->case->name,
+            'user_id' => 'donation@test.com',
+            'started_at' => now()->subMinutes(10),
+            'completed_at' => now()->subMinutes(9),
+            'duration_ms' => 60000,
+            'timezone' => 'Europe/Berlin',
+            'timestamp' => $iosTimestamp,
+        ]);
+
+        \App\Mart\MartEntry::create([
+            'schedule_id' => $androidSchedule->id,
+            'questionnaire_id' => $androidSchedule->questionnaire_id,
+            'participant_id' => $this->case->name,
+            'user_id' => 'donation@test.com',
+            'started_at' => now()->subMinutes(1),
+            'completed_at' => now(),
+            'duration_ms' => 60000,
+            'timezone' => 'Europe/Berlin',
+            'timestamp' => $androidTimestamp,
+        ]);
+
+        $request = \Illuminate\Http\Request::create('/test', 'GET', ['participant_id' => $this->case->name]);
+        $controller = new \App\Http\Controllers\MartApiController;
+        $resource = $controller->getProjectStructure($request, $this->project);
+        $structureArray = $resource->toArray(null);
+
+        $this->assertNotNull(
+            $structureArray['lastDataDonationSubmit'],
+            'lastDataDonationSubmit should not be null when donations exist on either platform'
+        );
+        $this->assertEquals(
+            $androidTimestamp,
+            $structureArray['lastDataDonationSubmit']['timestamp'],
+            'lastDataDonationSubmit should return the latest timestamp across iOS and Android donation schedules'
+        );
+    }
+
+    /**
+     * Item 3 (bonus, from Stefan's round-2 email): data-donation
+     * questionnaires must NOT appear in `singleQuestionnaires` — only in
+     * the top-level `questionnaires` catalog. The mobile's scheduler reads
+     * `singleQuestionnaires` to plan time-based prompts; donation
+     * questionnaires are user-triggered (tap to donate) and would cause
+     * spurious schedules if included.
+     *
+     * @test
+     */
+    public function data_donation_schedules_are_excluded_from_single_questionnaires()
+    {
+        $martProject = MartProject::where('main_project_id', $this->project->id)->first();
+
+        // A regular single questionnaire — should appear in singleQuestionnaires.
+        $regularQuestionnaireId = $this->project->id * 1000 + 300;
+        MartSchedule::create([
+            'mart_project_id' => $martProject->id,
+            'questionnaire_id' => $regularQuestionnaireId,
+            'name' => 'Regular single',
+            'type' => 'single',
+            'timing_config' => ['start_date_time' => ['date' => '2025-01-01', 'time' => '09:00']],
+            'notification_config' => [],
+        ]);
+
+        // A donation-flagged single questionnaire — should NOT appear.
+        $donationQuestionnaireId = $this->project->id * 1000 + 301;
+        MartSchedule::create([
+            'mart_project_id' => $martProject->id,
+            'questionnaire_id' => $donationQuestionnaireId,
+            'name' => 'iOS donation',
+            'type' => 'single',
+            'timing_config' => ['start_date_time' => ['date' => '2025-01-01', 'time' => '09:00']],
+            'notification_config' => [],
+            'is_ios_data_donation' => true,
+        ]);
+
+        $request = \Illuminate\Http\Request::create('/test', 'GET', ['participant_id' => $this->case->name]);
+        $controller = new \App\Http\Controllers\MartApiController;
+        $resource = $controller->getProjectStructure($request, $this->project);
+        $structureArray = $resource->toArray(null);
+
+        $singleIds = collect($structureArray['projectOptions']['options']['singleQuestionnaires'])
+            ->pluck('questionnaireId')
+            ->all();
+
+        $this->assertContains(
+            $regularQuestionnaireId,
+            $singleIds,
+            'Regular single questionnaires should appear in singleQuestionnaires'
+        );
+        $this->assertNotContains(
+            $donationQuestionnaireId,
+            $singleIds,
+            'Data-donation questionnaires should NOT appear in singleQuestionnaires'
+        );
+    }
+
+    /**
+     * Item 9 from Stefan's round-3 report: `projectOptions.iOSDataDonationQuestionnaire`
+     * must reflect the questionnaire_id of whichever schedule is flagged
+     * `is_ios_data_donation = true` for this project. Regression net for the
+     * `ProjectOptionsResource::getIOSDataCollectionQuestionnaireId` getter.
+     *
+     * @test
+     */
+    public function ios_data_donation_questionnaire_is_exposed_in_project_options()
+    {
+        $martProject = MartProject::where('main_project_id', $this->project->id)->first();
+
+        $iosQuestionnaireId = $this->project->id * 1000 + 200;
+        MartSchedule::create([
+            'mart_project_id' => $martProject->id,
+            'questionnaire_id' => $iosQuestionnaireId,
+            'name' => 'iOS data donation',
+            'type' => 'single',
+            'timing_config' => ['start_date_time' => ['date' => '2025-01-01', 'time' => '09:00']],
+            'notification_config' => [],
+            'is_ios_data_donation' => true,
+        ]);
+
+        $request = \Illuminate\Http\Request::create('/test', 'GET', ['participant_id' => $this->case->name]);
+        $controller = new \App\Http\Controllers\MartApiController;
+        $resource = $controller->getProjectStructure($request, $this->project);
+        $structureArray = $resource->toArray(null);
+
+        $this->assertEquals(
+            $iosQuestionnaireId,
+            $structureArray['projectOptions']['options']['iOSDataDonationQuestionnaire'],
+            'iOSDataDonationQuestionnaire should expose the questionnaire_id of the iOS-flagged schedule'
+        );
+    }
+
+    /**
+     * BE.7 from Stefan's round-2 report: the "Show after completing a
+     * repeating questionnaire" option was not persisting when a
+     * questionnaire was *edited* (creating worked). Root cause: the update
+     * path's validation rules and the `$timingFields` allow-list both
+     * omitted `show_after_repeating`, so the field got silently dropped
+     * before `timing_config` was rebuilt.
+     *
+     * @test
+     */
+    public function show_after_repeating_persists_on_update()
+    {
+        $martProject = MartProject::where('main_project_id', $this->project->id)->first();
+
+        // Seed a single questionnaire that already has show_after_repeating set
+        // (= the "create worked" half of the original bug).
+        $schedule = MartSchedule::create([
+            'mart_project_id' => $martProject->id,
+            'questionnaire_id' => $this->project->id * 1000 + 400,
+            'name' => 'Follow-up',
+            'type' => 'single',
+            'timing_config' => [
+                'start_date_time' => ['date' => '2025-01-01', 'time' => '09:00'],
+                'show_after_repeating' => [
+                    'repeatingQuestId' => $this->questionnaireId1,
+                    'showAfterAmount' => 3,
+                ],
+            ],
+            'notification_config' => [],
+        ]);
+
+        \App\Mart\MartQuestion::create([
+            'schedule_id' => $schedule->id,
+            'position' => 0,
+            'text' => 'How was it?',
+            'type' => 'text',
+            'config' => [],
+            'is_mandatory' => false,
+            'version' => 1,
+        ]);
+
+        // Now edit the questionnaire and send a NEW show_after_repeating value
+        // (different completion count). Before the fix this got dropped on
+        // save and the schedule fell back to its previous value.
+        $request = new \Illuminate\Http\Request([
+            'name' => 'Follow-up',
+            'type' => 'single',
+            'show_after_repeating' => [
+                'repeatingQuestId' => $this->questionnaireId1,
+                'showAfterAmount' => 5,
+            ],
+            'questions' => [
+                [
+                    'text' => 'How was it?',
+                    'type' => 'text',
+                    'mandatory' => false,
+                    'config' => [],
+                ],
+            ],
+        ]);
+
+        $controller = new \App\Http\Controllers\MartQuestionnaireController;
+        $controller->updateQuestions($request, $schedule);
+
+        $schedule->refresh();
+        $this->assertEquals(
+            ['repeatingQuestId' => $this->questionnaireId1, 'showAfterAmount' => 5],
+            $schedule->timing_config['show_after_repeating'],
+            'show_after_repeating must persist through an update (BE.7 regression)'
+        );
+    }
+
     /** @test */
     public function it_stores_device_info()
     {

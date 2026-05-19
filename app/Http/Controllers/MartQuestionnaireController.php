@@ -77,7 +77,7 @@ class MartQuestionnaireController extends Controller
             'questions.*.text' => 'required|string',
             'questions.*.image_url' => 'nullable|url|max:2048',
             'questions.*.video_url' => 'nullable|url|max:2048',
-            'questions.*.type' => 'required|in:number,range,text,textarea,one choice,multiple choice,display',
+            'questions.*.type' => 'required|in:number,range,text,textarea,one choice,multiple choice,display,photo,audio,video',
             'questions.*.mandatory' => 'required|boolean',
             'questions.*.config' => 'nullable|array',
         ]);
@@ -255,12 +255,13 @@ class MartQuestionnaireController extends Controller
             'daily_start_time' => 'nullable|string',
             'daily_end_time' => 'nullable|string',
             'quest_available_at' => 'nullable|in:startOfInterval,randomTimeWithinInterval',
+            'show_after_repeating' => 'nullable|array',
             'questions' => 'required|array',
             'questions.*.uuid' => 'nullable|string',
             'questions.*.text' => 'required|string',
             'questions.*.image_url' => 'nullable|url|max:2048',
             'questions.*.video_url' => 'nullable|url|max:2048',
-            'questions.*.type' => 'required|in:number,range,text,textarea,one choice,multiple choice,display',
+            'questions.*.type' => 'required|in:number,range,text,textarea,one choice,multiple choice,display,photo,audio,video',
             'questions.*.mandatory' => 'required|boolean',
             'questions.*.config' => 'nullable|array',
         ]);
@@ -299,10 +300,15 @@ class MartQuestionnaireController extends Controller
                 $schedule->type = $validated['type'];
             }
 
-            // Update timing config if any timing fields are provided
+            // Update timing config if any timing fields are provided.
+            // NOTE: `show_after_repeating` must be in this list — without it,
+            // the update path silently drops the field even though the store
+            // path saves it (see BE.7 in Stefan's round-2 report: the option
+            // wasn't persisting on edit).
             $timingFields = ['start_date_time', 'end_date_time', 'start_on_first_login', 'start_hours_after_login',
                 'use_dynamic_end_date', 'daily_interval_duration', 'min_break_between', 'max_daily_submits',
-                'max_total_submits', 'daily_start_time', 'daily_end_time', 'quest_available_at'];
+                'max_total_submits', 'daily_start_time', 'daily_end_time', 'quest_available_at',
+                'show_after_repeating'];
 
             $hasTimingUpdates = collect($timingFields)->contains(fn($field) => array_key_exists($field, $validated));
 

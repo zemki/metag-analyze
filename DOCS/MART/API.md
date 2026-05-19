@@ -251,11 +251,39 @@ per-participant data when `participant_id` is provided.
 **Per-participant fields in the response:**
 - `repeatingSubmits` and `singleSubmits` are returned as separate arrays, filtered by
   the schedule's type (`repeating` vs `single`).
-- `lastDataDonationSubmit` is `{ timestamp }` (no `questionnaireId`). It refers to the
-  participant's most recent submission for the schedule flagged `is_ios_data_donation`,
-  not arbitrary stats rows.
+- `lastDataDonationSubmit` is `{ timestamp }` (no `questionnaireId`). It returns the
+  timestamp of the participant's most recent submission for **any** schedule flagged
+  `is_ios_data_donation` **or** `is_android_data_donation` — whichever platform was
+  submitted last wins. Returns `null` if the project has no data-donation schedules
+  or the participant hasn't donated yet. Does not refer to `mart_stats` rows.
+- Data-donation schedules **never appear** in `projectOptions.options.singleQuestionnaires`.
+  They're triggered by the participant tapping "Donate" in the app rather than by the
+  mobile's scheduler, so including them there would cause spurious scheduling. Look
+  them up via `projectOptions.options.iOSDataDonationQuestionnaire` /
+  `androidDataDonationQuestionnaire` (which return the donation questionnaire's `id`)
+  and find the actual content in the top-level `questionnaires[]` catalog.
 - Each questionnaire in `questionnaires[]` carries its own `name` from its schedule
   (rather than a single project-level name reused for every questionnaire).
+
+**Supported question types** (`questionnaires[].items[].type`):
+
+| API value | Storage type | Notes |
+|---|---|---|
+| `text` | `text` | single-line text input |
+| `textarea` | `textarea` | multi-line text input |
+| `number` | `number` | integer or decimal entry |
+| `range` | `range` | slider with `minValue` / `maxValue` / `steps` |
+| `radio` (a.k.a. `one choice`) | `one choice` | single-select |
+| `checkbox` (a.k.a. `multiple choice`) | `multiple choice` | multi-select |
+| `photoUpload` | `photo` | participant uploads via `POST /mart-api/cases/{caseId}/files`, then references the returned `file_id` in the answer |
+| `audioUpload` | `audio` | same flow as `photoUpload` |
+| `videoUpload` | `video` | same flow as `photoUpload` |
+| `display` | `display` | non-input element (instructions, headers) |
+
+For upload types the answer value is the `file_id` (UUID) returned by the file
+upload endpoint; the mobile must upload the bytes first, then submit the entry
+referencing the resulting `file_id`. See the "Upload File" / "Retrieve File"
+section below.
 
 **Project Availability Window (`projectOptions.options.startDateAndTime` / `endDateAndTime`):**
 Both objects always have shape `{ date, time }` with non-null values, so the mobile
@@ -482,17 +510,27 @@ Only files that have not been linked to a submission can be deleted.
 
 ## Rate Limits
 
-All auth-flow endpoints are rate-limited per IP. Exceeding the limit returns `429 Too Many Requests`.
+All endpoints are rate-limited per IP. Exceeding the limit returns `429 Too Many Requests`.
 
-| Endpoint                    | Limit          |
-|-----------------------------|----------------|
-| `check-email`               | 5 / minute     |
-| `send-password-setup`       | 3 / 10 minutes |
-| `check-password`            | 10 / minute    |
-| `check-access`              | 10 / minute    |
-| `refresh`                   | 10 / minute    |
+**Auth-flow endpoints (`/api/mart/*`):**
 
-Authenticated `/mart-api/*` endpoints are not individually rate-limited.
+| Endpoint                    | Limit           |
+|-----------------------------|-----------------|
+| `check-email`               | 30 / minute     |
+| `send-password-setup`       | 30 / 10 minutes |
+| `check-password`            | 30 / minute     |
+| `check-access`              | 30 / minute     |
+| `refresh`                   | 30 / minute     |
+
+**Authenticated MART data endpoints (`/mart-api/*`):**
+
+| Endpoint                                  | Limit          |
+|-------------------------------------------|----------------|
+| `/projects/{project}/structure`           | 300 / minute   |
+| `/cases/{case}/submit`                    | 300 / minute   |
+| `/device-infos`                           | 300 / minute   |
+| `/stats`                                  | 300 / minute   |
+| `/cases/{case}/files`, `/files/{id}` (GET/DELETE) | 300 / minute |
 
 ---
 

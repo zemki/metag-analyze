@@ -33,12 +33,25 @@ class ProjectOptionsResource extends JsonResource
             }
         }
 
-        // Separate schedules by type
+        // Separate schedules by type.
+        //
+        // Data-donation questionnaires (`is_ios_data_donation` or
+        // `is_android_data_donation`) are user-triggered on the mobile —
+        // the participant taps "Donate" rather than being scheduled to a
+        // time. They surface through `projectOptions.iOSDataDonationQuestionnaire`
+        // / `androidDataDonationQuestionnaire` and the top-level
+        // `questionnaires` catalog, but they must NOT appear in
+        // `singleQuestionnaires` (the mobile's scheduler input), or the
+        // scheduler will try to plan them like a normal single
+        // questionnaire.
         $singleQuestionnaires = [];
         $repeatingQuestionnaires = [];
 
         if ($this->schedules) {
             foreach ($this->schedules as $schedule) {
+                if ($schedule->is_ios_data_donation || $schedule->is_android_data_donation) {
+                    continue;
+                }
                 if ($schedule->isSingle()) {
                     $singleQuestionnaires[] = $schedule->toMobileFormat($this->caseId);
                 } else {

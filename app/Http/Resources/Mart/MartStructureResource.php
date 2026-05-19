@@ -2,14 +2,12 @@
 
 namespace App\Http\Resources\Mart;
 
-use App\Entry;
 use App\Mart\MartDeviceInfo;
 use App\Mart\MartEntry;
 use App\Mart\MartSchedule;
 use App\Mart\MartStat;
 use App\User;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\DB;
 
 class MartStructureResource extends JsonResource
 {
@@ -185,8 +183,13 @@ class MartStructureResource extends JsonResource
     /**
      * Get last data donation submission for the participant.
      *
-     * Scoped to the schedule flagged `is_ios_data_donation = true` for this
-     * project: we look for the most recent MartEntry with that schedule_id.
+     * "Data donation" = a schedule flagged either `is_ios_data_donation`
+     * or `is_android_data_donation` for this project (both flags appear in
+     * `projectOptions.iOSDataDonationQuestionnaire` and
+     * `projectOptions.androidDataDonationQuestionnaire` respectively). We
+     * return the timestamp of the most recent MartEntry whose schedule_id
+     * is one of those flagged schedules — across both platforms, whichever
+     * was submitted last wins.
      *
      * Returns { timestamp: number } per martTypes.ts (no questionnaireId).
      */
@@ -197,16 +200,19 @@ class MartStructureResource extends JsonResource
             return null;
         }
 
-        $iosDonationSchedule = MartSchedule::where('mart_project_id', $martProject->id)
-            ->where('is_ios_data_donation', true)
-            ->first();
+        $donationScheduleIds = MartSchedule::where('mart_project_id', $martProject->id)
+            ->where(function ($q) {
+                $q->where('is_ios_data_donation', true)
+                  ->orWhere('is_android_data_donation', true);
+            })
+            ->pluck('id');
 
-        if (!$iosDonationSchedule) {
+        if ($donationScheduleIds->isEmpty()) {
             return null;
         }
 
         $entry = MartEntry::forParticipant($participantId)
-            ->where('schedule_id', $iosDonationSchedule->id)
+            ->whereIn('schedule_id', $donationScheduleIds)
             ->orderBy('timestamp', 'desc')
             ->first();
 

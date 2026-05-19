@@ -69,8 +69,9 @@
                 <p class="mt-1 text-xs text-gray-500">{{ trans('This text will be shown at the top of the questionnaire before any questions.') }}</p>
               </div>
 
-              <!-- Questionnaire Type -->
-              <div>
+              <!-- Questionnaire Type — hidden for data-donation questionnaires
+                   (they're always single + user-triggered by definition). -->
+              <div v-if="dataDonationType === 'none'">
                 <label class="block text-sm font-medium text-gray-700 mb-2">{{ trans('Questionnaire Type') }} *</label>
                 <div class="grid grid-cols-2 gap-4">
                   <button
@@ -102,8 +103,9 @@
                 </div>
               </div>
 
-              <!-- Start on First Login Checkbox - Available for all questionnaire types -->
-              <div class="p-3 bg-green-50 rounded-lg border border-green-200">
+              <!-- Start on First Login Checkbox — hidden for data-donation
+                   questionnaires (user-triggered, not login-relative). -->
+              <div v-if="dataDonationType === 'none'" class="p-3 bg-green-50 rounded-lg border border-green-200">
                 <div class="flex items-center">
                   <input
                       v-model="formData.start_on_first_login"
@@ -133,8 +135,8 @@
                 </p>
               </div>
 
-              <!-- Show After Repeating Questionnaire - Only for single questionnaires -->
-              <div v-if="formData.type === 'single' && repeatingQuestionnaires.length > 0" class="space-y-3 p-4 bg-purple-50 rounded-lg border border-purple-200">
+              <!-- Show After Repeating Questionnaire - Only for single, non-donation questionnaires -->
+              <div v-if="formData.type === 'single' && dataDonationType === 'none' && repeatingQuestionnaires.length > 0" class="space-y-3 p-4 bg-purple-50 rounded-lg border border-purple-200">
                 <div class="flex items-center">
                   <input
                       v-model="formData.use_show_after_repeating"
@@ -183,8 +185,9 @@
                 </div>
               </div>
 
-              <!-- Date/Time Settings -->
-              <div class="space-y-3">
+              <!-- Date/Time Settings — hidden for data-donation questionnaires
+                   (user-triggered, no calendar schedule). -->
+              <div v-if="dataDonationType === 'none'" class="space-y-3">
                 <div class="flex justify-between items-center">
                   <h4 class="text-sm font-medium text-gray-900">{{ trans('Schedule Dates') }}</h4>
                   <button
@@ -560,6 +563,14 @@
                     </label>
                   </div>
                 </div>
+
+                <!-- Explanatory note when a donation platform is picked.
+                     Sits inside the donation block so it appears right where
+                     the user just toggled, making clear *why* the scheduling
+                     fields above disappeared. -->
+                <div v-if="dataDonationType !== 'none'" class="mt-2 p-2.5 bg-purple-100 rounded text-xs text-purple-800 leading-relaxed">
+                  {{ trans('Data donation questionnaires are user-triggered — the participant taps "Donate" in the app whenever they choose. Type, scheduling and login-relative options above don\'t apply and are hidden.') }}
+                </div>
               </div>
             </div>
 
@@ -720,6 +731,9 @@
                       <option value="range">{{ trans('Range/Slider') }}</option>
                       <option value="radio">{{ trans('Single Choice') }}</option>
                       <option value="checkbox">{{ trans('Multiple Choice') }}</option>
+                      <option value="photoUpload">{{ trans('Photo Upload') }}</option>
+                      <option value="audioUpload">{{ trans('Audio Upload') }}</option>
+                      <option value="videoUpload">{{ trans('Video Upload') }}</option>
                     </select>
                     <p v-if="question.type === 'display'" class="mt-1 text-xs text-blue-600">
                       {{ trans('This item will show text without requiring an answer (instructions, headers, etc.)') }}
@@ -1411,9 +1425,12 @@ export default {
       }
     },
 
-    // Map backend/DB types to form types
-    // DB stores: number, range, text, textarea, one choice, multiple choice, display
-    // Form uses: number, range, text, textarea, radio, checkbox, display
+    // Map backend/DB types to form types.
+    // DB stores: number, range, text, textarea, one choice, multiple choice, display,
+    //            photo, audio, video.
+    // Form uses: number, range, text, textarea, radio, checkbox, display,
+    //            photoUpload, audioUpload, videoUpload (form values match the
+    //            mobile API contract).
     mapBackendTypeToFormType(backendType) {
       const mapping = {
         'text': 'text',
@@ -1422,14 +1439,19 @@ export default {
         'range': 'range',
         'one choice': 'radio',
         'multiple choice': 'checkbox',
-        'display': 'display'
+        'display': 'display',
+        'photo': 'photoUpload',
+        'audio': 'audioUpload',
+        'video': 'videoUpload',
       };
       return mapping[backendType] || 'text';
     },
 
-    // Map form types to backend/DB types
-    // DB stores: number, range, text, textarea, one choice, multiple choice, display
-    // Mobile API expects: number, range, text, textarea, radio, checkbox (display has no scale)
+    // Map form types to backend/DB types.
+    // DB stores: number, range, text, textarea, one choice, multiple choice, display,
+    //            photo, audio, video.
+    // Mobile API expects the form values verbatim (e.g. `photoUpload` for a photo
+    // question); the mapping below is just the storage half of the round-trip.
     mapFormTypeToBackendType(formType) {
       const mapping = {
         'text': 'text',
@@ -1438,7 +1460,10 @@ export default {
         'range': 'range',
         'radio': 'one choice',
         'checkbox': 'multiple choice',
-        'display': 'display'
+        'display': 'display',
+        'photoUpload': 'photo',
+        'audioUpload': 'audio',
+        'videoUpload': 'video',
       };
       return mapping[formType] || 'text';
     },
