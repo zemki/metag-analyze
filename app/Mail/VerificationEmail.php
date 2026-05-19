@@ -12,6 +12,7 @@ class VerificationEmail extends Mailable
     use Queueable, SerializesModels;
 
     protected $user;
+    protected $emailtext;
 
     /**
      * Create a new message instance.
@@ -31,8 +32,7 @@ class VerificationEmail extends Mailable
      */
     public function build()
     {
-        return $this->from('mesoftware@uni-bremen.de')
-            ->markdown('email.setpassword')
+        return $this->markdown('email.setpassword')
             ->with(['user' => $this->user, 'text' => $this->emailtext]);
     }
 }
