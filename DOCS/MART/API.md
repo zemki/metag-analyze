@@ -285,6 +285,15 @@ upload endpoint; the mobile must upload the bytes first, then submit the entry
 referencing the resulting `file_id`. See the "Upload File" / "Retrieve File"
 section below.
 
+When a researcher configures upload-specific options in the admin (e.g.
+`allowFileSelection`, `quality` for photo; `maxFileSize`, `maxAudioLength`
+for audio; `maxVideoLength`, `maxFileSize` for video), the API emits them
+under `scaleOptions.photoUploadOptions` / `audioUploadOptions` /
+`videoUploadOptions` respectively. The full field set per upload type is
+defined in `martTypes.ts` — the API passes whatever the researcher set
+through verbatim; unset fields are omitted, and the mobile applies its own
+defaults.
+
 **Project Availability Window (`projectOptions.options.startDateAndTime` / `endDateAndTime`):**
 Both objects always have shape `{ date, time }` with non-null values, so the mobile
 client never has to handle nullability. Both are optional on the researcher side; if

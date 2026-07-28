@@ -937,6 +937,124 @@
                     </div>
                   </div>
 
+                  <!-- Photo Upload Options. Fields from martTypes.ts:
+                       allowFileSelection (gallery pick), allowEditing (in-app crop), quality (0-100). -->
+                  <div v-if="question.type === 'photoUpload'" class="space-y-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <h4 class="text-sm font-medium text-gray-900">{{ trans('Photo Upload Options') }}</h4>
+                    <div class="flex items-center">
+                      <input
+                          type="checkbox"
+                          v-model="question.config.photoUploadOptions.allowFileSelection"
+                          :id="'photo_allow_file_selection_' + index"
+                          class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
+                      />
+                      <label :for="'photo_allow_file_selection_' + index" class="ml-2 block text-sm text-gray-700">
+                        {{ trans('Allow file selection from gallery') }}
+                      </label>
+                    </div>
+                    <div class="flex items-center">
+                      <input
+                          type="checkbox"
+                          v-model="question.config.photoUploadOptions.allowEditing"
+                          :id="'photo_allow_editing_' + index"
+                          class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
+                      />
+                      <label :for="'photo_allow_editing_' + index" class="ml-2 block text-sm text-gray-700">
+                        {{ trans('Allow editing the photo') }}
+                      </label>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700">{{ trans('Quality (optional)') }}</label>
+                      <input
+                          type="number"
+                          v-model.number="question.config.photoUploadOptions.quality"
+                          min="1"
+                          max="100"
+                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                          :placeholder="trans('e.g., 90')"
+                      />
+                      <p class="mt-1 text-xs text-gray-500">{{ trans('90 ≈ 1.5MB, 50 ≈ 0.5MB. Leave blank for the mobile default.') }}</p>
+                    </div>
+                  </div>
+
+                  <!-- Audio Upload Options. Fields from martTypes.ts:
+                       maxFileSize (MB), maxAudioLength (seconds), allowFileSelection. -->
+                  <div v-if="question.type === 'audioUpload'" class="space-y-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <h4 class="text-sm font-medium text-gray-900">{{ trans('Audio Upload Options') }}</h4>
+                    <div class="flex items-center">
+                      <input
+                          type="checkbox"
+                          v-model="question.config.audioUploadOptions.allowFileSelection"
+                          :id="'audio_allow_file_selection_' + index"
+                          class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
+                      />
+                      <label :for="'audio_allow_file_selection_' + index" class="ml-2 block text-sm text-gray-700">
+                        {{ trans('Allow file selection from device') }}
+                      </label>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700">{{ trans('Max file size (MB, optional)') }}</label>
+                        <input
+                            type="number"
+                            v-model.number="question.config.audioUploadOptions.maxFileSize"
+                            min="1"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                            :placeholder="trans('e.g., 10')"
+                        />
+                      </div>
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700">{{ trans('Max audio length (seconds, optional)') }}</label>
+                        <input
+                            type="number"
+                            v-model.number="question.config.audioUploadOptions.maxAudioLength"
+                            min="1"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                            :placeholder="trans('e.g., 60')"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Video Upload Options. Fields from martTypes.ts:
+                       allowFileSelection, maxVideoLength (seconds), maxFileSize (MB). -->
+                  <div v-if="question.type === 'videoUpload'" class="space-y-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <h4 class="text-sm font-medium text-gray-900">{{ trans('Video Upload Options') }}</h4>
+                    <div class="flex items-center">
+                      <input
+                          type="checkbox"
+                          v-model="question.config.videoUploadOptions.allowFileSelection"
+                          :id="'video_allow_file_selection_' + index"
+                          class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
+                      />
+                      <label :for="'video_allow_file_selection_' + index" class="ml-2 block text-sm text-gray-700">
+                        {{ trans('Allow file selection from device') }}
+                      </label>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700">{{ trans('Max video length (seconds, optional)') }}</label>
+                        <input
+                            type="number"
+                            v-model.number="question.config.videoUploadOptions.maxVideoLength"
+                            min="1"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                            :placeholder="trans('e.g., 30')"
+                        />
+                      </div>
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700">{{ trans('Max file size (MB, optional)') }}</label>
+                        <input
+                            type="number"
+                            v-model.number="question.config.videoUploadOptions.maxFileSize"
+                            min="1"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                            :placeholder="trans('e.g., 50')"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
                   <!-- Jump/Filter Options (radio and checkbox only) -->
                   <div v-if="question.type === 'radio' || question.type === 'checkbox'" class="space-y-3 p-4 bg-purple-50 rounded-lg border border-purple-200">
                     <div class="flex items-center">
@@ -1313,7 +1431,26 @@ export default {
             minValue: config.min || 0,
             maxValue: config.max || 10,
             steps: config.step || 1,
-            maxDigits: config.maxDigits || null
+            maxDigits: config.maxDigits || null,
+            // Upload options — read each nested block from the saved config
+            // if present, fall back to neutral defaults otherwise. Keeps
+            // these objects defined so v-model bindings work even when the
+            // researcher switches type to an upload variant after loading.
+            photoUploadOptions: {
+              allowFileSelection: config.photoUploadOptions?.allowFileSelection || false,
+              allowEditing: config.photoUploadOptions?.allowEditing || false,
+              quality: config.photoUploadOptions?.quality ?? null,
+            },
+            audioUploadOptions: {
+              allowFileSelection: config.audioUploadOptions?.allowFileSelection || false,
+              maxFileSize: config.audioUploadOptions?.maxFileSize ?? null,
+              maxAudioLength: config.audioUploadOptions?.maxAudioLength ?? null,
+            },
+            videoUploadOptions: {
+              allowFileSelection: config.videoUploadOptions?.allowFileSelection || false,
+              maxFileSize: config.videoUploadOptions?.maxFileSize ?? null,
+              maxVideoLength: config.videoUploadOptions?.maxVideoLength ?? null,
+            },
           }
         };
       });
@@ -1492,7 +1629,28 @@ export default {
           minValue: 0,
           maxValue: 10,
           steps: 1,
-          maxDigits: null
+          maxDigits: null,
+          // Upload-options blocks initialized so v-model bindings have a
+          // reactive target whichever upload type the user picks. Field
+          // sets come straight from martTypes.ts (photo: allowFileSelection
+          // / allowEditing / quality; audio: maxFileSize / maxAudioLength /
+          // allowFileSelection; video: allowFileSelection / maxVideoLength
+          // / maxFileSize). All fields are optional per the TS contract.
+          photoUploadOptions: {
+            allowFileSelection: false,
+            allowEditing: false,
+            quality: null,
+          },
+          audioUploadOptions: {
+            allowFileSelection: false,
+            maxFileSize: null,
+            maxAudioLength: null,
+          },
+          videoUploadOptions: {
+            allowFileSelection: false,
+            maxFileSize: null,
+            maxVideoLength: null,
+          },
         }
       });
     },
@@ -1552,6 +1710,28 @@ export default {
             if (q.placeholder) {
               config.placeholder = q.placeholder;
             }
+          } else if (q.type === 'photoUpload') {
+            // Pass the options block through as nested config. Field set
+            // matches martTypes.ts; the API resource (ScaleResource) reads
+            // `config.photoUploadOptions` and emits it under
+            // `scaleOptions.photoUploadOptions` per the contract.
+            config.photoUploadOptions = {
+              allowFileSelection: !!q.config.photoUploadOptions.allowFileSelection,
+              allowEditing: !!q.config.photoUploadOptions.allowEditing,
+              quality: q.config.photoUploadOptions.quality ?? null,
+            };
+          } else if (q.type === 'audioUpload') {
+            config.audioUploadOptions = {
+              allowFileSelection: !!q.config.audioUploadOptions.allowFileSelection,
+              maxFileSize: q.config.audioUploadOptions.maxFileSize ?? null,
+              maxAudioLength: q.config.audioUploadOptions.maxAudioLength ?? null,
+            };
+          } else if (q.type === 'videoUpload') {
+            config.videoUploadOptions = {
+              allowFileSelection: !!q.config.videoUploadOptions.allowFileSelection,
+              maxVideoLength: q.config.videoUploadOptions.maxVideoLength ?? null,
+              maxFileSize: q.config.videoUploadOptions.maxFileSize ?? null,
+            };
           }
 
           // Add timer config if enabled

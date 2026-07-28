@@ -114,6 +114,33 @@ class ScaleResource extends JsonResource
                         $scaleOptions['placeholder'] = $config['placeholder'];
                     }
                     break;
+
+                // Upload question types. DB stores `photo` / `audio` / `video`;
+                // the mobile API contract (martTypes.ts) expects
+                // `photoUpload` / `audioUpload` / `videoUpload`, each with its
+                // own optional options block. We pass any saved
+                // `*UploadOptions` config through; if none is set the mobile
+                // app uses its own defaults per the contract.
+                case 'photo':
+                    $scaleOptions = ['type' => 'photoUpload'];
+                    if (! empty($config['photoUploadOptions']) && is_array($config['photoUploadOptions'])) {
+                        $scaleOptions['photoUploadOptions'] = $config['photoUploadOptions'];
+                    }
+                    break;
+
+                case 'audio':
+                    $scaleOptions = ['type' => 'audioUpload'];
+                    if (! empty($config['audioUploadOptions']) && is_array($config['audioUploadOptions'])) {
+                        $scaleOptions['audioUploadOptions'] = $config['audioUploadOptions'];
+                    }
+                    break;
+
+                case 'video':
+                    $scaleOptions = ['type' => 'videoUpload'];
+                    if (! empty($config['videoUploadOptions']) && is_array($config['videoUploadOptions'])) {
+                        $scaleOptions['videoUploadOptions'] = $config['videoUploadOptions'];
+                    }
+                    break;
             }
         } elseif ($this->isMartProject && isset($this->martMetadata)) {
             // Handle MART project with native MART types (old structure)
