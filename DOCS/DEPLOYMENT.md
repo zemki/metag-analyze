@@ -142,16 +142,44 @@ cd mart-web
 sudo chown -R "$USER":www-data /var/www/html/mart-web
 ```
 
+#### 2.1.1 Install needed PHP stuff
+
+To reflect the needed PHP library stack, we need to either install or update according to `composer.lock` file.
+
+We assume you are in `mart-web` folder. Now either do
+
+```bash
+composer install --no-dev --optimize-autoloader
+```
+
+or 
+
+```bash
+composer update
+```
+
+to let the latest dependencies be installed.
+
+#### 2.1.2 Check if artisan works
+
+Try to execute it.
+
+```bash
+php artisan
+```
+
 ### 2.2 Create the database
 
 ```bash
 sudo mysql
 ```
 
+Use a password which satisfies rules like more than 8 chars, one uppercase, one lowercase one digit and one special char.
+
 ```sql
-CREATE DATABASE mart_web CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'mart'@'localhost' IDENTIFIED BY 'CHANGE-ME';
-GRANT ALL PRIVILEGES ON mart_web.* TO 'mart'@'localhost';
+CREATE DATABASE mart_testing CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'mart'@'localhost' IDENTIFIED BY '<CHOOSE_PASSWORD>';
+GRANT ALL PRIVILEGES ON mart_testing.* TO 'mart'@'localhost';
 FLUSH PRIVILEGES;
 ```
 
@@ -204,6 +232,8 @@ Now edit `.env`. These must be changed from the shipped defaults:
 
 ### 2.4 PHP dependencies
 
+You might want to run this again.
+
 ```bash
 composer install --no-dev --optimize-autoloader
 ```
@@ -215,6 +245,17 @@ builds a classmap — worth real latency under mod_php/FPM.
 
 ```bash
 npm ci
+```
+
+You might want to try to fix most of the issues which arise during ci.
+
+```bash
+npm audit fix
+```
+
+Then build the files which are deployed.
+
+```bash
 npm run build
 ```
 
@@ -308,6 +349,8 @@ php artisan db:seed --class='\UserRoleTableSeeder'
 > Expect `0`.
 
 ### 2.11 Caches
+
+Setup the caches which are useful here.
 
 ```bash
 php artisan route:cache
