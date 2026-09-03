@@ -30,6 +30,31 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Application Copyright Ownership
+    |--------------------------------------------------------------------------
+    |
+    | Set this in your ".env" file.
+    |
+    */
+
+    'owner' => env('APP_OWNER', 'ACME Inc.'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Application Version
+    |--------------------------------------------------------------------------
+    |
+    | This value determines the version number of the application. Please
+    | increase it whenever code changes change the bahaviour of the app.
+    | On any even small portion of change increase build number.
+    | Set this in your ".env" file.
+    |
+    */
+
+    'version' => env('APP_VERSION', '0.0.0'),
+    'build' => env('APP_BUILD', 0),
+    /*
+    |--------------------------------------------------------------------------
     | Application Debug Mode
     |--------------------------------------------------------------------------
     |

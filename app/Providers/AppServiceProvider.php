@@ -5,6 +5,7 @@ namespace App\Providers;
 use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
 use Dedoc\Scramble\Support\Generator\SecurityScheme;
+use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
@@ -22,7 +23,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+
         Schema::defaultStringLength(191);
+
+        // Provide central config values to all views
+        View::composer('*', function ($view) {
+            $view->with([
+                'appVersion' => config('app.version'),
+                'appBuild'   => config('app.build'),
+                'appName'   => config('app.name'),
+                'appOwner' => config('app.owner'),
+            ]);
+        });
 
         // Scramble: Include both MART route prefixes in API docs
         Scramble::configure()
@@ -57,6 +69,12 @@ class AppServiceProvider extends ServiceProvider
                 $view->with('telescopeScriptVariables', ['path' => 'metag/telescope', 'timezone' => config('app.timezone'), 'recording' => ! cache('telescope:pause-recording')]);
             });
         }
+
+        // Have an app version/build and make it visible in `php artisan about`
+        AboutCommand::add('Environment', [
+            'App Version' => config('app.version'),
+            'App Build' => config('app.build'),
+        ]);
 
     }
 

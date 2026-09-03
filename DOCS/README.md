@@ -3,6 +3,7 @@
 Research platform for mobile experience sampling and media diaries.
 
 - [Installation Guide](./INSTALLATION.md) - Setup instructions
+- [Deployment Guide](./DEPLOYMENT.md) - Installing and updating on an Ubuntu/Apache server
 - [Architecture Overview](./ARCHITECTURE.md) - Tech stack and design
 - [Admin Guide](./ADMIN_GUIDE.md) - Admin panel usage
 - [MART Documentation](./MART/) - Mobile app API

@@ -39,8 +39,14 @@ class UserRoleTableSeeder extends Seeder
             $user = User::create([
                 'email' => $email,
                 'password' => bcrypt($password),
-                'email_verified_at' => now(),
             ]);
+
+            // Set outside the create() array on purpose: email_verified_at is
+            // not in User::$fillable, so passing it above is silently dropped
+            // by mass-assignment protection and the new admin is then blocked
+            // by the 'verified' middleware on every web route.
+            $user->email_verified_at = now();
+            $user->save();
             $this->command->info('Created a new user.');
             $this->command->info("Email: {$email}");
             $this->command->info("Password: {$password}");

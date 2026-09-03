@@ -2,8 +2,6 @@
 
 namespace App\Console;
 
-use App\Console\Commands\NotificationChecker;
-use App\Console\Commands\NotificationCleanDeviceID;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -25,8 +23,15 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->job(new NotificationChecker)->everyMinute();
-        $schedule->job(new NotificationCleanDeviceID)->dailyAt('01:30');
+        // Dispatched as console commands, not via ->job(). Both classes extend
+        // Illuminate\Console\Command, and ->job() would push them through the bus,
+        // invoking handle() on an instance whose $output was never set - every
+        // $this->info()/warn()/error() call then dies with "Call to a member
+        // function writeln() on null". NotificationChecker::handle() always
+        // reaches one of those, so the every-minute run failed on every tick and
+        // participant notifications were never delivered.
+        $schedule->command('notifications:check')->everyMinute()->withoutOverlapping();
+        $schedule->command('notification:cleanID')->dailyAt('01:30');
     }
 
     /**

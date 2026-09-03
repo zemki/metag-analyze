@@ -16,6 +16,9 @@
         @yield('content')
         <snackbar ref="snackbar" :message="snackbarMessage"></snackbar>
     </div>
+    
+    @include('layouts.footer')
+
 </div>
 
 @yield('pagespecificscripts')

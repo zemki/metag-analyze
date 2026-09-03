@@ -5,6 +5,8 @@
 
     @yield('content')
 
+    @include('layouts.footer')
+    
 </div>
 @yield('pagespecificscripts')
 </body>
