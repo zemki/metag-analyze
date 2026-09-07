@@ -6,9 +6,9 @@
 
             <div>
                 <img class="w-auto h-24 mx-auto" src="{{ config('utilities.base64logo') }}" alt="Metag Analyze Logo">
-                <h1 class="mt-6 text-3xl font-extrabold text-center text-gray-900">{{ __('Reset Password') }}</h1>
+                <h1 class="mt-6 text-3xl font-extrabold text-center text-gray-900">{{ __('Set your password') }}</h1>
                 <p class="mt-2 text-sm text-center text-gray-600">
-                    {{ __('Choose a new password for') }} <span class="font-medium text-gray-900">{{ $user->email }}</span>
+                    {{ __('Choose a password for') }} <span class="font-medium text-gray-900">{{ $user->email }}</span>
                 </p>
             </div>
 

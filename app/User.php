@@ -390,7 +390,13 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
         $action->name = $name;
         $action->description = $description;
         $action->url = $url;
-        $action->user_id = auth()->user()->id;
+        // Falls back to the model the action is recorded against when there is
+        // no session. Some actions legitimately happen unauthenticated - the
+        // email-change confirmation link is opened from the new mailbox, often
+        // on a device that is not logged in - and auth()->user()->id fataled
+        // there, after the change had already been committed.
+        // For authenticated callers this is unchanged: auth()->id() wins.
+        $action->user_id = auth()->id() ?? $this->id;
         $action->time = date('Y-m-d H:i:s');
         $action->save();
 

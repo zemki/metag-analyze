@@ -11,6 +11,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Validator;
 use Throwable;
 
 class EmailChangeController extends Controller
@@ -87,23 +88,40 @@ class EmailChangeController extends Controller
      * @param  string  $email
      * @return RedirectResponse|Response
      */
-    public function verify(Request $request, User $user)
+    public function verify(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email|unique:users',
+        // `user` and `email` arrive as query parameters, because the
+        // verifyNewEmail route has no {user} segment. They are looked up
+        // explicitly here.
+        //
+        // Tampering is not a concern: the 'signed' middleware verifies a
+        // signature computed over the whole query string, so neither `user`
+        // nor `email` can have been altered after the link was issued.
+        $validator = Validator::make($request->query(), [
+            'user' => 'required|integer|exists:users,id',
+            'email' => 'required|email|unique:users,email',
         ]);
 
-        $oldEmail = $user->first()->email;
+        if ($validator->fails()) {
+            // Most likely the address was claimed by someone else between the
+            // request and the click, or the account no longer exists. Either
+            // way the change cannot be applied, and saying so beats showing a
+            // success page.
+            return response()->view('auth.emails.change-failed', [
+                'reason' => $validator->errors()->first(),
+            ], 422);
+        }
 
-        // Change the Email
-        $user->first()->update([
-            'email' => $request->email,
-        ]);
+        $user = User::findOrFail($request->query('user'));
+        $oldEmail = $user->email;
+        $newEmail = $request->query('email');
 
-        // log the action
-        $user->first()->addAction('Email change from ' . $oldEmail . ' to ' . $user->email, 'from email link');
+        $user->update(['email' => $newEmail]);
 
-        // And finally return the view telling the change has been done
+        // Logged with the new address; this used to read the empty model's
+        // email and so always recorded an empty destination.
+        $user->addAction('Email change from ' . $oldEmail . ' to ' . $newEmail, 'from email link');
+
         return response()->view('auth.emails.change-complete');
     }
 }
