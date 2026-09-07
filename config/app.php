@@ -47,12 +47,11 @@ return [
     | This value determines the version number of the application. Please
     | increase it whenever code changes change the bahaviour of the app.
     | On any even small portion of change increase build number.
-    | Set this in your ".env" file.
+    | Deliberately NOT set from ".env" file to reflect code changes.
     |
     */
-
-    'version' => env('APP_VERSION', '0.0.0'),
-    'build' => env('APP_BUILD', 0),
+    'version' => '1.0.0',
+    'build' => '5',
     /*
     |--------------------------------------------------------------------------
     | Application Debug Mode

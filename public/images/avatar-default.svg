@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-hidden="true">
+  <!-- Neutral fallback avatar, shown when gravatar.com cannot be reached
+       (offline, blocked by a network policy or a privacy extension).
+       Colours match the application's gray palette: gray-200 / gray-400. -->
+  <circle cx="32" cy="32" r="32" fill="#e5e7eb"/>
+  <circle cx="32" cy="25" r="11" fill="#9ca3af"/>
+  <path d="M32 40c-10.5 0-19 6.4-19 14.3V56a32 32 0 0 0 38 0v-1.7C51 46.4 42.5 40 32 40z" fill="#9ca3af"/>
+</svg>

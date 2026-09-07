@@ -15,7 +15,7 @@
                         </a>
                     </div>
                 </div>
-                <div class="hidden lg:block lg:w-80">
+                <div class="lg:w-80">
                     <div class="flex items-center justify-end">
 
                         @if(Request::is('/'))
@@ -36,7 +36,7 @@
                                class="px-3 py-2 text-sm font-medium text-gray-200 rounded-md hover:text-white">Manuals</a>
                         </div>
 
-                        <div class="flex shrink-0">
+                        <div class="hidden shrink-0 lg:flex">
                             <span class="sr-only">{{__('Your Email')}}</span>
                             <span
                                     class="px-3 py-2 text-sm font-medium text-gray-200 rounded-md cursor-pointer pointer-events-none hover:text-gray-200">{{
@@ -50,7 +50,9 @@
                                         class="flex text-sm rounded-full bg-sky-500 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-offset-sky-500 focus:ring-white"
                                         id="user-menu-button" aria-expanded="false" aria-haspopup="true">
                                     <span class="sr-only">Open user menu</span>
-                                    <img class="w-8 h-8 rounded-full" src="{{\Gravatar::get(Auth::user()->email)}}"
+                                    <img class="w-8 h-8 rounded-full bg-gray-200"
+                                         src="{{ \Gravatar::get(Auth::user()->email) }}"
+                                         onerror="this.onerror=null;this.src='{{ asset('images/avatar-default.svg') }}';"
                                          alt="">
                                 </button>
                             </div>
