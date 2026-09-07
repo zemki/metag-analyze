@@ -354,18 +354,19 @@ php artisan db:seed --class='\UserRoleTableSeeder'
 Setup the caches which are useful here.
 
 ```bash
+php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 php artisan filament:optimize
 ```
 
-> ⚠️ **IMPORTANT: Do not run `php artisan config:cache`.** Once config is cached Laravel stops
-> loading `.env`, and three places in this codebase call `env()` outside
-> `config/`: `app/Http/Middleware/BlockIpMiddleware.php` and two lines in
-> `app/Notifications/notifyUserforNewCaseWhenAlreadyRegistered.php`. Caching
-> config silently disables IP blocking and empties the application name in
-> notification emails. Nothing errors — it just quietly misbehaves. If you want
-> the speed, move those three reads into `config/` first.
+> `config:cache` used to be unsafe here: three places called `env()` outside
+> `config/`, and because caching config stops `.env` being loaded, it silently
+> disabled IP blocking and emptied the application name in notification emails.
+> Those reads now go through `config()`, so caching is safe. Keep it that way —
+> **never call `env()` outside `config/`**. After changing `.env` on the server
+> you must re-run `php artisan config:cache` (or `config:clear`) for the change
+> to take effect.
 
 `route:cache` is safe here: no route uses a Closure, and the controller
 namespace prefix is set in `RouteServiceProvider`.
@@ -456,6 +457,7 @@ php artisan filament:assets                   # 5
 php artisan migrate --force                   # 6
 
 php artisan optimize:clear                    # 7
+php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 php artisan filament:optimize
@@ -537,8 +539,9 @@ Check the cron entry exists (`sudo crontab -u www-data -l`), then run
 `php artisan schedule:run` by hand and read the output. Also confirm
 `php artisan notifications:check` completes on its own.
 
-**IP blocking or the app name in emails stopped working.**
-Someone ran `config:cache`. Run `php artisan config:clear`. See 2.11.
+**A change to `.env` had no effect.**
+Config is cached. Run `php artisan config:cache` again to pick the new values
+up, or `php artisan config:clear` to go back to reading `.env` directly.
 
 ---
 

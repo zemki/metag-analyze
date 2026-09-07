@@ -21,8 +21,10 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
+use Throwable;
 
 class ProjectController extends Controller
 {
@@ -684,24 +686,62 @@ class ProjectController extends Controller
         // without colliding with the UNIQUE email index. Restore happens in
         // Auth\VerificationController::newpassword once they prove ownership.
         $user = User::withTrashed()->where('email', '=', $request->email)->first();
+
+        // Whether this invitation needs a "set your password" mail: either the
+        // account is brand new, or it exists but was never verified.
+        $needsInvitationMail = false;
+
         if (! $user) {
             $user = new User;
             $user->email = $request->email;
             $user->password = Helper::random_str(60);
             $user->password_token = Helper::random_str(60);
-            $user->save();
-            Mail::to($user->email)->send(new VerificationEmail($user, $request->emailtext ? $request->emailtext : config('utilities.emailDefaultText')));
-            $role = Role::where('name', '=', 'researcher')->first();
-            $user->roles()->sync($role);
+            $needsInvitationMail = true;
         } elseif (! $user->hasVerifiedEmail()) {
             $user->api_token = Helper::random_str(60);
             $user->password_token = Helper::random_str(60);
-            $user->save();
-            Mail::to($user->email)->send(new VerificationEmail($user, $request->emailtext ? $request->emailtext : config('utilities.emailDefaultText')));
-            $role = Role::where('name', '=', 'researcher')->first();
-            $user->roles()->sync($role);
+            $needsInvitationMail = true;
         }
-        $project->invited()->syncWithoutDetaching($user->id);
+
+        // Persist the account, its role and the project invitation together.
+        DB::transaction(function () use ($user, $project, $needsInvitationMail) {
+            if ($needsInvitationMail) {
+                $user->save();
+
+                $role = Role::where('name', '=', 'researcher')->first();
+
+                // Guard against a missing role: sync(null) would silently
+                // detach every role the user has instead of assigning one.
+                if ($role) {
+                    $user->roles()->sync($role);
+                }
+            }
+
+            $project->invited()->syncWithoutDetaching($user->id);
+        });
+
+        // Sent only after the transaction has committed, so the message can
+        // never reference a user that was rolled back.
+        if ($needsInvitationMail) {
+            try {
+                Mail::to($user->email)->send(new VerificationEmail($user, $request->emailtext ? $request->emailtext : config('utilities.emailDefaultText')));
+            } catch (Throwable $e) {
+                Log::error('Failed to send project invitation email', [
+                    'email' => $user->email,
+                    'project_id' => $project->id,
+                    'error' => $e->getMessage(),
+                ]);
+
+                // The invitation itself succeeded, so this is not an error
+                // response: the researcher needs to know the mail did not go
+                // out, while the user stays in the invited list.
+                return response()->json([
+                    'user' => $user,
+                    self::MESSAGE => 'The user was invited, but the invitation email could not be sent. Please check the mail configuration and invite again.',
+                    'mail_failed' => true,
+                ], 200);
+            }
+        }
 
         return response()->json(['user' => $user, self::MESSAGE => 'user was invited!'], 200);
     }

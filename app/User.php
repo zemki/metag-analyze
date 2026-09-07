@@ -18,11 +18,23 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Throwable;
 
 class User extends Authenticatable implements MustVerifyEmail, FilamentUser, HasName
 {
     use HasFactory, Notifiable, SoftDeletes;
+
+    /**
+     * Set when this user's invitation email could not be sent
+     *
+     * Request-scoped only - declared explicitly so Eloquent treats it as a
+     * plain property rather than routing it through __set into the model's
+     * attributes, where it would be persisted.
+     */
+    public bool $invitationMailFailed = false;
 
     /**
      * The model's default values for attributes.
@@ -109,31 +121,116 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
     public static function createIfDoesNotExists($user, $sendmessage = false, $subject = '', $message = '')
     {
         if (! $user->exists) {
-            $user->email = $user->email;
             $role = Role::where('name', '=', 'user')->first();
             $user->password = Crypt::encryptString(Helper::random_str(30));
             $user->password_token = Crypt::encryptString(Helper::random_str(30));
-            $user->save();
-            $user->roles()->sync($role);
-            Mail::to($user->email)->send(new VerificationEmail($user, config('utilities.emailDefaultText')));
+
+            DB::transaction(function () use ($user, $role) {
+                $user->save();
+
+                // Guard against a missing role: sync(null) would detach every
+                // role rather than assigning one.
+                if ($role) {
+                    $user->roles()->sync($role);
+                }
+            });
+
+            // A failed invitation must not abort the caller. Participants are
+            // created in a loop (ProjectCasesController), so an exception here
+            // used to stop every remaining participant from getting a case.
+            try {
+                Mail::to($user->email)->send(new VerificationEmail($user, config('utilities.emailDefaultText')));
+            } catch (Throwable $e) {
+                $user->invitationMailFailed = true;
+                Log::error('Failed to send participant invitation email', [
+                    'email' => $user->email,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         } elseif ($sendmessage) {
-            $user->notify(new notifyUserforNewCaseWhenAlreadyRegistered(['subject' => $subject, 'message' => $message]));
+            try {
+                $user->notify(new notifyUserforNewCaseWhenAlreadyRegistered(['subject' => $subject, 'message' => $message]));
+            } catch (Throwable $e) {
+                $user->invitationMailFailed = true;
+                Log::error('Failed to notify an existing user about a new case', [
+                    'email' => $user->email,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
         return $user;
     }
 
     /**
-     * @param  Request  $request
-     *                            save the device ID of the user by adding it into the device array.
+     * Save the logged-in user's device ID from the request.
+     *
+     * Kept for the MeTag login and QR login (ApiController), which still call it.
      */
     public static function saveDeviceId(Request $request)
     {
-        $currentDeviceId = auth()->user()->deviceID == null ? [] : auth()->user()->deviceID;
-        if ($request->has('deviceID') && $request->deviceID != '' && ! in_array($request->deviceID, $currentDeviceId)) {
-            array_push($currentDeviceId, $request->deviceID);
+        $user = auth()->user();
+
+        if ($user && $request->filled('deviceID')) {
+            $user->addDeviceToken((string) $request->deviceID);
         }
-        auth()->user()->forceFill(['deviceID' => $currentDeviceId ?? ''])->save();
+    }
+
+    /**
+     * Most FCM registration tokens to keep per user.
+     *
+     * Tokens are rotated by FCM (reinstall, restore, cleared app data), so the
+     * list would otherwise grow without limit. The newest are kept; sending to
+     * a stale token is a no-op at FCM's end.
+     */
+    public const MAX_DEVICE_TOKENS = 10;
+
+    /**
+     * Register an FCM token for this user.
+     *
+     * Before this, only the MeTag login stored tokens (saveDeviceId); MART
+     * participants never registered one, so push could not reach them.
+     */
+    public function addDeviceToken(string $token): bool
+    {
+        $token = trim($token);
+
+        if ($token === '') {
+            return false;
+        }
+
+        // The column is cast to array; a legacy row holding a bare string
+        // decodes to null, so normalise before touching it.
+        $tokens = array_values(array_filter((array) ($this->deviceID ?? []), 'is_string'));
+
+        if (in_array($token, $tokens, true)) {
+            return false;
+        }
+
+        $tokens[] = $token;
+
+        $this->forceFill([
+            'deviceID' => array_slice($tokens, -self::MAX_DEVICE_TOKENS),
+        ])->save();
+
+        return true;
+    }
+
+    /**
+     * Unregister an FCM token, e.g. on logout or when FCM reports it as stale.
+     */
+    public function removeDeviceToken(string $token): bool
+    {
+        $tokens = array_values(array_filter((array) ($this->deviceID ?? []), 'is_string'));
+        $remaining = array_values(array_filter($tokens, fn ($t) => $t !== $token));
+
+        if (count($remaining) === count($tokens)) {
+            return false;
+        }
+
+        $this->forceFill(['deviceID' => $remaining])->save();
+
+        return true;
     }
 
     public function groups()

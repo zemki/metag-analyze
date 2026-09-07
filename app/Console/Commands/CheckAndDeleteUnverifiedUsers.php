@@ -6,7 +6,9 @@ use App\Mail\UnverifiedUsersReport;
 use App\User;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Throwable;
 
 class CheckAndDeleteUnverifiedUsers extends Command
 {
@@ -51,14 +53,38 @@ class CheckAndDeleteUnverifiedUsers extends Command
         }
 
         if ($this->confirm('You want to receive the csv file?', false)) {
-            Mail::to(config('utilities.adminemails'))->send(new UnverifiedUsersReport($filePath));
+            // ADMINS is a comma-separated list, so an unset value explodes to
+            // [''] rather than to an empty array - which would reach Mail::to()
+            // as a single empty recipient.
+            $recipients = array_values(array_filter(
+                array_map('trim', (array) config('utilities.adminemails')),
+                fn ($address) => filter_var($address, FILTER_VALIDATE_EMAIL) !== false
+            ));
 
-            // send the csv file to the admin
-            $this->info('Sending the report...');
+            if (empty($recipients)) {
+                $this->error('No valid administrator address configured - set ADMINS in .env.');
+                $this->line('The report was not sent. The CSV was at: ' . $filePath);
+            } else {
+                $this->info('Sending the report to ' . implode(', ', $recipients) . '...');
+
+                try {
+                    Mail::to($recipients)->send(new UnverifiedUsersReport($filePath));
+                    $this->info('Report sent.');
+                } catch (Throwable $e) {
+                    Log::error('Failed to send the unverified-users report', [
+                        'recipients' => $recipients,
+                        'error' => $e->getMessage(),
+                    ]);
+                    $this->error('Sending the report failed: ' . $e->getMessage());
+                    $this->line('The users were still processed as chosen above.');
+                }
+            }
         }
 
         // remove the csv file
-        unlink($filePath);
+        if (is_file($filePath)) {
+            unlink($filePath);
+        }
     }
 
     private function generateCsv($unverifiedUsers): string

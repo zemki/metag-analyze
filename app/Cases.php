@@ -11,7 +11,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Notifications\DatabaseNotificationCollection;
+use Illuminate\Support\Facades\Log;
 use JetBrains\PhpStorm\Pure;
+use Throwable;
 
 /**
  * Case, is a reserved keyword in most programming languages, that's why we use Cases
@@ -330,14 +332,26 @@ class Cases extends Model
                 // Create the planning string in the format expected by the system
                 $planningText = 'Every day at '.($timingConfig['daily_start_time'] ?? '09:00');
 
-                // Create planned notification with questionnaire ID
-                $user->notify(new researcherNotificationToUser([
-                    'title' => $schedule->name ?? 'Study Reminder',
-                    'message' => $notificationConfig['notification_text'] ?? 'You have a new questionnaire available',
-                    'case' => ['id' => $this->id],
-                    'questionnaire_id' => $schedule->questionnaire_id,
-                    'planning' => $planningText,
-                ]));
+                // Create planned notification with questionnaire ID.
+                // Guarded by try-catch because this runs inside a loop over the schedules of
+                // a case being created and one failure should not stop the
+                // remaining schedules, nor cancel the case itself
+                try {
+                    $user->notify(new researcherNotificationToUser([
+                        'title' => $schedule->name ?? 'Study Reminder',
+                        'message' => $notificationConfig['notification_text'] ?? 'You have a new questionnaire available',
+                        'case' => ['id' => $this->id],
+                        'questionnaire_id' => $schedule->questionnaire_id,
+                        'planning' => $planningText,
+                    ]));
+                } catch (Throwable $e) {
+                    Log::error('Failed to create a planned notification for a case schedule', [
+                        'case_id' => $this->id,
+                        'schedule_id' => $schedule->id ?? null,
+                        'user_id' => $user->id ?? null,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
             }
         }
     }

@@ -9,6 +9,8 @@ use App\Notifications\researcherNotificationToUser;
 use DB;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class NotificationChecker extends Command
 {
@@ -168,8 +170,18 @@ class NotificationChecker extends Command
     private function sendNotification(?Cases $case, mixed $notification, int &$notificationSent): void
     {
         $user = $case->user;
-        $user->profile->last_notification_at = date('Y-m-d H:i:s');
-        $user->profile->save();
+
+        // A user without a profile row would fatal on the timestamp write
+        // below and take the whole scheduler tick with it.
+        if (! $user || ! $user->profile) {
+            Log::warning('Skipped a scheduled notification: user or profile missing', [
+                'case_id' => $case->id ?? null,
+                'user_id' => $user->id ?? null,
+            ]);
+            $this->error('Skipped notification for case ' . ($case->id ?? '?') . ': no user profile.');
+
+            return;
+        }
 
         // Include questionnaire_id in notification if available
         $notificationData = [
@@ -182,7 +194,28 @@ class NotificationChecker extends Command
             $notificationData['questionnaire_id'] = $notification->data->questionnaire_id;
         }
 
-        $user->notify(new researcherNotificationToUser($notificationData));
+        try {
+            $user->notify(new researcherNotificationToUser($notificationData));
+        } catch (Throwable $e) {
+            // This runs once a minute across every due notification. Letting one
+            // failure escape would abandon every remaining participant in the
+            // same tick, so it is logged and the loop continues.
+            Log::error('Failed to deliver a scheduled notification', [
+                'case_id' => $case->id ?? null,
+                'user_id' => $user->id ?? null,
+                'error' => $e->getMessage(),
+            ]);
+            $this->error('Notification FAILED for ' . $user->email . ': ' . $e->getMessage());
+
+            return;
+        }
+
+        // Stamped only after a successful send. Writing it up front meant a
+        // failed push still counted as a delivery, and the "enough time has
+        // passed" check then suppressed the retry until the next interval.
+        $user->profile->last_notification_at = date('Y-m-d H:i:s');
+        $user->profile->save();
+
         $this->info('Notification sent to ' . $user->email . (isset($notification->data->questionnaire_id) ? " (questionnaire: {$notification->data->questionnaire_id})" : ''));
         $notificationSent++;
     }

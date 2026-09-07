@@ -9,7 +9,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use Throwable;
 
 class EmailChangeController extends Controller
 {
@@ -57,8 +59,24 @@ class EmailChangeController extends Controller
         ]);
 
         // Send the email to the user
-        Notification::route('mail', $request->email)
-            ->notify(new EmailChangeNotification(Auth::user()->id));
+        try {
+            Notification::route('mail', $request->email)
+                ->notify(new EmailChangeNotification(Auth::user()->id));
+        } catch (Throwable $e) {
+            Log::error('Failed to send the email-change confirmation', [
+                'user_id' => Auth::user()->id,
+                'new_email' => $request->email,
+                'error' => $e->getMessage(),
+            ]);
+
+            // Nothing has changed yet - the address only changes once the
+            // signed link is followed - so this is a plain failure and the
+            // user should retry rather than wait for a mail that never comes.
+            return response(
+                __('The confirmation email could not be sent. Please try again later or contact an administrator.'),
+                500
+            );
+        }
 
         return response(__('An email has been sent, please check your inbox. Link is valid for 60 minutes'), 200);
     }

@@ -434,6 +434,8 @@ class MartApiController extends Controller
             "manufacturer" => "required|string",
             "timestamp" => "required|numeric",
             "timezone" => "required|string",
+            // Optional so existing clients keep working unchanged.
+            "fcmToken" => "sometimes|nullable|string|max:4096",
         ]);
 
         // Verify user access
@@ -457,10 +459,62 @@ class MartApiController extends Controller
             ],
         );
 
+        // Registering the push token here is a convenience: it saves the app a
+        // second call at login. Token *refresh* still needs the dedicated
+        // endpoint below, because FCM can rotate a token at any time, outside
+        // any project context.
+        $tokenStored = false;
+        if ($request->filled("fcmToken")) {
+            $tokenStored = $user->addDeviceToken($request->input("fcmToken"));
+        }
+
         return response()->json([
             "success" => true,
             "message" => "Device information stored successfully",
             "device_info_id" => $deviceInfo->id,
+            "push_token_registered" => $tokenStored,
+        ]);
+    }
+
+    /**
+     * Register or unregister this device's FCM token for the authenticated user.
+     *
+     * Without this the notifications the researcher schedules have nowhere to
+     * go: routeNotificationForFcm() reads User::$deviceID, and until now
+     * nothing ever wrote to it.
+     *
+     * The app must call this after notification permission is granted, and
+     * again whenever FCM issues a new token (Android onNewToken / the iOS
+     * delegate equivalent) - otherwise delivery decays as tokens rotate.
+     */
+    public function storeDeviceToken(Request $request): JsonResponse
+    {
+        $request->validate([
+            "token" => "required|string|max:4096",
+            "action" => "sometimes|in:register,unregister",
+        ]);
+
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json(
+                ["success" => false, "message" => "Unauthenticated"],
+                401,
+            );
+        }
+
+        $unregister = $request->input("action") === "unregister";
+
+        $changed = $unregister
+            ? $user->removeDeviceToken($request->input("token"))
+            : $user->addDeviceToken($request->input("token"));
+
+        return response()->json([
+            "success" => true,
+            // false simply means the token was already in (or already absent
+            // from) the list - not an error.
+            "changed" => $changed,
+            "registered_devices" => count((array) ($user->fresh()->deviceID ?? [])),
         ]);
     }
 

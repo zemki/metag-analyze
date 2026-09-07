@@ -10,23 +10,23 @@ use Illuminate\Http\Response;
 class BlockIpMiddleware
 {
     /**
-     * Get the list of blocked IP addresses from environment configuration.
+     * Get the list of blocked IP addresses.
+     *
+     * Reads config, not env(): once `php artisan config:cache` has run the
+     * .env file is no longer loaded, so an env() call here would silently
+     * return null and disable IP blocking altogether.
+     *
+     * config('utilities.blockedIps') explodes BLOCKED_IPS on commas, which
+     * yields [''] when the variable is empty - hence the filter below.
      *
      * @return array
      */
     protected function getBlockedIps(): array
     {
-        $blockedIps = env('BLOCKED_IPS', '');
-
-        if (empty($blockedIps)) {
-            return [];
-        }
-
-        // Parse comma-separated IPs and trim whitespace
-        return array_filter(
-            array_map('trim', explode(',', $blockedIps)),
-            fn($ip) => !empty($ip)
-        );
+        return array_values(array_filter(
+            array_map('trim', (array) config('utilities.blockedIps', [])),
+            fn ($ip) => $ip !== ''
+        ));
     }
 
     /**

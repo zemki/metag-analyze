@@ -185,7 +185,12 @@ class ProjectCasesController extends Controller
 
                 $case = $project->addCase($caseName, $duration);
                 $case->addUser($user);
-                $message .= $user->email . " has been invited. \n";
+
+                // The case is created either way; only say the invitation was
+                // delivered when it actually was.
+                $message .= $user->invitationMailFailed
+                    ? $user->email . " was added, but the invitation email could NOT be sent. \n"
+                    : $user->email . " has been invited. \n";
             }
 
             foreach ($project->getInputs() as $object) {

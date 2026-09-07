@@ -1,3 +1,12 @@
+@component('mail::message')
+# {{ __('Unverified users report') }}
 
+{{ __('Attached is the list of accounts that never verified their email address.') }}
 
-# {{__('Find attached the users that didnt verify in the last 48h ')}} {{ config('app.name') }}
+@isset($filename)
+{{ __('File') }}: {{ $filename }}
+@endisset
+
+{{ __('Thanks,') }}<br>
+{{ config('app.name') }}
+@endcomponent
