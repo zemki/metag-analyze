@@ -4,6 +4,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Application Version
+    |--------------------------------------------------------------------------
+    |
+    | This value determines the version number of the application. Please
+    | increase it whenever code changes change the bahaviour of the app.
+    | On any even small portion of change increase build number.
+    | Deliberately NOT set from ".env" file to reflect code changes.
+    |
+    */
+    'version' => '1.0.0',
+    'build' => '6',
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Name
     |--------------------------------------------------------------------------
     |
@@ -39,19 +53,6 @@ return [
 
     'owner' => env('APP_OWNER', 'ACME Inc.'),
 
-    /*
-    |--------------------------------------------------------------------------
-    | Application Version
-    |--------------------------------------------------------------------------
-    |
-    | This value determines the version number of the application. Please
-    | increase it whenever code changes change the bahaviour of the app.
-    | On any even small portion of change increase build number.
-    | Deliberately NOT set from ".env" file to reflect code changes.
-    |
-    */
-    'version' => '1.0.0',
-    'build' => '5',
     /*
     |--------------------------------------------------------------------------
     | Application Debug Mode
