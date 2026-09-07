@@ -1,7 +1,7 @@
 @include('layouts.header')
 
 <body>
-<div id="app">
+<div id="app" class="flex flex-col min-h-screen">
     @include('layouts.nav')
 
    @if ($errors->any())
@@ -11,12 +11,12 @@
             </div>
          @endforeach
         @endif
-    <div class="w-2/3 pt-2 mx-auto">
+    <main class="flex-1 w-2/3 pt-2 mx-auto">
 
         @yield('content')
         <snackbar ref="snackbar" :message="snackbarMessage"></snackbar>
-    </div>
-    
+    </main>
+
     @include('layouts.footer')
 
 </div>

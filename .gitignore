@@ -6,6 +6,8 @@
 bootstrap/compiled.php
 .env
 .env.testing
+.env_prod_backup
+.env_local_backup
 .phpunit.result.cache
 
 # JavaScript/Node

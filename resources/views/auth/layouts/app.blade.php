@@ -1,7 +1,7 @@
 @include('auth.layouts.header')
 
 <body class="h-full">
-<div id="app">
+<div id="app" class="flex flex-col min-h-screen">
 
     @yield('content')
 

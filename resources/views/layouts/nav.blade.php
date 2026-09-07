@@ -82,10 +82,8 @@
                 </div>
             </div>
         </div>
+    </nav>
 </div>
-</nav>
 
 <!-- Email Change Modal -->
 <email-change-modal v-model:visible="showEmailChangeModal"></email-change-modal>
-
-</header>
