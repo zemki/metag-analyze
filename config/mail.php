@@ -4,55 +4,100 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Mail Driver
+    | Default Mailer
     |--------------------------------------------------------------------------
     |
-    | Laravel supports both SMTP and PHP's "mail" function as drivers for the
-    | sending of e-mail. You may specify which one you're using throughout
-    | your application here. By default, Laravel is setup for SMTP mail.
+    | `MAIL_MAILER` is the current Laravel name for this setting. `MAIL_DRIVER`
+    | is read as a fallback because that is what this application used before,
+    | and what existing `.env` files on deployed servers still contain - so a
+    | deploy of this file cannot break outgoing mail on a server whose `.env`
+    | has not been updated yet.
     |
-    | Supported: "smtp", "sendmail", "mailgun", "mandrill", "ses",
-    |            "sparkpost", "postmark", "log", "array"
+    | Prefer `MAIL_MAILER` in new environments; `MAIL_DRIVER` can be dropped
+    | once every environment has been migrated.
+    |
+    | NOTE: this file previously used the pre-Laravel-7 layout - a top-level
+    | `driver` key plus flat `host` / `port` / `username` / `password`. Laravel
+    | still honours that through a backwards-compatibility branch in
+    | MailManager, but it has a sharp edge: while a top-level `driver` key
+    | exists, `MAIL_MAILER` is ignored entirely and the whole of this file is
+    | handed to the transport as its config. Anyone following current Laravel
+    | documentation would set `MAIL_MAILER`, see no error, and wonder why
+    | nothing changed. That is why the layout below is the standard one.
     |
     */
 
-    'driver' => env('MAIL_DRIVER', 'smtp'),
+    'default' => env('MAIL_MAILER', env('MAIL_DRIVER', 'log')),
 
     /*
     |--------------------------------------------------------------------------
-    | SMTP Host Address
+    | Mailer Configurations
     |--------------------------------------------------------------------------
     |
-    | Here you may provide the host address of the SMTP server used by your
-    | applications. A default option is provided that is compatible with
-    | the Mailgun mail service which will provide reliable deliveries.
+    | Only the transports this application realistically uses are listed.
+    | Laravel also supports ses / postmark / resend / roundrobin; add them here
+    | if they are ever needed.
     |
     */
 
-    'host' => env('MAIL_HOST', 'smtp.mailgun.org'),
+    'mailers' => [
 
-    /*
-    |--------------------------------------------------------------------------
-    | SMTP Host Port
-    |--------------------------------------------------------------------------
-    |
-    | This is the SMTP port used by your application to deliver e-mails to
-    | users of the application. Like the host we have set this value to
-    | stay compatible with the Mailgun e-mail application by default.
-    |
-    */
+        'smtp' => [
+            'transport' => 'smtp',
 
-    'port' => env('MAIL_PORT', 587),
+            // Leave MAIL_SCHEME unset for the normal case. Laravel derives the
+            // scheme from the port (465 => smtps, anything else => smtp) and
+            // Symfony Mailer negotiates STARTTLS automatically when the server
+            // advertises it, which is the usual setup on 587.
+            //
+            // MAIL_ENCRYPTION is deliberately absent: Laravel 11's
+            // createSmtpTransport() does not read it. It had no effect under
+            // the previous layout either, so nothing changes by dropping it.
+            'scheme' => env('MAIL_SCHEME'),
+            'url' => env('MAIL_URL'),
+            'host' => env('MAIL_HOST', '127.0.0.1'),
+            'port' => env('MAIL_PORT', 587),
+            'username' => env('MAIL_USERNAME'),
+            'password' => env('MAIL_PASSWORD'),
+            'timeout' => null,
+
+            // The name sent in the EHLO greeting. Some relays reject or
+            // downgrade senders that announce something meaningless here, so
+            // it defaults to the application's own host.
+            'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url(env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
+        ],
+
+        'sendmail' => [
+            'transport' => 'sendmail',
+            'path' => env('MAIL_SENDMAIL_PATH', '/usr/sbin/sendmail -bs -i'),
+        ],
+
+        'log' => [
+            'transport' => 'log',
+            'channel' => env('MAIL_LOG_CHANNEL'),
+        ],
+
+        'array' => [
+            'transport' => 'array',
+        ],
+
+        // Tries smtp first and falls back to writing the message to the log
+        // rather than throwing, so a relay outage does not turn into a 500 for
+        // the user. Opt in with MAIL_MAILER=failover.
+        'failover' => [
+            'transport' => 'failover',
+            'mailers' => [
+                'smtp',
+                'log',
+            ],
+        ],
+
+    ],
 
     /*
     |--------------------------------------------------------------------------
     | Global "From" Address
     |--------------------------------------------------------------------------
-    |
-    | You may wish for all e-mails sent by your application to be sent from
-    | the same address. Here, you may specify a name and address that is
-    | used globally for all e-mails that are sent by your application.
-    |
     */
 
     'from' => [
@@ -62,75 +107,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | E-Mail Encryption Protocol
-    |--------------------------------------------------------------------------
-    |
-    | Here you may specify the encryption protocol that should be used when
-    | the application send e-mail messages. A sensible default using the
-    | transport layer security protocol should provide great security.
-    |
-    */
-
-    'encryption' => env('MAIL_ENCRYPTION', 'tls'),
-
-    /*
-    |--------------------------------------------------------------------------
-    | SMTP Server Username
-    |--------------------------------------------------------------------------
-    |
-    | If your SMTP server requires a username for authentication, you should
-    | set it here. This will get used to authenticate with your server on
-    | connection. You may also set the "password" value below this one.
-    |
-    */
-
-    'username' => env('MAIL_USERNAME'),
-
-    'password' => env('MAIL_PASSWORD'),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Sendmail System Path
-    |--------------------------------------------------------------------------
-    |
-    | When using the "sendmail" driver to send e-mails, we will need to know
-    | the path to where Sendmail lives on this server. A default path has
-    | been provided here, which will work well on most of your systems.
-    |
-    */
-
-    'sendmail' => '/usr/sbin/sendmail -bs',
-
-    /*
-    |--------------------------------------------------------------------------
     | Markdown Mail Settings
     |--------------------------------------------------------------------------
     |
-    | If you are using Markdown based email rendering, you may configure your
-    | theme and component paths here, allowing you to customize the design
-    | of the emails. Or, you may simply stick with the Laravel defaults!
+    | resources/views/vendor/mail holds this application's published theme
+    | (html/themes/default.css), which the markdown mailables rely on.
     |
     */
 
     'markdown' => [
-        'theme' => 'default',
-
+        'theme' => env('MAIL_MARKDOWN_THEME', 'default'),
         'paths' => [
             resource_path('views/vendor/mail'),
         ],
     ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Log Channel
-    |--------------------------------------------------------------------------
-    |
-    | If you are using the "log" driver, you may specify the logging channel
-    | if you prefer to keep mail messages separate from other log entries
-    | for simpler reading. Otherwise, the default channel will be used.
-    |
-    */
-
-    'log_channel' => env('MAIL_LOG_CHANNEL'),
 
 ];

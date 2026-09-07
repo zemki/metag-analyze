@@ -209,7 +209,7 @@ Now edit `.env`. These must be changed from the shipped defaults:
 | `APP_DEBUG` | `false` | Ships as `true` — would expose stack traces and config values. |
 | `APP_URL` | `https://example.uni-bremen.de` | Mail links, signed verification URLs, the `/storage` public-disk URL. |
 | `DB_DATABASE` / `DB_USERNAME` / `DB_PASSWORD` | your values from 2.2 | Ships pointing at `mart_testing` as `root`. |
-| `MAIL_*`, incl. `MAIL_FROM_ADDRESS` | your SMTP relay | ⚠️ Registration, password-set and verification mails are the **only** way participants get an account. ⛔️ Defaults go nowhere. |
+| `MAIL_MAILER` + `MAIL_HOST` / `MAIL_PORT` / `MAIL_USERNAME` / `MAIL_PASSWORD`, and `MAIL_FROM_ADDRESS` | `smtp` and your relay's details | ⚠️ Registration, password-set and verification mails are the **only** way participants get an account. ⛔️ Defaults go nowhere. Verify with `php artisan mail:sendtest you@example.org` before announcing the instance. |
 | `ALTCHA_HMAC_KEY` | `openssl rand -hex 32` | Empty breaks the registration captcha. |
 | `ADMINS` | comma-separated emails | Drives the Telescope gate and the unverified-user report. Note it does **not** grant admin — see 2.10. |
 | `TRUSTED_PROXIES` | proxy IP, or `*` | Required behind a TLS-terminating proxy; otherwise Laravel emits `http://` URLs on an `https://` site and redirects/signed URLs break. |
@@ -287,16 +287,17 @@ never directly by Apache. That is deliberate; do not "fix" it by exposing them.
 
 ### 2.8 Permissions
 
-Only two trees need to be writable by the web server:
+Three trees need to be writable by the web server:
 
 ```bash
-sudo chgrp -R www-data storage bootstrap/cache
-sudo chmod -R g+w      storage bootstrap/cache
+sudo chgrp -R www-data storage bootstrap/cache storage/framework/cache/
+sudo chmod -R g+w      storage bootstrap/cache storage/framework/cache/
 ```
 
 `storage/` covers sessions, the file cache, compiled views, logs and uploads.
 If you see a 500 with a `file_put_contents ... Permission denied` in
 `storage/logs/`, this step is why.
+Also `storage/framework/cache` stores cached data and needs to be writable.
 
 ### 2.9 Migrate
 
@@ -521,8 +522,15 @@ OPcache. `sudo systemctl reload php8.3-fpm`. If it persists after that, a stale
 
 **Emails never arrive.**
 `MAIL_*` still holds the shipped defaults. Participants cannot register or reset
-passwords until this is real. Test with
-`php artisan tinker --execute="Mail::raw('test', fn(\$m) => \$m->to('you@example.org')->subject('MART test'));"`
+passwords until this is real. Test the configuration directly:
+
+```bash
+php artisan mail:sendtest you@example.org
+```
+
+It reports the mailer and transport actually in use, exits non-zero when the
+relay refuses the message, and warns explicitly if `MAIL_MAILER=log` — in which
+case nothing is sent at all and the message only goes to the log.
 
 **Notifications never fire.**
 Check the cron entry exists (`sudo crontab -u www-data -l`), then run
