@@ -313,8 +313,9 @@ for confirmation and cancels when there is no terminal attached.
 Admin is a **database role**, not a config value. `User::isAdmin()` reads the
 `user_roles` table; the `ADMINS` env var is unrelated to it and grants nothing.
 
-> `php artisan make:admin` is misleading: it only appends an address to `ADMINS`
-> in `.env`. It does **not** grant admin access, despite what its output says.
+`ADMINS` is a separate setting: it drives the Telescope gate and decides who
+receives the unverified-users report. It does not grant a role, and changing it
+requires re-running `php artisan config:cache`.
 
 Seed the roles **once**:
 
@@ -334,6 +335,47 @@ php artisan db:seed --class='\UserRoleTableSeeder'
 > ```bash
 > php artisan tinker --execute="echo \App\Role::count();"   # expect exactly 3
 > ```
+
+### Changing roles later
+
+Six commands grant and revoke roles on an existing account. They are additive:
+each affects only the named role and leaves the others alone.
+
+```bash
+php artisan roleadd:admin        user@example.org
+php artisan roleadd:researcher   user@example.org
+php artisan roleadd:user         user@example.org
+
+php artisan roleremove:admin     user@example.org
+php artisan roleremove:researcher user@example.org
+php artisan roleremove:user      user@example.org
+```
+
+| Role | Grants |
+|---|---|
+| `admin` | Web dashboard **and** the Filament panel at `/admin` |
+| `researcher` | Web dashboard only |
+| `user` | Participant — the mobile app only, no dashboard |
+
+Granting a role the account already has is a no-op, so these are safe to re-run
+from a provisioning script. Revoking a user's **last** role prompts first,
+because an account with no roles cannot sign in to the dashboard at all; pass
+`--force` to skip the prompt in a non-interactive context. Unknown or malformed
+addresses exit non-zero.
+
+If `RolesTableSeeder` has been run more than once, the `roles` table ends up
+with two or more rows per name. The role commands warn when they see this and
+always use the lowest id. To collapse them onto one row per name:
+
+```bash
+php artisan role:cleanup --dry-run   # show what would change
+php artisan role:cleanup             # apply, after confirming
+```
+
+It re-points any assignment that references a duplicate at the canonical row,
+drops assignments whose user already holds the canonical one, then deletes the
+now-unreferenced duplicates — all in a single transaction. Effective
+permissions are unchanged; `--force` skips the prompt.
 
 > ### Never run `php artisan db:seed` without `--class` here
 >
