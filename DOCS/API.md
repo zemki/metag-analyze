@@ -6,11 +6,9 @@ are all there, and they cannot drift from the implementation. This file covers
 what an OpenAPI document does not say well: how the pieces fit together, and how
 to exercise them.
 
-To read the generated docs locally, set `API_DOCS_PROTECT_ACCESS=false` in your
-`.env` and open <http://localhost:8000/docs/api>. With the flag `true` — which
-is what any deployment should use — the page asks for the `API_DOCS_USER` /
-`API_DOCS_PASSWORD` credentials, and refuses to serve at all (503) if no
-password is configured.
+The page asks for the `API_DOCS_USER` / `API_DOCS_PASSWORD` credentials, and
+refuses to serve at all (503) if no password is configured. To read it locally,
+set a password in your `.env`.
 
 ## Base URL
 
@@ -21,9 +19,11 @@ Everything the mobile app talks to is under **`/api/mobile`**:
 | `/api/mobile/auth/*` | The 3-screen auth flow | None (per-IP rate limited) |
 | `/api/mobile/*` | Project data, submissions and files | `Authorization: Bearer {token}` |
 
-The `auth/` segment is the rule: everything outside it needs a token. This
-replaced the earlier split across `/api/mart/*` and `/mart-api/*`, which the old
-URLs no longer serve.
+The `auth/` segment is the rule: everything outside it needs a token.
+
+The older URLs still answer as aliases until no app version in use calls them:
+`/api/mart/*` for the auth flow and `/mart-api/*` for the data endpoints, with
+the same paths after the prefix. New code should use `/api/mobile`.
 
 All endpoints return JSON. No `Accept: application/json` header is required.
 
@@ -174,11 +174,13 @@ Per IP. Exceeding a limit returns `429 Too Many Requests`.
 |---|---|
 | `/api/mobile/auth/send-password-setup` | 30 / 10 minutes |
 | All other `/api/mobile/auth/*` | 30 / minute |
-| Every `/api/mobile/*` data endpoint | 300 / minute |
+| Every `/api/mobile/*` data endpoint | 300 / minute, but see below |
 
-The data limit is deliberately far above Laravel's default of 60: participants
-poll `/structure` frequently, submit entries in bursts, and push device-info and
-stats payloads alongside questionnaires.
+The data routes ask for 300 / minute, deliberately far above Laravel's default
+of 60: participants poll `/structure` frequently, submit entries in bursts, and
+push device-info and stats payloads alongside questionnaires. Today the `api`
+middleware group's own 120 / minute limit (`app/Http/Kernel.php`) also applies
+to every route, so 120 is the effective ceiling until that is fixed.
 
 ---
 

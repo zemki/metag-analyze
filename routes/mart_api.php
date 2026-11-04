@@ -13,6 +13,7 @@ Route::middleware(['force.json', 'auth:api', 'throttle:300,1'])->group(function 
     Route::get('/projects/{project}/structure', [MartApiController::class, 'getProjectStructure']);
     Route::post('/cases/{case}/submit', [MartApiController::class, 'submitEntry']);
     Route::post('/device-infos', [MartApiController::class, 'storeDeviceInfo']);
+    Route::post('/device-token', [MartApiController::class, 'storeDeviceToken']);
     Route::post('/stats', [MartApiController::class, 'submitStats']);
 
     // File upload endpoints for MART questionnaire answers

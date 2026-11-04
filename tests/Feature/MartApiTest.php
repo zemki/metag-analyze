@@ -537,6 +537,7 @@ class MartApiTest extends TestCase
             'timestamp' => now()->timestamp * 1000,
             'timezone' => 'Europe/Berlin',
         ]);
+        $request->setUserResolver(fn () => $this->user);
 
         $controller = new \App\Http\Controllers\MartApiController;
         $response = $controller->storeDeviceInfo($request);
@@ -650,6 +651,7 @@ class MartApiTest extends TestCase
             'timestamp' => now()->timestamp * 1000,
             'timezone' => 'Europe/Berlin',
         ]);
+        $request->setUserResolver(fn () => $this->user);
 
         $controller = new \App\Http\Controllers\MartApiController;
         $response = $controller->storeDeviceInfo($request);

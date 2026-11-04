@@ -7,6 +7,7 @@ Research platform for mobile experience sampling and media diaries.
 - [Architecture Overview](./ARCHITECTURE.md) - Tech stack and design
 - [Admin Guide](./ADMIN_GUIDE.md) - Admin panel usage
 - [MART Documentation](./MART/) - Mobile app API
+- [Mobile API Guide](./API.md) - How the MART app's endpoints fit together
 
 ## Commands
 

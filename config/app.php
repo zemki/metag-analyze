@@ -51,7 +51,7 @@ return [
     |
     */
 
-    'owner' => env('APP_OWNER', 'ACME Inc.'),
+    'owner' => env('APP_OWNER', 'ZeMKI, Universität Bremen'),
 
     /*
     |--------------------------------------------------------------------------

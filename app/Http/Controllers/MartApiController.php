@@ -627,6 +627,22 @@ class MartApiController extends Controller
             );
         }
 
+        // The token holder may only act for themselves. Otherwise anyone with a
+        // token who knows another participant's email and participantId could
+        // file device info or stats in their name, or take over their push
+        // notifications through fcmToken.
+        if ($request->user()?->id !== $user->id) {
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "userId does not match the authenticated user",
+                    "hint" =>
+                        "The userId field must be the email address of the account the bearer token belongs to.",
+                ],
+                403,
+            );
+        }
+
         // Verify user has access to the project through a case
         $hasAccess = Cases::where("project_id", $request->projectId)
             ->where("name", $request->participantId)

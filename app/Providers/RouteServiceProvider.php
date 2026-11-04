@@ -36,6 +36,7 @@ class RouteServiceProvider extends ServiceProvider
     {
         $this->mapApiRoutes();
         $this->mapWebRoutes();
+        $this->mapMobileRoutes();
         $this->mapMartApiRoutes();
         //
     }
@@ -69,8 +70,21 @@ class RouteServiceProvider extends ServiceProvider
     }
 
     /**
+     * Define the "api/mobile" routes for the MART mobile app.
+     *
+     * @return void
+     */
+    protected function mapMobileRoutes()
+    {
+        Route::prefix('api/mobile')
+            ->middleware('api')
+            ->group(base_path('routes/mobile.php'));
+    }
+
+    /**
      * Define the "mart-api" routes for the application.
-     * These routes are for the MART mobile application integration.
+     * Older alias of the data routes in routes/mobile.php, kept until no app
+     * version in use calls them.
      *
      * @return void
      */

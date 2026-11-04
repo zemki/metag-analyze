@@ -36,10 +36,11 @@ class AppServiceProvider extends ServiceProvider
             ]);
         });
 
-        // Scramble: Include both MART route prefixes in API docs
+        // Scramble: document the MART app routes, the new prefix and its aliases
         Scramble::configure()
             ->routes(function (\Illuminate\Routing\Route $route) {
-                return Str::startsWith($route->uri, 'api/mart/')
+                return Str::startsWith($route->uri, 'api/mobile/')
+                    || Str::startsWith($route->uri, 'api/mart/')
                     || Str::startsWith($route->uri, 'mart-api/');
             })
             ->withDocumentTransformers(function (OpenApi $openApi) {

@@ -32,6 +32,19 @@ class ApiLoginTest extends TestCase
     }
 
     /** @test */
+    public function it_stores_the_device_id_on_login()
+    {
+        $this->postJson('/api/login', [
+            'email' => 'test@example.com',
+            'password' => 'password123',
+            'deviceID' => 'test-device-id-123',
+            'datetime' => time(),
+        ])->assertStatus(200);
+
+        $this->assertContains('test-device-id-123', $this->user->fresh()->deviceID);
+    }
+
+    /** @test */
     public function it_returns_error_for_invalid_credentials()
     {
         $response = $this->postJson('/api/login', [
