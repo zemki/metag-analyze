@@ -1,5 +1,7 @@
 module.exports = {
   testEnvironment: 'jsdom',
+  // Ignore the git worktree copies under .claude so each suite runs once
+  testPathIgnorePatterns: ['/node_modules/', '/\\.claude/'],
   moduleFileExtensions: ['js', 'json', 'vue'],
   transform: {
     '^.+\\.js$': '<rootDir>/tests/js/transformers/vite-env-transformer.js',
@@ -10,6 +12,8 @@ module.exports = {
     // Mock app.js imports to avoid circular dependencies
     '^../app$': '<rootDir>/tests/js/mocks/app.js',
     '^./app$': '<rootDir>/tests/js/mocks/app.js',
+    '^../app\\.js$': '<rootDir>/tests/js/mocks/app.js',
+    '^./app\\.js$': '<rootDir>/tests/js/mocks/app.js',
     // Mock mitt
     'mitt': '<rootDir>/tests/js/mocks/mitt.js'
   },

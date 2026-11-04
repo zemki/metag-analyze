@@ -1,520 +1,145 @@
-# CLAUDE.md
+# AGENTS.md
 
-## Project Overview
+Metag-Analyze: media diary and experience sampling platform (Laravel 11, PHP 8.3, Vue 3, Vite, Tailwind 4).
+It serves two mobile clients: the MetaG app (legacy `/api/v1`, `/api/v2`) and the MART app (`/api/mart`, `/mart-api`).
 
-Metag-Analyze: Mobile experience sampling platform (Laravel + Vue 3 + Inertia.js) for MART data collection.
-
-## Bash Commands
+## Commands
 
 ```bash
-# Testing - ALWAYS run after code changes
-vendor/bin/pest                    # Run all tests
-vendor/bin/pest --filter=TestName  # Run specific test
+vendor/bin/pest                          # backend tests (run after every backend change)
+vendor/bin/pest --filter=TestName        # one test or class
+npm run test:unit                        # frontend tests (Jest)
+npm run cypress:run                      # e2e
 
-# Build & Quality Checks
-npm run build                       # Production build (DO NOT run - production only)
-npm run lint:check                  # Check linting
-npm run format:check                # Check formatting
-npm run test:unit                   # Frontend tests
-
-# Database
-php artisan migrate                 # Run migrations
-php artisan migrate:status          # Check status
-
-# Database Reset (DESTRUCTIVE - Local Only)
-php artisan migrate:fresh-all --seed  # 🚨 Drops BOTH main & MART databases, then seeds
-                                      # BLOCKED in production environment
-                                      # Requires typing "DELETE ALL DATA" to confirm
-                                      # Automatically clears all caches
-
-# Background Services
-php artisan queue:work              # Queue worker
-php artisan reverb:start            # WebSocket server
+php artisan migrate                      # main DB
+php artisan migrate --database=mart      # MART DB
+php artisan migrate:status
+php artisan migrate:fresh-all --seed     # DESTRUCTIVE: drops main AND MART DB; blocked in production
+php artisan queue:work
 ```
 
-## Code Style
+Feature tests render Blade views with `@vite`, so `public/build` must exist. The user builds it before Pest runs on a fresh checkout.
 
-- Use Laravel conventions for backend
-- Use Vue 3 Composition API for components
-- ALWAYS test with `vendor/bin/pest` after backend changes
-- Frontend compilation is managed by the user (never run `npm run build` or `npm run dev`)
-- Use `App\Models\Team` not `Laravel\Jetstream\Team` in tests
-- Check neighboring files for patterns before adding dependencies
+## Rules
 
-## Styling & Frontend (UPDATED: 2025-11-19)
+- Never run `npm run build` or `npm run dev`. The user compiles the frontend.
+- Never run `php artisan serve`, `php artisan db:seed`, or Sail. The user manages server and seeding.
+- Never commit or push unless asked. Provide a short commit message instead.
+- Do not add documentation files unless asked.
+- Backend change: run `vendor/bin/pest`. Frontend change: tell the user to rebuild.
+- Tailwind is v4: `@import "tailwindcss"` in `resources/css/app.css`, plain CSS, no Sass. Use v4 class names (`shadow-xs`, `bg-gray-500/75`, `outline-hidden`).
+- Filament is v4: forms use `Schema`, navigation icon and label via static methods, `User` implements `FilamentUser` and `HasName`. Read the Filament 4 docs before touching `app/Filament`.
+- Check neighbouring files for conventions before adding dependencies or patterns.
+- Never log or expose tokens, passwords or participant data.
 
-### Tailwind CSS v4
-- **IMPORTANT**: Project uses Tailwind CSS v4 (NOT v3)
-- Migrated from Sass to plain CSS (`resources/css/app.css`)
-- Uses `@tailwindcss/vite` plugin (configured in `vite.config.mjs`)
-- CSS custom properties used instead of Sass variables (e.g., `var(--primary)`)
+## Environment
 
-### Key Tailwind v4 Breaking Changes Applied
-- `shadow-sm` → `shadow-xs`
-- `bg-opacity-75` → `bg-gray-500/75` (inline opacity syntax)
-- `outline-none` → `outline-hidden`
-- `@tailwindcss/forms` loaded via `@plugin` directive in CSS, not in config
+- Laravel Herd on Windows, PHP 8.3, MySQL 8, Node 22. Local URL `https://metag-analyze.test`.
+- `.env.testing`: main DB `metagtesting`, MART DB `metag_marttesting`. Tests must never point at the dev databases.
+- CI (`.github/workflows/backend_tests.yml`) migrates both DBs, builds the frontend, runs Pest. Jest is not in CI.
 
-### CSS Files
-- **Main CSS**: `resources/css/app.css` (NOT `resources/sass/app.scss`)
-- **Variables**: CSS custom properties in `:root` selector
-- **Tailwind Import**: `@import "tailwindcss";` (v4 syntax)
+## Architecture
 
-## Workflow
-
-1. Make changes
-2. Run `vendor/bin/pest` for backend changes
-3. Verify no errors before proceeding
-
-## Repository Etiquette
-
-### NEVER Do These
-- Use `./vendor/bin/sail` commands
-- Run `php artisan serve` (user manages server)
-- Run `npm run dev` (user manages compilation)
-- Run `php artisan db:seed` (user manages seeding)
-- Create files unless absolutely necessary
-- Add documentation files unless explicitly requested
-- Expose or log sensitive data
-
-## Security Configuration (UPDATED: 2025-11-24)
-
-### IP Address Blocking
-- **Environment Variable**: `BLOCKED_IPS` in `.env`
-- **Format**: Comma-separated list of IP addresses
-- **Example**: `BLOCKED_IPS=45.93.9.139,193.168.141.21,45.86.86.223`
-- **Behavior**: Blocked IPs receive a 403 Forbidden response for all requests
-- **Leave empty to disable**: `BLOCKED_IPS=`
-- **Location**: `app/Http/Middleware/BlockIpMiddleware.php`
-- **Usage**: Updates take effect immediately after changing `.env` (no deployment required)
-
-**Important Notes:**
-- Use this for blocking known malicious IPs during active attacks
-- For advanced blocking scenarios, consider implementing database-backed IP blocking via Filament Admin Panel
-- This middleware applies to all routes (web, API, admin)
-
-### File Upload Security
-- **Location**: `app/Helpers/Helper.php` (`extension()` method)
-- **Security Measure**: Content-based MIME type validation using PHP's `finfo`
-- **Protection**: Prevents MIME type spoofing attacks (e.g., uploading PHP files disguised as audio/image)
-- **Whitelist**: Only allows audio formats (mp3, m4a, aac, wav, ogg, webm, flac) and image formats (jpg, png, gif, webp, svg)
-- **Validation**: Files are validated based on their ACTUAL content, not the declared MIME type in the data URI
-- **Storage**: Files are encrypted and stored in `storage/app/project{id}/files/` (not web-accessible)
-- **Used By**: `app/Files.php` for mobile app file uploads (audio recordings, images)
-
-**Security Features:**
-- Decodes base64 data and inspects actual file content
-- Rejects any file type not in the whitelist
-- Logs security validation failures for monitoring
-- Throws exception to prevent insecure file storage
-- Maps detected MIME types to safe file extensions
-
-**Important:**
-- If file upload fails with "File validation failed", check Laravel logs for details
-- Only legitimate audio/image files will be accepted
-- Any attempt to upload PHP, executable, or other dangerous files will be rejected
-
-## Core Files
-
-- `app/Http/Controllers/MartApiController.php` - MART API endpoints
-- `app/Http/Controllers/ProjectController.php` - Project management
-- `app/Cases.php` - Case management and notifications
-- `routes/mart_api.php` - MART API routes
-- `resources/js/Pages/Project/` - Project UI components
-
-## Developer Environment
-
-- Local URL: `https://metag-analyze.test`
-- Laravel Herd or Valet (NOT Sail)
-- PHP 8.3+, MySQL 8.0+, Node.js 18+
-- Test database separate from development
-
-## MART Database Separation (UPDATED: 2025-09-30)
-
-### Dual-Database Architecture
-MART data is now stored in a separate database for better scalability and isolation:
-
-**Main Database (`mysql`):**
-- Projects, Cases, Entries (metadata only), Users, Roles, etc.
-- Entry model has `mart_entry_id` column linking to MART DB
-
-**MART Database (`mart`):**
-- MartProject, MartSchedule, MartQuestion, MartQuestionHistory
-- MartEntry, MartAnswer, MartPage, MartStat, MartDeviceInfo
-- All MART-specific data with UUID-based question tracking
-
-### IMPORTANT: Cross-Database Patterns
+### Two databases
+- `mysql` (main): projects, cases, entries (metadata only), users, roles, settings.
+- `mart` (MART): `mart_projects`, `mart_schedules`, `mart_questions`, `mart_question_history`, `mart_entries`, `mart_answers`, `mart_pages`, `mart_stats`, `mart_device_info`, `mart_case_schedules`, `mart_files`. Models live in `app/Mart/` with `protected $connection = 'mart'`.
+- No cross-DB foreign keys. Links: `mart_projects.main_project_id -> projects.id`, `mart_entries.main_entry_id -> entries.id`, `mart_case_schedules.case_id -> cases.id`, `participant_id` = `cases.name`, `user_id` = user email.
 
 ```php
-// Getting MART project from main project
-$martProject = $project->martProject(); // Returns MartProject or null
-if ($martProject) {
-    $schedules = MartSchedule::forProject($martProject->id)->get();
-}
+$martProject = $project->martProject();   // MartProject|null, cached per request
+$martEntry   = $entry->martEntry();       // MartEntry|null
+if ($project->isMartProject()) { ... }    // reads the 'mart' marker in projects.inputs
 
-// Getting MART entry from main entry
-$martEntry = $entry->martEntry(); // Returns MartEntry or null
-
-// Cross-DB transactions
 DB::connection('mysql')->beginTransaction();
 DB::connection('mart')->beginTransaction();
 try {
-    // ... operations ...
+    // ...
     DB::connection('mysql')->commit();
     DB::connection('mart')->commit();
 } catch (\Exception $e) {
     DB::connection('mysql')->rollBack();
     DB::connection('mart')->rollBack();
-}
-
-// Always check if MART data exists before querying
-if ($project->hasMartData()) {
-    // Query MART DB
+    throw $e;
 }
 ```
 
-### Key MART Models (in app/Mart/)
-- **MartProject** - Links to main projects via `main_project_id`
-- **MartSchedule** - Questionnaire schedules with timing/notification config
-- **MartCaseSchedule** - Per-case date overrides for dynamic start/end dates
-- **MartQuestion** - Individual questions with UUIDs (stable across edits)
-- **MartEntry** - Submission metadata, links to main entries
-- **MartAnswer** - Individual answers linked to question UUIDs
+A MART project is a normal `projects` row whose `inputs` JSON contains one object with `type: "mart"` (project options live there) plus a `mart_projects` row. Questions live only in the MART DB.
 
-## MART API Specifics
+### Core files
+- `routes/mart_api.php`, `routes/api.php` (MART auth under `prefix('mart')`), `routes/web.php` (researcher questionnaire CRUD).
+- `app/Http/Controllers/MartApiController.php`: structure, submit, device-infos, stats.
+- `app/Http/Controllers/MartAuthController.php`: 3-screen login, refresh.
+- `app/Http/Controllers/MartFileController.php`: encrypted file uploads.
+- `app/Http/Controllers/MartQuestionnaireController.php`: researcher CRUD with question versioning.
+- `app/Http/Resources/Mart/*`: mobile JSON shape. `app/Mart/MartSchedule::toMobileFormat()` builds schedule options.
+- `app/Exports/Mart/*`: Excel export (entries, device info, stats, files), project-wide or per case.
+- `resources/js/components/mart/`: `MartQuestionnaireManager.vue`, `AddEditQuestionnaireDialog.vue`, `VersionHistoryModal.vue`; `editproject.vue` hosts them for MART projects.
+- `app/Http/Middleware/ForceJsonResponse.php`: all MART routes return JSON, never a login redirect.
+- Legacy, do not extend: `app/MartPage.php`, `app/MartQuestionnaireSchedule.php`, `MartScheduleController.php`, main-DB `mart_*` tables.
 
-### Multiple Questionnaires Per Project (UPDATED: 2025-09-30)
-- Each MART project can have unlimited questionnaire schedules (single and repeating)
-- Each schedule has questions stored in `mart_questions` table (MART DB)
-- Questions have UUIDs for stable tracking across versions
-- Questions are always editable with automatic version tracking via MartQuestionHistory
-- Each submission tracks question UUID and version for accurate data analysis
-- Frontend UI complete: Schedule manager with add/edit/history functionality
-- See `MART_SEPARATION_PROGRESS.md` for implementation details
+## MART API contract
 
-### Frontend Components (Multiple Questionnaires)
-- `resources/js/components/mart/MartQuestionnaireManager.vue` - Main questionnaire list/manager
-- `resources/js/components/mart/AddEditQuestionnaireDialog.vue` - Create/edit questionnaires and questions
-- `resources/js/components/mart/VersionHistoryModal.vue` - View question version history
-- Integrated into `resources/js/components/editproject.vue` for MART projects only
+The source of truth is `martTypes.ts` from the app developer. Keep the current copy at `DOCS/martTypes.ts` (git-ignored). If it is missing, ask the user for it before changing any API field.
 
-### MART API Type Specification
-- **Location**: `DOCS/martTypes.ts` (user-managed, git-ignored)
-- TypeScript definitions for mobile app API contract
-- Defines structure for questionnaires, scales, pages, submissions
-- Key types: `ProjectOptions`, `questionnaireOptions`, `Scale`, `Questionnaire`, `Submit`
-- **IMPORTANT**: Always check martTypes.ts for exact field names and structure
+Interactive docs: `/docs/api` (Scramble + Stoplight), HTTP Basic auth via `API_DOCS_USER` / `API_DOCS_PASSWORD`; an empty password returns 503. See `.claude/docs/scramble-laravel-openapi.md`.
 
-### IMPORTANT: Data Format Requirements
-- Date format: DD.MM.YYYY (e.g., "31.03.2025")
-- Response key: `questionnaires` NOT `questionSheets`
-- ID fields: `questionnaireId` NOT `sheetId`
-- Randomization: `randomizationGroupId` NOT `randomizationGroup`
-- iOS Stats: `iOSDataDonationQuestionnaire` NOT `collectIosStats`
-- Android Stats: `androidDataDonationQuestionnaire` NOT `collectAndroidStats`
-- Stats Submit: `lastDataDonationSubmit` NOT `lastStatsSubmit`
-- Omit `name` field from scales
-- Default values in `rangeOptions` NOT in root `options`
-- Page structure: Include both `id` and `pageId` fields
-- Participant data: Optional fields added when `participant_id` provided
+### Auth
+- Flow: `/api/mart/check-email` -> `/send-password-setup` or `/check-password` -> `/check-access` -> `/refresh`. Steps are chained through cache keys (email + IP) with 1 and 5 minute windows.
+- `check-password` returns `bearerToken` (30 days) and `refreshToken` (7 days). Tokens are stored as `sha256` in `users.api_token` / `users.refresh_token`; the `auth:api` guard is Laravel's token driver.
+- `check-access` auto-creates a case named `P` + 6 hex chars and sets `cases.first_login_at`.
+- Everything under `/mart-api` needs `Authorization: Bearer`.
 
-### Question Text HTML Support (UPDATED: 2025-11-26)
+### Response shape (structure endpoint)
+- Keys: `projectOptions`, `questionnaires`, `scales`, `pages`, `deviceInfos`, `repeatingSubmits`, `singleSubmits`, `lastDataDonationSubmit`, `lastAndroidStatsSubmit`.
+- Dates `DD.MM.YYYY`, times `HH:MM`. Use `questionnaireId` (not `sheetId`), `randomizationGroupId`, `iOSDataDonationQuestionnaire`, `androidDataDonationQuestionnaire`, `lastDataDonationSubmit`.
+- Items: `itemId` and `scaleId` are `index + 1`; both `null` for `display` items. Answers on submit are keyed by `itemId`.
+- Scales have `scaleId` and `options` only (no `name`, no `projectId`). Range defaults go in `rangeOptions`.
+- Pages carry both `id` and `pageId`.
+- Participant fields are filled when `participant_id` is passed; an unknown `participant_id` is a 404.
+- Data-donation schedules are excluded from `singleQuestionnaires`.
 
-**Feature**: Question text supports HTML formatting for rich text display in the mobile app.
+### Question types
+| Storage (`mart_questions.type`) | API `options.type` | Notes |
+|---|---|---|
+| `display` | none | text only, no scale |
+| `number` | `number` | `minValue`, `maxValue`, `maxDigits` |
+| `range` | `range` | `rangeOptions` {minValue, maxValue, steps, defaultValue} |
+| `text` / `textarea` | `text` / `textarea` | optional `placeholder` |
+| `one choice` | `radio`, or `radioWithText` when `config.includeOtherOption` | `radioOptions` [{value, text}] |
+| `multiple choice` | `checkbox`, or `checkboxWithText` | `checkboxOptions` |
+| `photo` / `audio` / `video` | `photoUpload` / `audioUpload` / `videoUpload` | optional `*UploadOptions` passed through |
 
-- **Storage**: `mart_questions.text` is TEXT column (no length limit)
-- **Validation**: No sanitization - HTML tags preserved as-is
-- **Supported tags**: `<b>`, `<i>`, `<u>`, `<br>`, `<p>`, etc.
-- **UI hint**: Shown below question text field in AddEditQuestionnaireDialog.vue
+Not implemented yet: `rangeValues`, `fileUpload`.
 
-**Note**: The mobile app must render HTML. No WYSIWYG editor - researchers type HTML manually.
+Question-level options (stored in `config`, emitted under `items[].options`): `randomizationGroupId`, `randomizeAnswers`, `itemGroup`, `noValueAllowed` (= not mandatory). `timer` and `jump` go under scale `options`. Question text may contain HTML. `image_url` / `video_url` are columns and appear as `imageUrl` / `videoUrl`.
 
-### Question Image/Video URLs (UPDATED: 2025-11-26)
+Editing a question writes a `mart_question_history` row and bumps `version`; answers store `question_uuid` plus `question_version`.
 
-**Feature**: Questions can have optional image and/or video URLs that are displayed alongside the question text in the mobile app.
+### Schedules
+- `type` is `single` or `repeating`. Config lives in `timing_config` and `notification_config` JSON.
+- Dynamic dates: `start_on_first_login` (plus `start_hours_after_login`) and `use_dynamic_end_date` are backend-only. On first login the server writes concrete dates to `mart_case_schedules`; the app only ever receives dates.
+- `max_total_submits` is backend-only: duration in days = ceil(max_total_submits / max_daily_submits).
+- `is_ios_data_donation` and `is_android_data_donation` are mutually exclusive per schedule.
 
-**Database Columns (MART DB):**
-- `mart_questions.image_url` - VARCHAR, nullable, researcher-provided image URL
-- `mart_questions.video_url` - VARCHAR, nullable, researcher-provided video URL
-- `mart_question_history.image_url/video_url` - Preserved in version history
+### Submissions and files
+- Completed cases reject submissions with 422. `userId` must match the case owner's email.
+- Each submit writes a main `entries` row (metadata only) plus `mart_entries` and `mart_answers`.
+- Files: `POST /mart-api/cases/{case}/files` accepts multipart (`file`) or JSON base64. MIME is detected from content and checked against `MartFile::ALLOWED_MIME_TYPES`; 50 MB max; stored encrypted under `storage/app/mart/`. Upload first, then reference the returned `file_id` in the answer.
 
-**API Output** (per `martTypes.ts` QuestionnaireItem):
-```json
-{
-  "itemId": 1,
-  "scaleId": 1,
-  "text": "Rate this image",
-  "imageUrl": "https://example.com/image.jpg",
-  "videoUrl": "https://example.com/video.mp4",
-  "options": { ... }
-}
-```
+## Admin and settings
+- Filament panel at `/admin`. Settings keys: `mart_enabled`, `max_studies_per_user`, `api_v2_cutoff_date`, `mart_max_login_attempts`, `mart_lockout_duration`. Read with `Setting::get('key', $default)`.
+- `BLOCKED_IPS` in `.env` (comma-separated) returns 403 for all routes via `BlockIpMiddleware`.
+- Legacy MetaG uploads are validated by content in `Helper::extension()`; only audio and image types pass.
 
-**Validation:**
-- URLs must be valid format (validated with Laravel `url` rule)
-- Max length: 2048 characters
-- Both fields are optional (nullable)
-- Can have image only, video only, or both
+## Gotchas
+- "entity" replaced "media" in the UI and API v2, but tables and columns are still `media`. MART projects have no media/entity and no backend-only cases.
+- Projects created before `api_v2_cutoff_date` use API v1 (`media`), later ones v2 (`entity`). `FORCE_API_V2` overrides.
+- Mobile timestamps arrive in milliseconds for MART and in seconds for legacy entries.
+- Seeders must use `bcrypt()`, not `Hash::make()`.
+- Trigger migrations need `SUPER` or `log_bin_trust_function_creators=1`; they skip with a warning otherwise.
+- Case lists and exports for MART come from the MART DB; the main `entries` row holds no answers.
 
-**Key Files:**
-- `app/Mart/MartQuestion.php` - Model with image_url/video_url fillable
-- `app/Http/Resources/Mart/QuestionSheetResource.php` - API output (imageUrl/videoUrl)
-- `app/Http/Controllers/MartQuestionnaireController.php` - Validation and storage
-- `resources/js/components/mart/AddEditQuestionnaireDialog.vue` - Frontend form fields
-
-**Important:**
-- These are researcher-provided URLs to display media WITH the question
-- NOT for participant file uploads (that's a separate feature)
-- URLs are preserved in MartQuestionHistory when questions are updated
-
-### Dynamic Start/End Date Calculation (UPDATED: 2025-11-27)
-
-**Feature**: Questionnaire start and end dates can be calculated dynamically per-participant based on their first login.
-
-**Database Tables:**
-- `cases.first_login_at` (timestamp) - Tracks when participant first logged in (main DB)
-- `mart_schedules.timing_config` JSON contains flags (MART DB):
-  - `start_on_first_login` (boolean) - Set start date when participant logs in
-  - `start_hours_after_login` (integer) - Delay in hours after login before questionnaire starts (0 = immediately)
-  - `use_dynamic_end_date` (boolean) - Calculate end date from start + duration
-  - `max_total_submits` (integer) - Total submissions across entire study
-- `mart_case_schedules` table (MART DB) - Per-case date overrides:
-  - `case_id` - Reference to cases.id in main DB
-  - `schedule_id` - Reference to mart_schedules.id in MART DB
-  - `timing_overrides` - JSON with calculated `start_date_time` and/or `end_date_time`
-  - `calculated_at` - When dates were calculated
-
-**Calculation Formula:**
-```
-Duration (days) = ceil(max_total_submits / max_daily_submits)
-Start Date = First Login + start_hours_after_login hours (if start_on_first_login)
-End Date = Start Date + Duration (days) (if use_dynamic_end_date)
-```
-
-**Data Flow:**
-1. Researcher creates questionnaire with "Start after participant logs in" checked
-   - MART DB: `mart_schedules.timing_config.start_on_first_login = true`
-   - MART DB: `mart_schedules.timing_config.start_hours_after_login = X` (default 0)
-2. Participant logs in for first time
-   - Main DB: `cases.first_login_at = now()`
-   - `calculateMartDynamicEndDates()` called in `ApiController.php:449-500`
-   - MART DB: `mart_case_schedules` record created with calculated dates (including hours delay)
-3. Mobile app requests structure
-   - API queries `mart_case_schedules` for per-case overrides
-   - Mobile receives concrete dates (DD.MM.YYYY format)
-
-**UI:**
-- "Start after participant logs in" checkbox (green styling, top of form)
-- When checked, shows "Delay after login: X hours" input (0-168 range)
-- When checked, start date/time fields are disabled with "(Set on first login)" label
-- "Calculate end date dynamically" checkbox (existing, for end dates)
-- `SchedulePreview.vue` shows info messages about dynamic date settings
-
-**Key Files:**
-- `app/Mart/MartCaseSchedule.php` - Model for per-case date overrides
-- `app/Http/Controllers/ApiController.php:449-500` - `calculateMartDynamicEndDates()` with hours delay
-- `app/Mart/MartSchedule.php:115-166` - `toMobileFormat($caseId)` with override support
-- `app/Http/Controllers/MartApiController.php:47-59` - Case ID lookup and passing
-- `resources/js/components/mart/AddEditQuestionnaireDialog.vue` - Frontend UI
-
-**IMPORTANT - API Contract:**
-- `max_total_submits` is stored in database and used for backend calculations ONLY
-- `start_hours_after_login` is used for backend calculations ONLY
-- Mobile does NOT receive these values - only concrete calculated dates
-- Backend calculates concrete start/end dates and sends those to mobile
-- Mobile receives only: `startDateAndTime`, `endDateAndTime`, `maxDailySubmits`
-- Per-case dates override schedule defaults when `participant_id` is provided in API request
-
-### Choice Questions with "Other" Text Field (UPDATED: 2025-11-27)
-
-**Feature**: Single choice (radio) and multiple choice (checkbox) questions can include an "Other" option with a text field for custom answers.
-
-**Database Storage:**
-- `mart_questions.config` JSON contains: `includeOtherOption: true`
-- No separate column - stored in existing config field
-
-**API Output Types (per `martTypes.ts`):**
-- `radio` - Standard single choice
-- `radioWithText` - Single choice with "Other" text field
-- `checkbox` - Standard multiple choice
-- `checkboxWithText` - Multiple choice with "Other" text field
-
-**API Transformation:**
-- Backend stores type as `one choice` or `multiple choice` in database
-- When `config.includeOtherOption` is true, API outputs `radioWithText` or `checkboxWithText`
-- Mobile app receives the `*WithText` type and renders accordingly
-
-**UI:**
-- Checkbox "Include 'Other' option with text field" under choice options
-- Located below "Randomize answer options" in AddEditQuestionnaireDialog.vue
-
-**Key Files:**
-- `app/Http/Resources/Mart/ScaleResource.php` - Type transformation logic (lines 68-92)
-- `resources/js/components/mart/AddEditQuestionnaireDialog.vue` - Frontend checkbox
-
-### API Testing
-```bash
-# Structure endpoint
-curl -X GET "https://metag-analyze.test/mart-api/projects/1/structure" \
-  -H "Authorization: Bearer [case_token]"
-
-# Submit data
-curl -X POST "https://metag-analyze.test/mart-api/cases/5/submit" \
-  -H "Authorization: Bearer [case_token]" \
-  -H "Content-Type: application/json" \
-  -d '{"projectId":1,"questionnaireId":1,...}'
-```
-
-### Interactive API Docs (`/docs/api`)
-
-The MART API has interactive in-page testing at `/docs/api` (e.g.
-`https://metagtest.uni-bremen.de/docs/api`), generated by **Scramble** from
-controller signatures and rendered with **Stoplight Elements**. The page
-includes a "Try it" panel per endpoint with Bearer-token auth, request body
-editor, and response viewer — so you can hit any endpoint without curl or
-Postman/Bruno. HTTP-Basic protected via `API_DOCS_USER` / `API_DOCS_PASSWORD`
-from `.env`.
-
-See `.claude/docs/scramble-laravel-openapi.md` for how Scramble derives the
-OpenAPI spec from PHP source and how to customize what Stoplight renders
-(operation grouping, request examples, etc.).
-
-## Filament Admin Panel (v4.x)
-
-### IMPORTANT: Always Check Filament Docs First
-- Filament documentation available at: `~/.claude/skills/docs-analyzer/references/filament-4x/`
-- ALWAYS read the docs before implementing Filament features
-- Filament 4.x has breaking changes from v3.x
-
-### Common Filament 4.x Patterns
-- Use `Schema` instead of `Form` in form methods:
-  ```php
-  public function form(Schema $schema): Schema
-  {
-      return $schema->components([...]);
-  }
-  ```
-- Use methods instead of property overrides (PHP 8.3 strict typing):
-  ```php
-  public static function getNavigationIcon(): ?string
-  {
-      return 'heroicon-o-cog-6-tooth';
-  }
-
-  public static function getNavigationLabel(): string
-  {
-      return 'Settings';
-  }
-  ```
-- User model must implement `FilamentUser` and `HasName` interfaces
-- User model needs `getFilamentName()` and `canAccessPanel(Panel $panel)` methods
-
-### Settings System (UPDATED: 2025-11-19)
-- Settings stored in `settings` table with key-value pairs
-- Use `Setting::get('key', $default)` to retrieve values
-- Use `Setting::set('key', $value, $userId, $type)` to update values with type
-- Settings page at `/admin/settings` for admins only
-
-**Available Settings:**
-- `mart_enabled` (boolean) - Enable/disable MART project creation for all users
-- `max_studies_per_user` (integer) - Maximum number of projects a user can create
-- `api_v2_cutoff_date` (date) - Projects created before this date use API v1 (media field), after use API v2 (entity field)
-
-## Database Migrations & Seeders (UPDATED: 2025-11-20)
-
-### Password Hashing in Seeders
-- **IMPORTANT**: Always use `bcrypt()` helper for password hashing in seeders
-- DO NOT use `Hash::make()` in seeders (can cause facade loading issues)
-- Example: `'password' => bcrypt('password123')`
-- Files updated: All seeders now use `bcrypt()` consistently
-
-### Trigger Creation & Permissions
-- Database triggers require SUPER privilege or `log_bin_trust_function_creators=1`
-- Migrations that create triggers now gracefully handle permission errors
-- When SUPER privilege unavailable, triggers are skipped with logged warnings
-- Application logic enforces constraints when triggers can't be created
-- Files: `database/migrations/*_add_data_collection_uniqueness_constraints*.php`
-
-### Destructive Command Safety
-- `php artisan migrate:fresh-all` - Resets BOTH main and MART databases
-- BLOCKED in production environment (checks `app()->environment()`)
-- Requires double confirmation including typing "DELETE ALL DATA"
-- Automatically clears Redis cache after migration
-- Manually drops MART tables before running migrate:fresh to avoid cross-DB issues
-
-## Recent Bug Fixes & UI Improvements
-
-### Entry Timestamp Handling (UPDATED: 2025-11-24)
-- **Fixed**: Mobile app sends Unix timestamps (seconds) for begin/end dates, causing "Invalid date" display
-- **Solution**: Added automatic timestamp conversion in `EntryController::store()` and `update()`
-- Backend now detects 10-digit numeric timestamps and converts to MySQL datetime format
-- Preserves existing datetime strings without modification
-- Location: `app/Http/Controllers/EntryController.php:71-78, 140-147`
-
-### Audio Player Redesign (UPDATED: 2025-11-24)
-- **Complete redesign** with research-focused aesthetic matching project palette
-- **Features**:
-  - Waveform visualization with 60 animated bars (pseudo-random based on file ID)
-  - Gradient-based color scheme (teal to blue) with warm background
-  - Pulsing progress indicator with glowing line animation
-  - Professional control panel with tactile button feedback
-  - Custom-styled volume slider with gradient thumb
-  - Card-based layout with sophisticated shadows
-- **Technical**: Uses CSS-only animations, responsive design, hover effects
-- Location: `resources/js/components/audioplayer.vue`
-
-### Edit Entry Modal (2025-11-19)
-- Fixed issue where some entry values weren't pre-populated when editing
-- Properly handles `undefined` and `null` values for all input types
-- Multiple choice inputs now correctly converted to arrays
-- Location: `resources/js/components/selected-case.vue:792-804`
-
-### Modal Z-Index Issues (2025-11-19)
-- Fixed delete project modal appearing below dark background
-- Added proper z-index layering (background: z-40, content: z-50)
-- Location: `resources/js/components/global/modal.vue`
-
-### Project Creation UI (2025-11-19)
-- Removed "Add Entity" button from standard project creation (entities now managed via input fields only)
-- Location: `resources/js/components/createproject.vue`
-
-### MART Project Toggle (2025-11-19)
-- MART project creation can now be disabled via admin settings
-- When disabled, MART button is grayed out and shows "MART projects are currently disabled by administrator"
-- Setting synced from Filament admin panel to frontend
-
-### Case Creation for MART Projects (UPDATED: 2025-11-25)
-- "This is a backend case" checkbox hidden for MART projects
-- "Backend Cases" info card hidden for MART projects
-- MART projects only support mobile app cases (no backend-only cases)
-- Location: `resources/views/cases/create.blade.php`
-
-### Questionnaire Card Compact Design (UPDATED: 2025-11-25)
-- Redesigned questionnaire cards in MartQuestionnaireManager.vue
-- **Feature badges row**: Login start, Auto end, iOS Data, Android Data, Notif, Progress
-- **Compact info grid**: Start, End, Window, Daily, Total, Every, Break, At
-- Badges are color-coded and show enabled/disabled state
-- Added `formatDateTimeCompact()` method for date display (DD/MM format)
-- Location: `resources/js/components/mart/MartQuestionnaireManager.vue:125-208`
-
-### MART UI Improvements (UPDATED: 2025-11-27)
-- **Project labels**: Renamed "ESM Project" to "MART Project" in project list and creation
-- **Validation UX**: Red validation styling only appears after save attempt (not immediately)
-- **Number question type**: Added Min/Max value inputs for number questions
-- **Choice options**: Added 1-based visible index numbers to choice options
-- **Jump conditions**: Uses 1-based indexing in UI (converts to 0-based for API)
-- **Formula display**: Shows both date AND time in calculation formula
-- **Defaults**: Changed default break from 180 to 30 minutes, max_daily_submits defaults to null
-- **Data Donation**: Hidden for repeating questionnaires (only shown for single)
-- **End date display**: Hidden for single questionnaires unless explicitly set
-- Location: `resources/js/components/mart/AddEditQuestionnaireDialog.vue`
-
-## Project-Specific Warnings
-
-- Completed cases reject submissions (422 error)
-- Per-questionnaire settings: showProgressBar, showNotifications, notificationText
-- Bearer token authentication required for all API calls
-- Test database separate from development database
-- Never run `npm run build` or `npm run dev` — the user manages frontend compilation
-- entity is a replacement for media, but the database still has media as table and fields
-- **NEVER use Sass/SCSS** - project migrated to plain CSS with Tailwind v4
+## Docs
+- `DOCS/MART/API.md` (endpoint reference), `DOCS/MART/DATA_MAPPING.md`, `DOCS/MART/README.md`.
+- `DOCS/ARCHITECTURE.md`, `DOCS/INSTALLATION.md`, `DOCS/ADMIN_GUIDE.md`.
+- `.claude/docs/bruno-api-client.md`, `.claude/docs/scramble-laravel-openapi.md`.
