@@ -13,8 +13,10 @@
 
 // Route throttles carry a key prefix (third argument). Without it they share a
 // counter with the api group's throttle:120,1, so every request counts twice
-// and the group's one-minute expiry cuts longer windows (login's hour) to a minute.
-Route::post('login', 'ApiController@login')->middleware('throttle:10,60,metag-login');
+// and the group's one-minute expiry cuts longer windows down to a minute.
+// 30 per minute per IP: participants often log in together on one network, and
+// repeated wrong passwords lock the account (ApiController::login).
+Route::post('login', 'ApiController@login')->middleware('throttle:30,1,metag-login');
 
 // Settings API
 Route::get('settings/api_v2_cutoff_date', function () {

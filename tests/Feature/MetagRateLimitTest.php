@@ -8,7 +8,7 @@ use Tests\TestCase;
  * The MeTag routes in routes/api.php sit in the `api` group, whose
  * throttle:120,1 shared one counter with each route's own throttle (an unnamed
  * throttle keys by user or IP only). Every request counted twice, and the
- * group's one-minute expiry also cut login's one-hour window to a minute.
+ * group's one-minute expiry also cut longer windows down to a minute.
  */
 class MetagRateLimitTest extends TestCase
 {
@@ -28,25 +28,25 @@ class MetagRateLimitTest extends TestCase
     }
 
     /** @test */
-    public function login_allows_its_documented_10_attempts()
+    public function login_allows_its_documented_30_attempts()
     {
-        $this->assertNotSame(429, $this->statusAfter(10, '/api/login', $this->wrongLogin()));
+        $this->assertNotSame(429, $this->statusAfter(30, '/api/login', $this->wrongLogin()));
     }
 
     /** @test */
-    public function login_stops_at_the_11th_attempt()
+    public function login_stops_at_the_31st_attempt()
     {
-        $this->assertSame(429, $this->statusAfter(11, '/api/login', $this->wrongLogin()));
+        $this->assertSame(429, $this->statusAfter(31, '/api/login', $this->wrongLogin()));
     }
 
     /** @test */
-    public function the_login_limit_lasts_an_hour()
+    public function the_password_setup_limit_lasts_ten_minutes()
     {
-        $this->statusAfter(10, '/api/login', $this->wrongLogin());
+        $this->statusAfter(10, '/api/send-password-setup');
 
-        $this->travel(5)->minutes();
+        $this->travel(2)->minutes();
 
-        $this->assertSame(429, $this->postJson('/api/login', $this->wrongLogin())->getStatusCode());
+        $this->assertSame(429, $this->postJson('/api/send-password-setup', [])->getStatusCode());
     }
 
     /** @test */
