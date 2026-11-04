@@ -82,7 +82,7 @@ class InstallMetagCommand extends Command
             $this->error('The roles table contains duplicate names: ' . $duplicates->implode(', '));
             $this->line('That happens when RolesTableSeeder is run more than once. Resolve the');
             $this->line('duplicates first - assigning a role by name is ambiguous until you do.');
-            $this->line('See DOCS/DEPLOYMENT.md, "Roles and the first administrator".');
+            $this->line('Run php artisan role:cleanup --dry-run to see how, or see DOCS/DEPLOYMENT.md, "Managing roles".');
 
             return false;
         }

@@ -73,7 +73,7 @@ class MartFileUploadTest extends TestCase
         $this->assertEquals('image/png', $responseData['mime_type']);
         $this->assertArrayHasKey('file_id', $responseData);
         $this->assertArrayHasKey('fileUrl', $responseData);
-        $this->assertEquals("/mart-api/files/{$responseData['file_id']}", $responseData['fileUrl']);
+        $this->assertEquals("/api/mobile/files/{$responseData['file_id']}", $responseData['fileUrl']);
 
         // Verify file was saved to database
         $this->assertDatabaseHas('mart_files', [
@@ -105,7 +105,7 @@ class MartFileUploadTest extends TestCase
         $this->assertEquals('photo', $responseData['file_type']);
         $this->assertEquals('image/png', $responseData['mime_type']);
         $this->assertArrayHasKey('file_id', $responseData);
-        $this->assertEquals("/mart-api/files/{$responseData['file_id']}", $responseData['fileUrl']);
+        $this->assertEquals("/api/mobile/files/{$responseData['file_id']}", $responseData['fileUrl']);
 
         $this->assertDatabaseHas('mart_files', [
             'case_id' => $this->case->id,

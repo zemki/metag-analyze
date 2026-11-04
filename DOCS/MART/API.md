@@ -5,14 +5,20 @@
 > quick-start flow guide. For exact request/response schemas, refer to the
 > interactive docs.
 
-The MART API lives at two URL prefixes:
+Everything the MART app talks to lives under `/api/mobile`:
 
-| Prefix       | Purpose                    | Auth                            |
-|--------------|----------------------------|---------------------------------|
-| `/api/mart`  | Auth flow (email/password) | None (per-IP rate limited)      |
-| `/mart-api`  | Project data & files       | `Authorization: Bearer {token}` |
+| Prefix             | Purpose                    | Auth                            |
+|--------------------|----------------------------|---------------------------------|
+| `/api/mobile/auth` | Auth flow (email/password) | None (per-IP rate limited)      |
+| `/api/mobile`      | Project data & files       | `Authorization: Bearer {token}` |
+
+The `auth/` segment is the rule: everything outside it needs a token.
 
 All endpoints return JSON. No `Accept: application/json` header is required.
+
+**Older URLs keep working.** `/api/mart/*` answers like `/api/mobile/auth/*`, and `/mart-api/*`
+like `/api/mobile/*`, with the same paths after the prefix. They run the same code and have
+the same limits. There's no removal date, but new code should use `/api/mobile`.
 
 ---
 
@@ -67,7 +73,7 @@ the client back to the screen it needs to redo.
 
 ### Screen 1: Check Email
 ```
-POST /api/mart/check-email
+POST /api/mobile/auth/check-email
 ```
 ```json
 { "email": "user@example.com" }
@@ -91,7 +97,7 @@ through Screen 1b cleanly.
 
 ### Screen 1b: Register (if new user)
 ```
-POST /api/mart/send-password-setup
+POST /api/mobile/auth/send-password-setup
 ```
 ```json
 { "email": "newuser@example.com" }
@@ -109,7 +115,7 @@ The user receives an email with a link to set their password.
 
 ### Screen 2: Check Password
 ```
-POST /api/mart/check-password
+POST /api/mobile/auth/check-password
 ```
 ```json
 { "email": "user@example.com", "password": "userpassword" }
@@ -132,7 +138,7 @@ POST /api/mart/check-password
 
 ### Screen 3: Check Project Access
 ```
-POST /api/mart/check-access
+POST /api/mobile/auth/check-access
 ```
 ```json
 { "email": "user@example.com", "projectId": 123 }
@@ -158,7 +164,7 @@ See the [ID Conventions](#id-conventions) table at the top for what each field i
 
 ### Token Refresh
 ```
-POST /api/mart/refresh
+POST /api/mobile/auth/refresh
 ```
 ```json
 { "refreshToken": "current_refresh_token" }
@@ -182,7 +188,7 @@ Implements token rotation — both old tokens are invalidated.
 
 ## Using the Bearer Token
 
-All `/mart-api/*` endpoints require the header:
+All `/api/mobile/*` endpoints require the header:
 ```
 Authorization: Bearer {bearerToken}
 ```
@@ -192,10 +198,10 @@ A missing or invalid token returns `401`:
 ```
 
 When you receive `401` on an authenticated endpoint, exchange your `refreshToken` at
-`POST /api/mart/refresh` to get a fresh pair. Both tokens are rotated on every refresh,
+`POST /api/mobile/auth/refresh` to get a fresh pair. Both tokens are rotated on every refresh,
 and the old `refreshToken` is invalidated immediately.
 
-Auth-flow endpoints (`/api/mart/*`) do **not** require a Bearer token; they use cached
+Auth-flow endpoints (`/api/mobile/auth/*`) do **not** require a Bearer token; they use cached
 flow state (see Screen 1 / 2 / 3 above) plus per-IP rate limits.
 
 ---
@@ -204,8 +210,8 @@ flow state (see Screen 1 / 2 / 3 above) plus per-IP rate limits.
 
 ### Get Project Structure
 ```
-GET /mart-api/projects/{projectId}/structure
-GET /mart-api/projects/{projectId}/structure?participant_id={participantId}
+GET /api/mobile/projects/{projectId}/structure
+GET /api/mobile/projects/{projectId}/structure?participant_id={participantId}
 ```
 Returns project configuration: questionnaires, questions, scales, and pages, plus
 per-participant data when `participant_id` is provided.
@@ -275,7 +281,7 @@ per-participant data when `participant_id` is provided.
 | `range` | `range` | slider with `minValue` / `maxValue` / `steps` |
 | `radio` (a.k.a. `one choice`) | `one choice` | single-select |
 | `checkbox` (a.k.a. `multiple choice`) | `multiple choice` | multi-select |
-| `photoUpload` | `photo` | participant uploads via `POST /mart-api/cases/{caseId}/files`, then references the returned `file_id` in the answer |
+| `photoUpload` | `photo` | participant uploads via `POST /api/mobile/cases/{caseId}/files`, then references the returned `file_id` in the answer |
 | `audioUpload` | `audio` | same flow as `photoUpload` |
 | `videoUpload` | `video` | same flow as `photoUpload` |
 | `display` | `display` | non-input element (instructions, headers) |
@@ -293,6 +299,20 @@ under `scaleOptions.photoUploadOptions` / `audioUploadOptions` /
 defined in `martTypes.ts` — the API passes whatever the researcher set
 through verbatim; unset fields are omitted, and the mobile applies its own
 defaults.
+
+**Item options** (`questionnaires[].items[].options`): the block is always present, and the
+values come from the question's configuration.
+
+| Field | Default | Notes |
+|---|---|---|
+| `randomizationGroupId` | `null` | Groups questions for randomized presentation |
+| `randomizeAnswers` | `false` | Shuffles the answer options |
+| `randomPositionWithinQuestionnaire` | `false` | Randomizes the item's position |
+| `itemGroup` | `null` | String. Items in a group show together on one page. |
+| `noValueAllowed` | | The inverse of "mandatory": `true` for optional questions. Always `true` for `display` items. |
+
+An item can also carry `imageUrl`, `videoUrl` and `posterUrl` next to `options`. They're left
+out when empty.
 
 **Project Availability Window (`projectOptions.options.startDateAndTime` / `endDateAndTime`):**
 Both objects always have shape `{ date, time }` with non-null values, so the mobile
@@ -316,7 +336,7 @@ indefinitely" while still giving the client a comparable timestamp.
 
 ### Submit Entry
 ```
-POST /mart-api/cases/{caseId}/submit
+POST /api/mobile/cases/{caseId}/submit
 ```
 ```json
 {
@@ -353,7 +373,7 @@ returned from File Upload.
 
 ### Store Device Info
 ```
-POST /mart-api/device-infos
+POST /api/mobile/device-infos
 ```
 ```json
 {
@@ -365,25 +385,68 @@ POST /mart-api/device-infos
   "model": "Pixel 7",
   "manufacturer": "Google",
   "timestamp": 1234567890000,
-  "timezone": "Europe/Berlin"
+  "timezone": "Europe/Berlin",
+  "fcmToken": "optional-fcm-registration-token"
 }
 ```
-`userId`, `projectId`, and `participantId` must match the case created during `check-access`.
+`userId`, `projectId`, and `participantId` must match the case created during `check-access`,
+and `userId` must be the account the Bearer token belongs to.
+
+`fcmToken` is optional and saves a second call at login. It's stored on that account. Use
+Register Device Token below for token refreshes.
 
 **Response (200):**
 ```json
-{ "success": true, "message": "Device information stored successfully", "device_info_id": 1 }
+{
+  "success": true,
+  "message": "Device information stored successfully",
+  "device_info_id": 1,
+  "push_token_registered": true
+}
 ```
 
 **Errors:**
 - `401` — Missing or invalid Bearer token
-- `403` — `userId` / `participantId` / `projectId` do not match an existing case
+- `403` — `userId` is not the token's account, or `userId` / `participantId` / `projectId`
+  do not match an existing case
 - `404` — User not found
 - `422` — Validation error (missing or invalid fields)
 
+### Register Device Token
+```
+POST /api/mobile/device-token
+```
+```json
+{ "token": "fcm-registration-token" }
+```
+Reminders reach participants through Firebase Cloud Messaging, so **the app must register
+its token or nothing is delivered**. Tokens belong to the account the Bearer token identifies.
+
+To remove a token, for example on logout:
+```json
+{ "token": "fcm-registration-token", "action": "unregister" }
+```
+
+**Response (200):**
+```json
+{ "success": true, "changed": true, "registered_devices": 1 }
+```
+`changed: false` isn't an error: the token was already registered, or already gone. Each
+account keeps its 10 newest tokens, and tokens are removed once the participant's case has ended.
+
+| Call it | Action |
+|---|---|
+| After notification permission is granted | `register` (the default) |
+| Whenever FCM issues a new token | `register` |
+| On logout | `unregister` |
+
+**Errors:**
+- `401` — Missing or invalid Bearer token
+- `422` — Validation error
+
 ### Submit Stats
 ```
-POST /mart-api/stats
+POST /api/mobile/stats
 ```
 ```json
 {
@@ -407,13 +470,14 @@ At least one of `androidUsageStats`, `androidEventStats`, or `iOSStats` should b
 
 **Errors:**
 - `401` — Missing or invalid Bearer token
-- `403` — `userId` / `participantId` / `projectId` do not match an existing case
+- `403` — `userId` is not the token's account, or `userId` / `participantId` / `projectId`
+  do not match an existing case
 - `404` — User or MART project not found
 - `422` — Validation error
 
 ### File Upload
 ```
-POST /mart-api/cases/{caseId}/files
+POST /api/mobile/cases/{caseId}/files
 ```
 
 Two upload modes are supported. Pick whichever fits your client:
@@ -466,14 +530,14 @@ Files not matching the whitelist are rejected with `422` and logged.
 {
   "success": true,
   "file_id": "uuid-string",
-  "fileUrl": "/mart-api/files/uuid-string",
+  "fileUrl": "/api/mobile/files/uuid-string",
   "file_type": "photo",
   "mime_type": "image/jpeg",
   "size": 12345
 }
 ```
 Use `file_id` (UUID) in questionnaire answer values for file-type questions.
-Use `fileUrl` to retrieve the file via `GET /mart-api/files/{file_id}`.
+Use `fileUrl` to retrieve the file via `GET /api/mobile/files/{file_id}`.
 
 **Errors:**
 - `400` — Case does not belong to a MART project, or base64 decode failed (base64 mode only)
@@ -484,7 +548,7 @@ Use `fileUrl` to retrieve the file via `GET /mart-api/files/{file_id}`.
 
 ### Retrieve File
 ```
-GET /mart-api/files/{fileId}
+GET /api/mobile/files/{fileId}
 ```
 Returns the decrypted file binary with the original `Content-Type` header.
 Authorization: the authenticated user must own the case that uploaded the file.
@@ -500,7 +564,7 @@ Filenames containing non-ASCII or special characters are encoded per RFC 5987
 
 ### Delete File
 ```
-DELETE /mart-api/files/{fileId}
+DELETE /api/mobile/files/{fileId}
 ```
 Only files that have not been linked to a submission can be deleted.
 
@@ -519,36 +583,29 @@ Only files that have not been linked to a submission can be deleted.
 
 ## Rate Limits
 
-All endpoints are rate-limited per IP. Exceeding the limit returns `429 Too Many Requests`.
+Exceeding a limit returns `429 Too Many Requests`.
 
-**Auth-flow endpoints (`/api/mart/*`):**
+**Auth-flow endpoints (`/api/mobile/auth/*`), per IP:**
 
 | Endpoint                    | Limit           |
 |-----------------------------|-----------------|
-| `check-email`               | 30 / minute     |
 | `send-password-setup`       | 30 / 10 minutes |
-| `check-password`            | 30 / minute     |
-| `check-access`              | 30 / minute     |
-| `refresh`                   | 30 / minute     |
+| All other auth endpoints, together | 30 / minute |
 
-**Authenticated MART data endpoints (`/mart-api/*`):**
+**Data endpoints (`/api/mobile/*`), per account:**
 
 | Endpoint                                  | Limit          |
 |-------------------------------------------|----------------|
-| `/projects/{project}/structure`           | 300 / minute   |
-| `/cases/{case}/submit`                    | 300 / minute   |
-| `/device-infos`                           | 300 / minute   |
-| `/stats`                                  | 300 / minute   |
-| `/cases/{case}/files`, `/files/{id}` (GET/DELETE) | 300 / minute |
+| All data endpoints, together              | 300 / minute   |
 
 ---
 
 ## Error Responses
 
-Per-endpoint error codes are listed under each endpoint above. The two namespaces
-use different error shapes — handle both in your client.
+Per-endpoint error codes are listed under each endpoint above. Auth-flow and data
+endpoints use different error shapes — handle both in your client.
 
-**Auth-flow endpoints** (`/api/mart/*`) return:
+**Auth-flow endpoints** (`/api/mobile/auth/*`) return:
 ```json
 {
   "error": "Flow validation failed",
@@ -558,14 +615,14 @@ use different error shapes — handle both in your client.
 ```
 The optional `step` field tells the client which screen to return to.
 
-**Data endpoints** (`/mart-api/*`) return:
+**Data endpoints** (`/api/mobile/*`) return:
 ```json
 {
   "success": false,
   "message": "Case does not belong to the specified project"
 }
 ```
-Validation errors (`422`) on both namespaces additionally include an `errors` object:
+Validation errors (`422`) on both additionally include an `errors` object:
 ```json
 {
   "message": "The userId field is required.",

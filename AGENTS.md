@@ -1,7 +1,7 @@
 # AGENTS.md
 
 Metag-Analyze: media diary and experience sampling platform (Laravel 11, PHP 8.3, Vue 3, Vite, Tailwind 4).
-It serves two mobile clients: the MetaG app (legacy `/api/v1`, `/api/v2`) and the MART app (`/api/mart`, `/mart-api`).
+It serves two mobile clients: the MetaG app (legacy `/api/v1`, `/api/v2`) and the MART app (`/api/mobile`, with `/api/mart` and `/mart-api` kept as aliases).
 
 ## Commands
 
@@ -11,8 +11,7 @@ vendor/bin/pest --filter=TestName        # one test or class
 npm run test:unit                        # frontend tests (Jest)
 npm run cypress:run                      # e2e
 
-php artisan migrate                      # main DB
-php artisan migrate --database=mart      # MART DB
+php artisan migrate                      # both DBs: MART migrations set their own connection
 php artisan migrate:status
 php artisan migrate:fresh-all --seed     # DESTRUCTIVE: drops main AND MART DB; blocked in production
 php artisan queue:work
@@ -66,7 +65,7 @@ try {
 A MART project is a normal `projects` row whose `inputs` JSON contains one object with `type: "mart"` (project options live there) plus a `mart_projects` row. Questions live only in the MART DB.
 
 ### Core files
-- `routes/mart_api.php`, `routes/api.php` (MART auth under `prefix('mart')`), `routes/web.php` (researcher questionnaire CRUD).
+- `routes/mobile.php` (the MART app's API), `routes/mart_api.php` and `routes/api.php` under `prefix('mart')` (aliases), `routes/web.php` (researcher questionnaire CRUD).
 - `app/Http/Controllers/MartApiController.php`: structure, submit, device-infos, stats.
 - `app/Http/Controllers/MartAuthController.php`: 3-screen login, refresh.
 - `app/Http/Controllers/MartFileController.php`: encrypted file uploads.
@@ -84,10 +83,11 @@ The source of truth is `martTypes.ts` from the app developer. Keep the current c
 Interactive docs: `/docs/api` (Scramble + Stoplight), HTTP Basic auth via `API_DOCS_USER` / `API_DOCS_PASSWORD` unless `API_DOCS_PROTECT_ACCESS=false` (default true); an empty password returns 503. See `.claude/docs/scramble-laravel-openapi.md`.
 
 ### Auth
-- Flow: `/api/mart/check-email` -> `/send-password-setup` or `/check-password` -> `/check-access` -> `/refresh`. Steps are chained through cache keys (email + IP) with 1 and 5 minute windows.
+- Flow: `/api/mobile/auth/check-email` -> `/send-password-setup` or `/check-password` -> `/check-access` -> `/refresh`. Steps are chained through cache keys (email + IP) with 1 and 5 minute windows.
 - `check-password` returns `bearerToken` (30 days) and `refreshToken` (7 days). Tokens are stored as `sha256` in `users.api_token` / `users.refresh_token`; the `auth:api` guard is Laravel's token driver.
 - `check-access` auto-creates a case named `P` + 6 hex chars and sets `cases.first_login_at`.
-- Everything under `/mart-api` needs `Authorization: Bearer`.
+- Everything under `/api/mobile` outside `auth/` needs `Authorization: Bearer`.
+- `/api/mart/*` and `/mart-api/*` are aliases with no removal date. Add new endpoints to `routes/mobile.php`, and to `routes/mart_api.php` when the alias needs them. `/docs/api` lists `/api/mobile` only.
 
 ### Response shape (structure endpoint)
 - Keys: `projectOptions`, `questionnaires`, `scales`, `pages`, `deviceInfos`, `repeatingSubmits`, `singleSubmits`, `lastDataDonationSubmit`, `lastAndroidStatsSubmit`.
@@ -111,35 +111,43 @@ Interactive docs: `/docs/api` (Scramble + Stoplight), HTTP Basic auth via `API_D
 
 Not implemented yet: `rangeValues`, `fileUpload`.
 
-Question-level options (stored in `config`, emitted under `items[].options`): `randomizationGroupId`, `randomizeAnswers`, `itemGroup`, `noValueAllowed` (= not mandatory). `timer` and `jump` go under scale `options`. Question text may contain HTML. `image_url` / `video_url` are columns and appear as `imageUrl` / `videoUrl`.
+Question-level options (stored in `config`, emitted under `items[].options`): `randomizationGroupId`, `randomizeAnswers`, `randomPositionWithinQuestionnaire`, `itemGroup`. `noValueAllowed` is derived (`! is_mandatory`, always true for `display`). `posterUrl` is stored in `config` too but emitted on the item. `timer` and `jump` go under scale `options`. Question text may contain HTML. `image_url` / `video_url` are columns and appear as `imageUrl` / `videoUrl`.
 
 Editing a question writes a `mart_question_history` row and bumps `version`; answers store `question_uuid` plus `question_version`.
 
 ### Schedules
 - `type` is `single` or `repeating`. Config lives in `timing_config` and `notification_config` JSON.
-- Dynamic dates: `start_on_first_login` (plus `start_hours_after_login`) and `use_dynamic_end_date` are backend-only. On first login the server writes concrete dates to `mart_case_schedules`; the app only ever receives dates.
+- Dynamic dates: `start_on_first_login` (plus `start_hours_after_login`) and `use_dynamic_end_date` are backend-only. On first login `MartCaseSchedule::calculateForCase()` writes concrete dates to `mart_case_schedules`; the app only ever receives dates.
 - `max_total_submits` is backend-only: duration in days = ceil(max_total_submits / max_daily_submits).
 - `is_ios_data_donation` and `is_android_data_donation` are mutually exclusive per schedule.
 
 ### Submissions and files
 - Completed cases reject submissions with 422. `userId` must match the case owner's email.
 - Each submit writes a main `entries` row (metadata only) plus `mart_entries` and `mart_answers`.
-- Files: `POST /mart-api/cases/{case}/files` accepts multipart (`file`) or JSON base64. MIME is detected from content and checked against `MartFile::ALLOWED_MIME_TYPES`; 50 MB max; stored encrypted under `storage/app/mart/`. Upload first, then reference the returned `file_id` in the answer.
+- `device-infos` and `stats` return 403 when `userId` is not the bearer token's account.
+- Push: `POST /api/mobile/device-token` (or `fcmToken` on `device-infos`) stores FCM tokens in `users.deviceID`, newest 10. `notification:cleanID` clears them once the latest case has ended.
+- Files: `POST /api/mobile/cases/{case}/files` accepts multipart (`file`) or JSON base64. MIME is detected from content and checked against `MartFile::ALLOWED_MIME_TYPES`; 50 MB max; stored encrypted under `storage/app/mart/`. Upload first, then reference the returned `file_id` in the answer.
 
 ## Admin and settings
 - Filament panel at `/admin`. Settings keys: `mart_enabled`, `max_studies_per_user`, `api_v2_cutoff_date`, `mart_max_login_attempts`, `mart_lockout_duration`. Read with `Setting::get('key', $default)`.
 - `BLOCKED_IPS` in `.env` (comma-separated) returns 403 for all routes via `BlockIpMiddleware`.
+- Roles are database rows: `roleadd:*`, `roleremove:*` (admin, researcher, user), `role:cleanup`. `ADMINS` in `.env` grants no role; it controls the Telescope gate and the unverified-users report.
+- `mail:sendtest {email}` checks the mail setup. `TRUSTED_PROXIES` lists the proxies in front of the app.
 - Legacy MetaG uploads are validated by content in `Helper::extension()`; only audio and image types pass.
 
 ## Gotchas
 - "entity" replaced "media" in the UI and API v2, but tables and columns are still `media`. MART projects have no media/entity and no backend-only cases.
 - Projects created before `api_v2_cutoff_date` use API v1 (`media`), later ones v2 (`entity`). `FORCE_API_V2` overrides.
 - Mobile timestamps arrive in milliseconds for MART and in seconds for legacy entries.
+- Never call `env()` outside `config/`: it returns null under `config:cache`.
+- A plain `throttle:N,M` keys its counter by user or IP only, so limits on the same route or sharing a window share one counter. Give each limit its own third argument, as `routes/api.php` and `routes/mobile.php` do.
+- `Cases::isConsultable()` is also true when a case has no `lastDay`, which is how MART cases start.
+- `APP_ENV=production` assumes the `/metag` subfolder (Livewire, Telescope, graph breadcrumb). metagtest runs `APP_ENV=local`, so environment checks do not protect it.
 - Seeders must use `bcrypt()`, not `Hash::make()`.
 - Trigger migrations need `SUPER` or `log_bin_trust_function_creators=1`; they skip with a warning otherwise.
 - Case lists and exports for MART come from the MART DB; the main `entries` row holds no answers.
 
 ## Docs
 - `DOCS/MART/API.md` (endpoint reference), `DOCS/MART/DATA_MAPPING.md`, `DOCS/MART/README.md`.
-- `DOCS/ARCHITECTURE.md`, `DOCS/INSTALLATION.md`, `DOCS/ADMIN_GUIDE.md`.
+- `DOCS/ARCHITECTURE.md`, `DOCS/INSTALLATION.md`, `DOCS/DEPLOYMENT.md`, `DOCS/ADMIN_GUIDE.md`.
 - `.claude/docs/bruno-api-client.md`, `.claude/docs/scramble-laravel-openapi.md`.

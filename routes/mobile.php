@@ -11,8 +11,8 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 |
 | Everything the MART mobile app talks to, under one prefix: `/api/mobile`.
-| The older `/api/mart/*` (auth) and `/mart-api/*` (data) routes stay as
-| aliases until no app version in use calls them.
+| The `/api/mart/*` (auth) and `/mart-api/*` (data) routes stay as aliases, so
+| app versions on those URLs keep working.
 |
 | The `auth/` segment marks the unauthenticated endpoints. Everything outside
 | it requires a Bearer token, so the URL says which rule applies.

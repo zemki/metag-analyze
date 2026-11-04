@@ -87,8 +87,8 @@ class RouteServiceProvider extends ServiceProvider
 
     /**
      * Define the "mart-api" routes for the application.
-     * Older alias of the data routes in routes/mobile.php, kept until no app
-     * version in use calls them. `bindings` only, for the reason given on
+     * Alias of the data routes in routes/mobile.php, kept so app versions on
+     * these URLs keep working. `bindings` only, for the reason given on
      * mapMobileRoutes().
      *
      * @return void

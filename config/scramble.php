@@ -7,9 +7,9 @@ return [
      * Your API path. By default, all routes starting with this path will be added to the docs.
      * If you need to change this behavior, you can add your custom routes resolver using `Scramble::routes()`.
      */
-    // Left empty because the MART API spans two prefixes (`api/mart/*` and
-    // `mart-api/*`). The actual route filter lives in AppServiceProvider.
-    // Combined with `servers: '/'` below, route paths are documented verbatim.
+    // Left empty because the actual route filter lives in AppServiceProvider
+    // (`api/mobile/*`). Combined with `servers: '/'` below, route paths are
+    // documented verbatim.
     'api_path' => '',
 
     /*

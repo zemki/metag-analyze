@@ -36,12 +36,11 @@ class AppServiceProvider extends ServiceProvider
             ]);
         });
 
-        // Scramble: document the MART app routes, the new prefix and its aliases
+        // Scramble: document the MART app routes. The /api/mart and /mart-api
+        // aliases point at the same controllers, so they would only repeat them.
         Scramble::configure()
             ->routes(function (\Illuminate\Routing\Route $route) {
-                return Str::startsWith($route->uri, 'api/mobile/')
-                    || Str::startsWith($route->uri, 'api/mart/')
-                    || Str::startsWith($route->uri, 'mart-api/');
+                return Str::startsWith($route->uri, 'api/mobile/');
             })
             ->withDocumentTransformers(function (OpenApi $openApi) {
                 $openApi->secure(SecurityScheme::http('bearer'));

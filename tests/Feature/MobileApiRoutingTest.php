@@ -9,8 +9,8 @@ use Tests\TestCase;
  * Pins the MART app's URL surface.
  *
  * Everything the app talks to lives under `/api/mobile`, with `auth/` marking
- * the endpoints that do not need a Bearer token. The older `/api/mart/*` and
- * `/mart-api/*` URLs must keep answering until no app version in use calls them.
+ * the endpoints that do not need a Bearer token. The `/api/mart/*` and
+ * `/mart-api/*` URLs stay as aliases, so app versions on them keep working.
  */
 class MobileApiRoutingTest extends TestCase
 {
