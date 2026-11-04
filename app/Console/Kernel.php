@@ -32,6 +32,7 @@ class Kernel extends ConsoleKernel
         // participant notifications were never delivered.
         $schedule->command('notifications:check')->everyMinute()->withoutOverlapping();
         $schedule->command('notification:cleanID')->dailyAt('01:30');
+        $schedule->command('telescope:prune', ['--hours' => 168])->dailyAt('03:17');
     }
 
     /**
