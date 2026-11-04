@@ -60,9 +60,11 @@ class ProjectOptionsResource extends JsonResource
             }
         }
 
-        if ($this->martConfig && isset($this->martConfig['projectOptions'])) {
-            // MART project - use MART configuration with schedules
-            $projectOptions = $this->martConfig['projectOptions'];
+        if ($this->martConfig) {
+            // MART project - use MART configuration with schedules. A project
+            // created without an availability window has no projectOptions
+            // yet; it still gets the MART shape with the defaults below.
+            $projectOptions = $this->martConfig['projectOptions'] ?? [];
 
             // Convert date/time format
             $startDateTime = null;

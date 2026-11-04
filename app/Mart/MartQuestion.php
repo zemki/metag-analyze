@@ -21,11 +21,16 @@ use Illuminate\Support\Str;
  * - 'one choice': Single selection (radio buttons)
  * - 'multiple choice': Multiple selection (checkboxes)
  *
- * Question Options (sent via API, stored at question level):
+ * Item Options (stored inside `config`, emitted by QuestionSheetResource as
+ * the item's `options` block per martTypes.ts):
  * - 'randomizationGroupId': Integer grouping questions for randomized presentation
  * - 'randomizeAnswers': Boolean to randomize answer options (radio/checkbox)
  * - 'itemGroup': String grouping questions to display together on same page
- * - 'noValueAllowed': Boolean to allow skipping the question (inverse of is_mandatory)
+ * - 'randomPositionWithinQuestionnaire': Boolean, randomises the item's position
+ * - 'posterUrl': String, still image shown before a video plays
+ *
+ * 'noValueAllowed' is not stored in config. It is the inverse of the
+ * `is_mandatory` column, and the resource derives it on the way out.
  *
  * Note: 'number' and 'range' both store similar config (min, max, step) but are
  * rendered differently on mobile and in the API response format per martTypes.ts.

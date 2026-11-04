@@ -140,7 +140,14 @@ return [
     'extensions' => [],
 
     /*
-     * HTTP Basic Auth credentials for /docs/api.
+     * Whether /docs/api sits behind HTTP Basic Auth. Defaults to true so an
+     * environment that forgets the flag ends up protected. Turn it off only
+     * for local work.
+     */
+    'docs_protect_access' => env('API_DOCS_PROTECT_ACCESS', true),
+
+    /*
+     * HTTP Basic Auth credentials for /docs/api, checked when protection is on.
      * When API_DOCS_PASSWORD is empty, the docs route returns 503 (fails closed).
      */
     'docs_user' => env('API_DOCS_USER', 'docs'),

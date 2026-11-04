@@ -37,7 +37,7 @@ class Entry extends Model
      */
     public function cases()
     {
-        return $this->belongsTo(Cases::class, 'cases_id', 'id');
+        return $this->belongsTo(Cases::class, 'case_id', 'id');
     }
 
     /**

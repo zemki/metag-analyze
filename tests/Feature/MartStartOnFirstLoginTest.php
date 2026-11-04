@@ -2,8 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Mart\MartCaseSchedule;
 use App\Mart\MartProject;
 use App\Mart\MartSchedule;
+use Carbon\Carbon;
 use Tests\TestCase;
 
 class MartStartOnFirstLoginTest extends TestCase
@@ -171,5 +173,61 @@ class MartStartOnFirstLoginTest extends TestCase
                 'success' => false,
                 'message' => 'Start on first login is not supported for repeating questionnaires.',
             ]);
+    }
+
+    private function firstLoginSchedule(array $timing): MartSchedule
+    {
+        return MartSchedule::create([
+            'mart_project_id' => $this->martProject->id,
+            'questionnaire_id' => $this->project->id * 1000 + 1,
+            'name' => 'Intro questionnaire',
+            'type' => 'single',
+            'timing_config' => array_merge(['start_on_first_login' => true, 'daily_start_time' => '09:00'], $timing),
+            'notification_config' => [],
+        ]);
+    }
+
+    private function overridesAfterFirstLoginAt(string $firstLoginAt, MartSchedule $schedule): array
+    {
+        $this->case->update(['first_login_at' => Carbon::parse($firstLoginAt)]);
+        MartCaseSchedule::calculateForCase($this->case->fresh());
+
+        return MartCaseSchedule::getForCase($this->case->id, $schedule->id)->timing_overrides;
+    }
+
+    /** @test */
+    public function it_starts_the_questionnaire_the_configured_hours_after_first_login()
+    {
+        $schedule = $this->firstLoginSchedule(['start_hours_after_login' => 24]);
+
+        $overrides = $this->overridesAfterFirstLoginAt('2026-03-10 14:30:00', $schedule);
+
+        $this->assertSame(['date' => '2026-03-11', 'time' => '14:30'], $overrides['start_date_time']);
+    }
+
+    /** @test */
+    public function a_zero_hour_delay_starts_the_questionnaire_at_first_login()
+    {
+        $schedule = $this->firstLoginSchedule(['start_hours_after_login' => 0]);
+
+        $overrides = $this->overridesAfterFirstLoginAt('2026-03-10 07:15:00', $schedule);
+
+        $this->assertSame(['date' => '2026-03-10', 'time' => '07:15'], $overrides['start_date_time']);
+    }
+
+    /** @test */
+    public function the_dynamic_end_date_counts_from_the_delayed_start()
+    {
+        $schedule = $this->firstLoginSchedule([
+            'start_hours_after_login' => 24,
+            'use_dynamic_end_date' => true,
+            'max_total_submits' => 30,
+            'max_daily_submits' => 6,
+            'daily_end_time' => '20:00',
+        ]);
+
+        $overrides = $this->overridesAfterFirstLoginAt('2026-03-10 14:30:00', $schedule);
+
+        $this->assertSame(['date' => '2026-03-16', 'time' => '20:00'], $overrides['end_date_time']);
     }
 }

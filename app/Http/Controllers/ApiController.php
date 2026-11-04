@@ -127,8 +127,8 @@ class ApiController extends Controller
                 $userHasACase->first_login_at = now();
                 $userHasACase->save();
 
-                // Calculate dynamic end dates for MART schedules
-                $this->calculateMartDynamicEndDates($userHasACase);
+                // Calculate dynamic start/end dates for MART schedules
+                \App\Mart\MartCaseSchedule::calculateForCase($userHasACase);
             }
 
             // Determine which API version to use
@@ -425,79 +425,6 @@ class ApiController extends Controller
             'message' => 'Password setup email sent successfully. Please check your inbox.',
             'details' => 'You will receive an email with a link to set your password. The link is valid for 24 hours.',
         ], 200);
-    }
-
-    /**
-     * Calculate dynamic end dates for MART schedules on first login.
-     *
-     * This method is called when a participant logs in for the first time to a MART project.
-     * It checks each schedule to see if it should calculate end dates dynamically based on login time.
-     *
-     * Implementation steps (to be completed later):
-     * 1. Get all schedules for the MART project
-     * 2. Loop through each schedule
-     * 3. Check if timing_config.calculate_end_date_on_login is true
-     * 4. If true, calculate end_date_time based on:
-     *    - first_login_at timestamp
-     *    - timing_config.duration_days_after_login
-     * 5. Update the timing_config.end_date_time field
-     * 6. Save the schedule
-     *
-     * @param \App\Cases $case The case that just logged in for the first time
-     * @return void
-     */
-    protected function calculateMartDynamicEndDates($case)
-    {
-        $project = $case->project;
-        $martProject = $project->martProject();
-
-        if (! $martProject) {
-            return;
-        }
-
-        $schedules = \App\Mart\MartSchedule::where('mart_project_id', $martProject->id)->get();
-
-        foreach ($schedules as $schedule) {
-            $timing = $schedule->timing_config ?? [];
-            $overrides = [];
-
-            // Calculate start date if start_on_first_login is true (only for single questionnaires)
-            if (($timing['start_on_first_login'] ?? false) && $schedule->type === 'single') {
-                // Get hours delay (default 0 = immediately)
-                $hoursDelay = $timing['start_hours_after_login'] ?? 0;
-                $startDateTime = $case->first_login_at->copy()->addHours($hoursDelay);
-
-                $overrides['start_date_time'] = [
-                    'date' => $startDateTime->format('Y-m-d'),
-                    'time' => $startDateTime->format('H:i'),
-                ];
-            }
-
-            // Calculate end date if use_dynamic_end_date is true
-            if ($timing['use_dynamic_end_date'] ?? false) {
-                // Use the override start date if set, otherwise use schedule's static start date
-                $startDate = $overrides['start_date_time']['date']
-                    ?? ($timing['start_date_time']['date'] ?? null);
-
-                if ($startDate) {
-                    $maxTotalSubmits = $timing['max_total_submits'] ?? 30;
-                    $maxDailySubmits = $timing['max_daily_submits'] ?? 6;
-
-                    $durationDays = (int) ceil($maxTotalSubmits / $maxDailySubmits);
-                    $endDate = \Carbon\Carbon::parse($startDate)->addDays($durationDays);
-
-                    $overrides['end_date_time'] = [
-                        'date' => $endDate->format('Y-m-d'),
-                        'time' => $timing['daily_end_time'] ?? '21:00',
-                    ];
-                }
-            }
-
-            // Store in MART database if there are any overrides
-            if (! empty($overrides)) {
-                \App\Mart\MartCaseSchedule::setForCase($case->id, $schedule->id, $overrides);
-            }
-        }
     }
 
     /**

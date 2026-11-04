@@ -1413,11 +1413,14 @@ export default {
           videoUrl: q.video_url || '',
           type: this.mapBackendTypeToFormType(q.type) || '',
           mandatory: q.is_mandatory !== undefined ? q.is_mandatory : true,
-          randomizationGroupId: q.randomizationGroupId || null,
-          randomizeAnswers: q.randomizeAnswers || false,
+          // These live in config, same as includeOtherOption below. They used
+          // to be read off q.*, where they have never existed, so every reopen
+          // silently reset them.
+          randomizationGroupId: config.randomizationGroupId || null,
+          randomizeAnswers: config.randomizeAnswers || false,
           includeOtherOption: config.includeOtherOption || false,
           otherOptionLabel: config.otherOptionLabel || '',
-          itemGroup: q.item_group || null,
+          itemGroup: config.itemGroup || null,
           useTimer: !!timer.time,
           timerSeconds: timer.time || 30,
           showCountdown: timer.showCountdown !== undefined ? timer.showCountdown : true,
@@ -1751,17 +1754,28 @@ export default {
             };
           }
 
+          // Item-level options belong in config. Sent as siblings they were
+          // dropped by the validator, which only allows text/image_url/
+          // video_url/type/mandatory/config.
+          if (q.randomizationGroupId) {
+            config.randomizationGroupId = q.randomizationGroupId;
+          }
+          if (q.randomizeAnswers) {
+            config.randomizeAnswers = true;
+          }
+          if (q.itemGroup) {
+            config.itemGroup = String(q.itemGroup);
+          }
+
+          // No noValueAllowed here: `mandatory` already carries it and lands in
+          // is_mandatory. The API derives the inverse on the way out.
           const questionData = {
             text: q.text,
             image_url: q.imageUrl || null,
             video_url: q.videoUrl || null,
             type: backendType,
             mandatory: q.mandatory,
-            config: config,
-            randomizationGroupId: q.randomizationGroupId || null,
-            randomizeAnswers: q.randomizeAnswers || false,
-            noValueAllowed: !q.mandatory,
-            item_group: q.itemGroup || null
+            config: config
           };
 
           // Include UUID for updates

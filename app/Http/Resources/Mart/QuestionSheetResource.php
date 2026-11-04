@@ -33,16 +33,27 @@ class QuestionSheetResource extends JsonResource
                 $questionType = $question['type'] ?? 'text';
                 $isDisplayOnly = $questionType === 'display';
 
+                // The item-level options live in the question's `config` JSON,
+                // where the questionnaire editor puts them. Mandatoriness is the
+                // exception - it has its own column.
+                $config = $question['config'] ?? [];
+
                 $item = [
                     // Per martTypes.ts: itemId/scaleId are null for display-only items (text without question)
                     'itemId' => $isDisplayOnly ? null : $index + 1,
                     'scaleId' => $isDisplayOnly ? null : $index + 1,
                     'text' => $question['text'] ?? $question['name'] ?? '',
                     'options' => [
-                        'randomizationGroupId' => $question['randomizationGroupId'] ?? null,
-                        'randomizeAnswers' => $question['randomizeAnswers'] ?? false,
-                        'itemGroup' => $question['item_group'] ?? null,
-                        'noValueAllowed' => $isDisplayOnly ? true : ($question['noValueAllowed'] ?? false),
+                        'randomizationGroupId' => $config['randomizationGroupId'] ?? null,
+                        'randomizeAnswers' => $config['randomizeAnswers'] ?? false,
+                        'randomPositionWithinQuestionnaire' => $config['randomPositionWithinQuestionnaire'] ?? false,
+                        // martTypes.ts declares itemGroup as a string; older
+                        // data may hold an int, so normalise here.
+                        'itemGroup' => isset($config['itemGroup']) ? (string) $config['itemGroup'] : null,
+                        // Inverse of is_mandatory. A display item is never
+                        // answerable, and the editor can still mark one
+                        // mandatory, so that branch stays.
+                        'noValueAllowed' => $isDisplayOnly ? true : ! ($question['is_mandatory'] ?? true),
                     ],
                 ];
 
@@ -52,6 +63,11 @@ class QuestionSheetResource extends JsonResource
                 }
                 if (!empty($question['video_url'])) {
                     $item['videoUrl'] = $question['video_url'];
+                }
+                // Shown in place of a video before it starts. A top-level item
+                // field per martTypes.ts, stored in config like the options.
+                if (!empty($config['posterUrl'])) {
+                    $item['posterUrl'] = $config['posterUrl'];
                 }
 
                 $items[] = $item;

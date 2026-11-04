@@ -81,7 +81,7 @@ A MART project is a normal `projects` row whose `inputs` JSON contains one objec
 
 The source of truth is `martTypes.ts` from the app developer. Keep the current copy at `DOCS/martTypes.ts` (git-ignored). If it is missing, ask the user for it before changing any API field.
 
-Interactive docs: `/docs/api` (Scramble + Stoplight), HTTP Basic auth via `API_DOCS_USER` / `API_DOCS_PASSWORD`; an empty password returns 503. See `.claude/docs/scramble-laravel-openapi.md`.
+Interactive docs: `/docs/api` (Scramble + Stoplight), HTTP Basic auth via `API_DOCS_USER` / `API_DOCS_PASSWORD` unless `API_DOCS_PROTECT_ACCESS=false` (default true); an empty password returns 503. See `.claude/docs/scramble-laravel-openapi.md`.
 
 ### Auth
 - Flow: `/api/mart/check-email` -> `/send-password-setup` or `/check-password` -> `/check-access` -> `/refresh`. Steps are chained through cache keys (email + IP) with 1 and 5 minute windows.

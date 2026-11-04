@@ -6,9 +6,10 @@ are all there, and they cannot drift from the implementation. This file covers
 what an OpenAPI document does not say well: how the pieces fit together, and how
 to exercise them.
 
-The page asks for the `API_DOCS_USER` / `API_DOCS_PASSWORD` credentials, and
-refuses to serve at all (503) if no password is configured. To read it locally,
-set a password in your `.env`.
+To read the generated docs locally, set `API_DOCS_PROTECT_ACCESS=false` in your
+`.env`. With the flag `true`, the default and what any deployment should use,
+the page asks for the `API_DOCS_USER` / `API_DOCS_PASSWORD` credentials, and
+refuses to serve at all (503) if no password is configured.
 
 ## Base URL
 

@@ -425,7 +425,11 @@ class Cases extends Model
     #[Pure]
     public function firstDay(): string
     {
-        return Helper::get_string_between($this->duration, 'firstDay:', '|') ?? Helper::get_string_between($this->duration, 'startDay:', '|');
+        // `?:`, not `??`: get_string_between() returns an empty string when the
+        // key is absent, never null, so a null-coalesce never reached the
+        // startDay fallback.
+        return Helper::get_string_between($this->duration, 'firstDay:', '|')
+            ?: Helper::get_string_between($this->duration, 'startDay:', '|');
     }
 
     /**

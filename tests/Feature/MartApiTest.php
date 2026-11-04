@@ -728,4 +728,85 @@ class MartApiTest extends TestCase
         $this->assertStringContainsString('participant_id', $responseData['message']);
     }
 
+    /**
+     * Every item carries an `options` block read from the question's config,
+     * with noValueAllowed derived from is_mandatory. Before, all keys read
+     * attributes that do not exist on MartQuestion, so the defaults always
+     * fired and every item looked mandatory to the app.
+     *
+     * @test
+     */
+    public function item_options_are_read_from_the_question_rather_than_defaulted()
+    {
+        $schedule2 = MartSchedule::where('mart_project_id', $this->project->martProject()->id)
+            ->where('questionnaire_id', $this->questionnaireId2)
+            ->first();
+
+        // itemGroup stored as an int on purpose: martTypes.ts declares a
+        // string, so the resource has to normalise.
+        MartQuestion::create([
+            'schedule_id' => $schedule2->id,
+            'position' => 1,
+            'text' => 'Grouped and randomised',
+            'type' => 'text',
+            'config' => [
+                'itemGroup' => 2,
+                'randomizationGroupId' => 3,
+                'randomizeAnswers' => true,
+                'randomPositionWithinQuestionnaire' => true,
+                'posterUrl' => 'https://example.test/poster.png',
+            ],
+            'is_mandatory' => true,
+            'version' => 1,
+        ]);
+
+        // A display item marked mandatory must still be skippable.
+        MartQuestion::create([
+            'schedule_id' => $schedule2->id,
+            'position' => 2,
+            'text' => 'Thanks for taking part.',
+            'type' => 'display',
+            'config' => [],
+            'is_mandatory' => true,
+            'version' => 1,
+        ]);
+
+        $request = \Illuminate\Http\Request::create('/test', 'GET');
+        $resource = (new \App\Http\Controllers\MartApiController)
+            ->getProjectStructure($request, $this->project);
+        $structure = json_decode(json_encode($resource->toArray($request)), true);
+
+        $byId = collect($structure['questionnaires'])->keyBy('questionnaireId');
+
+        // setUp's first questionnaire: question 1 is mandatory, question 2 is not.
+        $first = $byId[$this->questionnaireId1]['items'];
+        $this->assertFalse($first[0]['options']['noValueAllowed'], 'mandatory question must not be skippable');
+        $this->assertTrue($first[1]['options']['noValueAllowed'], 'optional question must be skippable');
+
+        $second = $byId[$this->questionnaireId2]['items'];
+
+        // Empty config still emits the whole block with its defaults.
+        $this->assertSame([
+            'randomizationGroupId' => null,
+            'randomizeAnswers' => false,
+            'randomPositionWithinQuestionnaire' => false,
+            'itemGroup' => null,
+            'noValueAllowed' => true,
+        ], $second[0]['options']);
+        $this->assertArrayNotHasKey('posterUrl', $second[0]);
+
+        // Everything authored in config surfaces, with itemGroup as a string.
+        $this->assertSame([
+            'randomizationGroupId' => 3,
+            'randomizeAnswers' => true,
+            'randomPositionWithinQuestionnaire' => true,
+            'itemGroup' => '2',
+            'noValueAllowed' => false,
+        ], $second[1]['options']);
+        $this->assertSame('https://example.test/poster.png', $second[1]['posterUrl']);
+
+        // Display item: skippable despite is_mandatory being true.
+        $this->assertNull($second[2]['itemId']);
+        $this->assertTrue($second[2]['options']['noValueAllowed']);
+    }
 }

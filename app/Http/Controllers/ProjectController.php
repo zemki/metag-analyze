@@ -473,23 +473,29 @@ class ProjectController extends Controller
             'entityName' => self::NULLABLE,
             'useEntity' => 'boolean|nullable',
         ]);
-        // Check if inputs is already a JSON string or an array
-        if (is_string($attributes[self::INPUTS]) && $this->isJson($attributes[self::INPUTS])) {
-            $decodedAttributes = json_decode($attributes[self::INPUTS], true);
+        // An edit that sends no inputs (e.g. a rename) keeps the stored ones,
+        // including the MART config, instead of failing on them.
+        if (! isset($attributes[self::INPUTS])) {
+            unset($attributes[self::INPUTS]);
         } else {
-            $decodedAttributes = $attributes[self::INPUTS];
-        }
-
-        foreach ($decodedAttributes as $input => $value) {
-            if (isset($value['answers'])) {
-                $decodedAttributes[$input]['answers'] = array_filter($value['answers'], fn ($v) => ! is_null($v) && $v !== '');
+            // Check if inputs is already a JSON string or an array
+            if (is_string($attributes[self::INPUTS]) && $this->isJson($attributes[self::INPUTS])) {
+                $decodedAttributes = json_decode($attributes[self::INPUTS], true);
             } else {
-                // Initialize an empty array for non-choice type inputs
-                $decodedAttributes[$input]['answers'] = [];
+                $decodedAttributes = $attributes[self::INPUTS];
             }
-        }
 
-        $attributes[self::INPUTS] = json_encode($decodedAttributes);
+            foreach ($decodedAttributes as $input => $value) {
+                if (isset($value['answers'])) {
+                    $decodedAttributes[$input]['answers'] = array_filter($value['answers'], fn ($v) => ! is_null($v) && $v !== '');
+                } else {
+                    // Initialize an empty array for non-choice type inputs
+                    $decodedAttributes[$input]['answers'] = [];
+                }
+            }
+
+            $attributes[self::INPUTS] = json_encode($decodedAttributes);
+        }
 
         // Only update entity_name and use_entity for non-legacy projects
         if (request()->has('entityName') || request()->has('useEntity')) {
