@@ -24,35 +24,37 @@ Route::middleware('force.json')->name('mobile.')->group(function () {
     /*
      * The 3-screen auth flow. Each step checks that the previous one completed
      * by looking for its cache entry, so they are unauthenticated but each is
-     * throttled per IP.
+     * throttled per IP. The key prefixes keep password setup's ten-minute window
+     * apart from the others: on a shared counter, the check-email that always
+     * comes first would make it expire after one minute.
      */
     Route::prefix('auth')->name('auth.')->group(function () {
         // Screen 1: does this email exist?
         Route::post('check-email', [MartAuthController::class, 'checkEmail'])
-            ->middleware('throttle:30,1')
+            ->middleware('throttle:30,1,mobile-auth')
             ->name('check-email');
 
         // Screen 1b: new user clicked "Register". Stricter limit because it
         // triggers outbound email.
         Route::post('send-password-setup', [MartAuthController::class, 'sendPasswordSetup'])
-            ->middleware('throttle:30,10')
+            ->middleware('throttle:30,10,mobile-password-setup')
             ->name('send-password-setup');
 
         // Screen 2: authenticate and get a token pair. Requires Screen 1
         // within the last minute.
         Route::post('check-password', [MartAuthController::class, 'checkPassword'])
-            ->middleware('throttle:30,1')
+            ->middleware('throttle:30,1,mobile-auth')
             ->name('check-password');
 
         // Screen 3: project access, auto-creating the case. Requires Screen 2
         // within the last five minutes.
         Route::post('check-access', [MartAuthController::class, 'checkAccess'])
-            ->middleware('throttle:30,1')
+            ->middleware('throttle:30,1,mobile-auth')
             ->name('check-access');
 
         // Exchange a refresh token for a fresh pair.
         Route::post('refresh', [MartAuthController::class, 'refreshToken'])
-            ->middleware('throttle:30,1')
+            ->middleware('throttle:30,1,mobile-auth')
             ->name('refresh');
     });
 

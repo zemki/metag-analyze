@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Cases;
 use App\Entry;
+use App\Mart\MartEntry;
 use App\Mart\MartSchedule;
 use App\Notifications\researcherNotificationToUser;
 use DB;
@@ -51,7 +52,23 @@ class NotificationChecker extends Command
         foreach ($notifications as $notification) {
             $notification->data = json_decode($notification->data);
             $case = Cases::where('id', $notification->data->case)->first();
-            $caseClosed = ($case->lastDay() !== '' && strtotime($case->lastDay()) < strtotime('now'));
+
+            // Checked here because one crash would abandon every notification
+            // after it in this run, and again on every run after that.
+            if (! $case) {
+                $this->error('Notification ' . $notification->id . ' deleted: its case no longer exists.');
+                DB::table('notifications')->where('id', '=', $notification->id)->delete();
+
+                continue;
+            }
+            if (! $case->user) {
+                Log::warning('Skipped a planned notification: case has no user', ['case_id' => $case->id]);
+                $this->error('Notification ' . $notification->id . ' skipped: case ' . $case->id . ' has no user.');
+
+                continue;
+            }
+
+            $caseClosed =($case->lastDay() !== '' && strtotime($case->lastDay()) < strtotime('now'));
             if ($caseClosed) {
                 $this->error('Notification NOT sent to ' . $case->user->email . ' because last day was ' . $case->lastDay());
                 // delete planned notification not valid anymore
@@ -72,6 +89,13 @@ class NotificationChecker extends Command
 
                     return 0;
                 }
+                // Only the MeTag login creates a profile, so MART participants
+                // arrive here without one.
+                if (! $case->user->profile) {
+                    $case->user->addProfile($case->user);
+                    $case->user->load('profile');
+                }
+
                 $timeFromDatabase = strtotime($case->user->profile->last_notification_at);
                 $nowMinusTimeFromDatabase = time() - $timeFromDatabase;
                 $acceptanceWindow = 10;
@@ -138,10 +162,13 @@ class NotificationChecker extends Command
         // Check daily submission limits for repeating questionnaires
         $maxDailySubmits = $schedule->timing_config['max_daily_submits'] ?? null;
         if ($schedule->type === 'repeating' && $maxDailySubmits) {
-            $todayStart = date('Y-m-d 00:00:00');
-            $todayEntries = Entry::where('case_id', $case->id)
-                ->where('created_at', '>=', $todayStart)
-                ->whereJsonContains('inputs->_mart_metadata->questionnaire_id', $questionnaireId)
+            // Today's entries for this case live in the main DB; which
+            // questionnaire each one answered lives in the MART DB.
+            $todayEntryIds = Entry::where('case_id', $case->id)
+                ->where('created_at', '>=', date('Y-m-d 00:00:00'))
+                ->pluck('id');
+            $todayEntries = MartEntry::whereIn('main_entry_id', $todayEntryIds)
+                ->where('schedule_id', $schedule->id)
                 ->count();
 
             if ($todayEntries >= $maxDailySubmits) {

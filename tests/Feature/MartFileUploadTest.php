@@ -3,9 +3,12 @@
 namespace Tests\Feature;
 
 use App\Cases;
+use App\Http\Controllers\MartApiController;
 use App\Http\Controllers\MartFileController;
 use App\Mart\MartFile;
 use App\Mart\MartProject;
+use App\Mart\MartQuestion;
+use App\Mart\MartSchedule;
 use App\Project;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -339,5 +342,56 @@ class MartFileUploadTest extends TestCase
             str_contains($haystack, $needle),
             "Failed asserting that '$haystack' contains '$needle'"
         );
+    }
+
+    /**
+     * The editor stores upload questions as photo / audio / video. Submit used
+     * to look for photoUpload / audioUpload / videoUpload, so uploaded files
+     * were never linked to the entry they answer.
+     *
+     * @test
+     */
+    public function a_submitted_photo_answer_links_the_uploaded_file_to_the_entry()
+    {
+        $martProject = MartProject::where('main_project_id', $this->project->id)->first();
+        $questionnaireId = $this->project->id * 1000 + 1;
+        $schedule = MartSchedule::create([
+            'mart_project_id' => $martProject->id,
+            'questionnaire_id' => $questionnaireId,
+            'name' => 'Photo diary',
+            'type' => 'single',
+            'timing_config' => [],
+            'notification_config' => [],
+        ]);
+        MartQuestion::create([
+            'schedule_id' => $schedule->id,
+            'position' => 0,
+            'text' => 'Take a photo of your screen',
+            'type' => 'photo',
+            'config' => [],
+            'is_mandatory' => false,
+            'version' => 1,
+        ]);
+
+        $fileId = (new MartFileController)->store(new Request([
+            'file_type' => 'photo',
+            'file' => $this->getTestPngBase64(),
+            'original_name' => 'screen.png',
+        ]), $this->case)->getData(true)['file_id'];
+
+        $response = (new MartApiController)->submitEntry(new Request([
+            'projectId' => $this->project->id,
+            'questionnaireId' => $questionnaireId,
+            'userId' => $this->user->email,
+            'participantId' => $this->case->name,
+            'questionnaireStarted' => now()->timestamp * 1000,
+            'questionnaireDuration' => 60000,
+            'answers' => ['1' => [$fileId]],
+            'timestamp' => now()->timestamp * 1000,
+            'timezone' => 'Europe/Berlin',
+        ]), $this->case);
+
+        $this->assertTrue($response->getData(true)['success']);
+        $this->assertNotNull(MartFile::find($fileId)->mart_entry_id, 'The uploaded photo was not linked to the entry.');
     }
 }

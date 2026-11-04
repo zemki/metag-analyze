@@ -40,7 +40,12 @@ class NotificationCleanDeviceID extends Command
     {
         $usersCleaned = 0;
         foreach (User::all() as $user) {
-            if ($user->latestCase && $user->latestCase->isConsultable()) {
+            $case = $user->latestCase;
+
+            // isConsultable() is also true when lastDay is empty, which is how
+            // every MART case starts, so check for one: only an ended case
+            // gives up its tokens.
+            if ($case && $case->lastDay() !== '' && $case->isConsultable()) {
                 if ($user->deviceID != []) {
                     $usersCleaned++;
                 }

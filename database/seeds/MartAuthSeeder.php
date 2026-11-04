@@ -13,6 +13,13 @@ class MartAuthSeeder extends Seeder
      */
     public function run()
     {
+        // A long-lived token that is in the repository: never on production.
+        if (app()->environment('production')) {
+            $this->command?->warn('Skipped MartAuthSeeder: never runs in production.');
+
+            return;
+        }
+
         // Fixed bearer token for MART testing
         $token = 'mart_test_token_2025';
         $hashedToken = hash('sha256', $token);

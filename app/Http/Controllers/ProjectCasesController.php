@@ -392,7 +392,7 @@ class ProjectCasesController extends Controller
      */
     private function getGraphBreadcrumb(Project $project, Cases $case, mixed $data)
     {
-        if (env('APP_ENV') === 'production') {
+        if (app()->environment('production')) {
             $slug = '/metag';
         } else {
             $slug = '';

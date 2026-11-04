@@ -342,13 +342,10 @@ class MartApiController extends Controller
 
                 if ($question) {
                     // Check if this is a file-type answer (contains file UUIDs)
-                    // File answers are arrays of UUIDs for upload-type questions
-                    if (
-                        $question->type === "photoUpload" ||
-                        $question->type === "videoUpload" ||
-                        $question->type === "audioUpload" ||
-                        $question->type === "fileUpload"
-                    ) {
+                    // File answers are arrays of UUIDs for upload-type questions.
+                    // The editor stores these types as photo / audio / video; the
+                    // photoUpload names only exist in the API payload.
+                    if (in_array($question->type, ["photo", "audio", "video"], true)) {
                         // Collect file IDs to link to entry
                         $fileIds = is_array($answerValue)
                             ? $answerValue

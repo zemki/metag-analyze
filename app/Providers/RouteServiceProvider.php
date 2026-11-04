@@ -72,26 +72,31 @@ class RouteServiceProvider extends ServiceProvider
     /**
      * Define the "api/mobile" routes for the MART mobile app.
      *
+     * Only `bindings`, not the `api` group: an unnamed throttle keys its
+     * counter by user or IP alone, so the group's throttle:120 and the routes'
+     * own limits would share one counter and count every request twice.
+     *
      * @return void
      */
     protected function mapMobileRoutes()
     {
         Route::prefix('api/mobile')
-            ->middleware('api')
+            ->middleware('bindings')
             ->group(base_path('routes/mobile.php'));
     }
 
     /**
      * Define the "mart-api" routes for the application.
      * Older alias of the data routes in routes/mobile.php, kept until no app
-     * version in use calls them.
+     * version in use calls them. `bindings` only, for the reason given on
+     * mapMobileRoutes().
      *
      * @return void
      */
     protected function mapMartApiRoutes()
     {
         Route::prefix('mart-api')
-            ->middleware('api')
+            ->middleware('bindings')
             ->namespace($this->namespace)
             ->group(base_path('routes/mart_api.php'));
     }

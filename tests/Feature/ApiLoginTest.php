@@ -32,6 +32,20 @@ class ApiLoginTest extends TestCase
     }
 
     /** @test */
+    public function force_api_v2_is_read_from_config()
+    {
+        // A project from before the v2 cutoff would get v1 unless forced.
+        $this->project->forceFill(['created_at' => '2024-01-01 00:00:00'])->save();
+        config(['app.force_api_v2' => true]);
+
+        $this->postJson('/api/login', [
+            'email' => 'test@example.com',
+            'password' => 'password123',
+            'datetime' => time(),
+        ])->assertStatus(200)->assertJson(['api_version' => 'v2']);
+    }
+
+    /** @test */
     public function it_stores_the_device_id_on_login()
     {
         $this->postJson('/api/login', [

@@ -11,7 +11,10 @@
 |
 */
 
-Route::post('login', 'ApiController@login')->middleware('throttle:10,60');
+// Route throttles carry a key prefix (third argument). Without it they share a
+// counter with the api group's throttle:120,1, so every request counts twice
+// and the group's one-minute expiry cuts longer windows (login's hour) to a minute.
+Route::post('login', 'ApiController@login')->middleware('throttle:10,60,metag-login');
 
 // Settings API
 Route::get('settings/api_v2_cutoff_date', function () {
@@ -21,13 +24,13 @@ Route::get('settings/api_v2_cutoff_date', function () {
 // QR Code Login - rate limited to prevent brute force attacks
 // For API v2 non-MART projects only
 // 30 requests per minute per IP (bumped from 10 to support testing flows)
-Route::post('qr-login', 'ApiController@qrLogin')->middleware('throttle:30,1');
+Route::post('qr-login', 'ApiController@qrLogin')->middleware('throttle:30,1,metag-qr-login');
 
 // Email existence check - rate limited to prevent enumeration attacks
 // ⚠️ IMPORTANT: This endpoint is used by MART mobile apps to check if user exists
 // before allowing self-registration
 // 30 requests per minute per IP (bumped from 5)
-Route::post('check-email', 'ApiController@checkEmailExists')->middleware('throttle:30,1');
+Route::post('check-email', 'ApiController@checkEmailExists')->middleware('throttle:30,1,metag-check-email');
 
 // Send password setup email - rate limited to prevent abuse (emails cost money)
 // ⚠️ IMPORTANT: This endpoint is for MART projects only
@@ -35,40 +38,41 @@ Route::post('check-email', 'ApiController@checkEmailExists')->middleware('thrott
 // Non-MART projects should use the standard researcher-invites-user flow
 // 10 requests per 10 minutes per IP (bumped from 3 to support testing flows)
 // Requires email to be checked first via /api/check-email
-Route::post('send-password-setup', 'ApiController@sendPasswordSetup')->middleware('throttle:10,10');
+Route::post('send-password-setup', 'ApiController@sendPasswordSetup')->middleware('throttle:10,10,metag-password-setup');
 
 // MART Authentication API Routes (3-Screen Flow)
 // These endpoints implement a multi-step authentication flow for MART mobile apps:
 // Screen 1: Email check → Screen 2: Password check → Screen 3: Project access check
 // Each screen validates the previous screen was completed (using cache)
+// Throttle key prefixes as explained at the top of this file.
 Route::prefix('mart')->middleware('force.json')->group(function () {
     // Screen 1: Check if email exists
     // 30/min per IP (bumped from 10)
     Route::post('check-email', 'MartAuthController@checkEmail')
-        ->middleware('throttle:30,1');
+        ->middleware('throttle:30,1,mart-auth');
 
     // Screen 1: Send password setup email (for new users who click "Register")
     // Stricter limit because it triggers outbound emails
     // 30/10min per IP (bumped from 10)
     Route::post('send-password-setup', 'MartAuthController@sendPasswordSetup')
-        ->middleware('throttle:30,10');
+        ->middleware('throttle:30,10,mart-password-setup');
 
     // Screen 2: Authenticate with password and get tokens
     // Requires email to be checked in Screen 1 (within 1 minute)
     // 30/min per IP (bumped from 10)
     Route::post('check-password', 'MartAuthController@checkPassword')
-        ->middleware('throttle:30,1');
+        ->middleware('throttle:30,1,mart-auth');
 
     // Screen 3: Check project access and auto-create case
     // Requires password to be checked in Screen 2 (within 5 minutes)
     // 30/min per IP (bumped from 10)
     Route::post('check-access', 'MartAuthController@checkAccess')
-        ->middleware('throttle:30,1');
+        ->middleware('throttle:30,1,mart-auth');
 
     // Refresh access token using refresh token
     // 30/min per IP (bumped from 10)
     Route::post('refresh', 'MartAuthController@refreshToken')
-        ->middleware('throttle:30,1');
+        ->middleware('throttle:30,1,mart-auth');
 });
 
 // V1 API Routes (Legacy - uses 'media' field)

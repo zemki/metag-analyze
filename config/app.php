@@ -107,6 +107,9 @@ return [
 
     'api_v2_cutoff_date' => env('API_V2_CUTOFF_DATE', '2025-03-21'),
 
+    // Serve every MeTag login in the v2 format, whatever the project's age.
+    'force_api_v2' => env('FORCE_API_V2', false),
+
     /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration

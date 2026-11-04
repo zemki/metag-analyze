@@ -175,13 +175,12 @@ Per IP. Exceeding a limit returns `429 Too Many Requests`.
 |---|---|
 | `/api/mobile/auth/send-password-setup` | 30 / 10 minutes |
 | All other `/api/mobile/auth/*` | 30 / minute |
-| Every `/api/mobile/*` data endpoint | 300 / minute, but see below |
+| Every `/api/mobile/*` data endpoint | 300 / minute |
 
-The data routes ask for 300 / minute, deliberately far above Laravel's default
-of 60: participants poll `/structure` frequently, submit entries in bursts, and
-push device-info and stats payloads alongside questionnaires. Today the `api`
-middleware group's own 120 / minute limit (`app/Http/Kernel.php`) also applies
-to every route, so 120 is the effective ceiling until that is fixed.
+The data limit is deliberately far above Laravel's default of 60: participants
+poll `/structure` frequently, submit entries in bursts, and push device-info and
+stats payloads alongside questionnaires. The old `/api/mart/*` and `/mart-api/*`
+URLs have the same limits.
 
 ---
 

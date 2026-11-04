@@ -132,7 +132,7 @@ class ApiController extends Controller
             }
 
             // Determine which API version to use
-            $forceApiV2 = env('FORCE_API_V2', false);
+            $forceApiV2 = config('app.force_api_v2', false);
             $projectDate = new DateTime($userHasACase->project->created_at ?? 'now');
             $cutoffDate = new DateTime(config('app.api_v2_cutoff_date', '2025-03-21'));
 
