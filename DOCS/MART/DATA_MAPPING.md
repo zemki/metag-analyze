@@ -77,8 +77,8 @@ How MART API types map to database storage.
 | API Type | Database `type` | Config Fields |
 |----------|-----------------|---------------|
 | `number` | `number` | `minValue`, `maxValue`, `maxDigits` |
-| `text` | `text` | `textOptions.type` |
-| `textarea` | `textarea` | - |
+| `text` | `text` | `placeholder` in config, sent as `textOptions.placeholder` |
+| `textarea` | `textarea` | `placeholder` in config, sent as `textOptions.placeholder` |
 | `radio` | `one choice` | `options[]` in config. With `includeOtherOption`, adds an option with the value `text` (label from `otherOptionLabel`) and `textOptions.type` from `otherTextType` |
 | `checkbox` | `multiple choice` | Same as `radio` |
 | `range` | `range` | `minValue`, `maxValue`, `steps`, `defaultValue` |

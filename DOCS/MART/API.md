@@ -277,8 +277,8 @@ per-participant data when `participant_id` is provided.
 
 | API value | Storage type | Notes |
 |---|---|---|
-| `text` | `text` | single-line text input |
-| `textarea` | `textarea` | multi-line text input |
+| `text` | `text` | single-line text input, with an optional `textOptions.placeholder` |
+| `textarea` | `textarea` | multi-line text input, with an optional `textOptions.placeholder` |
 | `number` | `number` | integer or decimal entry |
 | `range` | `range` | slider with `minValue` / `maxValue` / `steps` |
 | `radio` (a.k.a. `one choice`) | `one choice` | single-select, optionally with an "other" option |

@@ -275,6 +275,40 @@ class MartScalePayloadTest extends TestCase
         $this->assertCount(2, $options['radioOptions']);
     }
 
+    /** @test */
+    public function a_text_placeholder_goes_in_text_options()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'text', 'config' => ['placeholder' => 'Your answer']],
+        ]);
+
+        $this->assertSame([
+            'type' => 'text',
+            'textOptions' => ['type' => 'text', 'placeholder' => 'Your answer'],
+        ], $this->structure()['scales'][0]['options']);
+    }
+
+    /** @test */
+    public function a_textarea_placeholder_goes_in_text_options()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'textarea', 'config' => ['placeholder' => 'Your answer']],
+        ]);
+
+        $this->assertSame([
+            'type' => 'textarea',
+            'textOptions' => ['type' => 'textarea', 'placeholder' => 'Your answer'],
+        ], $this->structure()['scales'][0]['options']);
+    }
+
+    /** @test */
+    public function a_text_scale_without_a_placeholder_has_no_text_options()
+    {
+        $this->addQuestionnaire([['type' => 'text', 'config' => []]]);
+
+        $this->assertSame(['type' => 'text'], $this->structure()['scales'][0]['options']);
+    }
+
     private function addQuestionnaire(array $questions): MartSchedule
     {
         $schedule = MartSchedule::create([

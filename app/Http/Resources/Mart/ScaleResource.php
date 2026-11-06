@@ -101,18 +101,13 @@ class ScaleResource extends JsonResource
                     break;
 
                 case 'text':
-                    $scaleOptions = ['type' => 'text'];
-                    // Add placeholder if present
-                    if (isset($config['placeholder'])) {
-                        $scaleOptions['placeholder'] = $config['placeholder'];
-                    }
-                    break;
-
                 case 'textarea':
-                    $scaleOptions = ['type' => 'textarea'];
-                    // Add placeholder if present
+                    $scaleOptions = ['type' => $questionType];
                     if (isset($config['placeholder'])) {
-                        $scaleOptions['placeholder'] = $config['placeholder'];
+                        $scaleOptions['textOptions'] = [
+                            'type' => $questionType,
+                            'placeholder' => $config['placeholder'],
+                        ];
                     }
                     break;
 

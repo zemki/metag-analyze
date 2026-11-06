@@ -105,7 +105,7 @@ Interactive docs: `/docs/api` (Scramble + Stoplight), HTTP Basic auth via `API_D
 | `display` | none | text only, no scale |
 | `number` | `number` | `minValue`, `maxValue`, `maxDigits` |
 | `range` | `range` | `rangeOptions` {minValue, maxValue, steps, defaultValue} |
-| `text` / `textarea` | `text` / `textarea` | optional `placeholder` |
+| `text` / `textarea` | `text` / `textarea` | optional `textOptions` {type, placeholder}, only sent with a placeholder |
 | `one choice` | `radio` | `radioOptions` [{value, text}]. `config.includeOtherOption` adds an option with the value `"text"` (never `"textarea"`) plus `textOptions.type` from `config.otherTextType` |
 | `multiple choice` | `checkbox` | `checkboxOptions`, "other" works the same way |
 | `photo` / `audio` / `video` | `photoUpload` / `audioUpload` / `videoUpload` | optional `*UploadOptions` passed through |
