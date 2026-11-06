@@ -341,10 +341,21 @@ class MartApiController extends Controller
         } catch (\Exception $e) {
             DB::connection("mart")->rollBack();
 
+            // Not the exception message, here or in the response: a database
+            // error's message holds the SQL values, such as participant IDs
+            // and emails.
+            \Log::error("MART submit failed", [
+                "case_id" => $case->id,
+                "exception" => get_class($e),
+                "code" => $e->getCode(),
+                "file" => $e->getFile(),
+                "line" => $e->getLine(),
+            ]);
+
             return response()->json(
                 [
                     "success" => false,
-                    "message" => "Failed to create entry: " . $e->getMessage(),
+                    "message" => "Failed to create entry",
                 ],
                 500,
             );

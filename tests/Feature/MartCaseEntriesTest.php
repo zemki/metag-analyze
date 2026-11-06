@@ -14,6 +14,7 @@ use App\Media;
 use App\Project;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
@@ -192,6 +193,30 @@ class MartCaseEntriesTest extends TestCase
         $this->submit()->assertStatus(500);
 
         $this->assertSame(0, MartEntry::where('case_id', $this->case->id)->count());
+    }
+
+    /** @test */
+    public function a_failed_submit_tells_the_app_nothing_about_the_cause()
+    {
+        MartAnswer::creating(fn () => throw new \RuntimeException('insert failed for participant@example.com'));
+
+        $this->submit()
+            ->assertStatus(500)
+            ->assertExactJson(['success' => false, 'message' => 'Failed to create entry']);
+    }
+
+    /** @test */
+    public function a_failed_submit_is_logged_without_the_exception_message()
+    {
+        MartAnswer::creating(fn () => throw new \RuntimeException('insert failed for participant@example.com'));
+        Log::spy();
+
+        $this->submit();
+
+        Log::shouldHaveReceived('error')->once()->withArgs(function (string $message, array $context) {
+            return $context['exception'] === \RuntimeException::class
+                && ! str_contains(json_encode($context), 'participant@example.com');
+        });
     }
 
     /** @test */
