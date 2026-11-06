@@ -327,6 +327,10 @@ two limits: it ignores a default of `0`, and it never applies one to `number`. `
 keeps `rangeOptions.defaultValue`, which `martTypes.ts` requires and which the app doesn't
 read: that one falls back to `minValue`.
 
+**Jumps:** `jump` sits in a scale's `options` as `{ "jumpCondition": 1, "jumpOver": 2 }`.
+`jumpCondition` is always a number, the `value` of the option that triggers the jump. The app
+compares it strictly with the chosen `radio` value, so a `checkbox` scale can't trigger a jump.
+
 **Item options** (`questionnaires[].items[].options`): the block is always present, and the
 values come from the question's configuration.
 

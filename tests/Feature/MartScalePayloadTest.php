@@ -410,6 +410,23 @@ class MartScalePayloadTest extends TestCase
         $this->assertCount(2, $this->structure()['scales']);
     }
 
+    /** @test */
+    public function a_jump_condition_saved_as_a_string_is_sent_as_a_number()
+    {
+        // The editor saves a string, and the app compares with === against a number.
+        $this->addQuestionnaire([
+            ['type' => 'one choice', 'config' => [
+                'options' => ['Yes', 'No'],
+                'jump' => ['jumpCondition' => '1', 'jumpOver' => 2],
+            ]],
+        ]);
+
+        $this->assertSame(
+            ['jumpCondition' => 1, 'jumpOver' => 2],
+            $this->structure()['scales'][0]['options']['jump'],
+        );
+    }
+
     private function addQuestionnaire(array $questions): MartSchedule
     {
         $schedule = MartSchedule::create([

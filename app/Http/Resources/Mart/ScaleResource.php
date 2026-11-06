@@ -284,7 +284,8 @@ class ScaleResource extends JsonResource
             // Add jump if present (only for radio/checkbox)
             if (isset($config['jump']) && is_array($config['jump'])) {
                 $scaleOptions['jump'] = [
-                    'jumpCondition' => $config['jump']['jumpCondition'],
+                    // Saved as a string. The app compares it with === to a number.
+                    'jumpCondition' => (int) $config['jump']['jumpCondition'],
                     'jumpOver' => $config['jump']['jumpOver'],
                 ];
             }
