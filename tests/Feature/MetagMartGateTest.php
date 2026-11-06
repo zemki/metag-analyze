@@ -38,6 +38,24 @@ class MetagMartGateTest extends TestCase
     }
 
     /** @test */
+    public function metag_works_on_a_server_with_no_mart_database()
+    {
+        config(['database.connections.mart.database' => 'metag_mart_does_not_exist']);
+        DB::purge('mart');
+
+        $this->postJson('/api/login', [
+            'email' => 'test@example.com',
+            'password' => 'password123',
+            'datetime' => time(),
+        ])->assertOk();
+
+        $this->actingAs($this->user);
+        $this->get('/projects')->assertOk();
+        $this->get("/projects/{$this->project->id}")->assertOk();
+        $this->getJson("/projects/{$this->project->id}/cases")->assertOk();
+    }
+
+    /** @test */
     public function a_metag_project_has_no_mart_project_and_does_not_look_for_one()
     {
         $this->assertNoMartQueries(fn () => $this->assertNull($this->project->martProject()));

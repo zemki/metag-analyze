@@ -202,6 +202,10 @@ class ProjectController extends Controller
         $perPage = $request->input('per_page', 50);
         $cases = $query->paginate($perPage);
 
+        if ($project->isMartProject()) {
+            Cases::loadMartEntries($cases->getCollection());
+        }
+
         // Process cases with computed properties
         $cases->getCollection()->transform(function ($case) use ($project) {
             $case->first_day = $case->firstDay();
@@ -801,10 +805,23 @@ class ProjectController extends Controller
     }
 
     /**
+     * Cases of MeTag projects are skipped, so this stays off the MART database
+     * unless the list holds a MART project.
+     */
+    private function loadMartEntriesCounts($projects): void
+    {
+        Cases::loadMartEntriesCounts(
+            $projects->filter(fn ($project) => $project->isMartProject())->flatMap->cases
+        );
+    }
+
+    /**
      * Prepare Projects Data
      */
     private function prepareProjects($projects)
     {
+        $this->loadMartEntriesCounts($projects);
+
         foreach ($projects as $key => $project) {
             $projects[$key]['authiscreator'] = auth()->user()->is($project->creator());
             $projects[$key]['entries'] = $project->cases->sum('entries_count');
@@ -827,6 +844,8 @@ class ProjectController extends Controller
      */
     private function prepareInvites($invites)
     {
+        $this->loadMartEntriesCounts($invites);
+
         foreach ($invites as $key => $invite) {
             $invites[$key]['casescount'] = $invite->cases()->count();
             $invites[$key]['authiscreator'] = false;

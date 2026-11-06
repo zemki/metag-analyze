@@ -586,6 +586,7 @@ class MartProjectSeeder extends Seeder
                 // Create MartEntry in MART DB
                 $martEntry = MartEntry::create([
                     'main_entry_id' => $entry->id,
+                    'case_id' => $case->id,
                     'schedule_id' => $schedule->id,
                     'questionnaire_id' => $schedule->questionnaire_id,
                     'participant_id' => $case->name,
@@ -1115,6 +1116,7 @@ class MartProjectSeeder extends Seeder
                 // Create MartEntry in MART DB
                 $martEntry = MartEntry::create([
                     'main_entry_id' => $entry->id,
+                    'case_id' => $case->id,
                     'schedule_id' => $schedule->id,
                     'questionnaire_id' => $schedule->questionnaire_id,
                     'participant_id' => $case->name,

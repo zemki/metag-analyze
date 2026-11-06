@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use App\Cases;
-use App\Entry;
 use App\Mart\MartEntry;
 use App\Mart\MartSchedule;
 use App\Notifications\researcherNotificationToUser;
@@ -162,13 +161,9 @@ class NotificationChecker extends Command
         // Check daily submission limits for repeating questionnaires
         $maxDailySubmits = $schedule->timing_config['max_daily_submits'] ?? null;
         if ($schedule->type === 'repeating' && $maxDailySubmits) {
-            // Today's entries for this case live in the main DB; which
-            // questionnaire each one answered lives in the MART DB.
-            $todayEntryIds = Entry::where('case_id', $case->id)
-                ->where('created_at', '>=', date('Y-m-d 00:00:00'))
-                ->pluck('id');
-            $todayEntries = MartEntry::whereIn('main_entry_id', $todayEntryIds)
+            $todayEntries = MartEntry::where('case_id', $case->id)
                 ->where('schedule_id', $schedule->id)
+                ->where('created_at', '>=', date('Y-m-d 00:00:00'))
                 ->count();
 
             if ($todayEntries >= $maxDailySubmits) {

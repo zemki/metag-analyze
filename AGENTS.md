@@ -42,7 +42,7 @@ Feature tests render Blade views with `@vite`, so `public/build` must exist. The
 ### Two databases
 - `mysql` (main): projects, cases, entries (metadata only), users, roles, settings.
 - `mart` (MART): `mart_projects`, `mart_schedules`, `mart_questions`, `mart_question_history`, `mart_entries`, `mart_answers`, `mart_pages`, `mart_stats`, `mart_device_info`, `mart_case_schedules`, `mart_files`. Models live in `app/Mart/` with `protected $connection = 'mart'`.
-- No cross-DB foreign keys. Links: `mart_projects.main_project_id -> projects.id`, `mart_entries.main_entry_id -> entries.id`, `mart_case_schedules.case_id -> cases.id`, `participant_id` = `cases.name`, `user_id` = user email.
+- No cross-DB foreign keys. Links: `mart_projects.main_project_id -> projects.id`, `mart_entries.case_id -> cases.id`, `mart_entries.main_entry_id -> entries.id` (older submissions), `mart_case_schedules.case_id -> cases.id`, `participant_id` = `cases.name`, `user_id` = user email.
 
 ```php
 $martProject = $project->martProject();   // MartProject|null, cached per request; no MART query for MeTag projects
@@ -125,6 +125,7 @@ Editing a question writes a `mart_question_history` row and bumps `version`; ans
 ### Submissions and files
 - Completed cases reject submissions with 422. `userId` must match the case owner's email.
 - Each submit writes a main `entries` row (metadata only) plus `mart_entries` and `mart_answers`.
+- The web entry routes (`/cases/{case}/entries`) refuse MART cases with 403. Case lists build a MART case's `entries` from `mart_entries`, so those rows carry `mart_entries` ids, not `entries` ids.
 - `device-infos` and `stats` return 403 when `userId` is not the bearer token's account.
 - Push: `POST /api/mobile/device-token` (or `fcmToken` on `device-infos`) stores FCM tokens in `users.deviceID`, newest 10. `notification:cleanID` clears them once the latest case has ended.
 - Files: `POST /api/mobile/cases/{case}/files` accepts multipart (`file`) or JSON base64. MIME is detected from content and checked against `MartFile::ALLOWED_MIME_TYPES`; 50 MB max; stored encrypted under `storage/app/mart/`. Upload first, then reference the returned `file_id` in the answer.

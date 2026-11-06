@@ -4,6 +4,7 @@ namespace App;
 
 use App\Enums\CaseStatus;
 use App\Helpers\Helper;
+use App\Mart\MartEntry;
 use App\Notifications\researcherNotificationToUser;
 use App\Setting;
 use File;
@@ -11,6 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Notifications\DatabaseNotificationCollection;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use JetBrains\PhpStorm\Pure;
 use Throwable;
@@ -51,6 +53,12 @@ class Cases extends Model
         'qr_token_generated_at' => 'datetime',
         'qr_token_revoked_at' => 'datetime',
     ];
+
+    /**
+     * Set by loadMartEntriesCounts() or loadMartEntries(). Null means the count
+     * comes from `entries`, so MeTag cases never look at MART.
+     */
+    private ?int $martEntriesCount = null;
 
     public static function boot()
     {
@@ -535,7 +543,61 @@ class Cases extends Model
      */
     public function getEntriesCountAttribute()
     {
-        return $this->entries()->count();
+        return $this->martEntriesCount ?? $this->entries()->count();
+    }
+
+    /**
+     * Count the submissions of these MART cases in one query, so a list doesn't
+     * query MART per case.
+     */
+    public static function loadMartEntriesCounts(Collection $cases): void
+    {
+        if ($cases->isEmpty()) {
+            return;
+        }
+
+        $counts = MartEntry::whereIn('case_id', $cases->pluck('id'))
+            ->selectRaw('case_id, count(*) as total')
+            ->groupBy('case_id')
+            ->pluck('total', 'case_id');
+
+        foreach ($cases as $case) {
+            $case->martEntriesCount = (int) ($counts[$case->id] ?? 0);
+        }
+    }
+
+    /**
+     * Give these MART cases their submissions as `entries`, in one query.
+     *
+     * The rows are unsaved Entry models in the shape the case page reads. Their
+     * ids are mart_entries ids, so they must never reach the entries routes:
+     * EntryController refuses MART cases and EntryTable hides Edit and Delete.
+     */
+    public static function loadMartEntries(Collection $cases): void
+    {
+        if ($cases->isEmpty()) {
+            return;
+        }
+
+        $submissions = MartEntry::whereIn('case_id', $cases->pluck('id'))
+            ->orderBy('id')
+            ->get(['id', 'case_id', 'started_at', 'completed_at', 'created_at'])
+            ->groupBy('case_id');
+
+        foreach ($cases as $case) {
+            $rows = collect($submissions[$case->id] ?? [])->map(fn (MartEntry $submission) => (new Entry)->forceFill([
+                'id' => $submission->id,
+                'case_id' => $case->id,
+                'media_id' => null,
+                'begin' => $submission->started_at->format('Y-m-d H:i:s'),
+                'end' => $submission->completed_at->format('Y-m-d H:i:s'),
+                'inputs' => '[]',
+                'created_at' => $submission->created_at,
+            ]));
+
+            $case->setRelation('entries', $rows);
+            $case->martEntriesCount = $rows->count();
+        }
     }
 
     /**
