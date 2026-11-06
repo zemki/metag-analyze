@@ -144,6 +144,7 @@ Editing a question writes a `mart_question_history` row and bumps `version`; ans
 - A plain `throttle:N,M` keys its counter by user or IP only, so limits on the same route or sharing a window share one counter. Give each limit its own third argument, as `routes/api.php` and `routes/mobile.php` do.
 - `Cases::isConsultable()` is also true when a case has no `lastDay`, which is how MART cases start.
 - `APP_ENV=production` assumes the `/metag` subfolder (Livewire, Telescope, graph breadcrumb). metagtest runs `APP_ENV=local`, so environment checks do not protect it.
+- `php artisan migrate` is enough for both DBs. Never add `--database=mart`: it runs every migration on the MART DB. `migrate:fresh` resets main only, so use `migrate:fresh-all` to reset both, test DBs included: old MART rows collide with restarted main IDs.
 - Seeders must use `bcrypt()`, not `Hash::make()`.
 - Trigger migrations need `SUPER` or `log_bin_trust_function_creators=1`; they skip with a warning otherwise.
 - Case lists and exports for MART come from the MART DB; the main `entries` row holds no answers.
