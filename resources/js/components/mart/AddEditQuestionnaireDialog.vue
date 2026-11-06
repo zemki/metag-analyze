@@ -721,6 +721,7 @@
                     <label class="block text-sm font-medium text-gray-700">{{ trans('Question Type') }} *</label>
                     <select
                         v-model="question.type"
+                        @change="question.defaultValue = ''"
                         class="mt-1 block w-full px-4 py-3 rounded-md shadow-xs border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
                     >
                       <option disabled value="">{{ trans('Select type...') }}</option>
@@ -899,6 +900,40 @@
                         <option value="textarea">{{ trans('Multiple lines') }}</option>
                       </select>
                     </div>
+                  </div>
+
+                  <!-- Default Value -->
+                  <div v-if="hasDefaultValue(question.type)">
+                    <label class="block text-sm font-medium text-gray-700">{{ trans('Default Value (Optional)') }}</label>
+                    <select
+                        v-if="question.type === 'radio' || question.type === 'checkbox'"
+                        v-model="question.defaultValue"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="">{{ trans('No default') }}</option>
+                      <option
+                          v-for="(answer, aIndex) in question.answers.filter(a => a.trim())"
+                          :key="aIndex"
+                          :value="answer"
+                      >
+                        {{ answer }}
+                      </option>
+                    </select>
+                    <input
+                        v-else-if="question.type === 'range' || question.type === 'number'"
+                        type="number"
+                        v-model.number="question.defaultValue"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <input
+                        v-else
+                        type="text"
+                        v-model="question.defaultValue"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <p class="mt-1 text-xs text-gray-500">
+                      {{ trans('Answer already filled in when the question opens.') }}
+                    </p>
                   </div>
 
                   <!-- Timer Options (applies to all question types) -->
@@ -1438,6 +1473,11 @@ export default {
           jumpCondition: jump.jumpCondition !== undefined ? parseInt(jump.jumpCondition) + 1 : 1,
           jumpOver: jump.jumpOver !== undefined ? jump.jumpOver : 1,
           placeholder: config.placeholder || '',
+          // A choice default is saved as the option's key. The form holds the
+          // option's text, so it can't drift when options are added or removed.
+          defaultValue: config.options
+              ? config.options[config.defaultValue] ?? ''
+              : config.defaultValue ?? '',
           answers: config.options || [],
           config: {
             minValue: config.min || 0,
@@ -1637,6 +1677,7 @@ export default {
         jumpCondition: '',
         jumpOver: 1,
         placeholder: '',
+        defaultValue: '',
         answers: [],
         config: {
           minValue: 0,
@@ -1684,6 +1725,10 @@ export default {
       if (answers.length > 1) {
         answers.splice(optionIndex, 1);
       }
+    },
+
+    hasDefaultValue(type) {
+      return ['range', 'number', 'radio', 'checkbox', 'text', 'textarea'].includes(type);
     },
 
     async save() {
@@ -1746,6 +1791,14 @@ export default {
               maxVideoLength: q.config.videoUploadOptions.maxVideoLength ?? null,
               maxFileSize: q.config.videoUploadOptions.maxFileSize ?? null,
             };
+          }
+
+          if (this.hasDefaultValue(q.type)) {
+            const isChoice = q.type === 'radio' || q.type === 'checkbox';
+            const defaultValue = isChoice ? config.options.indexOf(q.defaultValue) : q.defaultValue;
+            if (defaultValue !== '' && defaultValue !== -1 && defaultValue !== undefined) {
+              config.defaultValue = defaultValue;
+            }
           }
 
           // Add timer config if enabled

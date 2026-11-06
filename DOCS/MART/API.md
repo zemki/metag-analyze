@@ -320,6 +320,13 @@ defaults.
 }
 ```
 
+**Default answers:** `defaultValue` sits at the top of a scale's `options` for every type,
+and is only there when the researcher set one. It's a number for `range`, `number`, `radio`
+and `checkbox` (an option's `value`), and a string for `text` and `textarea`. The app has
+two limits: it ignores a default of `0`, and it never applies one to `number`. `range` also
+keeps `rangeOptions.defaultValue`, which `martTypes.ts` requires and which the app doesn't
+read: that one falls back to `minValue`.
+
 **Item options** (`questionnaires[].items[].options`): the block is always present, and the
 values come from the question's configuration.
 

@@ -81,11 +81,14 @@ How MART API types map to database storage.
 | `textarea` | `textarea` | `placeholder` in config, sent as `textOptions.placeholder` |
 | `radio` | `one choice` | `options[]` in config. With `includeOtherOption`, adds an option with the value `text` (label from `otherOptionLabel`) and `textOptions.type` from `otherTextType` |
 | `checkbox` | `multiple choice` | Same as `radio` |
-| `range` | `range` | `minValue`, `maxValue`, `steps`, `defaultValue` |
+| `range` | `range` | `minValue`, `maxValue`, `steps`, `defaultValue` in `rangeOptions` |
 | `rangeValues` | `range values` | `rangeValueOptions[]` |
 | `photoUpload` | `photo` | `photoUploadOptions` |
 | `audioUpload` | `audio` | `audioUploadOptions` |
 | `videoUpload` | `video` | `videoUploadOptions` |
+
+`defaultValue` in config goes to `options.defaultValue` for any type. For `radio` and
+`checkbox` it's the key of the option, the same as the option's `value`.
 
 ## Page
 

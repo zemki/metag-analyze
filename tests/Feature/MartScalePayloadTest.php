@@ -309,6 +309,107 @@ class MartScalePayloadTest extends TestCase
         $this->assertSame(['type' => 'text'], $this->structure()['scales'][0]['options']);
     }
 
+    /** @test */
+    public function a_range_default_goes_at_the_top_of_the_options()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'range', 'config' => ['min' => 1, 'max' => 100, 'defaultValue' => 55]],
+        ]);
+
+        $this->assertSame(55, $this->structure()['scales'][0]['options']['defaultValue']);
+    }
+
+    /** @test */
+    public function a_range_default_stays_in_range_options_as_well()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'range', 'config' => ['min' => 1, 'max' => 100, 'defaultValue' => 55]],
+        ]);
+
+        $this->assertSame(55, $this->structure()['scales'][0]['options']['rangeOptions']['defaultValue']);
+    }
+
+    /** @test */
+    public function a_range_without_a_default_has_none_at_the_top_of_the_options()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'range', 'config' => ['min' => 1, 'max' => 100]],
+        ]);
+
+        $this->assertArrayNotHasKey('defaultValue', $this->structure()['scales'][0]['options']);
+    }
+
+    /** @test */
+    public function a_number_default_goes_at_the_top_of_the_options()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'number', 'config' => ['min' => 1, 'max' => 9, 'defaultValue' => 4]],
+        ]);
+
+        $this->assertSame(4, $this->structure()['scales'][0]['options']['defaultValue']);
+    }
+
+    /** @test */
+    public function a_radio_default_goes_at_the_top_of_the_options()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'one choice', 'config' => ['options' => ['Yes', 'No'], 'defaultValue' => 1]],
+        ]);
+
+        $this->assertSame(1, $this->structure()['scales'][0]['options']['defaultValue']);
+    }
+
+    /** @test */
+    public function a_checkbox_default_goes_at_the_top_of_the_options()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'multiple choice', 'config' => ['options' => ['Yes', 'No'], 'defaultValue' => 1]],
+        ]);
+
+        $this->assertSame(1, $this->structure()['scales'][0]['options']['defaultValue']);
+    }
+
+    /** @test */
+    public function a_text_default_goes_at_the_top_of_the_options()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'text', 'config' => ['defaultValue' => 'Nothing yet']],
+        ]);
+
+        $this->assertSame('Nothing yet', $this->structure()['scales'][0]['options']['defaultValue']);
+    }
+
+    /** @test */
+    public function a_textarea_default_goes_at_the_top_of_the_options()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'textarea', 'config' => ['defaultValue' => 'Nothing yet']],
+        ]);
+
+        $this->assertSame('Nothing yet', $this->structure()['scales'][0]['options']['defaultValue']);
+    }
+
+    /** @test */
+    public function a_default_of_zero_is_still_sent()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'one choice', 'config' => ['options' => ['Yes', 'No'], 'defaultValue' => 0]],
+        ]);
+
+        $this->assertSame(0, $this->structure()['scales'][0]['options']['defaultValue']);
+    }
+
+    /** @test */
+    public function a_different_default_keeps_two_scales_apart()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'one choice', 'config' => ['options' => ['Yes', 'No'], 'defaultValue' => 1]],
+            ['type' => 'one choice', 'config' => ['options' => ['Yes', 'No']]],
+        ]);
+
+        $this->assertCount(2, $this->structure()['scales']);
+    }
+
     private function addQuestionnaire(array $questions): MartSchedule
     {
         $schedule = MartSchedule::create([

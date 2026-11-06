@@ -269,6 +269,11 @@ class ScaleResource extends JsonResource
         if ($this->isMartProject && isset($this->config)) {
             $config = is_array($this->config) ? $this->config : json_decode($this->config, true);
 
+            // The app reads the default from here for every type, range included.
+            if (isset($config['defaultValue'])) {
+                $scaleOptions['defaultValue'] = $config['defaultValue'];
+            }
+
             if (isset($config['timer']) && is_array($config['timer'])) {
                 $scaleOptions['timer'] = [
                     'time' => $config['timer']['time'],
