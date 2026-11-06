@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Cases;
 use App\Entry;
 use App\Filament\Widgets\StatsOverview;
+use App\Mart\MartAnswer;
 use App\Mart\MartEntry;
 use App\Mart\MartProject;
 use App\Mart\MartQuestion;
@@ -13,6 +14,7 @@ use App\Media;
 use App\Project;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 /**
@@ -110,10 +112,9 @@ class MartCaseEntriesTest extends TestCase
         return collect($stats)->first(fn ($stat) => $stat->getLabel() === 'Total Entries')->getValue();
     }
 
-    /** @test */
-    public function submitting_stores_the_case_on_the_mart_entry()
+    private function submit(): TestResponse
     {
-        $this->withToken(self::TOKEN)
+        return $this->withToken(self::TOKEN)
             ->postJson("/api/mobile/cases/{$this->case->id}/submit", [
                 'projectId' => $this->project->id,
                 'questionnaireId' => $this->schedule->questionnaire_id,
@@ -124,10 +125,123 @@ class MartCaseEntriesTest extends TestCase
                 'answers' => ['1' => 'fine'],
                 'timestamp' => now()->timestamp * 1000,
                 'timezone' => 'Europe/Berlin',
-            ])
-            ->assertOk();
+            ]);
+    }
+
+    public static function metagApiVersions(): array
+    {
+        return [
+            'v1' => ['/api/v1', 'media_id'],
+            'v2' => ['/api/v2', 'entity_id'],
+        ];
+    }
+
+    private function storeThroughMetagApi(Cases $case, string $prefix, string $entityField): TestResponse
+    {
+        return $this->withToken(self::TOKEN)->postJson("{$prefix}/cases/{$case->id}/entries", [
+            'begin' => '2026-05-01 10:00:00',
+            'end' => '2026-05-01 10:05:00',
+            'case_id' => $case->id,
+            $entityField => Media::factory()->create()->id,
+            'inputs' => [],
+        ]);
+    }
+
+    /** @test */
+    public function submitting_stores_the_case_on_the_mart_entry()
+    {
+        $this->submit()->assertOk();
 
         $this->assertSame(1, MartEntry::where('case_id', $this->case->id)->count());
+    }
+
+    /** @test */
+    public function submitting_writes_no_main_entry()
+    {
+        $this->submit()->assertOk();
+
+        $this->assertDatabaseMissing('entries', ['case_id' => $this->case->id]);
+    }
+
+    /** @test */
+    public function submitting_starts_no_main_database_transaction()
+    {
+        $started = 0;
+        DB::connection('mysql')->beforeStartingTransaction(function () use (&$started) {
+            $started++;
+        });
+
+        $this->submit()->assertOk();
+
+        $this->assertSame(0, $started);
+    }
+
+    /** @test */
+    public function submitting_returns_the_mart_entry_id()
+    {
+        $response = $this->submit();
+
+        $response->assertJsonPath('entry_id', MartEntry::where('case_id', $this->case->id)->value('id'));
+    }
+
+    /** @test */
+    public function a_failed_submit_keeps_nothing_in_mart()
+    {
+        MartAnswer::creating(fn () => throw new \RuntimeException('answer refused'));
+
+        $this->submit()->assertStatus(500);
+
+        $this->assertSame(0, MartEntry::where('case_id', $this->case->id)->count());
+    }
+
+    /** @test */
+    public function the_treemap_refuses_a_mart_project()
+    {
+        $this->get("/projects/{$this->project->id}/treemap")->assertForbidden();
+    }
+
+    /** @test */
+    public function the_treemap_still_opens_for_a_metag_project()
+    {
+        $this->get("/projects/{$this->metagProject()->id}/treemap")->assertOk();
+    }
+
+    /** @test */
+    public function the_distinct_graph_refuses_a_mart_case()
+    {
+        $this->get("/projects/{$this->project->id}/distinctcases/{$this->case->id}")->assertForbidden();
+    }
+
+    /** @test */
+    public function the_grouped_graph_refuses_a_mart_case()
+    {
+        $this->get("/projects/{$this->project->id}/groupedcases/{$this->case->id}")->assertForbidden();
+    }
+
+    /**
+     * @test
+     *
+     * @dataProvider metagApiVersions
+     */
+    public function the_metag_api_refuses_new_entries_on_a_mart_case(string $prefix, string $entityField)
+    {
+        $this->storeThroughMetagApi($this->case, $prefix, $entityField)->assertForbidden();
+
+        $this->assertDatabaseMissing('entries', ['case_id' => $this->case->id]);
+    }
+
+    /**
+     * @test
+     *
+     * @dataProvider metagApiVersions
+     */
+    public function the_metag_api_still_stores_entries_on_a_metag_case(string $prefix, string $entityField)
+    {
+        $case = $this->addCase($this->metagProject());
+
+        $this->storeThroughMetagApi($case, $prefix, $entityField)->assertOk();
+
+        $this->assertDatabaseHas('entries', ['case_id' => $case->id]);
     }
 
     /** @test */

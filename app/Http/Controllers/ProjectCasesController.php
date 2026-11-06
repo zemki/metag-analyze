@@ -35,6 +35,7 @@ class ProjectCasesController extends Controller
         if (auth()->user()->notOwnerNorInvited($project) && ! auth()->user()->isAdmin()) {
             abort(403);
         }
+        $this->refuseMartCase($case);
         [$mediaValues, $availableMedia] = Cases::getMediaValues($case);
         [$availableInputs, $data] = Cases::getInputValues($case, $data);
         $data['entries']['list'] = Entry::where('case_id', '=', $case->id)->get();
@@ -58,6 +59,7 @@ class ProjectCasesController extends Controller
         if (auth()->user()->notOwnerNorInvited($project) && ! auth()->user()->isAdmin()) {
             abort(403);
         }
+        $this->refuseMartCase($case);
         $tempArray = Entry::where('case_id', '=', $case->id)->with('media')->get()->toArray();
         $data['entries'] = [];
         $data['availableInputs'] = $project->getAnswersInputs();

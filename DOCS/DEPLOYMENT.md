@@ -247,6 +247,9 @@ php artisan up
 One `migrate` covers both databases. Reloading PHP matters: without it, OPcache keeps running
 the old code.
 
+The MART database must exist before `php artisan migrate`, even if it is empty. Without it the
+MART migrations stop with `Unknown database`, and every later migration waits behind them.
+
 ## Backups
 
 | What | Why |

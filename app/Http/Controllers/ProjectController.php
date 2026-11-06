@@ -956,6 +956,8 @@ class ProjectController extends Controller
             abort(403);
         }
 
+        abort_if($project->isMartProject(), 403, 'The treemap is not available for MART projects.');
+
         // Prepare breadcrumb
         $data['breadcrumb'] = [
             url('/projects') => 'Projects',

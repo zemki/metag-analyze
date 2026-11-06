@@ -567,25 +567,12 @@ class MartProjectSeeder extends Seeder
             $durationMinutes = rand(2, 5);
             $endDate = $entryDate->copy()->addMinutes($durationMinutes);
 
-            // Use cross-DB transaction
-            DB::connection('mysql')->beginTransaction();
+            // One transaction per submission
             DB::connection('mart')->beginTransaction();
 
             try {
-                // Create Entry in main DB
-                $entry = Entry::create([
-                    'case_id' => $case->id,
-                    'begin' => $entryDate->format('Y-m-d H:i:s'),
-                    'end' => $endDate->format('Y-m-d H:i:s'),
-                    'inputs' => json_encode($inputs),
-                    'media_id' => null,
-                    'created_at' => $entryDate,
-                    'updated_at' => $entryDate,
-                ]);
-
                 // Create MartEntry in MART DB
                 $martEntry = MartEntry::create([
-                    'main_entry_id' => $entry->id,
                     'case_id' => $case->id,
                     'schedule_id' => $schedule->id,
                     'questionnaire_id' => $schedule->questionnaire_id,
@@ -612,10 +599,8 @@ class MartProjectSeeder extends Seeder
                     }
                 }
 
-                DB::connection('mysql')->commit();
                 DB::connection('mart')->commit();
             } catch (\Exception $e) {
-                DB::connection('mysql')->rollBack();
                 DB::connection('mart')->rollBack();
                 throw $e;
             }
@@ -1097,25 +1082,12 @@ class MartProjectSeeder extends Seeder
             $durationMinutes = rand(2, 5);
             $endDate = $entryDate->copy()->addMinutes($durationMinutes);
 
-            // Use cross-DB transaction
-            DB::connection('mysql')->beginTransaction();
+            // One transaction per submission
             DB::connection('mart')->beginTransaction();
 
             try {
-                // Create Entry in main DB
-                $entry = Entry::create([
-                    'case_id' => $case->id,
-                    'begin' => $entryDate->format('Y-m-d H:i:s'),
-                    'end' => $endDate->format('Y-m-d H:i:s'),
-                    'inputs' => json_encode($inputs),
-                    'media_id' => null, // MART projects don't use media
-                    'created_at' => $entryDate,
-                    'updated_at' => $entryDate,
-                ]);
-
                 // Create MartEntry in MART DB
                 $martEntry = MartEntry::create([
-                    'main_entry_id' => $entry->id,
                     'case_id' => $case->id,
                     'schedule_id' => $schedule->id,
                     'questionnaire_id' => $schedule->questionnaire_id,
@@ -1142,10 +1114,8 @@ class MartProjectSeeder extends Seeder
                     }
                 }
 
-                DB::connection('mysql')->commit();
                 DB::connection('mart')->commit();
             } catch (\Exception $e) {
-                DB::connection('mysql')->rollBack();
                 DB::connection('mart')->rollBack();
                 throw $e;
             }

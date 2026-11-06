@@ -30,15 +30,6 @@ class EntryController extends Controller
 
     protected const ENTRIES = 'entries';
 
-    /**
-     * MART entries come from the app and live in `mart_entries`. The case page
-     * shows their ids, which mean nothing to these routes.
-     */
-    private function refuseMartCase(Cases $case): void
-    {
-        abort_if($case->project?->isMartProject(), 403, 'Entries of a MART case come from the mobile app.');
-    }
-
     public function entriesByCase(Cases $case)
     {
         return EntryResource::collection($case->entries->sortByDesc(self::BEGIN));
