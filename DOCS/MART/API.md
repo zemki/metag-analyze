@@ -31,6 +31,8 @@ the same limits. There's no removal date, but new code should use `/api/mobile`.
 | `caseId` | integer | The case's numeric primary key, used only inside URL paths (e.g. `/cases/{caseId}/...`). Different from `participantId`. |
 | `projectId` | integer | The project's numeric primary key. |
 | `questionnaireId` | integer | The schedule's questionnaire id (1-based per project). |
+| `itemId` | integer | A question's place in its questionnaire, from 1. It restarts in each questionnaire and is `null` for `display` items. |
+| `scaleId` | integer | The scale an item uses, unique across the whole payload. `null` for `display` items. |
 | `bearerToken` | string | 30-day API access token returned by `check-password`. |
 | `refreshToken` | string | 7-day rotation token returned by `check-password`. |
 
@@ -313,6 +315,13 @@ values come from the question's configuration.
 
 An item can also carry `imageUrl`, `videoUrl` and `posterUrl` next to `options`. They're left
 out when empty.
+
+**Scale IDs:** the app looks a scale up by `scaleId` over the whole `scales` list, so an id
+never repeats across questionnaires. It's `questionnaireId * 1000 + index + 1`, where `index`
+is the item's place in its questionnaire, from 0. Items with identical `options` share the
+first item's scale, so `scales` can be shorter than the list of items. Don't store these ids:
+they can change when a questionnaire is edited. Submits use `itemId` and exports use the
+question's UUID.
 
 **Project Availability Window (`projectOptions.options.startDateAndTime` / `endDateAndTime`):**
 Both objects always have shape `{ date, time }` with non-null values, so the mobile

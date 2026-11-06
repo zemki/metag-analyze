@@ -14,13 +14,17 @@ class QuestionSheetResource extends JsonResource
 
     protected $scheduleName;
 
-    public function __construct($resource, $questions = null, $martConfig = null, $questionnaireId = 1, $scheduleName = null)
+    /** MART only: scaleId per item index, assigned in MartStructureResource. */
+    protected $itemScaleIds;
+
+    public function __construct($resource, $questions = null, $martConfig = null, $questionnaireId = 1, $scheduleName = null, array $itemScaleIds = [])
     {
         parent::__construct($resource);
         $this->questions = $questions;
         $this->martConfig = $martConfig;
         $this->questionnaireId = $questionnaireId;
         $this->scheduleName = $scheduleName;
+        $this->itemScaleIds = $itemScaleIds;
     }
 
     public function toArray($request)
@@ -41,7 +45,7 @@ class QuestionSheetResource extends JsonResource
                 $item = [
                     // Per martTypes.ts: itemId/scaleId are null for display-only items (text without question)
                     'itemId' => $isDisplayOnly ? null : $index + 1,
-                    'scaleId' => $isDisplayOnly ? null : $index + 1,
+                    'scaleId' => $this->itemScaleIds[$index] ?? null,
                     'text' => $question['text'] ?? $question['name'] ?? '',
                     'options' => [
                         'randomizationGroupId' => $config['randomizationGroupId'] ?? null,

@@ -92,7 +92,8 @@ Interactive docs: `/docs/api` (Scramble + Stoplight), HTTP Basic auth via `API_D
 ### Response shape (structure endpoint)
 - Keys: `projectOptions`, `questionnaires`, `scales`, `pages`, `deviceInfos`, `repeatingSubmits`, `singleSubmits`, `lastDataDonationSubmit`, `lastAndroidStatsSubmit`.
 - Dates `DD.MM.YYYY`, times `HH:MM`. Use `questionnaireId` (not `sheetId`), `randomizationGroupId`, `iOSDataDonationQuestionnaire`, `androidDataDonationQuestionnaire`, `lastDataDonationSubmit`.
-- Items: `itemId` and `scaleId` are `index + 1`; both `null` for `display` items. Answers on submit are keyed by `itemId`.
+- Items: `itemId` is `index + 1` within the questionnaire. `scaleId` is `questionnaireId * 1000 + index + 1`, unique across the payload, and items with identical options share one. Both are `null` for `display` items.
+- Answers on submit are keyed by `itemId`: the question's place in position order, not its `position`, which the editor saves from 1.
 - Scales have `scaleId` and `options` only (no `name`, no `projectId`). Range defaults go in `rangeOptions`.
 - Pages carry both `id` and `pageId`.
 - Participant fields are filled when `participant_id` is passed; an unknown `participant_id` is a 404.

@@ -84,10 +84,10 @@ class MartApiTest extends TestCase
             ],
         ]);
 
-        // Create questions for schedule 1 (positions start from 0)
+        // Create questions for schedule 1 (positions start from 1, as the editor saves them)
         MartQuestion::create([
             'schedule_id' => $schedule1->id,
-            'position' => 0,
+            'position' => 1,
             'text' => 'How are you feeling?',
             'type' => 'scale',
             'config' => [
@@ -101,7 +101,7 @@ class MartApiTest extends TestCase
 
         MartQuestion::create([
             'schedule_id' => $schedule1->id,
-            'position' => 1,
+            'position' => 2,
             'text' => 'What are you doing?',
             'type' => 'multiple choice',
             'config' => [
@@ -132,10 +132,10 @@ class MartApiTest extends TestCase
             ],
         ]);
 
-        // Create question for schedule 2 (position starts from 0)
+        // Create question for schedule 2
         MartQuestion::create([
             'schedule_id' => $schedule2->id,
-            'position' => 0,
+            'position' => 1,
             'text' => 'Any thoughts?',
             'type' => 'text',
             'config' => [],
@@ -746,7 +746,7 @@ class MartApiTest extends TestCase
         // string, so the resource has to normalise.
         MartQuestion::create([
             'schedule_id' => $schedule2->id,
-            'position' => 1,
+            'position' => 2,
             'text' => 'Grouped and randomised',
             'type' => 'text',
             'config' => [
@@ -763,7 +763,7 @@ class MartApiTest extends TestCase
         // A display item marked mandatory must still be skippable.
         MartQuestion::create([
             'schedule_id' => $schedule2->id,
-            'position' => 2,
+            'position' => 3,
             'text' => 'Thanks for taking part.',
             'type' => 'display',
             'config' => [],

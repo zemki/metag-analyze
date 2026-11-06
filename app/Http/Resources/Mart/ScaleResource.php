@@ -19,6 +19,19 @@ class ScaleResource extends JsonResource
 
     public function toArray($request)
     {
+        // Per martTypes.ts, Scale only has scaleId and options (no projectId)
+        return [
+            'scaleId' => $this->index + 1,
+            'options' => $this->scaleOptions(),
+        ];
+    }
+
+    /**
+     * The scale's options block. MART scale ids are assigned across the whole
+     * payload in MartStructureResource, which needs this without an id.
+     */
+    public function scaleOptions(): array
+    {
         $scaleOptions = [
             'type' => 'text',
         ];
@@ -289,10 +302,6 @@ class ScaleResource extends JsonResource
             }
         }
 
-        // Per martTypes.ts, Scale only has scaleId and options (no projectId)
-        return [
-            'scaleId' => $this->index + 1,
-            'options' => $scaleOptions,
-        ];
+        return $scaleOptions;
     }
 }

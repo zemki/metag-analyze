@@ -331,14 +331,11 @@ class MartApiController extends Controller
             $martEntry = MartEntry::create($martEntryData);
 
             // Step 3: Create MART answers for each question
-            $questions = $schedule->questions->keyBy("position");
+            $questions = $this->questionsInItemOrder($schedule);
             $fileIdsToLink = [];
 
             foreach ($request->answers as $itemId => $answerValue) {
-                // Convert itemId to position: itemId = position + 1, so position = itemId - 1
-                $itemIdInt = (int) $itemId;
-                $position = $itemIdInt - 1;
-                $question = $questions->get($position);
+                $question = $questions[(int) $itemId - 1] ?? null;
 
                 if ($question) {
                     // Check if this is a file-type answer (contains file UUIDs)
@@ -703,27 +700,21 @@ class MartApiController extends Controller
             ];
         }
 
-        // Build question map by array index (not DB position!)
-        // Mobile app receives scaleId = index + 1, so itemId corresponds to array index
-        $questionsArray = $questions->sortBy("position")->values()->all();
-        $questionMap = [];
-        foreach ($questionsArray as $index => $question) {
-            $questionMap[$index] = $question;
-        }
+        $questionsArray = $this->questionsInItemOrder($schedule);
 
         // Validate each answer
-        // Note: Mobile app sends answers keyed by itemId (scaleIndex + 1)
+        // Note: Mobile app sends answers keyed by itemId (index + 1)
         foreach ($answers as $itemId => $answer) {
             // Convert itemId to array index: itemId = index + 1, so index = itemId - 1
             $itemIdInt = (int) $itemId;
             $index = $itemIdInt - 1;
 
-            if (!isset($questionMap[$index])) {
+            if (!isset($questionsArray[$index])) {
                 $errors[] = "Question with itemId $itemId (index $index) does not exist in schedule";
                 continue;
             }
 
-            $question = $questionMap[$index];
+            $question = $questionsArray[$index];
             $validationResult = $this->validateSingleAnswer(
                 $answer,
                 $question,
@@ -753,6 +744,16 @@ class MartApiController extends Controller
             "valid" => empty($errors),
             "errors" => $errors,
         ];
+    }
+
+    /**
+     * A schedule's questions in the order the structure lists them, so that
+     * index = itemId - 1. This is not the DB position, which starts at 1 for
+     * questions saved in the editor.
+     */
+    private function questionsInItemOrder(MartSchedule $schedule): array
+    {
+        return $schedule->questions->sortBy("position")->values()->all();
     }
 
     /**

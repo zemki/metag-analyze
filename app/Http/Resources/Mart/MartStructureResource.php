@@ -64,6 +64,24 @@ class MartStructureResource extends JsonResource
                     $scheduleQuestions = $schedule->questions ?? [];
 
                     if (!empty($scheduleQuestions)) {
+                        // The app looks a scale up by id over the whole list, so ids
+                        // must be unique across questionnaires. Items with identical
+                        // options share one scale; the app copies it for each item.
+                        $itemScaleIds = [];
+                        foreach ($scheduleQuestions as $index => $question) {
+                            // Skip display-only items - they have no scale (itemId/scaleId are null)
+                            if (($question['type'] ?? '') === 'display') {
+                                continue;
+                            }
+                            $options = (new ScaleResource((object) $question, $index, true))->scaleOptions();
+                            $key = json_encode($options);
+                            $scales[$key] ??= [
+                                'scaleId' => $schedule->questionnaire_id * 1000 + $index + 1,
+                                'options' => $options,
+                            ];
+                            $itemScaleIds[$index] = $scales[$key]['scaleId'];
+                        }
+
                         // Create questionnaire for this schedule, passing the schedule's
                         // own name so each questionnaire is named distinctly in the response.
                         $questionnaires[] = new QuestionSheetResource(
@@ -71,20 +89,9 @@ class MartStructureResource extends JsonResource
                             $scheduleQuestions,
                             $martConfig,
                             $schedule->questionnaire_id,
-                            $schedule->name
+                            $schedule->name,
+                            $itemScaleIds
                         );
-
-                        // Create scales for this schedule's questions (skip display-only items)
-                        // Use item index to keep scaleId consistent with the item's scaleId reference
-                        foreach ($scheduleQuestions as $index => $question) {
-                            // Skip display-only items - they have no scale (itemId/scaleId are null)
-                            if (($question['type'] ?? '') === 'display') {
-                                continue;
-                            }
-                            $question['projectId'] = $project->id;
-                            // Use the item's index so scaleId matches the item's scaleId reference
-                            $scales[] = new ScaleResource((object) $question, $index, true); // true = isMartProject
-                        }
                     }
                 }
             }
@@ -99,7 +106,7 @@ class MartStructureResource extends JsonResource
             $response = [
                 'projectOptions' => new ProjectOptionsResource($project, $martConfig, $this->schedules, $this->caseId),
                 'questionnaires' => $questionnaires,
-                'scales' => $scales,
+                'scales' => array_values($scales),
                 'pages' => $pageResources,
                 // Always include these fields (required by martTypes.ts)
                 'deviceInfos' => $this->participantId ? $this->getDeviceInfo($this->participantId) : [],
