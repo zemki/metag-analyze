@@ -17,6 +17,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | MeTag Boundary
+    |--------------------------------------------------------------------------
+    |
+    | MeTag API routes must not reach the MART database (see DatabaseBoundary).
+    | When true, a MART query on one throws. When false, it is only logged.
+    | MeTag is live, so production only logs until this is switched on.
+    |
+    */
+
+    'metag_boundary_enforced' => env('METAG_BOUNDARY_ENFORCED', env('APP_ENV') !== 'production'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Database Connections
     |--------------------------------------------------------------------------
     |

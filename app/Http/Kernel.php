@@ -9,6 +9,7 @@ use App\Http\Middleware\BlockIpMiddleware;
 use App\Http\Middleware\CheckAdminArea;
 use App\Http\Middleware\CheckForMaintenanceMode;
 use App\Http\Middleware\CheckGroup;
+use App\Http\Middleware\DatabaseBoundary;
 use App\Http\Middleware\EncryptCookies;
 use App\Http\Middleware\ForceJsonResponse;
 use App\Http\Middleware\LoggedUser;
@@ -97,6 +98,7 @@ class Kernel extends HttpKernel
         'RefreshApiToken' => RefreshApiToken::class,
         'LoggedUser' => LoggedUser::class,
         'force.json' => ForceJsonResponse::class,
+        'boundary' => DatabaseBoundary::class,
     ];
 
     /**
@@ -106,6 +108,8 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $middlewarePriority = [
+        // First, so it also sees the queries of auth and route model binding.
+        DatabaseBoundary::class,
         StartSession::class,
         ShareErrorsFromSession::class,
         ForceJsonResponse::class,

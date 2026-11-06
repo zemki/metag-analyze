@@ -42,6 +42,7 @@ Feature tests render Blade views with `@vite`, so `public/build` must exist. The
 ### Two databases
 - `mysql` (main): projects, cases, entries (MeTag answers; older MART submissions as empty rows), users, roles, settings.
 - `mart` (MART): `mart_projects`, `mart_schedules`, `mart_questions`, `mart_question_history`, `mart_entries`, `mart_answers`, `mart_pages`, `mart_stats`, `mart_device_info`, `mart_case_schedules`, `mart_files`. Models live in `app/Mart/` with `protected $connection = 'mart'`.
+- `DatabaseBoundary` middleware: `boundary:metag` on `/api/login`, `/api/qr-login`, `/api/v1`, `/api/v2` throws on any MART query, or only logs where `METAG_BOUNDARY_ENFORCED` is false, which is the default in production. `boundary:mart` on `/api/mobile`, `/api/mart`, `/mart-api` logs main tables other than `users`, `projects`, `cases`. The six `/api/v2/projects/{project}/pages` routes stay outside. Add the middleware to any new route under those prefixes.
 - No cross-DB foreign keys. Links: `mart_projects.main_project_id -> projects.id`, `mart_entries.case_id -> cases.id`, `mart_entries.main_entry_id -> entries.id` (older submissions), `mart_case_schedules.case_id -> cases.id`, `participant_id` = `cases.name`, `user_id` = user email.
 
 ```php

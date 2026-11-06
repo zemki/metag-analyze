@@ -250,6 +250,10 @@ the old code.
 The MART database must exist before `php artisan migrate`, even if it is empty. Without it the
 MART migrations stop with `Unknown database`, and every later migration waits behind them.
 
+In production, a MART query on a MeTag API route is only logged, as `MeTag route used the MART
+database`. Once that log has stayed empty, set `METAG_BOUNDARY_ENFORCED=true` to make those
+queries fail. Other environments enforce this by default.
+
 ## Backups
 
 | What | Why |
