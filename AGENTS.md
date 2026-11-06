@@ -45,8 +45,8 @@ Feature tests render Blade views with `@vite`, so `public/build` must exist. The
 - No cross-DB foreign keys. Links: `mart_projects.main_project_id -> projects.id`, `mart_entries.main_entry_id -> entries.id`, `mart_case_schedules.case_id -> cases.id`, `participant_id` = `cases.name`, `user_id` = user email.
 
 ```php
-$martProject = $project->martProject();   // MartProject|null, cached per request
-$martEntry   = $entry->martEntry();       // MartEntry|null
+$martProject = $project->martProject();   // MartProject|null, cached per request; no MART query for MeTag projects
+$martEntry   = $entry->martEntry();       // MartEntry|null; same rule
 if ($project->isMartProject()) { ... }    // reads the 'mart' marker in projects.inputs
 
 DB::connection('mysql')->beginTransaction();
@@ -143,6 +143,7 @@ Editing a question writes a `mart_question_history` row and bumps `version`; ans
 - Never call `env()` outside `config/`: it returns null under `config:cache`.
 - A plain `throttle:N,M` keys its counter by user or IP only, so limits on the same route or sharing a window share one counter. Give each limit its own third argument, as `routes/api.php` and `routes/mobile.php` do.
 - `Cases::isConsultable()` is also true when a case has no `lastDay`, which is how MART cases start.
+- `/api/login` opens the user's newest MeTag case, not `latestCase`, which can be a MART case. MART cases log in through `/api/mobile/auth`, and someone with only MART cases gets 499.
 - `APP_ENV=production` assumes the `/metag` subfolder (Livewire, Telescope, graph breadcrumb). metagtest runs `APP_ENV=local`, so environment checks do not protect it.
 - `php artisan migrate` is enough for both DBs. Never add `--database=mart`: it runs every migration on the MART DB. `migrate:fresh` resets main only, so use `migrate:fresh-all` to reset both, test DBs included: old MART rows collide with restarted main IDs.
 - Seeders must use `bcrypt()`, not `Hash::make()`.

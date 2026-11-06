@@ -56,10 +56,7 @@ class PageController extends Controller
         ]);
 
         // Get or create MART project
-        $martProject = $project->martProject();
-        if (! $martProject) {
-            $martProject = MartProject::create(['main_project_id' => $project->id]);
-        }
+        $martProject = MartProject::firstOrCreate(['main_project_id' => $project->id]);
 
         $attributes['mart_project_id'] = $martProject->id;
 

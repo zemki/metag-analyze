@@ -93,8 +93,8 @@ class MartCaseSchedule extends Model
      * many submissions the schedule asks for. Both depend on the case, so they
      * live here as overrides rather than on the schedule.
      *
-     * Called once, when first_login_at is set (MeTag login, MART check-access,
-     * or a structure fetch that auto-creates the case).
+     * Called once, when first_login_at is set (MART check-access, or a
+     * structure fetch that auto-creates the case).
      */
     public static function calculateForCase(Cases $case): void
     {

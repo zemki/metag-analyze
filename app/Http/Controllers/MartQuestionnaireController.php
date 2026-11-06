@@ -101,10 +101,7 @@ class MartQuestionnaireController extends Controller
         }
 
         // Get or create MART project
-        $martProject = $project->martProject();
-        if (! $martProject) {
-            $martProject = MartProject::create(['main_project_id' => $project->id]);
-        }
+        $martProject = MartProject::firstOrCreate(['main_project_id' => $project->id]);
 
         // Calculate end_date_time if max_total_submits is provided for repeating questionnaires
         // Skip if start_on_first_login is true (dates will be calculated at participant's first login)

@@ -264,6 +264,10 @@ class Cases extends Model
     {
         $project = $this->project;
 
+        if (! $project->isMartProject()) {
+            return;
+        }
+
         // First, try to use new questionnaire schedules system from MART database
         $martProject = $project->martProject();
         if ($martProject) {

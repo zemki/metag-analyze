@@ -69,18 +69,18 @@ class Entry extends Model
 
     /**
      * Get the MART entry from the MART database (cross-DB query).
-     * Returns null if this entry has no associated MART data.
+     * Returns null if this entry has no associated MART data, and never
+     * queries MART for an entry of a MeTag project.
      *
      * @return \App\Mart\MartEntry|null
      */
     public function martEntry()
     {
-        try {
-            return \App\Mart\MartEntry::where('main_entry_id', $this->id)->first();
-        } catch (\Exception $e) {
-            // MART database may not exist - return null
+        if (! $this->cases?->project?->isMartProject()) {
             return null;
         }
+
+        return \App\Mart\MartEntry::where('main_entry_id', $this->id)->first();
     }
 
     /**

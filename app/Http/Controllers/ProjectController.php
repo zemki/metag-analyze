@@ -383,8 +383,9 @@ class ProjectController extends Controller
                 DB::connection('mart')->commit();
             } catch (\Exception $e) {
                 DB::connection('mart')->rollBack();
-                // Also delete the main project to maintain consistency
-                $project->delete();
+                // Also delete the main project to maintain consistency. Quietly:
+                // the model's delete hook would hit the same MART failure.
+                $project->deleteQuietly();
                 throw new \Exception('Failed to create MART project: ' . $e->getMessage());
             }
         }
