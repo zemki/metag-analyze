@@ -312,18 +312,25 @@ defaults.
 {
   "type": "radio",
   "radioOptions": [
-    { "value": 0, "text": "Yes" },
-    { "value": 1, "text": "No" },
+    { "value": 1, "text": "Yes" },
+    { "value": 2, "text": "No" },
     { "value": "text", "text": "Sonstiges" }
   ],
   "textOptions": { "type": "textarea" }
 }
 ```
 
+**Option values:** `radio` and `checkbox` options are numbered from 1, in their saved order.
+That's the option number in the editor, the value in an answer and the value in an export.
+`mart_questions.config` keeps 0-based keys, and the API adds 1 to `value`, `jumpCondition` and
+a choice `defaultValue`. Values can't start at 0 because the app drops a `radio` value of 0.
+It does the same to a `number` or `range` answer of 0, which arrives as `[]`, like a skipped
+question. Only an app change can fix that.
+
 **Default answers:** `defaultValue` sits at the top of a scale's `options` for every type,
 and is only there when the researcher set one. It's a number for `range`, `number`, `radio`
 and `checkbox` (an option's `value`), and a string for `text` and `textarea`. The app has
-two limits: it ignores a default of `0`, and it never applies one to `number`. `range` also
+two limits: it ignores a `range` default of `0`, and it never applies one to `number`. `range` also
 keeps `rangeOptions.defaultValue`, which `martTypes.ts` requires and which the app doesn't
 read: that one falls back to `minValue`.
 
@@ -384,7 +391,7 @@ POST /api/mobile/cases/{caseId}/submit
   "participantId": "P1A2B3C",
   "questionnaireStarted": 1234567890000,
   "questionnaireDuration": 300000,
-  "answers": { "1": 5, "2": [0, 1] },
+  "answers": { "1": 5, "2": [1, 2] },
   "timestamp": 1234567890000,
   "timezone": "Europe/Berlin"
 }

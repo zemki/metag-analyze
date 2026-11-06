@@ -95,6 +95,7 @@ Interactive docs: `/docs/api` (Scramble + Stoplight), HTTP Basic auth via `API_D
 - Items: `itemId` is `index + 1` within the questionnaire. `scaleId` is `questionnaireId * 1000 + index + 1`, unique across the payload, and items with identical options share one. Both are `null` for `display` items.
 - Answers on submit are keyed by `itemId`: the question's place in position order, not its `position`, which the editor saves from 1.
 - Scales have `scaleId` and `options` only (no `name`, no `projectId`). A default answer goes in `options.defaultValue` for every type, and only when `config.defaultValue` is set. The app doesn't read `rangeOptions.defaultValue`, which stays because `martTypes.ts` requires it.
+- Choice option `value`s start at 1, because the app drops a radio value of 0. `config` keeps 0-based keys, and `ScaleResource` adds 1 on output to `value`, `jumpCondition` and a choice `defaultValue`. MeTag scales stay 0-based.
 - Pages carry both `id` and `pageId`.
 - Participant fields are filled when `participant_id` is passed; an unknown `participant_id` is a 404.
 - Data-donation schedules are excluded from `singleQuestionnaires`.

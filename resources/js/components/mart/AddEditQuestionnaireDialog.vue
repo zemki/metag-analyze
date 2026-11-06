@@ -1469,7 +1469,7 @@ export default {
           timerSeconds: timer.time || 30,
           showCountdown: timer.showCountdown !== undefined ? timer.showCountdown : true,
           useJump: !!(jump.jumpCondition !== undefined || jump.jumpOver !== undefined),
-          // Convert jumpCondition from 0-based (API) to 1-based (UI)
+          // Convert jumpCondition from 0-based (config) to 1-based (UI)
           jumpCondition: jump.jumpCondition !== undefined ? parseInt(jump.jumpCondition) + 1 : 1,
           jumpOver: jump.jumpOver !== undefined ? jump.jumpOver : 1,
           placeholder: config.placeholder || '',
@@ -1810,7 +1810,7 @@ export default {
           }
 
           // Add jump config if enabled (only for radio/checkbox)
-          // Convert jumpCondition from 1-based (UI) to 0-based (API)
+          // Convert jumpCondition from 1-based (UI) to 0-based (config)
           if (q.useJump && (q.type === 'radio' || q.type === 'checkbox')) {
             config.jump = {
               jumpCondition: String(q.jumpCondition - 1),

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Http\Controllers\MartApiController;
+use App\Http\Resources\Mart\ScaleResource;
 use App\Mart\MartAnswer;
 use App\Mart\MartEntry;
 use App\Mart\MartProject;
@@ -202,8 +203,8 @@ class MartScalePayloadTest extends TestCase
         $this->assertSame([
             'type' => 'radio',
             'radioOptions' => [
-                ['value' => 0, 'text' => 'Yes'],
-                ['value' => 1, 'text' => 'No'],
+                ['value' => 1, 'text' => 'Yes'],
+                ['value' => 2, 'text' => 'No'],
                 ['value' => 'text', 'text' => 'Sonstiges'],
             ],
             'textOptions' => ['type' => 'text'],
@@ -224,8 +225,8 @@ class MartScalePayloadTest extends TestCase
         $this->assertSame([
             'type' => 'checkbox',
             'checkboxOptions' => [
-                ['value' => 0, 'text' => 'Yes'],
-                ['value' => 1, 'text' => 'No'],
+                ['value' => 1, 'text' => 'Yes'],
+                ['value' => 2, 'text' => 'No'],
                 ['value' => 'text', 'text' => 'Sonstiges'],
             ],
             'textOptions' => ['type' => 'text'],
@@ -356,7 +357,7 @@ class MartScalePayloadTest extends TestCase
             ['type' => 'one choice', 'config' => ['options' => ['Yes', 'No'], 'defaultValue' => 1]],
         ]);
 
-        $this->assertSame(1, $this->structure()['scales'][0]['options']['defaultValue']);
+        $this->assertSame(2, $this->structure()['scales'][0]['options']['defaultValue']);
     }
 
     /** @test */
@@ -366,7 +367,7 @@ class MartScalePayloadTest extends TestCase
             ['type' => 'multiple choice', 'config' => ['options' => ['Yes', 'No'], 'defaultValue' => 1]],
         ]);
 
-        $this->assertSame(1, $this->structure()['scales'][0]['options']['defaultValue']);
+        $this->assertSame(2, $this->structure()['scales'][0]['options']['defaultValue']);
     }
 
     /** @test */
@@ -393,7 +394,7 @@ class MartScalePayloadTest extends TestCase
     public function a_default_of_zero_is_still_sent()
     {
         $this->addQuestionnaire([
-            ['type' => 'one choice', 'config' => ['options' => ['Yes', 'No'], 'defaultValue' => 0]],
+            ['type' => 'range', 'config' => ['min' => 0, 'max' => 10, 'defaultValue' => 0]],
         ]);
 
         $this->assertSame(0, $this->structure()['scales'][0]['options']['defaultValue']);
@@ -422,9 +423,143 @@ class MartScalePayloadTest extends TestCase
         ]);
 
         $this->assertSame(
-            ['jumpCondition' => 1, 'jumpOver' => 2],
+            ['jumpCondition' => 2, 'jumpOver' => 2],
             $this->structure()['scales'][0]['options']['jump'],
         );
+    }
+
+    /** @test */
+    public function single_choice_values_start_at_1()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'one choice', 'config' => ['options' => ['Yes', 'No', 'Maybe']]],
+        ]);
+
+        $options = $this->structure()['scales'][0]['options']['radioOptions'];
+
+        $this->assertSame([1, 2, 3], array_column($options, 'value'));
+    }
+
+    /** @test */
+    public function multiple_choice_values_start_at_1()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'multiple choice', 'config' => ['options' => ['Yes', 'No', 'Maybe']]],
+        ]);
+
+        $options = $this->structure()['scales'][0]['options']['checkboxOptions'];
+
+        $this->assertSame([1, 2, 3], array_column($options, 'value'));
+    }
+
+    /** @test */
+    public function the_first_single_choice_option_is_saved_when_picked()
+    {
+        $schedule = $this->addQuestionnaire([
+            ['type' => 'one choice', 'text' => 'Pick one', 'config' => ['options' => ['Yes', 'No']]],
+        ]);
+
+        $firstOption = $this->structure()['scales'][0]['options']['radioOptions'][0];
+
+        $this->submit($schedule, ['1' => $this->appRadioAnswer($firstOption['value'])]);
+
+        $this->assertSame(['Pick one' => '[1]'], $this->storedAnswers($schedule));
+    }
+
+    /** @test */
+    public function a_jump_fires_on_its_own_option_and_no_other()
+    {
+        // The editor saves option N as the string N - 1.
+        $this->addQuestionnaire(array_map(fn ($key) => ['type' => 'one choice', 'config' => [
+            'options' => ['Yes', 'No', 'Maybe'],
+            'jump' => ['jumpCondition' => (string) $key, 'jumpOver' => 1],
+        ]], [0, 1, 2]));
+
+        $optionsThatJump = array_map(fn ($scale) => array_keys(array_filter(
+            $scale['options']['radioOptions'],
+            fn ($option) => $this->appJumps($option['value'], $scale['options']['jump']),
+        )), $this->structure()['scales']);
+
+        $this->assertSame([[0], [1], [2]], $optionsThatJump);
+    }
+
+    /** @test */
+    public function a_radio_default_selects_its_own_option()
+    {
+        $this->assertSame(
+            [['Yes'], ['No'], ['Maybe']],
+            $this->optionsSelectedByDefault('one choice', 'radioOptions'),
+        );
+    }
+
+    /** @test */
+    public function a_checkbox_default_selects_its_own_option()
+    {
+        $this->assertSame(
+            [['Yes'], ['No'], ['Maybe']],
+            $this->optionsSelectedByDefault('multiple choice', 'checkboxOptions'),
+        );
+    }
+
+    /** @test */
+    public function metag_single_choice_values_stay_as_they_are()
+    {
+        $options = $this->metagScaleOptions('one choice')['radioOptions'];
+
+        $this->assertSame([0, 1], array_column($options, 'value'));
+    }
+
+    /** @test */
+    public function metag_multiple_choice_values_stay_as_they_are()
+    {
+        $options = $this->metagScaleOptions('multiple choice')['checkboxOptions'];
+
+        $this->assertSame([0, 1], array_column($options, 'value'));
+    }
+
+    private function metagScaleOptions(string $type): array
+    {
+        $input = (object) ['type' => $type, 'answers' => ['Yes', 'No']];
+
+        return (new ScaleResource($input, 0, false))->scaleOptions();
+    }
+
+    /**
+     * One scale per option, with that option as its default, and the options
+     * the app selects for each. The app skips a default that is falsy.
+     */
+    private function optionsSelectedByDefault(string $type, string $optionsKey): array
+    {
+        $this->addQuestionnaire(array_map(fn ($key) => ['type' => $type, 'config' => [
+            'options' => ['Yes', 'No', 'Maybe'],
+            'defaultValue' => $key,
+        ]], [0, 1, 2]));
+
+        return array_map(function ($scale) use ($optionsKey) {
+            $options = $scale['options'];
+            $default = $options['defaultValue'];
+
+            return array_column(array_filter(
+                $options[$optionsKey],
+                fn ($option) => $default && $option['value'] === $default,
+            ), 'text');
+        }, $this->structure()['scales']);
+    }
+
+    /**
+     * How the app builds a single-choice answer: a falsy value is dropped.
+     */
+    private function appRadioAnswer(int|string $value): array
+    {
+        return $value ? [$value] : [];
+    }
+
+    /**
+     * The app's jump check: answer.radio && answer.radio === jump.jumpCondition.
+     */
+    private function appJumps(int|string $radio, array $jump): bool
+    {
+        return $radio && $radio === $jump['jumpCondition'];
     }
 
     private function addQuestionnaire(array $questions): MartSchedule

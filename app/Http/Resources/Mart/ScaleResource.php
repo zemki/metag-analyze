@@ -29,6 +29,9 @@ class ScaleResource extends JsonResource
     /**
      * The scale's options block. MART scale ids are assigned across the whole
      * payload in MartStructureResource, which needs this without an id.
+     *
+     * MART choice values start at 1, because the app drops a radio value of 0.
+     * config keeps 0-based keys, so each value, default and jump adds 1 here.
      */
     public function scaleOptions(): array
     {
@@ -73,7 +76,7 @@ class ScaleResource extends JsonResource
                     if (isset($config['options']) && is_array($config['options'])) {
                         foreach ($config['options'] as $key => $text) {
                             $options[] = [
-                                'value' => $key,
+                                'value' => $key + 1,
                                 'text' => $text,
                             ];
                         }
@@ -89,7 +92,7 @@ class ScaleResource extends JsonResource
                     if (isset($config['options']) && is_array($config['options'])) {
                         foreach ($config['options'] as $key => $text) {
                             $options[] = [
-                                'value' => $key,
+                                'value' => $key + 1,
                                 'text' => $text,
                             ];
                         }
@@ -271,7 +274,10 @@ class ScaleResource extends JsonResource
 
             // The app reads the default from here for every type, range included.
             if (isset($config['defaultValue'])) {
-                $scaleOptions['defaultValue'] = $config['defaultValue'];
+                $isChoice = in_array($this->type, ['one choice', 'multiple choice'], true);
+                $scaleOptions['defaultValue'] = $isChoice
+                    ? (int) $config['defaultValue'] + 1
+                    : $config['defaultValue'];
             }
 
             if (isset($config['timer']) && is_array($config['timer'])) {
@@ -285,7 +291,7 @@ class ScaleResource extends JsonResource
             if (isset($config['jump']) && is_array($config['jump'])) {
                 $scaleOptions['jump'] = [
                     // Saved as a string. The app compares it with === to a number.
-                    'jumpCondition' => (int) $config['jump']['jumpCondition'],
+                    'jumpCondition' => (int) $config['jump']['jumpCondition'] + 1,
                     'jumpOver' => $config['jump']['jumpOver'],
                 ];
             }

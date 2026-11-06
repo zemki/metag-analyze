@@ -213,4 +213,30 @@ describe('AddEditQuestionnaireDialog questions', () => {
       expect(wrapper.vm.formData.questions[0].defaultValue).toBe('');
     });
   });
+
+  // config keeps the option's key. The API adds 1, which gives the option number.
+  describe('jump', () => {
+    const jumpQuestion = { type: 'radio', answers: ['Yes', 'No'], useJump: true, jumpOver: 1 };
+
+    it('saves the first option as key 0', async () => {
+      const saved = await savedQuestion({ ...jumpQuestion, jumpCondition: 1 });
+
+      expect(saved.config.jump.jumpCondition).toBe('0');
+    });
+
+    it('saves a later option as its key', async () => {
+      const saved = await savedQuestion({ ...jumpQuestion, jumpCondition: 2 });
+
+      expect(saved.config.jump.jumpCondition).toBe('1');
+    });
+
+    it('restores the option number when a saved question is opened', () => {
+      const question = loadedQuestion({
+        type: 'one choice',
+        config: { options: ['Yes', 'No'], jump: { jumpCondition: '1', jumpOver: 1 } },
+      });
+
+      expect(question.jumpCondition).toBe(2);
+    });
+  });
 });

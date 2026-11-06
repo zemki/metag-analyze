@@ -79,7 +79,7 @@ How MART API types map to database storage.
 | `number` | `number` | `minValue`, `maxValue`, `maxDigits` |
 | `text` | `text` | `placeholder` in config, sent as `textOptions.placeholder` |
 | `textarea` | `textarea` | `placeholder` in config, sent as `textOptions.placeholder` |
-| `radio` | `one choice` | `options[]` in config. With `includeOtherOption`, adds an option with the value `text` (label from `otherOptionLabel`) and `textOptions.type` from `otherTextType` |
+| `radio` | `one choice` | `options[]` in config, sent with `value` = key + 1. With `includeOtherOption`, adds an option with the value `text` (label from `otherOptionLabel`) and `textOptions.type` from `otherTextType` |
 | `checkbox` | `multiple choice` | Same as `radio` |
 | `range` | `range` | `minValue`, `maxValue`, `steps`, `defaultValue` in `rangeOptions` |
 | `rangeValues` | `range values` | `rangeValueOptions[]` |
@@ -88,7 +88,8 @@ How MART API types map to database storage.
 | `videoUpload` | `video` | `videoUploadOptions` |
 
 `defaultValue` in config goes to `options.defaultValue` for any type. For `radio` and
-`checkbox` it's the key of the option, the same as the option's `value`.
+`checkbox`, config holds the option's 0-based key and the API sends key + 1, the same as the
+option's `value`. `jump.jumpCondition` works the same way.
 
 ## Page
 
