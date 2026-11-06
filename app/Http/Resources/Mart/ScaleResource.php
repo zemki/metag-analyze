@@ -78,16 +78,10 @@ class ScaleResource extends JsonResource
                             ];
                         }
                     }
-                    // Use radioWithText if includeOtherOption is enabled
-                    $type = (isset($config['includeOtherOption']) && $config['includeOtherOption']) ? 'radioWithText' : 'radio';
-                    $scaleOptions = [
-                        'type' => $type,
+                    $scaleOptions = $this->withOtherOption([
+                        'type' => 'radio',
                         'radioOptions' => $options,
-                    ];
-                    // Add custom label for "Other" option if present
-                    if ($type === 'radioWithText' && isset($config['otherOptionLabel']) && ! empty($config['otherOptionLabel'])) {
-                        $scaleOptions['otherOptionLabel'] = $config['otherOptionLabel'];
-                    }
+                    ], 'radioOptions', $config);
                     break;
 
                 case 'multiple choice':
@@ -100,16 +94,10 @@ class ScaleResource extends JsonResource
                             ];
                         }
                     }
-                    // Use checkboxWithText if includeOtherOption is enabled
-                    $type = (isset($config['includeOtherOption']) && $config['includeOtherOption']) ? 'checkboxWithText' : 'checkbox';
-                    $scaleOptions = [
-                        'type' => $type,
+                    $scaleOptions = $this->withOtherOption([
+                        'type' => 'checkbox',
                         'checkboxOptions' => $options,
-                    ];
-                    // Add custom label for "Other" option if present
-                    if ($type === 'checkboxWithText' && isset($config['otherOptionLabel']) && ! empty($config['otherOptionLabel'])) {
-                        $scaleOptions['otherOptionLabel'] = $config['otherOptionLabel'];
-                    }
+                    ], 'checkboxOptions', $config);
                     break;
 
                 case 'text':
@@ -301,6 +289,26 @@ class ScaleResource extends JsonResource
                 ];
             }
         }
+
+        return $scaleOptions;
+    }
+
+    /**
+     * An "other" answer is a normal option with the value "text", plus
+     * textOptions saying which field to show. The value stays "text" for a
+     * multi-line field too: the app only enables a checkbox's field for "text".
+     */
+    private function withOtherOption(array $scaleOptions, string $optionsKey, array $config): array
+    {
+        if (empty($config['includeOtherOption'])) {
+            return $scaleOptions;
+        }
+
+        $scaleOptions[$optionsKey][] = [
+            'value' => 'text',
+            'text' => ! empty($config['otherOptionLabel']) ? $config['otherOptionLabel'] : 'Other',
+        ];
+        $scaleOptions['textOptions'] = ['type' => $config['otherTextType'] ?? 'text'];
 
         return $scaleOptions;
     }

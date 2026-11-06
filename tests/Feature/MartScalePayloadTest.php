@@ -188,6 +188,93 @@ class MartScalePayloadTest extends TestCase
         $this->assertSame(['How many' => '[4]'], $this->storedAnswers($schedule));
     }
 
+    /** @test */
+    public function an_other_option_on_a_radio_is_a_text_option_plus_text_options()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'one choice', 'config' => [
+                'options' => ['Yes', 'No'],
+                'includeOtherOption' => true,
+                'otherOptionLabel' => 'Sonstiges',
+            ]],
+        ]);
+
+        $this->assertSame([
+            'type' => 'radio',
+            'radioOptions' => [
+                ['value' => 0, 'text' => 'Yes'],
+                ['value' => 1, 'text' => 'No'],
+                ['value' => 'text', 'text' => 'Sonstiges'],
+            ],
+            'textOptions' => ['type' => 'text'],
+        ], $this->structure()['scales'][0]['options']);
+    }
+
+    /** @test */
+    public function an_other_option_on_a_checkbox_is_a_text_option_plus_text_options()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'multiple choice', 'config' => [
+                'options' => ['Yes', 'No'],
+                'includeOtherOption' => true,
+                'otherOptionLabel' => 'Sonstiges',
+            ]],
+        ]);
+
+        $this->assertSame([
+            'type' => 'checkbox',
+            'checkboxOptions' => [
+                ['value' => 0, 'text' => 'Yes'],
+                ['value' => 1, 'text' => 'No'],
+                ['value' => 'text', 'text' => 'Sonstiges'],
+            ],
+            'textOptions' => ['type' => 'text'],
+        ], $this->structure()['scales'][0]['options']);
+    }
+
+    /** @test */
+    public function a_multi_line_other_field_keeps_the_value_text()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'multiple choice', 'config' => [
+                'options' => ['Yes', 'No'],
+                'includeOtherOption' => true,
+                'otherTextType' => 'textarea',
+            ]],
+        ]);
+
+        $options = $this->structure()['scales'][0]['options'];
+
+        $this->assertSame('textarea', $options['textOptions']['type']);
+        $this->assertSame('text', $options['checkboxOptions'][2]['value']);
+    }
+
+    /** @test */
+    public function an_other_option_without_a_label_is_called_other()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'one choice', 'config' => [
+                'options' => ['Yes', 'No'],
+                'includeOtherOption' => true,
+            ]],
+        ]);
+
+        $this->assertSame('Other', $this->structure()['scales'][0]['options']['radioOptions'][2]['text']);
+    }
+
+    /** @test */
+    public function a_choice_without_an_other_option_has_no_text_options()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'one choice', 'config' => ['options' => ['Yes', 'No']]],
+        ]);
+
+        $options = $this->structure()['scales'][0]['options'];
+
+        $this->assertArrayNotHasKey('textOptions', $options);
+        $this->assertCount(2, $options['radioOptions']);
+    }
+
     private function addQuestionnaire(array $questions): MartSchedule
     {
         $schedule = MartSchedule::create([

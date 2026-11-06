@@ -79,10 +79,8 @@ How MART API types map to database storage.
 | `number` | `number` | `minValue`, `maxValue`, `maxDigits` |
 | `text` | `text` | `textOptions.type` |
 | `textarea` | `textarea` | - |
-| `radio` | `one choice` | `options[]` in config |
-| `checkbox` | `multiple choice` | `options[]` in config |
-| `radioWithText` | `one choice` | `options[]` + `includeOtherOption: true` |
-| `checkboxWithText` | `multiple choice` | `options[]` + `includeOtherOption: true` |
+| `radio` | `one choice` | `options[]` in config. With `includeOtherOption`, adds an option with the value `text` (label from `otherOptionLabel`) and `textOptions.type` from `otherTextType` |
+| `checkbox` | `multiple choice` | Same as `radio` |
 | `range` | `range` | `minValue`, `maxValue`, `steps`, `defaultValue` |
 | `rangeValues` | `range values` | `rangeValueOptions[]` |
 | `photoUpload` | `photo` | `photoUploadOptions` |

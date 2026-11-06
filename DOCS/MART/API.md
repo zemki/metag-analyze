@@ -281,8 +281,8 @@ per-participant data when `participant_id` is provided.
 | `textarea` | `textarea` | multi-line text input |
 | `number` | `number` | integer or decimal entry |
 | `range` | `range` | slider with `minValue` / `maxValue` / `steps` |
-| `radio` (a.k.a. `one choice`) | `one choice` | single-select |
-| `checkbox` (a.k.a. `multiple choice`) | `multiple choice` | multi-select |
+| `radio` (a.k.a. `one choice`) | `one choice` | single-select, optionally with an "other" option |
+| `checkbox` (a.k.a. `multiple choice`) | `multiple choice` | multi-select, optionally with an "other" option |
 | `photoUpload` | `photo` | participant uploads via `POST /api/mobile/cases/{caseId}/files`, then references the returned `file_id` in the answer |
 | `audioUpload` | `audio` | same flow as `photoUpload` |
 | `videoUpload` | `video` | same flow as `photoUpload` |
@@ -301,6 +301,24 @@ under `scaleOptions.photoUploadOptions` / `audioUploadOptions` /
 defined in `martTypes.ts` — the API passes whatever the researcher set
 through verbatim; unset fields are omitted, and the mobile applies its own
 defaults.
+
+**"Other" options:** there's no separate type. An "other" option is the last entry in
+`radioOptions` or `checkboxOptions`, with the value `"text"` and the researcher's label, or
+`Other` if there is none. `textOptions.type` says which field the app shows, `text` or
+`textarea`. The value stays `"text"` for both: the app only enables a checkbox's field for
+`"text"`.
+
+```json
+{
+  "type": "radio",
+  "radioOptions": [
+    { "value": 0, "text": "Yes" },
+    { "value": 1, "text": "No" },
+    { "value": "text", "text": "Sonstiges" }
+  ],
+  "textOptions": { "type": "textarea" }
+}
+```
 
 **Item options** (`questionnaires[].items[].options`): the block is always present, and the
 values come from the question's configuration.
@@ -362,7 +380,9 @@ POST /api/mobile/cases/{caseId}/submit
 ```
 `answers` is an **object** keyed by `itemId` (1-based question index), not an array.
 Values can be numbers (scale), arrays (multiple choice), strings (text), or file UUIDs
-returned from File Upload.
+returned from File Upload. The app sends every value as an array, such as `[1]`. An "other"
+answer holds the option's value and the typed text, such as `["text", "typed words"]`, and the
+export shows it as `text, typed words`.
 
 > **Deprecated:** `sheetId` is accepted for backward compatibility but ignored.
 > Use `questionnaireId` instead.

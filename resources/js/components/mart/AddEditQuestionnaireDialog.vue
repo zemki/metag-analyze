@@ -890,6 +890,14 @@
                       <p class="mt-1 text-xs text-gray-500">
                         {{ trans('Custom label text shown for the "Other" option. Leave empty for default.') }}
                       </p>
+                      <label class="mt-3 block text-sm font-medium text-gray-700">{{ trans('"Other" Text Field') }}</label>
+                      <select
+                          v-model="question.otherTextType"
+                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="text">{{ trans('Single line') }}</option>
+                        <option value="textarea">{{ trans('Multiple lines') }}</option>
+                      </select>
                     </div>
                   </div>
 
@@ -1420,6 +1428,7 @@ export default {
           randomizeAnswers: config.randomizeAnswers || false,
           includeOtherOption: config.includeOtherOption || false,
           otherOptionLabel: config.otherOptionLabel || '',
+          otherTextType: config.otherTextType || 'text',
           itemGroup: config.itemGroup || null,
           useTimer: !!timer.time,
           timerSeconds: timer.time || 30,
@@ -1619,6 +1628,7 @@ export default {
         randomizeAnswers: false,
         includeOtherOption: false,
         otherOptionLabel: '',
+        otherTextType: 'text',
         itemGroup: null,
         useTimer: false,
         timerSeconds: 30,
@@ -1704,6 +1714,7 @@ export default {
             // Include "Other" text field option flag and custom label
             if (q.includeOtherOption) {
               config.includeOtherOption = true;
+              config.otherTextType = q.otherTextType;
               if (q.otherOptionLabel) {
                 config.otherOptionLabel = q.otherOptionLabel;
               }
