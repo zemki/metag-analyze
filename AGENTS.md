@@ -151,6 +151,7 @@ Editing a question writes a `mart_question_history` row and bumps `version`; ans
 - `APP_ENV=production` assumes the `/metag` subfolder (Livewire, Telescope, graph breadcrumb). metagtest runs `APP_ENV=local`, so environment checks do not protect it.
 - Run `php artisan migrate`, then `php artisan migrate:mart`. MART migrations live in `database/migrations/mart/`, with their history in the MART DB's own `migrations` table; new ones go there too. Never run `migrate --database=mart`: it runs every migration on the MART DB. `migrate:fresh` resets main only, so use `migrate:fresh-all` to reset both, test DBs included: old MART rows collide with restarted main IDs.
 - Seeders must use `bcrypt()`, not `Hash::make()`.
+- `MartReferenceProjectSeeder` rebuilds Directus project 1 from `database/seeds/fixtures/mart-reference/` (a 27 October 2026 snapshot, personal data removed), in the editor's config format. `MartReferenceParityTest` lists every remaining difference from Directus, and a gap fix must remove its lines. The fixtures stay free of personal data; `MartReferenceProjectSeederTest` checks.
 - Trigger migrations need `SUPER` or `log_bin_trust_function_creators=1`; they skip with a warning otherwise.
 - Case lists and exports for MART come from the MART DB. The treemap, the graph pages and `store` on `/api/v1` and `/api/v2` refuse MART with 403.
 

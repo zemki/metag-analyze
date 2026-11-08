@@ -1,0 +1,62 @@
+[
+	{
+		"pageId": 2,
+		"name": "Welcome",
+		"content": "<h1>Wilkommen</h1>\n<p>&Uuml;ber die n&auml;chsten Wochen werden Sie zu zuf&auml;lligen Zeitpunkten &uuml;ber den Tag verteilt Frageb&ouml;gen ausf&uuml;llen k&ouml;nnen.</p>\n<p>Sie werden &uuml;ber eine Benachrichtigung auf Ihrem Mobiltelefon &uuml;ber die Verf&uuml;gbarkeit des Fragebogens informiert.<br><br></p>\n<p>Wenn Sie Fragen zur Benutzung der App haben, z&ouml;gern Sie nicht unser Supportteam zu kontaktieren.</p>",
+		"button_text": "OK",
+		"sort_order": 2
+	},
+	{
+		"pageId": 3,
+		"name": "Informationen",
+		"content": "<h1>Informationen</h1>\n<p>&nbsp;</p>\n<p>Eine Seite mit weiteren Informationen.</p>",
+		"button_text": "Continue",
+		"sort_order": 3
+	},
+	{
+		"pageId": 5,
+		"name": "Kontakt",
+		"content": "<h1>Kontakt</h1>\n<p>&nbsp;</p>\n<p>Kontaktinformationen</p>\n<p>Bei Problemen mit der App wenden Sie sich bitte an <a href=\"mailto:info@example.test\">info@example.test</a></p>",
+		"button_text": "Continue",
+		"sort_order": 4
+	},
+	{
+		"pageId": 6,
+		"name": "Data privacy agreement",
+		"content": "<p>Test</p>\n<p>By tapping \"next\", you agree with these conditions.</p>",
+		"button_text": "Agree",
+		"sort_order": 1
+	},
+	{
+		"pageId": 7,
+		"name": "Android Stats Permission",
+		"content": "<div><div>&lt;h1&gt;Android Nutzungsdaten&lt;/h1&gt;</div><div>Bitte tippen Sie im folgenden Fenster auf &lt;b&gt;MART&lt;/b&gt; und erteilen Sie die Berechtigung zum Zugriff auf die Nutzungsdaten. Sie k&ouml;nnen nur fortfahren, wenn Sie den Zugriff auf Ihre Nutzungsdaten erlauben.</div></div>",
+		"button_text": "Continue",
+		"sort_order": 0,
+		"page_type": "android_stats_permission"
+	},
+	{
+		"pageId": 8,
+		"name": "Notification Permission iOS",
+		"content": "<div><div>&lt;h1&gt;Benachrichtigungen iOS&lt;/h1&gt;</div><div>Bitte erlauben Sie &lt;b&gt;MART&lt;/b&gt; das Anzeigen von Benachrichtigungen. &Ouml;ffnen Sie hierzu auf Ihrem iPhone Einstellungen -&gt; Mart -&gt; Benachrichtigungen. Sie k&ouml;nnen nur fortfahren, wenn Sie Benachrichtigungen erlauben.</div></div>",
+		"button_text": "Continue",
+		"sort_order": 0,
+		"page_type": "ios_notification_permission"
+	},
+	{
+		"pageId": 9,
+		"name": "Notification Permission Android",
+		"content": "<div><div>&lt;h1&gt;Benachrichtigungen Android&lt;/h1&gt;</div><div>Bitte erlauben Sie &lt;b&gt;MART&lt;/b&gt; das Anzeigen von Benachrichtigungen. Navigieren Sie hierzu nach Einstellungen -&gt; Apps -&gt; MART -&gt; Benachrichtigungen. Sie k&ouml;nnen nur fortfahren, wenn Sie Benachrichtigungen erlauben.</div></div>",
+		"button_text": "Continue",
+		"sort_order": 0,
+		"page_type": "android_notification_permission"
+	},
+	{
+		"pageId": 10,
+		"name": "Success Page",
+		"content": "<p><img src=\"https://example.test/assets/media-5.svg\" alt=\"Heart Orange\"></p><div>&lt;h1&gt;Danke,&lt;br /&gt;dass Sie sich&lt;br /&gt;die Zeit&lt;br /&gt;genommen&lt;br /&gt;haben!&lt;/h1&gt;</div>",
+		"button_text": "Continue",
+		"sort_order": 0,
+		"page_type": "success"
+	}
+]

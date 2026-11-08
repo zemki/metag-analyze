@@ -1,0 +1,528 @@
+[
+	{
+		"questionnaireId": 1,
+		"name": "Single Questionnaire Id 1",
+		"items": [
+			{
+				"itemId": null,
+				"scaleId": null,
+				"text": "Willkommen zum Fragebogen Id 1<br><br> Hier finden Sie einige Beispiele an Input Feldern. <br>"
+			},
+			{
+				"itemId": 1,
+				"scaleId": 1,
+				"text": "Nummern Input<br>Bitte geben Sie Ihr Alter an :",
+				"options": {
+					"itemGroup": "1",
+					"noValueAllowed": true
+				}
+			},
+			{
+				"itemId": 2,
+				"scaleId": 2,
+				"text": "Radio Input<br>Bitte geben Sie Ihr Geschlecht an:",
+				"options": {
+					"itemGroup": "1"
+				}
+			},
+			{
+				"itemId": null,
+				"scaleId": null,
+				"text": "Nur Text<br> Hier gibt es nur Text zu lesen."
+			},
+			{
+				"itemId": 4,
+				"scaleId": 4,
+				"text": "Checkboxes <br> Welche Optionen Treffen auf Sie zu?"
+			},
+			{
+				"itemId": 5,
+				"scaleId": 5,
+				"text": "Textinput<br> Bitte schildern Sie Ihren Tagesablauf."
+			},
+			{
+				"itemId": 6,
+				"scaleId": 6,
+				"text": "Checkboxen mit Text"
+			},
+			{
+				"itemId": 7,
+				"scaleId": 7,
+				"text": "Checkboxen mit Textarea"
+			},
+			{
+				"itemId": 8,
+				"scaleId": 8,
+				"text": "Radio mit Text"
+			},
+			{
+				"itemId": 9,
+				"scaleId": 9,
+				"text": "Radio mit Textarea",
+				"options": {
+					"randomizeAnswers": true
+				}
+			},
+			{
+				"itemId": 10,
+				"scaleId": 10,
+				"text": "Wenn Wert 2 ausgewählt ist, wird die nächste Frage übersprungen"
+			},
+			{
+				"itemId": 11,
+				"scaleId": 9,
+				"text": "Wird übersprungen wenn bei vorheriger Frage 2 ausgewählt wurde"
+			},
+			{
+				"itemId": null,
+				"scaleId": null,
+				"text": "Evtl wurde die letzte Frage übersprungen"
+			},
+			{
+				"itemId": null,
+				"scaleId": 11,
+				"text": "Es wird eine deaktivierte Auswahl angezeigt (itemId : null)"
+			},
+			{
+				"itemId": null,
+				"scaleId": 11,
+				"text": "Noch eine deaktivierte Auswahl"
+			},
+			{
+				"itemId": null,
+				"scaleId": null,
+				"text": "Als nächstes kommen Zeitbasierte Fragen"
+			},
+			{
+				"itemId": 13,
+				"scaleId": 12,
+				"text": "Zeitbasierte Frage"
+			},
+			{
+				"itemId": 14,
+				"scaleId": 13,
+				"text": "Zeitbasierte Frage 2 mit Countdown"
+			},
+			{
+				"itemId": 15,
+				"scaleId": 14,
+				"text": "Zeitbasierte Frage 3"
+			},
+			{
+				"itemId": null,
+				"scaleId": null,
+				"text": "Zeitbasierte Fragen abgeschlossen"
+			},
+			{
+				"itemId": 16,
+				"scaleId": 17,
+				"text": "Randomisierte Frage 1, Gruppe 1",
+				"options": {
+					"randomizationGroupId": 1
+				}
+			},
+			{
+				"itemId": 17,
+				"scaleId": 17,
+				"text": "Randomisierte Frage 2, Gruppe 1",
+				"options": {
+					"randomizationGroupId": 1
+				}
+			},
+			{
+				"itemId": 18,
+				"scaleId": 17,
+				"text": "Randomisierte Frage 3, Gruppe 1",
+				"options": {
+					"randomizationGroupId": 1
+				}
+			},
+			{
+				"itemId": null,
+				"scaleId": null,
+				"text": "Text zwischen 2 Randomisierungsgruppen"
+			},
+			{
+				"itemId": 19,
+				"scaleId": 17,
+				"text": "Randomisierte Frage 1, Gruppe 2",
+				"options": {
+					"randomizationGroupId": 2
+				}
+			},
+			{
+				"itemId": 20,
+				"scaleId": 17,
+				"text": "Randomisierte Frage 2, Group 2",
+				"options": {
+					"randomizationGroupId": 2
+				}
+			},
+			{
+				"itemId": 21,
+				"scaleId": 17,
+				"text": "Randomisierte Frage 3, Group 2",
+				"options": {
+					"randomizationGroupId": 2
+				}
+			},
+			{
+				"itemId": 22,
+				"scaleId": 15,
+				"text": "Range mit Nummern"
+			},
+			{
+				"itemId": 23,
+				"scaleId": 16,
+				"text": "Range mit Text"
+			},
+			{
+				"itemId": 24,
+				"scaleId": 18,
+				"text": "Randomisierte Antworten",
+				"options": {
+					"randomizeAnswers": true
+				}
+			},
+			{
+				"itemId": 25,
+				"scaleId": 9,
+				"text": "Radio mit Textarea und Bild",
+				"imageUrl": "https://example.test/assets/media-1.jpg"
+			},
+			{
+				"itemId": 26,
+				"scaleId": 9,
+				"text": "Radio mit Textarea und Video Datei und Poster",
+				"videoUrl": "https://example.test/assets/media-2.mp4",
+				"posterUrl": "https://example.test/assets/media-3"
+			},
+			{
+				"itemId": 27,
+				"scaleId": 9,
+				"text": "Radio mit Textarea und YouTube - Video",
+				"videoUrl": "https://www.youtube.com/watch?v=KaVBJjkY8Fs"
+			},
+			{
+				"itemId": 28,
+				"scaleId": 501,
+				"text": "Upload von Dateien - noValueAllowed",
+				"options": {
+					"noValueAllowed": true
+				}
+			},
+			{
+				"itemId": 29,
+				"scaleId": 501,
+				"text": "Upload von Dateien 2"
+			},
+			{
+				"itemId": 30,
+				"scaleId": 502,
+				"text": "Photo Upload"
+			},
+			{
+				"itemId": 31,
+				"scaleId": 503,
+				"text": "Photo Upload 2"
+			},
+			{
+				"itemId": 32,
+				"scaleId": 504,
+				"text": "Video Upload. maxFileSize 100 MB, maxVideoLength 10s"
+			},
+			{
+				"itemId": 33,
+				"scaleId": 505,
+				"text": "Video Upload with file selection"
+			},
+			{
+				"itemId": 34,
+				"scaleId": 506,
+				"text": "Audio upload"
+			},
+			{
+				"itemId": 35,
+				"scaleId": 18,
+				"text": "Zufällige Position innerhalb des Fragebogens",
+				"options": {
+					"randomPositionWithinQuestionnaire": true
+				}
+			},
+			{
+				"itemId": null,
+				"scaleId": null,
+				"text": "Ende des Initialen Fragebogens",
+				"buttonText": "Absenden"
+			}
+		]
+	},
+	{
+		"questionnaireId": 2,
+		"name": "Repeating Questionnaire Id 2",
+		"items": [
+			{
+				"itemId": null,
+				"scaleId": null,
+				"text": "Wiederholender Fragebogen Id 2"
+			},
+			{
+				"itemId": 1,
+				"scaleId": 200,
+				"text": "Wie geht es Ihnen gerade:"
+			},
+			{
+				"itemId": 2,
+				"scaleId": 201,
+				"text": "An welchem Ort befinden Sie sich gerade?"
+			},
+			{
+				"itemId": 3,
+				"scaleId": 202,
+				"text": "Von wie vielen Personen sind Sie gerade unmittelbar (ungefähr) umgeben?"
+			},
+			{
+				"itemId": null,
+				"scaleId": null,
+				"text": "Vielen Dank für die Teilnahme !"
+			}
+		]
+	},
+	{
+		"questionnaireId": 3,
+		"name": "Single Questionnaire Id 3",
+		"items": [
+			{
+				"itemId": null,
+				"scaleId": null,
+				"text": "Fragebogen Id 3"
+			},
+			{
+				"itemId": 1,
+				"scaleId": 301,
+				"text": "Wie geht es Ihnen heute?"
+			},
+			{
+				"itemId": null,
+				"scaleId": null,
+				"text": "Vielen Dank für die Teilnahme !"
+			}
+		]
+	},
+	{
+		"questionnaireId": 4,
+		"name": "Single Questionnaire Id 4",
+		"items": [
+			{
+				"itemId": null,
+				"scaleId": null,
+				"text": "Fragebogen Id 4"
+			},
+			{
+				"itemId": 1,
+				"scaleId": 401,
+				"text": "Eine Frage"
+			},
+			{
+				"itemId": null,
+				"scaleId": null,
+				"text": "Vielen Dank für die Teilnahme !"
+			}
+		]
+	},
+	{
+		"questionnaireId": 5,
+		"name": "Upload Test",
+		"items": [
+			{
+				"itemId": null,
+				"scaleId": null,
+				"text": "Upload Test"
+			},
+			{
+				"itemId": 1,
+				"scaleId": 501,
+				"text": "Upload von Dateien"
+			},
+			{
+				"itemId": 2,
+				"scaleId": 501,
+				"text": "Upload von Dateien 2"
+			},
+			{
+				"itemId": 3,
+				"scaleId": 502,
+				"text": "Photo Upload"
+			},
+			{
+				"itemId": 4,
+				"scaleId": 503,
+				"text": "Photo Upload 2"
+			},
+			{
+				"itemId": 5,
+				"scaleId": 504,
+				"text": "Video Upload. maxFileSize 10 MB, maxVideoLength 10s"
+			},
+			{
+				"itemId": 6,
+				"scaleId": 505,
+				"text": "Video Upload with file selection"
+			},
+			{
+				"itemId": 7,
+				"scaleId": 506,
+				"text": "Audio upload"
+			},
+			{
+				"itemId": null,
+				"scaleId": null,
+				"text": "Vielen Dank für die Teilnahme !"
+			}
+		]
+	},
+	{
+		"questionnaireId": 6,
+		"name": "iOS Stats",
+		"isIosDataDonation": true,
+		"items": [
+			{
+				"itemId": null,
+				"scaleId": null,
+				"text": "<h1>iOS Stats Abfrage</h1>",
+				"options": {
+					"itemGroup": "1"
+				}
+			},
+			{
+				"itemId": null,
+				"scaleId": null,
+				"text": "Bitte öffnen Sie nun die Einstellungen Ihres iPhones und tippen Sie auf „Bildschirmzeit“.",
+				"imageUrl": "https://example.test/assets/media-4.png",
+				"options": {
+					"itemGroup": "1"
+				}
+			},
+			{
+				"itemId": 1,
+				"scaleId": 600,
+				"text": "Bildschirmzeit Stunden",
+				"options": {
+					"itemGroup": "2"
+				}
+			},
+			{
+				"itemId": 2,
+				"scaleId": 601,
+				"text": "Bildschirmzeit Minuten",
+				"options": {
+					"itemGroup": "2"
+				}
+			},
+			{
+				"itemId": 3,
+				"scaleId": 600,
+				"text": "Aktivierungen",
+				"options": {
+					"itemGroup": "2"
+				}
+			},
+			{
+				"itemId": 4,
+				"scaleId": 501,
+				"text": "Datei Upload"
+			},
+			{
+				"itemId": null,
+				"scaleId": null,
+				"text": "Vielen Dank für das Ausfüllen der iOS Stats !"
+			}
+		]
+	},
+	{
+		"questionnaireId": 7,
+		"name": "Android Stats",
+		"isAndroidDataDonation": true,
+		"items": [
+			{
+				"itemId": null,
+				"scaleId": null,
+				"text": "<h1>Android Stats Abfrage</h1>",
+				"options": {
+					"itemGroup": "1"
+				}
+			},
+			{
+				"itemId": 1,
+				"scaleId": 600,
+				"text": "Bildschirmzeit Stunden",
+				"options": {
+					"itemGroup": "2",
+					"noValueAllowed": true
+				}
+			},
+			{
+				"itemId": 2,
+				"scaleId": 601,
+				"text": "Bildschirmzeit Minuten",
+				"options": {
+					"itemGroup": "2",
+					"noValueAllowed": true
+				}
+			},
+			{
+				"itemId": 3,
+				"scaleId": 600,
+				"text": "Aktivierungen",
+				"options": {
+					"itemGroup": "2",
+					"noValueAllowed": true
+				}
+			},
+			{
+				"itemId": 4,
+				"scaleId": 501,
+				"text": "Datei Upload",
+				"options": {
+					"noValueAllowed": true
+				}
+			},
+			{
+				"itemId": null,
+				"scaleId": null,
+				"text": "Vielen Dank für das Ausfüllen der Android Stats !"
+			}
+		]
+	},
+	{
+		"questionnaireId": 9,
+		"name": "Repeating Questionnaire Id 9",
+		"items": [
+			{
+				"itemId": null,
+				"scaleId": null,
+				"text": "Wiederholender Fragebogen Id 9"
+			},
+			{
+				"itemId": 1,
+				"scaleId": 200,
+				"text": "Wie geht es Ihnen gerade:"
+			},
+			{
+				"itemId": 2,
+				"scaleId": 201,
+				"text": "An welchem Ort befinden Sie sich gerade?"
+			},
+			{
+				"itemId": 3,
+				"scaleId": 202,
+				"text": "Von wie vielen Personen sind Sie gerade unmittelbar (ungefähr) umgeben?"
+			},
+			{
+				"itemId": null,
+				"scaleId": null,
+				"text": "Vielen Dank für die Teilnahme !"
+			}
+		]
+	}
+]

@@ -1,0 +1,52 @@
+[
+	{
+		"participantId": "ref-p1",
+		"userId": "ref-p1@example.test",
+		"os": "android",
+		"osVersion": "15",
+		"model": "Pixel 7",
+		"manufacturer": "Google",
+		"timestamp": "1756134087215",
+		"timezone": "MESZ"
+	},
+	{
+		"participantId": "ref-p3",
+		"userId": "ref-p3@example.test",
+		"os": "android",
+		"osVersion": "Android 6.0",
+		"model": "Nexus 5",
+		"manufacturer": "Google Inc.",
+		"timestamp": "1756232036050",
+		"timezone": "MESZ"
+	},
+	{
+		"participantId": "ref-p3",
+		"userId": "ref-p3@example.test",
+		"os": "windows",
+		"osVersion": "Windows NT 10.0; Win64; x64",
+		"model": "Windows NT 10.0",
+		"manufacturer": "",
+		"timestamp": "1756287932352",
+		"timezone": "MESZ"
+	},
+	{
+		"participantId": "ref-p2",
+		"userId": "ref-p2@example.test",
+		"os": "android",
+		"osVersion": "9",
+		"model": "SM-G955F",
+		"manufacturer": "samsung",
+		"timestamp": "1757068375093",
+		"timezone": "MESZ"
+	},
+	{
+		"participantId": "ref-p4",
+		"userId": "ref-p4@example.test",
+		"os": "android",
+		"osVersion": "9",
+		"model": "SM-G955F",
+		"manufacturer": "samsung",
+		"timestamp": "1757068575005",
+		"timezone": "MESZ"
+	}
+]

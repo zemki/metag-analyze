@@ -1,0 +1,334 @@
+[
+	{
+		"questionnaireId": 1,
+		"participantId": "ref-p1",
+		"userId": "ref-p1@example.test",
+		"answers": {
+			"1": [],
+			"2": [],
+			"4": [
+				1
+			],
+			"5": [
+				"Hier kann ein default Text stehen.."
+			],
+			"6": [],
+			"7": [],
+			"8": [],
+			"9": [],
+			"10": [],
+			"11": [],
+			"13": [],
+			"14": [],
+			"15": [],
+			"16": [],
+			"17": [],
+			"18": [],
+			"19": [],
+			"20": [],
+			"21": [],
+			"22": [
+				55
+			],
+			"23": [
+				2
+			],
+			"24": [],
+			"25": [],
+			"26": [],
+			"27": [],
+			"28": [],
+			"29": [],
+			"30": [],
+			"31": [],
+			"32": [],
+			"33": [],
+			"34": []
+		},
+		"questionnaireStarted": "1756134072819",
+		"questionnaireDuration": "14171",
+		"timestamp": "1756134086990",
+		"timezone": "MESZ"
+	},
+	{
+		"questionnaireId": 1,
+		"participantId": "ref-p2",
+		"userId": "ref-p2@example.test",
+		"answers": {
+			"1": [],
+			"2": [
+				2
+			],
+			"4": [
+				1
+			],
+			"5": [
+				"Hier kann ein default Text stehen.."
+			],
+			"6": [
+				3
+			],
+			"7": [],
+			"8": [
+				2
+			],
+			"9": [
+				2
+			],
+			"10": [
+				1
+			],
+			"11": [
+				4
+			],
+			"13": [
+				2
+			],
+			"14": [
+				1
+			],
+			"15": [],
+			"16": [
+				1
+			],
+			"17": [
+				2
+			],
+			"18": [
+				2
+			],
+			"19": [
+				2
+			],
+			"20": [
+				2
+			],
+			"21": [
+				2
+			],
+			"22": [
+				"15"
+			],
+			"23": [
+				2
+			],
+			"24": [
+				1
+			],
+			"25": [
+				3
+			],
+			"26": [
+				2
+			],
+			"27": [
+				3
+			],
+			"28": [],
+			"29": [],
+			"30": [],
+			"31": [],
+			"32": [],
+			"33": [],
+			"34": [
+				2
+			]
+		},
+		"questionnaireStarted": "1757067951548",
+		"questionnaireDuration": "423240",
+		"timestamp": "1757068374788",
+		"timezone": "MESZ"
+	},
+	{
+		"questionnaireId": 1,
+		"participantId": "ref-p3",
+		"userId": "ref-p3@example.test",
+		"answers": {
+			"1": [],
+			"2": [],
+			"4": [
+				1
+			],
+			"5": [
+				"Hier kann ein default Text stehen.."
+			],
+			"22": [
+				55
+			],
+			"23": [
+				2
+			]
+		},
+		"questionnaireStarted": "1757063843292",
+		"questionnaireDuration": "15772",
+		"timestamp": "1757063859064",
+		"timezone": "MESZ"
+	},
+	{
+		"questionnaireId": 2,
+		"participantId": "ref-p1",
+		"userId": "ref-p1@example.test",
+		"answers": {
+			"1": [
+				5
+			],
+			"2": [
+				3
+			],
+			"3": [
+				3
+			]
+		},
+		"questionnaireStarted": "1756124671302",
+		"questionnaireDuration": "4394",
+		"timestamp": "1756124675696",
+		"timezone": "MESZ"
+	},
+	{
+		"questionnaireId": 2,
+		"participantId": "ref-p3",
+		"userId": "ref-p3@example.test",
+		"answers": {
+			"1": [
+				7
+			],
+			"2": [
+				3
+			],
+			"3": [
+				3
+			]
+		},
+		"questionnaireStarted": "1756287917829",
+		"questionnaireDuration": "14331",
+		"timestamp": "1756287932160",
+		"timezone": "MESZ"
+	},
+	{
+		"questionnaireId": 9,
+		"participantId": "ref-p1",
+		"userId": "ref-p1@example.test",
+		"answers": {
+			"1": [
+				7
+			],
+			"2": [
+				3
+			],
+			"3": [
+				3
+			]
+		},
+		"questionnaireStarted": "1756134094725",
+		"questionnaireDuration": "6096",
+		"timestamp": "1756134100821",
+		"timezone": "MESZ"
+	},
+	{
+		"questionnaireId": 9,
+		"participantId": "ref-p1",
+		"userId": "ref-p1@example.test",
+		"answers": {
+			"1": [
+				4
+			],
+			"2": [
+				2
+			],
+			"3": [
+				2
+			]
+		},
+		"questionnaireStarted": "1756138590898",
+		"questionnaireDuration": "5214",
+		"timestamp": "1756138596112",
+		"timezone": "MESZ"
+	},
+	{
+		"questionnaireId": 3,
+		"participantId": "ref-p1",
+		"userId": "ref-p1@example.test",
+		"answers": {
+			"1": [
+				3
+			]
+		},
+		"questionnaireStarted": "1756141579599",
+		"questionnaireDuration": "7355",
+		"timestamp": "1756141586954",
+		"timezone": "MESZ"
+	},
+	{
+		"questionnaireId": 3,
+		"participantId": "ref-p3",
+		"userId": "ref-p3@example.test",
+		"answers": {
+			"1": [
+				"2"
+			]
+		},
+		"questionnaireStarted": "1757064739683",
+		"questionnaireDuration": "28998",
+		"timestamp": "1757064768681",
+		"timezone": "MESZ"
+	},
+	{
+		"questionnaireId": 6,
+		"participantId": "ref-p4",
+		"userId": "ref-p4@example.test",
+		"answers": {
+			"1": [
+				1
+			],
+			"2": [
+				1
+			],
+			"3": [
+				4
+			],
+			"4": []
+		},
+		"questionnaireStarted": "1757071124739",
+		"questionnaireDuration": "32350",
+		"timestamp": "1757071157089",
+		"timezone": "MESZ"
+	},
+	{
+		"questionnaireId": 7,
+		"participantId": "ref-p1",
+		"userId": "ref-p1@example.test",
+		"answers": {
+			"1": [],
+			"2": [
+				99
+			],
+			"3": [],
+			"4": []
+		},
+		"questionnaireStarted": "1756124707780",
+		"questionnaireDuration": "8717",
+		"timestamp": "1756124716497",
+		"timezone": "MESZ"
+	},
+	{
+		"questionnaireId": 7,
+		"participantId": "ref-p2",
+		"userId": "ref-p2@example.test",
+		"answers": {
+			"1": [
+				38
+			],
+			"2": [
+				120
+			],
+			"3": [
+				10
+			],
+			"4": []
+		},
+		"questionnaireStarted": "1757068376737",
+		"questionnaireDuration": "35886",
+		"timestamp": "1757068412623",
+		"timezone": "MESZ"
+	}
+]
