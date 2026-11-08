@@ -45,7 +45,7 @@ class MartDatabaseSafetyTest extends TestCase
 
     private function runBaseMigration(): void
     {
-        $migration = require database_path('migrations/2025_10_01_000001_create_mart_base_schema.php');
+        $migration = require database_path('migrations/mart/2025_10_01_000001_create_mart_base_schema.php');
 
         $migration->up();
     }

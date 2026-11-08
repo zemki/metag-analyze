@@ -11,7 +11,8 @@ vendor/bin/pest --filter=TestName        # one test or class
 npm run test:unit                        # frontend tests (Jest)
 npm run cypress:run                      # e2e
 
-php artisan migrate                      # both DBs: MART migrations set their own connection
+php artisan migrate                      # main DB only
+php artisan migrate:mart                 # MART DB, history in its own migrations table; --status to check
 php artisan migrate:status
 php artisan migrate:fresh-all --seed     # DESTRUCTIVE: drops main AND MART DB; blocked in production
 php artisan queue:work
@@ -147,7 +148,7 @@ Editing a question writes a `mart_question_history` row and bumps `version`; ans
 - `Cases::isConsultable()` is also true when a case has no `lastDay`, which is how MART cases start.
 - `/api/login` opens the user's newest MeTag case, not `latestCase`, which can be a MART case. MART cases log in through `/api/mobile/auth`, and someone with only MART cases gets 499.
 - `APP_ENV=production` assumes the `/metag` subfolder (Livewire, Telescope, graph breadcrumb). metagtest runs `APP_ENV=local`, so environment checks do not protect it.
-- `php artisan migrate` is enough for both DBs. Never add `--database=mart`: it runs every migration on the MART DB. `migrate:fresh` resets main only, so use `migrate:fresh-all` to reset both, test DBs included: old MART rows collide with restarted main IDs.
+- Run `php artisan migrate`, then `php artisan migrate:mart`. MART migrations live in `database/migrations/mart/`, with their history in the MART DB's own `migrations` table; new ones go there too. Never run `migrate --database=mart`: it runs every migration on the MART DB. `migrate:fresh` resets main only, so use `migrate:fresh-all` to reset both, test DBs included: old MART rows collide with restarted main IDs.
 - Seeders must use `bcrypt()`, not `Hash::make()`.
 - Trigger migrations need `SUPER` or `log_bin_trust_function_creators=1`; they skip with a warning otherwise.
 - Case lists and exports for MART come from the MART DB. The treemap, the graph pages and `store` on `/api/v1` and `/api/v2` refuse MART with 403.

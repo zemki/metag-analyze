@@ -48,11 +48,12 @@ class InstallMetagCommand extends Command
      */
     public function handle(): int
     {
-        $this->warn('--- Migrating the database ---');
+        $this->warn('--- Migrating the databases ---');
         // --force is required: under APP_ENV=production Laravel's
         // ConfirmableTrait prompts for confirmation and, with no TTY, cancels
         // the command outright - migrations would silently not run.
         Artisan::call('migrate', ['--force' => true], $this->getOutput());
+        Artisan::call('migrate:mart', ['--force' => true], $this->getOutput());
 
         $this->warn('--- Clearing caches ---');
         Artisan::call('optimize:clear', [], $this->getOutput());

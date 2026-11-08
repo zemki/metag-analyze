@@ -19,8 +19,9 @@ npm run build                # Production build (user runs npm run dev)
 
 ### Database
 ```bash
-php artisan migrate                    # Run migrations
-php artisan migrate:status             # Check status
+php artisan migrate                    # Run main migrations
+php artisan migrate:mart               # Run MART migrations (own folder and history)
+php artisan migrate:status             # Check status (migrate:mart --status for MART)
 php artisan migrate:fresh-all --seed   # Reset both databases (local only)
 ```
 

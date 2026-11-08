@@ -51,7 +51,7 @@ class MartEntryCaseBackfillTest extends TestCase
 
     private function runMigration(): void
     {
-        $migration = require database_path('migrations/2026_11_06_000001_add_case_id_to_mart_entries.php');
+        $migration = require database_path('migrations/mart/2026_11_06_000001_add_case_id_to_mart_entries.php');
 
         $migration->up();
     }
