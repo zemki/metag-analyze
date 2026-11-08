@@ -11,6 +11,7 @@ use App\Mart\MartSchedule;
 use App\Project;
 use App\Role;
 use App\User;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Console\OutputStyle;
 use Illuminate\Database\Seeder;
@@ -59,6 +60,41 @@ class MartDemoSeedersTest extends TestCase
             MartSchedule::where('mart_project_id', $project->martProject()->id)->count(),
         );
         $this->assertTrue($project->cases()->where('user_id', $tester->id)->exists());
+    }
+
+    /** @test */
+    public function staging_repeating_questionnaires_are_open_today()
+    {
+        $repeating = $this->stagingProjectOptions()['repeatingQuestionnaires'];
+
+        $this->assertNotEmpty($repeating);
+        foreach ($repeating as $questionnaire) {
+            $this->assertOpenToday($questionnaire, "Questionnaire {$questionnaire['questionnaireId']}");
+        }
+    }
+
+    /** @test */
+    public function a_staging_project_is_open_today()
+    {
+        $this->assertOpenToday($this->stagingProjectOptions(), 'The project');
+    }
+
+    /** @test */
+    public function staging_questionnaires_keep_the_length_directus_gives_them()
+    {
+        $directus = collect(MartReferenceProjectSeeder::fixture('project_options')['options']['repeatingQuestionnaires'])
+            ->mapWithKeys(fn ($questionnaire) => [$questionnaire['questionnaireId'] => $this->days(
+                $questionnaire['startDateAndTime']['date'],
+                $questionnaire['endDateAndTime']['date'],
+            )])->all();
+
+        $staging = collect($this->stagingProjectOptions()['repeatingQuestionnaires'])
+            ->mapWithKeys(fn ($questionnaire) => [$questionnaire['questionnaireId'] => $this->days(
+                $questionnaire['startDateAndTime']['date'],
+                $questionnaire['endDateAndTime']['date'],
+            )])->all();
+
+        $this->assertSame($directus, $staging);
     }
 
     /** @test */
@@ -197,6 +233,33 @@ class MartDemoSeedersTest extends TestCase
         $this->assertFalse(MartEntry::whereIn('schedule_id', $this->demoScheduleIds())
             ->where('completed_at', '>', now())
             ->exists());
+    }
+
+    /**
+     * The options of a new staging project, as the app reads them.
+     */
+    private function stagingProjectOptions(): array
+    {
+        $this->runStaging([['email' => 'tester@example.test', 'projects' => ['Staging A']]]);
+        $project = Project::where('name', 'Staging A')->firstOrFail();
+
+        $structure = (new MartApiController)->getProjectStructure(Request::create('/test'), $project)->toArray(null);
+
+        return json_decode(json_encode($structure['projectOptions']), true)['options'];
+    }
+
+    private function assertOpenToday(array $window, string $label): void
+    {
+        $today = now()->startOfDay();
+        $start = Carbon::createFromFormat('d.m.Y', $window['startDateAndTime']['date'])->startOfDay();
+        $end = Carbon::createFromFormat('d.m.Y', $window['endDateAndTime']['date'])->startOfDay();
+
+        $this->assertTrue($start->lte($today) && $end->gte($today), "{$label} runs {$start->toDateString()} to {$end->toDateString()}");
+    }
+
+    private function days(string $start, string $end): int
+    {
+        return (int) Carbon::parse($start)->diffInDays(Carbon::parse($end));
     }
 
     private function runStaging(array $accounts): void

@@ -1,8 +1,11 @@
 <?php
 
 use App\Cases;
+use App\Mart\MartSchedule;
+use App\Project;
 use App\Role;
 use App\User;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -44,6 +47,7 @@ class StagingMartSeeder extends Seeder
             foreach ($account['projects'] as $index => $projectName) {
                 $project = $reference->buildProject($user);
                 $project->update(['name' => $projectName]);
+                $this->startToday($project);
                 $this->command->info("  ✓ {$projectName} created for {$user->email} (ID: {$project->id})");
 
                 $case = Cases::create([
@@ -66,6 +70,49 @@ class StagingMartSeeder extends Seeder
         $this->command->newLine();
 
         $this->displaySummary($users, $allProjects, $allCases);
+    }
+
+    /**
+     * Directus's dates for project 1 are past: its repeating questionnaires
+     * ended in March 2026. So on staging, the project and each questionnaire
+     * start today at midnight and keep their length, and testers can try the
+     * repeating questionnaires. The reference project keeps Directus's dates.
+     */
+    private function startToday(Project $project): void
+    {
+        $today = Carbon::today();
+
+        $inputs = json_decode($project->inputs, true);
+        $options = $inputs[0]['projectOptions'];
+        [$options['startDateAndTime'], $options['endDateAndTime']] = $this->windowFrom($today, $options['startDateAndTime'], $options['endDateAndTime']);
+        $inputs[0]['projectOptions'] = $options;
+        $project->update(['inputs' => json_encode($inputs)]);
+
+        foreach (MartSchedule::where('mart_project_id', $project->martProject()->id)->get() as $schedule) {
+            $timing = $schedule->timing_config;
+            // Data donation questionnaires have no dates: the participant starts them.
+            if (empty($timing['start_date_time'])) {
+                continue;
+            }
+            [$timing['start_date_time'], $timing['end_date_time']] = $this->windowFrom($today, $timing['start_date_time'], $timing['end_date_time'] ?? null);
+            $schedule->update(['timing_config' => $timing]);
+        }
+    }
+
+    /**
+     * A start and end, moved to start on $day at midnight, as many days long
+     * as before. No end stays no end.
+     */
+    private function windowFrom(Carbon $day, array $start, ?array $end): array
+    {
+        $newStart = ['date' => $day->format('Y-m-d'), 'time' => '00:00'];
+        if ($end === null) {
+            return [$newStart, null];
+        }
+
+        $days = (int) Carbon::parse($start['date'])->diffInDays(Carbon::parse($end['date']));
+
+        return [$newStart, ['date' => $day->copy()->addDays($days)->format('Y-m-d'), 'time' => $end['time']]];
     }
 
     /**
