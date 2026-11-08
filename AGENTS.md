@@ -11,7 +11,8 @@ vendor/bin/pest --filter=TestName        # one test or class
 npm run test:unit                        # frontend tests (Jest)
 npm run cypress:run                      # e2e
 
-php artisan migrate                      # both DBs: MART migrations set their own connection
+php artisan migrate                      # main DB only
+php artisan migrate:mart                 # MART DB, history in its own migrations table; --status to check
 php artisan migrate:status
 php artisan migrate:fresh-all --seed     # DESTRUCTIVE: drops main AND MART DB; blocked in production
 php artisan queue:work
@@ -40,13 +41,14 @@ Feature tests render Blade views with `@vite`, so `public/build` must exist. The
 ## Architecture
 
 ### Two databases
-- `mysql` (main): projects, cases, entries (metadata only), users, roles, settings.
+- `mysql` (main): projects, cases, entries (MeTag answers; older MART submissions as empty rows), users, roles, settings.
 - `mart` (MART): `mart_projects`, `mart_schedules`, `mart_questions`, `mart_question_history`, `mart_entries`, `mart_answers`, `mart_pages`, `mart_stats`, `mart_device_info`, `mart_case_schedules`, `mart_files`. Models live in `app/Mart/` with `protected $connection = 'mart'`.
-- No cross-DB foreign keys. Links: `mart_projects.main_project_id -> projects.id`, `mart_entries.main_entry_id -> entries.id`, `mart_case_schedules.case_id -> cases.id`, `participant_id` = `cases.name`, `user_id` = user email.
+- `DatabaseBoundary` middleware: `boundary:metag` on `/api/login`, `/api/qr-login`, `/api/v1`, `/api/v2` throws on any MART query, or only logs where `METAG_BOUNDARY_ENFORCED` is false, which is the default in production. `boundary:mart` on `/api/mobile`, `/api/mart`, `/mart-api` logs main tables other than `users`, `projects`, `cases`. The six `/api/v2/projects/{project}/pages` routes stay outside. Add the middleware to any new route under those prefixes.
+- No cross-DB foreign keys. Links: `mart_projects.main_project_id -> projects.id`, `mart_entries.case_id -> cases.id`, `mart_entries.main_entry_id -> entries.id` (older submissions), `mart_case_schedules.case_id -> cases.id`, `participant_id` = `cases.name`, `user_id` = user email.
 
 ```php
-$martProject = $project->martProject();   // MartProject|null, cached per request
-$martEntry   = $entry->martEntry();       // MartEntry|null
+$martProject = $project->martProject();   // MartProject|null, cached per request; no MART query for MeTag projects
+$martEntry   = $entry->martEntry();       // MartEntry|null; same rule
 if ($project->isMartProject()) { ... }    // reads the 'mart' marker in projects.inputs
 
 DB::connection('mysql')->beginTransaction();
@@ -125,7 +127,8 @@ Editing a question writes a `mart_question_history` row and bumps `version`; ans
 
 ### Submissions and files
 - Completed cases reject submissions with 422. `userId` must match the case owner's email.
-- Each submit writes a main `entries` row (metadata only) plus `mart_entries` and `mart_answers`.
+- Each submit writes `mart_entries` and `mart_answers` only, and `entry_id` in the response is the `mart_entries` id.
+- The web entry routes (`/cases/{case}/entries`) refuse MART cases with 403. Case lists build a MART case's `entries` from `mart_entries`, so those rows carry `mart_entries` ids, not `entries` ids.
 - `device-infos` and `stats` return 403 when `userId` is not the bearer token's account.
 - Push: `POST /api/mobile/device-token` (or `fcmToken` on `device-infos`) stores FCM tokens in `users.deviceID`, newest 10. `notification:cleanID` clears them once the latest case has ended.
 - Files: `POST /api/mobile/cases/{case}/files` accepts multipart (`file`) or JSON base64. MIME is detected from content and checked against `MartFile::ALLOWED_MIME_TYPES`; 50 MB max; stored encrypted under `storage/app/mart/`. Upload first, then reference the returned `file_id` in the answer.
@@ -144,10 +147,12 @@ Editing a question writes a `mart_question_history` row and bumps `version`; ans
 - Never call `env()` outside `config/`: it returns null under `config:cache`.
 - A plain `throttle:N,M` keys its counter by user or IP only, so limits on the same route or sharing a window share one counter. Give each limit its own third argument, as `routes/api.php` and `routes/mobile.php` do.
 - `Cases::isConsultable()` is also true when a case has no `lastDay`, which is how MART cases start.
+- `/api/login` opens the user's newest MeTag case, not `latestCase`, which can be a MART case. MART cases log in through `/api/mobile/auth`, and someone with only MART cases gets 499.
 - `APP_ENV=production` assumes the `/metag` subfolder (Livewire, Telescope, graph breadcrumb). metagtest runs `APP_ENV=local`, so environment checks do not protect it.
+- Run `php artisan migrate`, then `php artisan migrate:mart`. MART migrations live in `database/migrations/mart/`, with their history in the MART DB's own `migrations` table; new ones go there too. Never run `migrate --database=mart`: it runs every migration on the MART DB. `migrate:fresh` resets main only, so use `migrate:fresh-all` to reset both, test DBs included: old MART rows collide with restarted main IDs.
 - Seeders must use `bcrypt()`, not `Hash::make()`.
 - Trigger migrations need `SUPER` or `log_bin_trust_function_creators=1`; they skip with a warning otherwise.
-- Case lists and exports for MART come from the MART DB; the main `entries` row holds no answers.
+- Case lists and exports for MART come from the MART DB. The treemap, the graph pages and `store` on `/api/v1` and `/api/v2` refuse MART with 403.
 
 ## Docs
 - `DOCS/MART/API.md` (endpoint reference), `DOCS/MART/DATA_MAPPING.md`, `DOCS/MART/README.md`.

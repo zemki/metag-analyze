@@ -233,6 +233,7 @@ npm ci && npm run build
 php artisan filament:assets
 
 php artisan migrate --force
+php artisan migrate:mart --force
 
 php artisan optimize:clear
 php artisan config:cache
@@ -244,8 +245,21 @@ sudo systemctl reload php8.3-fpm
 php artisan up
 ```
 
-One `migrate` covers both databases. Reloading PHP matters: without it, OPcache keeps running
-the old code.
+`migrate` covers the main database and `migrate:mart` the MART one, whose migrations live in
+`database/migrations/mart/` with their history in the MART database's own `migrations` table.
+If `migrate:mart` is forgotten, MART breaks and MeTag doesn't. Reloading PHP matters: without
+it, OPcache keeps running the old code.
+
+`migrate:mart` needs the MART database to exist, even if it is empty; plain `migrate` doesn't.
+Its first run on a server whose MART tables predate it copies their history from the main
+`migrations` table, which it only reads; the old rows stay there unused. On an empty MART
+database it copies nothing and builds every table. `php artisan migrate:mart --status` shows
+where a server stands and changes nothing. Never run `migrate --database=mart`: it runs every
+migration on the MART database.
+
+In production, a MART query on a MeTag API route is only logged, as `MeTag route used the MART
+database`. Once that log has stayed empty, set `METAG_BOUNDARY_ENFORCED=true` to make those
+queries fail. Other environments enforce this by default.
 
 ## Backups
 

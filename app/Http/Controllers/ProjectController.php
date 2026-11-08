@@ -202,6 +202,10 @@ class ProjectController extends Controller
         $perPage = $request->input('per_page', 50);
         $cases = $query->paginate($perPage);
 
+        if ($project->isMartProject()) {
+            Cases::loadMartEntries($cases->getCollection());
+        }
+
         // Process cases with computed properties
         $cases->getCollection()->transform(function ($case) use ($project) {
             $case->first_day = $case->firstDay();
@@ -383,8 +387,9 @@ class ProjectController extends Controller
                 DB::connection('mart')->commit();
             } catch (\Exception $e) {
                 DB::connection('mart')->rollBack();
-                // Also delete the main project to maintain consistency
-                $project->delete();
+                // Also delete the main project to maintain consistency. Quietly:
+                // the model's delete hook would hit the same MART failure.
+                $project->deleteQuietly();
                 throw new \Exception('Failed to create MART project: ' . $e->getMessage());
             }
         }
@@ -800,10 +805,23 @@ class ProjectController extends Controller
     }
 
     /**
+     * Cases of MeTag projects are skipped, so this stays off the MART database
+     * unless the list holds a MART project.
+     */
+    private function loadMartEntriesCounts($projects): void
+    {
+        Cases::loadMartEntriesCounts(
+            $projects->filter(fn ($project) => $project->isMartProject())->flatMap->cases
+        );
+    }
+
+    /**
      * Prepare Projects Data
      */
     private function prepareProjects($projects)
     {
+        $this->loadMartEntriesCounts($projects);
+
         foreach ($projects as $key => $project) {
             $projects[$key]['authiscreator'] = auth()->user()->is($project->creator());
             $projects[$key]['entries'] = $project->cases->sum('entries_count');
@@ -826,6 +844,8 @@ class ProjectController extends Controller
      */
     private function prepareInvites($invites)
     {
+        $this->loadMartEntriesCounts($invites);
+
         foreach ($invites as $key => $invite) {
             $invites[$key]['casescount'] = $invite->cases()->count();
             $invites[$key]['authiscreator'] = false;
@@ -935,6 +955,8 @@ class ProjectController extends Controller
         if (auth()->user()->notOwnerNorInvited($project) && ! auth()->user()->isAdmin()) {
             abort(403);
         }
+
+        abort_if($project->isMartProject(), 403, 'The treemap is not available for MART projects.');
 
         // Prepare breadcrumb
         $data['breadcrumb'] = [

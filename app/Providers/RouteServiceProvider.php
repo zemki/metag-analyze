@@ -81,7 +81,7 @@ class RouteServiceProvider extends ServiceProvider
     protected function mapMobileRoutes()
     {
         Route::prefix('api/mobile')
-            ->middleware('bindings')
+            ->middleware(['boundary:mart', 'bindings'])
             ->group(base_path('routes/mobile.php'));
     }
 
@@ -96,7 +96,7 @@ class RouteServiceProvider extends ServiceProvider
     protected function mapMartApiRoutes()
     {
         Route::prefix('mart-api')
-            ->middleware('bindings')
+            ->middleware(['boundary:mart', 'bindings'])
             ->namespace($this->namespace)
             ->group(base_path('routes/mart_api.php'));
     }

@@ -409,6 +409,8 @@ export shows it as `text, typed words`.
 ```json
 { "success": true, "entry_id": 42, "message": "Entry created successfully" }
 ```
+`entry_id` is the submission's `mart_entries` id. Submissions have no row in the main `entries`
+table.
 
 **Errors:**
 - `400` — Case does not belong to `projectId`

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Cases;
-use App\Entry;
 use App\Http\Resources\Mart\MartStructureResource;
 use App\Mart\MartAnswer;
 use App\Mart\MartDeviceInfo;
@@ -225,37 +224,6 @@ class MartApiController extends Controller
             );
         }
 
-        // Handle entity/media selection (skip for MART projects)
-        $entityId = null;
-        $project = Project::find($request->projectId);
-
-        if ($project && !$project->isMartProject()) {
-            if ($request->has("mediaId") && $request->mediaId) {
-                // Use provided media ID if valid
-                $mediaExists = DB::table("media")
-                    ->where("id", $request->mediaId)
-                    ->exists();
-                if ($mediaExists) {
-                    $entityId = $request->mediaId;
-                }
-            } else {
-                // Try to find a default entity for the project
-                $defaultEntity = DB::table("media")
-                    ->join(
-                        "project_media",
-                        "media.id",
-                        "=",
-                        "project_media.media_id",
-                    )
-                    ->where("project_media.project_id", $request->projectId)
-                    ->first();
-
-                if ($defaultEntity) {
-                    $entityId = $defaultEntity->id;
-                }
-            }
-        }
-
         // Get MART project and schedule from MART DB
         $martProject = $project->martProject();
         if (!$martProject) {
@@ -283,32 +251,12 @@ class MartApiController extends Controller
             );
         }
 
-        DB::connection("mysql")->beginTransaction();
         DB::connection("mart")->beginTransaction();
 
         try {
-            // Step 1: Create entry in main database
-            $entryData = [
-                "begin" => date(
-                    "Y-m-d H:i:s",
-                    $request->questionnaireStarted / 1000,
-                ),
-                "end" => date(
-                    "Y-m-d H:i:s",
-                    ($request->questionnaireStarted +
-                        $request->questionnaireDuration) /
-                        1000,
-                ),
-                "case_id" => $case->id,
-                "media_id" => $entityId,
-                "inputs" => json_encode([]), // No longer store answers here
-            ];
-
-            $entry = Entry::create($entryData);
-
-            // Step 2: Create MART entry in MART database
+            // Step 1: Create MART entry in MART database
             $martEntryData = [
-                "main_entry_id" => $entry->id,
+                "case_id" => $case->id,
                 "schedule_id" => $schedule->id,
                 "questionnaire_id" => $request->questionnaireId,
                 "participant_id" => $request->participantId,
@@ -330,7 +278,7 @@ class MartApiController extends Controller
 
             $martEntry = MartEntry::create($martEntryData);
 
-            // Step 3: Create MART answers for each question
+            // Step 2: Create MART answers for each question
             $questions = $this->questionsInItemOrder($schedule);
             $fileIdsToLink = [];
 
@@ -368,7 +316,7 @@ class MartApiController extends Controller
                 }
             }
 
-            // Step 4: Link uploaded files to the entry
+            // Step 3: Link uploaded files to the entry
             if (!empty($fileIdsToLink)) {
                 $linkResults = MartFileController::linkFilesToEntry(
                     $fileIdsToLink,
@@ -383,24 +331,31 @@ class MartApiController extends Controller
                 }
             }
 
-            // Commit both transactions
-            DB::connection("mysql")->commit();
             DB::connection("mart")->commit();
 
             return response()->json([
                 "success" => true,
-                "entry_id" => $entry->id,
+                "entry_id" => $martEntry->id,
                 "message" => "Entry created successfully",
             ]);
         } catch (\Exception $e) {
-            // Rollback both transactions on error
-            DB::connection("mysql")->rollBack();
             DB::connection("mart")->rollBack();
+
+            // Not the exception message, here or in the response: a database
+            // error's message holds the SQL values, such as participant IDs
+            // and emails.
+            \Log::error("MART submit failed", [
+                "case_id" => $case->id,
+                "exception" => get_class($e),
+                "code" => $e->getCode(),
+                "file" => $e->getFile(),
+                "line" => $e->getLine(),
+            ]);
 
             return response()->json(
                 [
                     "success" => false,
-                    "message" => "Failed to create entry: " . $e->getMessage(),
+                    "message" => "Failed to create entry",
                 ],
                 500,
             );

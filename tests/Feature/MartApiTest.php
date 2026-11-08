@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Entry;
+use App\Mart\MartEntry;
 use App\Mart\MartPage;
 use App\Mart\MartProject;
 use App\Mart\MartQuestion;
@@ -187,12 +187,8 @@ class MartApiTest extends TestCase
         $this->assertTrue($responseData['success']);
         $this->assertEquals('Entry created successfully', $responseData['message']);
 
-        // Verify entry was created in main DB
-        $entry = Entry::where('case_id', $this->case->id)->first();
-        $this->assertNotNull($entry);
-
         // Verify MART entry was created in MART DB
-        $martEntry = $entry->martEntry();
+        $martEntry = MartEntry::where('case_id', $this->case->id)->first();
         $this->assertNotNull($martEntry);
         $this->assertEquals($this->questionnaireId1, $martEntry->questionnaire_id);
         $this->assertEquals('test@example.com', $martEntry->user_id);

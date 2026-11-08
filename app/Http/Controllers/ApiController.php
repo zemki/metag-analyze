@@ -70,6 +70,16 @@ class ApiController extends Controller
     }
 
     /**
+     * The case MeTag's login opens. Not `latestCase`: that can be a MART case,
+     * and those log in through /api/mobile/auth.
+     */
+    private function newestMetagCase(User $user): ?Cases
+    {
+        return $user->case()->with('project')->latest()->get()
+            ->first(fn (Cases $case) => ! $case->project?->isMartProject());
+    }
+
+    /**
      * Handles Login Request
      *
      * @return JsonResponse
@@ -97,7 +107,7 @@ class ApiController extends Controller
                 'token_expires_at' => now()->addDays(config('auth.token_expiration_days', 30)),
             ])->save();
 
-            $userHasACase = $user->latestCase;
+            $userHasACase = $this->newestMetagCase($user);
 
             if (! $userHasACase) {
                 return response()->json(['case' => 'No cases'], 499);
@@ -121,15 +131,6 @@ class ApiController extends Controller
 
             $userHasACase->duration .= $lastDayPos ? '' : '|lastDay:' . $duration;
             $userHasACase->save();
-
-            // Track first login for MART projects
-            if ($userHasACase->project->isMartProject() && !$userHasACase->first_login_at) {
-                $userHasACase->first_login_at = now();
-                $userHasACase->save();
-
-                // Calculate dynamic start/end dates for MART schedules
-                \App\Mart\MartCaseSchedule::calculateForCase($userHasACase);
-            }
 
             // Determine which API version to use
             $forceApiV2 = config('app.force_api_v2', false);

@@ -49,6 +49,7 @@ class EntryController extends Controller
     public function store(Cases $case)
     {
         $this->authorize('store', [Entry::class, $case]);
+        $this->refuseMartCase($case);
 
         // In V2, we only use entity_id
         // If someone directly passes 'entity' param, convert it to entity_id

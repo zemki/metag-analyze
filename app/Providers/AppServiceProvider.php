@@ -7,6 +7,7 @@ use Dedoc\Scramble\Support\Generator\OpenApi;
 use Dedoc\Scramble\Support\Generator\SecurityScheme;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
@@ -25,6 +26,10 @@ class AppServiceProvider extends ServiceProvider
     {
 
         Schema::defaultStringLength(191);
+
+        // Production only: metagtest runs APP_ENV=local, so the MART base
+        // migration has to protect itself there.
+        DB::prohibitDestructiveCommands(App::environment('production'));
 
         // Provide central config values to all views
         View::composer('*', function ($view) {

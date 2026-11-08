@@ -3,9 +3,9 @@
 namespace Tests\Feature;
 
 use App\Console\Commands\NotificationChecker;
-use App\Entry;
 use App\Mart\MartEntry;
 use App\Mart\MartProject;
+use App\Mart\MartQuestion;
 use App\Mart\MartSchedule;
 use Tests\TestCase;
 
@@ -13,9 +13,14 @@ use Tests\TestCase;
  * The daily limit for repeating questionnaires used to count main entries by
  * `inputs->_mart_metadata->questionnaire_id`, which nothing writes, so the
  * count was always 0 and the limit never stopped a notification.
+ *
+ * Submissions go through the real endpoint here, so this breaks if a submit
+ * ever stops being countable.
  */
 class NotificationDailyLimitTest extends TestCase
 {
+    private const TOKEN = 'notification_daily_limit_token';
+
     private MartSchedule $schedule;
 
     protected function setUp(): void
@@ -23,30 +28,61 @@ class NotificationDailyLimitTest extends TestCase
         parent::setUp();
 
         $this->project->update(['inputs' => json_encode([['type' => 'mart']])]);
-        $martProject = MartProject::firstOrCreate(['main_project_id' => $this->project->id]);
+        $this->user->forceFill(['api_token' => hash('sha256', self::TOKEN)])->save();
 
-        $this->schedule = MartSchedule::create([
-            'mart_project_id' => $martProject->id,
-            'questionnaire_id' => $this->project->id * 1000 + 1,
-            'name' => 'Daily check-in',
+        $this->schedule = $this->addSchedule(1, [
+            'daily_start_time' => '00:00',
+            'daily_end_time' => '23:59',
+            'max_daily_submits' => 2,
+        ]);
+    }
+
+    private function addSchedule(int $number, array $timing = []): MartSchedule
+    {
+        $schedule = MartSchedule::create([
+            'mart_project_id' => MartProject::firstOrCreate(['main_project_id' => $this->project->id])->id,
+            'questionnaire_id' => $this->project->id * 1000 + $number,
+            'name' => "Questionnaire {$number}",
             'type' => 'repeating',
-            'timing_config' => [
-                'daily_start_time' => '00:00',
-                'daily_end_time' => '23:59',
-                'max_daily_submits' => 2,
-            ],
+            'timing_config' => $timing,
             'notification_config' => [],
         ]);
+
+        MartQuestion::create([
+            'schedule_id' => $schedule->id,
+            'position' => 1,
+            'text' => 'How was your day?',
+            'type' => 'text',
+            'is_mandatory' => false,
+            'version' => 1,
+        ]);
+
+        return $schedule;
     }
 
     private function submitToday(MartSchedule $schedule): void
     {
-        $entry = Entry::factory()->create(['case_id' => $this->case->id, 'created_at' => now()]);
+        $this->withToken(self::TOKEN)
+            ->postJson("/api/mobile/cases/{$this->case->id}/submit", [
+                'projectId' => $this->project->id,
+                'questionnaireId' => $schedule->questionnaire_id,
+                'userId' => $this->user->email,
+                'participantId' => $this->case->name,
+                'questionnaireStarted' => now()->timestamp * 1000,
+                'questionnaireDuration' => 1000,
+                'answers' => ['1' => 'fine'],
+                'timestamp' => now()->timestamp * 1000,
+                'timezone' => 'Europe/Berlin',
+            ])
+            ->assertOk();
+    }
 
+    private function addSubmissionWithoutMainEntry(): void
+    {
         MartEntry::create([
-            'main_entry_id' => $entry->id,
-            'schedule_id' => $schedule->id,
-            'questionnaire_id' => $schedule->questionnaire_id,
+            'case_id' => $this->case->id,
+            'schedule_id' => $this->schedule->id,
+            'questionnaire_id' => $this->schedule->questionnaire_id,
             'participant_id' => $this->case->name,
             'user_id' => $this->user->email,
             'started_at' => now(),
@@ -85,18 +121,20 @@ class NotificationDailyLimitTest extends TestCase
     /** @test */
     public function submissions_to_another_questionnaire_do_not_count()
     {
-        $other = MartSchedule::create([
-            'mart_project_id' => $this->schedule->mart_project_id,
-            'questionnaire_id' => $this->schedule->questionnaire_id + 1,
-            'name' => 'Other',
-            'type' => 'repeating',
-            'timing_config' => [],
-            'notification_config' => [],
-        ]);
+        $other = $this->addSchedule(2);
 
         $this->submitToday($other);
         $this->submitToday($other);
 
         $this->assertTrue($this->shouldSend());
+    }
+
+    /** @test */
+    public function submissions_without_a_main_entry_count_towards_the_limit()
+    {
+        $this->addSubmissionWithoutMainEntry();
+        $this->addSubmissionWithoutMainEntry();
+
+        $this->assertFalse($this->shouldSend());
     }
 }

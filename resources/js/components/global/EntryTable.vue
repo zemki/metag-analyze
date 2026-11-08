@@ -80,7 +80,7 @@
             </th>
 
             <!-- Actions column: not resizable, fixed width. -->
-            <th :style="thActionsStyle"></th>
+            <th v-if="canEditEntries" :style="thActionsStyle"></th>
           </tr>
         </thead>
         <tbody>
@@ -88,7 +88,7 @@
             <tr
               @mouseenter="hoveredId = entry.id ?? index"
               @mouseleave="hoveredId = null"
-              @dblclick="$emit('edit', entry)"
+              @dblclick="canEditEntries && $emit('edit', entry)"
               :style="rowStyle(entry, index)"
             >
               <td :style="tdChevronStyle">
@@ -135,7 +135,7 @@
                   mode="display"
                 />
               </td>
-              <td :style="tdActionsStyle">
+              <td v-if="canEditEntries" :style="tdActionsStyle">
                 <span style="display: inline-flex; gap: 6px;">
                   <CaseAction
                     title="Edit entry"
@@ -270,6 +270,9 @@ defineEmits(['edit', 'delete']);
 
 // ---- General state ----
 const capabilities = useProjectCapabilities(() => props.project);
+// MART rows come from mart_entries, so their ids mean nothing to the entries
+// routes. Reads the flag directly: capabilities gets a getter it never calls.
+const canEditEntries = computed(() => !props.project?.is_mart_project);
 const expandedId = ref(null);
 const hoveredId = ref(null);
 
@@ -316,13 +319,13 @@ const totalTableWidth = computed(() => {
   inputColumns.value.forEach((i) => {
     w += colWidth(`input-${i.name}`);
   });
-  w += colWidth('actions');
+  if (canEditEntries.value) w += colWidth('actions');
   return w;
 });
 
 const totalColumns = computed(() =>
-  // chevron + start + end + duration + (media?) + inputs + actions
-  4 + (showMediaColumn.value ? 1 : 0) + inputColumns.value.length + 1
+  // chevron + start + end + duration + (media?) + inputs + (actions?)
+  4 + (showMediaColumn.value ? 1 : 0) + inputColumns.value.length + (canEditEntries.value ? 1 : 0)
 );
 
 // ---- Column resize ----

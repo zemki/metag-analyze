@@ -16,7 +16,7 @@
 // and the group's one-minute expiry cuts longer windows down to a minute.
 // 30 per minute per IP: participants often log in together on one network, and
 // repeated wrong passwords lock the account (ApiController::login).
-Route::post('login', 'ApiController@login')->middleware('throttle:30,1,metag-login');
+Route::post('login', 'ApiController@login')->middleware(['boundary:metag', 'throttle:30,1,metag-login']);
 
 // Settings API
 Route::get('settings/api_v2_cutoff_date', function () {
@@ -26,7 +26,7 @@ Route::get('settings/api_v2_cutoff_date', function () {
 // QR Code Login - rate limited to prevent brute force attacks
 // For API v2 non-MART projects only
 // 30 requests per minute per IP (bumped from 10 to support testing flows)
-Route::post('qr-login', 'ApiController@qrLogin')->middleware('throttle:30,1,metag-qr-login');
+Route::post('qr-login', 'ApiController@qrLogin')->middleware(['boundary:metag', 'throttle:30,1,metag-qr-login']);
 
 // Email existence check - rate limited to prevent enumeration attacks
 // ⚠️ IMPORTANT: This endpoint is used by MART mobile apps to check if user exists
@@ -47,7 +47,7 @@ Route::post('send-password-setup', 'ApiController@sendPasswordSetup')->middlewar
 // Screen 1: Email check → Screen 2: Password check → Screen 3: Project access check
 // Each screen validates the previous screen was completed (using cache)
 // Throttle key prefixes as explained at the top of this file.
-Route::prefix('mart')->middleware('force.json')->group(function () {
+Route::prefix('mart')->middleware(['boundary:mart', 'force.json'])->group(function () {
     // Screen 1: Check if email exists
     // 30/min per IP (bumped from 10)
     Route::post('check-email', 'MartAuthController@checkEmail')
@@ -78,7 +78,7 @@ Route::prefix('mart')->middleware('force.json')->group(function () {
 });
 
 // V1 API Routes (Legacy - uses 'media' field)
-Route::group(['prefix' => 'v1', 'middleware' => ['auth:api']], function () {
+Route::group(['prefix' => 'v1', 'middleware' => ['boundary:metag', 'auth:api']], function () {
     Route::get('/project/{project}', 'Api\V1\ApiController@getProject');
 
     Route::get('/inputs/{project}', 'Api\V1\ApiController@getInputs');
@@ -91,18 +91,21 @@ Route::group(['prefix' => 'v1', 'middleware' => ['auth:api']], function () {
 
 // V2 API Routes (New - uses 'entity' field)
 Route::group(['prefix' => 'v2', 'middleware' => ['auth:api']], function () {
-    Route::get('/project/{project}', 'Api\V2\ApiController@getProject');
+    Route::middleware('boundary:metag')->group(function () {
+        Route::get('/project/{project}', 'Api\V2\ApiController@getProject');
 
-    Route::get('/inputs/{project}', 'Api\V2\ApiController@getInputs');
-    Route::get('/entry/{case}', 'Api\V2\EntryController@entriesByCase');
+        Route::get('/inputs/{project}', 'Api\V2\ApiController@getInputs');
+        Route::get('/entry/{case}', 'Api\V2\EntryController@entriesByCase');
 
-    Route::post('/cases/{case}/entries', 'Api\V2\EntryController@store');
-    Route::patch('/cases/{case}/entries/{entry}', 'Api\V2\EntryController@update');
-    Route::delete('/cases/{case}/entries/{entry}', 'Api\V2\EntryController@destroy');
+        Route::post('/cases/{case}/entries', 'Api\V2\EntryController@store');
+        Route::patch('/cases/{case}/entries/{entry}', 'Api\V2\EntryController@update');
+        Route::delete('/cases/{case}/entries/{entry}', 'Api\V2\EntryController@destroy');
 
-    Route::get('/files/{file}', 'Api\V2\FileController@show');
+        Route::get('/files/{file}', 'Api\V2\FileController@show');
+    });
 
-    // Pages API routes
+    // Pages API routes. These hold only MART data, so they stay outside the
+    // boundary until server logs show whether anything still calls them.
     Route::get('/projects/{project}/pages', 'Api\V2\PageController@index');
     Route::post('/projects/{project}/pages', 'Api\V2\PageController@store');
     Route::get('/projects/{project}/pages/{page}', 'Api\V2\PageController@show');
