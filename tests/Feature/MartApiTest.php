@@ -2,11 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Cases;
+use App\Mart\MartDeviceInfo;
 use App\Mart\MartEntry;
 use App\Mart\MartPage;
 use App\Mart\MartProject;
 use App\Mart\MartQuestion;
 use App\Mart\MartSchedule;
+use App\Mart\MartStat;
 use App\MartPage as OldMartPage;
 use App\Project;
 use App\User;
@@ -207,7 +210,7 @@ class MartApiTest extends TestCase
         $request = new \Illuminate\Http\Request([
             'projectId' => $this->project->id,
             'questionnaireId' => $this->questionnaireId1,
-            'userId' => 'participant@test.com',
+            'userId' => $this->user->email,
             'participantId' => $this->case->name,
             'sheetId' => 1,
             'questionnaireStarted' => now()->timestamp * 1000,
@@ -218,7 +221,7 @@ class MartApiTest extends TestCase
         ]);
 
         $controller = new \App\Http\Controllers\MartApiController;
-        $controller->submitEntry($request, $this->case);
+        $this->assertTrue($controller->submitEntry($request, $this->case)->getData(true)['success']);
 
         // Now test structure endpoint with participant_id
         $structureRequest = \Illuminate\Http\Request::create('/test', 'GET', ['participant_id' => $this->case->name]);
@@ -232,12 +235,118 @@ class MartApiTest extends TestCase
         $this->assertArrayHasKey('lastDataDonationSubmit', $structureArray);
         $this->assertArrayHasKey('lastAndroidStatsSubmit', $structureArray);
 
-        // Check that submissions contain our test data
-        $this->assertNotEmpty($structureArray['repeatingSubmits']);
-        // Just verify the submission has a valid questionnaireId (could be from any test run)
-        $this->assertArrayHasKey('questionnaireId', $structureArray['repeatingSubmits'][0]);
-        $this->assertIsNumeric($structureArray['repeatingSubmits'][0]['questionnaireId']);
+        // The submission just made, and only that one
+        $this->assertCount(1, $structureArray['repeatingSubmits']);
+        $this->assertEquals($this->questionnaireId1, $structureArray['repeatingSubmits'][0]['questionnaireId']);
         $this->assertIsNumeric($structureArray['repeatingSubmits'][0]['timestamp']);
+    }
+
+    /**
+     * Case names can repeat across projects, so two projects can each have a
+     * "P01". The per-participant data must come from the participant's
+     * own project, as Directus filters by projectId and participantId.
+     * Otherwise the other P01's single submits mark questionnaires as done.
+     *
+     * @test
+     */
+    public function participant_data_comes_only_from_the_participants_own_project()
+    {
+        $name = 'P01-' . uniqid();
+        $this->case->update(['name' => $name]);
+        $ownMartProject = $this->project->martProject();
+        $ownSchedule = MartSchedule::where('mart_project_id', $ownMartProject->id)
+            ->where('questionnaire_id', $this->questionnaireId1)
+            ->first();
+
+        // A second project with its own participant of the same name.
+        $otherProject = Project::factory()->create([
+            'created_by' => $this->user->id,
+            'inputs' => $this->project->inputs,
+        ]);
+        $otherMartProject = MartProject::firstOrCreate(['main_project_id' => $otherProject->id]);
+        $otherUser = User::factory()->create();
+        Cases::factory()->create([
+            'project_id' => $otherProject->id,
+            'user_id' => $otherUser->id,
+            'name' => $name,
+        ]);
+
+        foreach (['repeating' => 1, 'single' => 2] as $type => $offset) {
+            $otherSchedule = MartSchedule::create([
+                'mart_project_id' => $otherMartProject->id,
+                'questionnaire_id' => $otherProject->id * 1000 + $offset,
+                'name' => "Other {$type}",
+                'type' => $type,
+                'timing_config' => ['start_date_time' => ['date' => '2025-01-01', 'time' => '09:00']],
+                'notification_config' => [],
+            ]);
+            $this->createMartEntry($otherSchedule, $name, $otherUser->email, 1700000900);
+        }
+        MartStat::create([
+            'mart_project_id' => $otherMartProject->id,
+            'participant_id' => $name,
+            'user_id' => $otherUser->email,
+            'android_usage_stats' => [['packageName' => 'com.example.other']],
+            'timestamp' => 1700000900,
+            'timezone' => 'Europe/Berlin',
+        ]);
+        MartDeviceInfo::create([
+            'participant_id' => $name,
+            'user_id' => $otherUser->email,
+            'os' => 'ios',
+            'os_version' => '18',
+            'model' => 'Other phone',
+            'manufacturer' => 'Apple',
+            'last_updated' => now(),
+        ]);
+
+        // The participant's own data, which must still come through.
+        $this->createMartEntry($ownSchedule, $name, $this->user->email, 1700000100);
+        MartStat::create([
+            'mart_project_id' => $ownMartProject->id,
+            'participant_id' => $name,
+            'user_id' => $this->user->email,
+            'android_usage_stats' => [['packageName' => 'com.example.own']],
+            'timestamp' => 1700000100,
+            'timezone' => 'Europe/Berlin',
+        ]);
+        MartDeviceInfo::create([
+            'participant_id' => $name,
+            'user_id' => $this->user->email,
+            'os' => 'android',
+            'os_version' => '14',
+            'model' => 'Own phone',
+            'manufacturer' => 'Google',
+            'last_updated' => now(),
+        ]);
+
+        $request = \Illuminate\Http\Request::create('/test', 'GET', ['participant_id' => $name]);
+        $structure = (new \App\Http\Controllers\MartApiController)
+            ->getProjectStructure($request, $this->project)
+            ->toArray($request);
+
+        $this->assertSame(
+            [['questionnaireId' => $this->questionnaireId1, 'timestamp' => 1700000100]],
+            $structure['repeatingSubmits'],
+        );
+        $this->assertSame([], $structure['singleSubmits']);
+        $this->assertSame(['timestamp' => 1700000100], $structure['lastAndroidStatsSubmit']);
+        $this->assertSame(['Own phone'], array_column($structure['deviceInfos'], 'model'));
+    }
+
+    private function createMartEntry(MartSchedule $schedule, string $participantId, string $userId, int $timestamp): MartEntry
+    {
+        return MartEntry::create([
+            'schedule_id' => $schedule->id,
+            'questionnaire_id' => $schedule->questionnaire_id,
+            'participant_id' => $participantId,
+            'user_id' => $userId,
+            'started_at' => now()->subMinute(),
+            'completed_at' => now(),
+            'duration_ms' => 60000,
+            'timezone' => 'Europe/Berlin',
+            'timestamp' => $timestamp,
+        ]);
     }
 
     /**

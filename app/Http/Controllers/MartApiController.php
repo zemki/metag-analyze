@@ -108,6 +108,7 @@ class MartApiController extends Controller
         $resource = new MartStructureResource($project, $schedules);
         $resource->setParticipantId($participantId);
         $resource->setCaseId($caseId);
+        $resource->setUserEmail($case?->user?->email);
 
         return $resource;
     }

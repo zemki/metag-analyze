@@ -257,6 +257,10 @@ per-participant data when `participant_id` is provided.
   endpoint returns `404`** (it does not silently fall back).
 
 **Per-participant fields in the response:**
+- All of them come from this project only, as in Directus (projectId + participantId).
+  Case names can repeat across projects, so another project's participant of the same
+  name never shows up. `deviceInfos` has no project column, so it also matches the
+  case owner's email.
 - `repeatingSubmits` and `singleSubmits` are returned as separate arrays, filtered by
   the schedule's type (`repeating` vs `single`).
 - `lastDataDonationSubmit` is `{ timestamp }` (no `questionnaireId`). It returns the
