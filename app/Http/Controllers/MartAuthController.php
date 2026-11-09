@@ -29,10 +29,16 @@ use Illuminate\Support\Facades\Mail;
 class MartAuthController extends Controller
 {
     /**
+     * How long Screen 1's email check stays valid for the next screen. Long
+     * enough for a participant to look up a password or set one up.
+     */
+    private const EMAIL_CHECK_MINUTES = 10;
+
+    /**
      * Screen 1: Check if email exists
      *
      * First step of the 3-screen auth flow. Checks if the email is registered.
-     * Stores result in cache for 1 minute (required by Screen 2).
+     * Stores result in cache for 10 minutes (required by Screen 2).
      *
      * @unauthenticated
      *
@@ -54,12 +60,12 @@ class MartAuthController extends Controller
         $exists = $user && ! $user->trashed();
         $verified = $exists && (bool) $user->email_verified_at;
 
-        // Store in cache for 1 minute (used by Screen 2)
+        // Store in cache for the next screen (Screen 1b or 2)
         $cacheKey = 'email_check:'.md5($email.$request->ip());
         Cache::put($cacheKey, [
             'email' => $email,
             'checked_at' => now(),
-        ], now()->addMinutes(1));
+        ], now()->addMinutes(self::EMAIL_CHECK_MINUTES));
 
         // Return response matching frontend TypeScript type
         return response()->json([
@@ -73,7 +79,7 @@ class MartAuthController extends Controller
      * Screen 1b: Send password setup email
      *
      * For new users after check-email returns emailExists: false.
-     * Requires email check within the last minute.
+     * Requires an email check within the last 10 minutes.
      *
      * @unauthenticated
      *
@@ -90,7 +96,7 @@ class MartAuthController extends Controller
 
         $email = strtolower(trim($request->email));
 
-        // 2. Check if email was checked recently (within 1 minute)
+        // 2. Check if email was checked recently (within 10 minutes)
         $cacheKey = 'email_check:'.md5($email.$request->ip());
         $emailCheck = Cache::get($cacheKey);
 
@@ -163,7 +169,7 @@ class MartAuthController extends Controller
     /**
      * Screen 2: Check password
      *
-     * Validates email was checked in Screen 1 (within 1 minute).
+     * Validates email was checked in Screen 1 (within 10 minutes).
      * Returns bearerToken (30-day) and refreshToken (7-day).
      *
      * @unauthenticated
@@ -183,7 +189,7 @@ class MartAuthController extends Controller
 
         $email = strtolower(trim($request->email));
 
-        // 2. Check if email was checked recently (within 1 minute)
+        // 2. Check if email was checked recently (within 10 minutes)
         $emailCheckKey = 'email_check:'.md5($email.$request->ip());
         $emailCheck = Cache::get($emailCheckKey);
 

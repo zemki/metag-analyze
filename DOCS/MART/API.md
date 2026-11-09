@@ -66,8 +66,8 @@ window between steps:
 
 | From | To | Window |
 |---|---|---|
-| `check-email` | `send-password-setup` | 60 seconds |
-| `check-email` | `check-password` | 60 seconds |
+| `check-email` | `send-password-setup` | 10 minutes |
+| `check-email` | `check-password` | 10 minutes |
 | `check-password` | `check-access` | 5 minutes |
 
 Exceeding the window returns `403 Flow validation failed` with a `step` hint pointing
