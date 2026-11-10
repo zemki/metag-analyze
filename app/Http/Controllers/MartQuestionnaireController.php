@@ -75,7 +75,7 @@ class MartQuestionnaireController extends Controller
             'quest_available_at' => 'nullable|in:startOfInterval,randomTimeWithinInterval',
             'show_after_repeating' => 'nullable|array',
             'questions' => 'required|array',
-            'questions.*' => [$this->rangeValuesHaveTwoOptions(), $this->fileUploadHasLimits()],
+            'questions.*' => [$this->rangeValuesHaveTwoOptions(), $this->fileUploadHasLimits(), $this->displaySelectionHasTwoOptions()],
             'questions.*.text' => 'required|string',
             'questions.*.image_url' => 'nullable|url|max:2048',
             'questions.*.video_url' => 'nullable|url|max:2048',
@@ -256,7 +256,7 @@ class MartQuestionnaireController extends Controller
             'quest_available_at' => 'nullable|in:startOfInterval,randomTimeWithinInterval',
             'show_after_repeating' => 'nullable|array',
             'questions' => 'required|array',
-            'questions.*' => [$this->rangeValuesHaveTwoOptions(), $this->fileUploadHasLimits()],
+            'questions.*' => [$this->rangeValuesHaveTwoOptions(), $this->fileUploadHasLimits(), $this->displaySelectionHasTwoOptions()],
             'questions.*.uuid' => 'nullable|string',
             'questions.*.text' => 'required|string',
             'questions.*.image_url' => 'nullable|url|max:2048',
@@ -478,6 +478,42 @@ class MartQuestionnaireController extends Controller
 
                     return;
                 }
+            }
+        };
+    }
+
+    /**
+     * A display item that shows answer options, disabled, shows them as
+     * single or multiple choice, with at least 2 options, none of them blank.
+     * The editor drops blank ones; ScaleResource would send one as an option
+     * without text. Without a displaySelection it's plain text and passes.
+     *
+     * A blank option arrives as null (ConvertEmptyStringsToNull). On the
+     * whole question, like rangeValuesHaveTwoOptions(), so the other config
+     * keys are kept.
+     */
+    private function displaySelectionHasTwoOptions(): \Closure
+    {
+        return function (string $attribute, $question, \Closure $fail) {
+            if (! is_array($question) || ($question['type'] ?? null) !== 'display') {
+                return;
+            }
+
+            $config = $question['config'] ?? null;
+            if (($config['displaySelection'] ?? null) === null) {
+                return;
+            }
+
+            if (MartQuestion::displaySelectionType($config) === null) {
+                $fail('Answer options on a text-only item are single or multiple choice.');
+
+                return;
+            }
+
+            $options = (array) ($config['options'] ?? []);
+            $filledIn = array_filter($options, fn ($option) => is_string($option) && trim($option) !== '');
+            if (count($options) < 2 || count($filledIn) !== count($options)) {
+                $fail('Answer options on a text-only item need at least 2 options, none of them blank.');
             }
         };
     }

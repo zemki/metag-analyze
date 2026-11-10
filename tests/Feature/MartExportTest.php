@@ -242,6 +242,25 @@ class MartExportTest extends TestCase
     }
 
     /** @test */
+    public function it_gives_a_display_item_with_answer_options_no_column()
+    {
+        // The app greys the options out and never sends an answer for them.
+        MartQuestion::create([
+            'schedule_id' => $this->schedule->id,
+            'position' => 1,
+            'text' => 'Options shown disabled',
+            'type' => 'display',
+            'config' => ['displaySelection' => 'checkbox', 'options' => ['Option 1', 'Option 2']],
+            'is_mandatory' => false,
+            'version' => 1,
+        ]);
+
+        $headings = (new MartProjectExport($this->project))->sheets()[0]->headings();
+
+        $this->assertNotContains('Options shown disabled', $headings);
+    }
+
+    /** @test */
     public function it_denies_export_to_non_owner()
     {
         $otherUser = \App\User::factory()->researcher()->create();

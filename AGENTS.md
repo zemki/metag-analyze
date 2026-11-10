@@ -94,9 +94,9 @@ Interactive docs: `/docs/api` (Scramble + Stoplight), HTTP Basic auth via `API_D
 ### Response shape (structure endpoint)
 - Keys: `projectOptions`, `questionnaires`, `scales`, `pages`, `deviceInfos`, `repeatingSubmits`, `singleSubmits`, `lastDataDonationSubmit`, `lastAndroidStatsSubmit`.
 - Dates `DD.MM.YYYY`, times `HH:MM`. Use `questionnaireId` (not `sheetId`), `randomizationGroupId`, `iOSDataDonationQuestionnaire`, `androidDataDonationQuestionnaire`, `lastDataDonationSubmit`.
-- Items: `itemId` is `index + 1` within the questionnaire. `scaleId` is `questionnaireId * 1000 + index + 1`, unique across the payload, and items with identical options share one. Both are `null` for `display` items.
+- Items: `itemId` is `index + 1` within the questionnaire. `scaleId` is `questionnaireId * 1000 + index + 1`, unique across the payload, and items with identical options share one. `itemId` is `null` for `display` items, and so is `scaleId` unless the item shows answer options (`config.displaySelection`).
 - Answers on submit are keyed by `itemId`: the question's place in position order, not its `position`, which the editor saves from 1.
-- Scales have `scaleId` and `options` only (no `name`, no `projectId`). A default answer goes in `options.defaultValue` for every type, and only when `config.defaultValue` is set. The app doesn't read `rangeOptions.defaultValue`, which stays because `martTypes.ts` requires it.
+- Scales have `scaleId` and `options` only (no `name`, no `projectId`). A default answer goes in `options.defaultValue` for every type except `display`, and only when `config.defaultValue` is set. The app doesn't read `rangeOptions.defaultValue`, which stays because `martTypes.ts` requires it.
 - Choice and `range values` option `value`s start at 1, because the app drops a radio value of 0. `config` keeps 0-based keys, and `ScaleResource` adds 1 on output to `value`, `jumpCondition` and a choice or `range values` `defaultValue`. MeTag scales stay 0-based.
 - Pages carry both `id` and `pageId`.
 - Participant fields are filled when `participant_id` is passed; an unknown `participant_id` is a 404.
@@ -105,7 +105,7 @@ Interactive docs: `/docs/api` (Scramble + Stoplight), HTTP Basic auth via `API_D
 ### Question types
 | Storage (`mart_questions.type`) | API `options.type` | Notes |
 |---|---|---|
-| `display` | none | text only, no scale |
+| `display` | none, or `radio` / `checkbox` | text only, no scale. With `config.displaySelection` (`radio` or `checkbox`) it gets that choice's scale from `config.options` (and "other"), shown disabled because `itemId` is null; it can share the scale with an identical answerable choice. At least 2 options, none blank, and a known `displaySelection`, checked on store and update. `ScaleResource` leaves out `defaultValue` and `jump`, and the item sends `randomizeAnswers` false, whatever config holds: the app would apply them without an `itemId`. A timer is sent; the editor saves none for a display item without options |
 | `number` | `number` | `minValue`, `maxValue`, `maxDigits` |
 | `range` | `range` | `rangeOptions` {minValue, maxValue, steps, defaultValue} |
 | `text` / `textarea` | `text` / `textarea` | optional `textOptions` {type, placeholder}, only sent with a placeholder |
@@ -115,7 +115,7 @@ Interactive docs: `/docs/api` (Scramble + Stoplight), HTTP Basic auth via `API_D
 | `photo` / `audio` / `video` | `photoUpload` / `audioUpload` / `videoUpload` | optional `*UploadOptions` passed through |
 | `file` | `fileUpload` | `fileUploadOptions` {maxFileSize (MB), allowedFormats} from config. Size sent as a number; formats sent lowercase with one leading dot, once; keys without a value left out; no `fileType`. On store and update: a size from 1 to 50 and at least one format, each from `MartFile::FILE_UPLOAD_EXTENSIONS` (any case, dot optional, no SVG) |
 
-Question-level options (stored in `config`, emitted under `items[].options`): `randomizationGroupId`, `randomizeAnswers` (the editor saves it for radio and checkbox only), `randomPositionWithinQuestionnaire`, `itemGroup`. `noValueAllowed` is derived (`! is_mandatory`, always true for `display`). `posterUrl` is stored in `config` too but emitted on the item. `timer` and `jump` go under scale `options`. Question text may contain HTML. `image_url` / `video_url` are columns and appear as `imageUrl` / `videoUrl`.
+Question-level options (stored in `config`, emitted under `items[].options`): `randomizationGroupId`, `randomizeAnswers` (the editor saves it for radio and checkbox only; always false for `display`), `randomPositionWithinQuestionnaire`, `itemGroup`. `noValueAllowed` is derived (`! is_mandatory`, always true for `display`). `posterUrl` is stored in `config` too but emitted on the item. `timer` and `jump` go under scale `options`. Question text may contain HTML. `image_url` / `video_url` are columns and appear as `imageUrl` / `videoUrl`.
 
 Editing a question writes a `mart_question_history` row and bumps `version`; answers store `question_uuid` plus `question_version`.
 
@@ -128,6 +128,7 @@ Editing a question writes a `mart_question_history` row and bumps `version`; ans
 ### Submissions and files
 - Completed cases reject submissions with 422. `userId` must match the case owner's email, ignoring case (invites keep the email as typed, login finds it in any case).
 - Each submit writes `mart_entries` and `mart_answers` only, and `entry_id` in the response is the `mart_entries` id.
+- The required check skips `display` items: the app never sends an answer for an item without an `itemId`. The editor saves `display` items with `is_mandatory` false. `answers` is `present|array`, not `required`: a questionnaire of display items only sends `{}`.
 - The web entry routes (`/cases/{case}/entries`) refuse MART cases with 403. Case lists build a MART case's `entries` from `mart_entries`, so those rows carry `mart_entries` ids, not `entries` ids.
 - `device-infos` and `stats` return 403 when `userId` is not the bearer token's account.
 - Push: `POST /api/mobile/device-token` (or `fcmToken` on `device-infos`) stores FCM tokens in `users.deviceID`, newest 10. `notification:cleanID` clears them once the latest case has ended.

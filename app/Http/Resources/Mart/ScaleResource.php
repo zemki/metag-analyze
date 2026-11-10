@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Mart;
 
 use App\Mart\MartFile;
+use App\Mart\MartQuestion;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class ScaleResource extends JsonResource
@@ -43,8 +44,8 @@ class ScaleResource extends JsonResource
         // Check if this is a MartQuestion model from MART DB
         if ($this->isMartProject && isset($this->config)) {
             // Handle MartQuestion from MART database
-            $questionType = $this->type ?? 'text';
             $config = is_array($this->config) ? $this->config : json_decode($this->config, true);
+            $questionType = $this->martScaleType($config);
 
             switch ($questionType) {
                 case 'number':
@@ -307,8 +308,15 @@ class ScaleResource extends JsonResource
         if ($this->isMartProject && isset($this->config)) {
             $config = is_array($this->config) ? $this->config : json_decode($this->config, true);
 
+            // A display item gets no default or jump, whatever its config
+            // holds: the app copies the default into the answer and jumps on
+            // it even without an itemId, so questions would be skipped unseen.
+            // Left out here, before MartStructureResource compares scales, so
+            // it can still share the scale of a plain choice.
+            $isDisplay = $this->type === 'display';
+
             // The app reads the default from here for every type, range included.
-            if (isset($config['defaultValue'])) {
+            if (isset($config['defaultValue']) && ! $isDisplay) {
                 $isChoice = in_array($this->type, ['one choice', 'multiple choice', 'range values'], true);
                 $scaleOptions['defaultValue'] = $isChoice
                     ? (int) $config['defaultValue'] + 1
@@ -323,7 +331,7 @@ class ScaleResource extends JsonResource
             }
 
             // Add jump if present (only for radio/checkbox)
-            if (isset($config['jump']) && is_array($config['jump'])) {
+            if (isset($config['jump']) && is_array($config['jump']) && ! $isDisplay) {
                 $scaleOptions['jump'] = [
                     // Saved as a string. The app compares it with === to a number.
                     'jumpCondition' => (int) $config['jump']['jumpCondition'] + 1,
@@ -333,6 +341,22 @@ class ScaleResource extends JsonResource
         }
 
         return $scaleOptions;
+    }
+
+    /**
+     * The type whose scale a MART question sends. A display item that shows
+     * answer options sends the scale of that choice, the same as an
+     * answerable one, so identical options share one scale. The app tells
+     * them apart by the item: one without an itemId is greyed out.
+     */
+    private function martScaleType($config): string
+    {
+        $type = $this->type ?? 'text';
+        if ($type === 'display') {
+            return MartQuestion::displaySelectionType($config) ?? $type;
+        }
+
+        return $type;
     }
 
     /**

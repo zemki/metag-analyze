@@ -87,12 +87,18 @@ How MART API types map to database storage.
 | `audioUpload` | `audio` | `audioUploadOptions` |
 | `videoUpload` | `video` | `videoUploadOptions` |
 | `fileUpload` | `file` | `fileUploadOptions` {`maxFileSize` (MB), `allowedFormats`} in config, saved as sent. Sent with `maxFileSize` as a number and each format lowercase with one leading dot (`MartFile::normaliseFileFormat`), listed once; a key without a value is left out. No `fileType`. A size from 1 to 50 and at least one format, each one from `MartFile::FILE_UPLOAD_EXTENSIONS`, checked on save |
+| `radio` / `checkbox`, shown disabled | `display` | Only with `displaySelection` (`radio` or `checkbox`) in config. Then `options[]`, `includeOtherOption`, `otherTextType` and `otherOptionLabel` work as for `radio`, and the scale is the one an answerable choice with the same config gets, so the two can share it. At least 2 options, none blank, and a known `displaySelection`, checked on save. Never sent with a `defaultValue`, `jump` or `randomizeAnswers`, whatever config holds (the editor saves none); a `timer` is sent. Without `displaySelection` a `display` item has no scale, and the editor saves no timer for it |
 
 `defaultValue` in config goes to `options.defaultValue` for any type. For `radio`, `checkbox`
 and `rangeValues`, config holds the option's 0-based key and the API sends key + 1, the same as
 the option's `value`. `jump.jumpCondition` works the same way (`radio` and `checkbox` only).
 The editor finds a choice default by its text, and a `rangeValues` default by its position,
 because a slider's labels can be blank or repeat.
+
+A `display` item's `itemId` is `null` either way, so the app greys out its options and sends
+no answer for it. The editor saves it with `is_mandatory` false, and the submit doesn't
+require an answer for a `display` item, so older rows saved as mandatory are accepted too.
+`answers` may be empty, as it is for a questionnaire of `display` items only.
 
 ## Page
 

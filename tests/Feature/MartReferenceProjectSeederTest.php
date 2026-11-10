@@ -122,6 +122,25 @@ class MartReferenceProjectSeederTest extends TestCase
         $this->assertNull(User::where('email', 'reference-researcher@example.test')->first());
     }
 
+    /**
+     * The app greys out any scale on a text-only item, a text field too. The
+     * editor offers single and multiple choice only, so another scale gives a
+     * plain text-only item, and MartReferenceParityTest lists the difference.
+     * No item in the current fixtures has one.
+     *
+     * @test
+     */
+    public function a_text_only_item_with_a_scale_the_editor_cannot_show_becomes_plain_text()
+    {
+        $item = ['itemId' => null, 'scaleId' => 9, 'text' => 'Read this'];
+        $scales = ['9' => ['type' => 'text', 'textOptions' => ['placeholder' => 'Not for you']]];
+
+        $payload = (new \ReflectionMethod(MartReferenceProjectSeeder::class, 'questionPayload'))
+            ->invoke(new MartReferenceProjectSeeder, $item, $scales);
+
+        $this->assertSame(['display', []], [$payload['type'], $payload['config']]);
+    }
+
     /** @test */
     public function the_fixtures_hold_no_personal_data()
     {

@@ -629,6 +629,225 @@ describe('AddEditQuestionnaireDialog questions', () => {
     });
   });
 
+  // Directus shows a choice's options, disabled, on a text-only item. The app
+  // greys out the options of an item without an itemId and sends no answer.
+  describe('display item with answer options', () => {
+    const displayQuestion = { type: 'display', displaySelection: 'checkbox', answers: ['Option 1', 'Option 2'] };
+
+    function questionError(fields) {
+      return methods.hasQuestionError.call(dialogWith([formQuestion(fields)]), 0);
+    }
+
+    // isEditMode skips the schedule fields, so only the question is checked.
+    function formIsValid(fields) {
+      return AddEditQuestionnaireDialog.computed.isValid.call({
+        ...dialogWith([formQuestion(fields)]),
+        isEditMode: true,
+      });
+    }
+
+    function mountedWith(fields) {
+      const wrapper = mount(AddEditQuestionnaireDialog, {
+        props: { projectId: 1, nextQuestionnaireId: 1 },
+        global: { stubs: { SchedulePreview: true } },
+      });
+      wrapper.vm.addQuestion();
+      Object.assign(wrapper.vm.formData.questions[0], fields);
+
+      return wrapper;
+    }
+
+    it('saves as a display item with the selection and its options', async () => {
+      const saved = await savedQuestion(displayQuestion);
+
+      expect([saved.type, saved.config]).toEqual([
+        'display',
+        { displaySelection: 'checkbox', options: ['Option 1', 'Option 2'] },
+      ]);
+    });
+
+    it('saves an "other" option like a choice', async () => {
+      const saved = await savedQuestion({
+        ...displayQuestion,
+        includeOtherOption: true,
+        otherTextType: 'textarea',
+        otherOptionLabel: 'etwas anders',
+      });
+
+      expect(saved.config).toEqual({
+        displaySelection: 'checkbox',
+        options: ['Option 1', 'Option 2'],
+        includeOtherOption: true,
+        otherTextType: 'textarea',
+        otherOptionLabel: 'etwas anders',
+      });
+    });
+
+    it('saves no randomize, default or jump', async () => {
+      const saved = await savedQuestion({
+        ...displayQuestion,
+        displaySelection: 'radio',
+        randomizeAnswers: true,
+        defaultValue: 'Option 1',
+        useJump: true,
+        jumpCondition: 1,
+        jumpOver: 1,
+      });
+
+      expect(saved.config).toEqual({ displaySelection: 'radio', options: ['Option 1', 'Option 2'] });
+    });
+
+    // The server refuses every submit for a display item marked mandatory,
+    // because the app never answers one.
+    it('is saved as not mandatory', async () => {
+      const saved = await savedQuestion({ ...displayQuestion, mandatory: true });
+
+      expect(saved.mandatory).toBe(false);
+    });
+
+    it('saves a display item opened as mandatory as not mandatory', async () => {
+      const saved = await savedAfterLoading({ type: 'display', is_mandatory: true, config: {} });
+
+      expect(saved.mandatory).toBe(false);
+    });
+
+    it('saves a plain display item when switched off', async () => {
+      const saved = await savedQuestion({ ...displayQuestion, displaySelection: '', includeOtherOption: true });
+
+      expect(saved.config).toEqual({});
+    });
+
+    it('restores the selection and its options when a saved question is opened', () => {
+      const question = loadedQuestion({
+        type: 'display',
+        config: { displaySelection: 'radio', options: ['Yes', 'No'], includeOtherOption: true, otherTextType: 'textarea' },
+      });
+
+      expect([question.type, question.displaySelection, question.answers, question.includeOtherOption, question.otherTextType])
+        .toEqual(['display', 'radio', ['Yes', 'No'], true, 'textarea']);
+    });
+
+    it('keeps its config when opened and saved', async () => {
+      const config = {
+        displaySelection: 'checkbox',
+        options: ['Option 1', 'Option 2'],
+        includeOtherOption: true,
+        otherTextType: 'textarea',
+        otherOptionLabel: 'etwas anders',
+      };
+
+      const saved = await savedAfterLoading({ type: 'display', is_mandatory: false, config });
+
+      expect(saved.config).toEqual(config);
+    });
+
+    it('opens a plain display item switched off', () => {
+      expect(loadedQuestion({ type: 'display', config: {} }).displaySelection).toBe('');
+    });
+
+    it('marks a question with fewer than 2 options', () => {
+      expect(questionError({ ...displayQuestion, answers: ['Only'] })).toBe(true);
+    });
+
+    it('cannot be saved with fewer than 2 options', () => {
+      expect(formIsValid({ ...displayQuestion, answers: ['Only'] })).toBe(false);
+    });
+
+    it('does not count a blank option', () => {
+      expect(formIsValid({ ...displayQuestion, answers: ['Option 1', ' '] })).toBe(false);
+    });
+
+    it('can be saved with 2 options', () => {
+      expect(formIsValid(displayQuestion)).toBe(true);
+    });
+
+    it('can be saved switched off without options', () => {
+      expect(formIsValid({ type: 'display', displaySelection: '', answers: [] })).toBe(true);
+    });
+
+    it('shows the options and "other", without randomize, default or jump', async () => {
+      const wrapper = mountedWith(displayQuestion);
+      await wrapper.vm.$nextTick();
+
+      expect({
+        options: wrapper.findAll('input[type="text"]').map(input => input.element.value),
+        other: wrapper.find('#include-other-0').exists(),
+        randomize: wrapper.find('#randomize-answers-0').exists(),
+        defaultValue: wrapper.findAll('select').some(select => select.text().includes('No default')),
+        jump: wrapper.find('#use-jump-0').exists(),
+      }).toEqual({
+        options: expect.arrayContaining(['Option 1', 'Option 2']),
+        other: true,
+        randomize: false,
+        defaultValue: false,
+        jump: false,
+      });
+    });
+
+    it('shows no options until switched on', async () => {
+      const wrapper = mountedWith({ type: 'display', answers: ['Option 1', 'Option 2'] });
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.find('#include-other-0').exists()).toBe(false);
+    });
+
+    it('starts as single choice when switched on', async () => {
+      const wrapper = mountedWith({ type: 'display' });
+      await wrapper.vm.$nextTick();
+
+      await wrapper.find('#display-selection-0').setValue(true);
+
+      expect(wrapper.vm.formData.questions[0].displaySelection).toBe('radio');
+    });
+
+    it('offers single and multiple choice', async () => {
+      const wrapper = mountedWith(displayQuestion);
+      await wrapper.vm.$nextTick();
+
+      const offered = wrapper.find('#display-selection-type-0').findAll('option').map(option => option.element.value);
+
+      expect(offered).toEqual(['radio', 'checkbox']);
+    });
+
+    it('is not offered on other types', async () => {
+      const wrapper = mountedWith({ type: 'radio', answers: ['Yes', 'No'] });
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.find('#display-selection-0').exists()).toBe(false);
+    });
+
+    // A plain display item has no scale, so a timer would never reach the app.
+    describe('timer', () => {
+      const timer = { useTimer: true, timerSeconds: 10, showCountdown: true };
+
+      it('is hidden for a plain display item', async () => {
+        const wrapper = mountedWith({ type: 'display' });
+        await wrapper.vm.$nextTick();
+
+        expect(wrapper.find('#use-timer-0').exists()).toBe(false);
+      });
+
+      it('is shown once answer options are shown', async () => {
+        const wrapper = mountedWith(displayQuestion);
+        await wrapper.vm.$nextTick();
+
+        expect(wrapper.find('#use-timer-0').exists()).toBe(true);
+      });
+
+      it('is not saved for a plain display item', async () => {
+        const saved = await savedQuestion({ ...displayQuestion, ...timer, displaySelection: '' });
+
+        expect(saved.config).not.toHaveProperty('timer');
+      });
+
+      it('is saved for a display item with answer options', async () => {
+        const saved = await savedQuestion({ ...displayQuestion, ...timer });
+
+        expect(saved.config.timer).toEqual({ time: 10, showCountdown: true });
+      });
+    });
+  });
+
   // The app only shuffles radio and checkbox options.
   describe('randomize answers', () => {
     it('is saved for single choice', async () => {

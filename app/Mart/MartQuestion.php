@@ -13,7 +13,10 @@ use Illuminate\Support\Str;
  * Represents individual questions within MART questionnaires.
  *
  * Question Types:
- * - 'display': Display text only (no answer required, itemId/scaleId are null in API)
+ * - 'display': Display text only (no answer, itemId is null in API). With
+ *   config.displaySelection ('radio' or 'checkbox') it also shows a choice's
+ *   options, disabled: it gets that choice's scale, and config holds options
+ *   like a choice. Otherwise its scaleId is null too.
  * - 'number': Numeric input field (sends type='number' with minValue/maxValue to mobile)
  * - 'range': Range slider (sends type='range' with rangeOptions to mobile)
  * - 'range values': Slider with a label per step (sends type='rangeValues'
@@ -92,6 +95,27 @@ class MartQuestion extends Model
         'is_mandatory' => 'boolean',
         'version' => 'integer',
     ];
+
+    /**
+     * How a display item can show answer options, disabled: as the scale of
+     * this choice type. The app greys out the options of any item without
+     * an itemId, and sends no answer for it.
+     */
+    public const DISPLAY_SELECTIONS = [
+        'radio' => 'one choice',
+        'checkbox' => 'multiple choice',
+    ];
+
+    /**
+     * The choice type a display item's options are shown as, or null when
+     * its config has no displaySelection we know.
+     */
+    public static function displaySelectionType($config): ?string
+    {
+        $selection = is_array($config) ? ($config['displaySelection'] ?? null) : null;
+
+        return is_string($selection) ? (self::DISPLAY_SELECTIONS[$selection] ?? null) : null;
+    }
 
     /**
      * Boot function to auto-generate UUID.

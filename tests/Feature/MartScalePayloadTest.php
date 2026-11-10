@@ -627,6 +627,214 @@ class MartScalePayloadTest extends TestCase
         );
     }
 
+    /**
+     * The app greys out the options of an item whose itemId is null, and
+     * sends no answer for it. Later items keep their numbers.
+     *
+     * @test
+     */
+    public function a_display_item_with_answer_options_has_a_scale_but_no_item_id()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'text', 'config' => []],
+            ['type' => 'display', 'config' => ['displaySelection' => 'checkbox', 'options' => ['Option 1', 'Option 2']]],
+            ['type' => 'number', 'config' => ['min' => 1, 'max' => 5]],
+        ]);
+
+        $structure = $this->structure();
+        $items = $structure['questionnaires'][0]['items'];
+
+        $this->assertSame(
+            [null, 'checkbox', 3],
+            [$items[1]['itemId'], $this->appScaleFor($items[1], $structure)['type'], $items[2]['itemId']],
+        );
+    }
+
+    /** @test */
+    public function a_display_item_shows_its_options_like_a_choice_with_an_other_option()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'display', 'config' => [
+                'displaySelection' => 'radio',
+                'options' => ['Yes', 'No'],
+                'includeOtherOption' => true,
+                'otherTextType' => 'textarea',
+                'otherOptionLabel' => 'Sonstiges',
+            ]],
+        ]);
+
+        $this->assertSame([
+            'type' => 'radio',
+            'radioOptions' => [
+                ['value' => 1, 'text' => 'Yes'],
+                ['value' => 2, 'text' => 'No'],
+                ['value' => 'text', 'text' => 'Sonstiges'],
+            ],
+            'textOptions' => ['type' => 'textarea'],
+        ], $this->structure()['scales'][0]['options']);
+    }
+
+    /** @test */
+    public function identical_display_selections_share_one_scale()
+    {
+        $display = ['type' => 'display', 'config' => ['displaySelection' => 'checkbox', 'options' => ['Option 1', 'Option 2']]];
+
+        $this->addQuestionnaire([$display, $display]);
+
+        $structure = $this->structure();
+        $items = $structure['questionnaires'][0]['items'];
+
+        $this->assertSame(
+            [1, $items[0]['scaleId']],
+            [count($structure['scales']), $items[1]['scaleId']],
+        );
+    }
+
+    /**
+     * The app gives every item its own copy of the scale and decides from
+     * the item's itemId whether the options can be picked, so sharing is
+     * safe. Directus project 1 has such a pair (scales 7 and 11).
+     *
+     * @test
+     */
+    public function a_display_selection_shares_the_scale_of_an_identical_choice()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'multiple choice', 'config' => ['options' => ['Option 1', 'Option 2']]],
+            ['type' => 'display', 'config' => ['displaySelection' => 'checkbox', 'options' => ['Option 1', 'Option 2']]],
+        ]);
+
+        $items = $this->structure()['questionnaires'][0]['items'];
+
+        $this->assertSame($items[0]['scaleId'], $items[1]['scaleId']);
+    }
+
+    /** @test */
+    public function a_display_item_without_a_selection_has_no_scale_even_with_options_saved()
+    {
+        // The editor saves {} once the selection is off, so a row like this
+        // only comes from the API or older data.
+        $this->addQuestionnaire([
+            ['type' => 'display', 'config' => ['options' => ['Option 1', 'Option 2']]],
+        ]);
+
+        $structure = $this->structure();
+
+        $this->assertSame(
+            [[], null, null],
+            [$structure['scales'], $structure['questionnaires'][0]['items'][0]['itemId'], $structure['questionnaires'][0]['items'][0]['scaleId']],
+        );
+    }
+
+    /**
+     * A timer reaches the app once a display item has a scale. The app starts
+     * it whatever the itemId. Next does nothing until the timer runs out (the
+     * button isn't greyed out, since noValueAllowed is true), then the app
+     * moves on by itself. A plain display item has no scale, so no timer.
+     *
+     * @test
+     */
+    public function a_timer_on_a_display_item_with_answer_options_is_sent()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'display', 'config' => [
+                'displaySelection' => 'radio',
+                'options' => ['Yes', 'No'],
+                'timer' => ['time' => 10, 'showCountdown' => true],
+            ]],
+        ]);
+
+        $this->assertSame(
+            ['time' => 10, 'showCountdown' => true],
+            $this->structure()['scales'][0]['options']['timer'] ?? null,
+        );
+    }
+
+    /**
+     * The app copies a scale's default into the answer and jumps on it
+     * whatever the itemId, so a display item could skip questions unseen.
+     *
+     * @test
+     */
+    public function a_display_item_sends_no_default_or_jump()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'display', 'config' => [
+                'displaySelection' => 'radio',
+                'options' => ['Yes', 'No'],
+                'defaultValue' => 0,
+                'jump' => ['jumpCondition' => '0', 'jumpOver' => 2],
+            ]],
+        ]);
+
+        $this->assertSame([
+            'type' => 'radio',
+            'radioOptions' => [
+                ['value' => 1, 'text' => 'Yes'],
+                ['value' => 2, 'text' => 'No'],
+            ],
+        ], $this->structure()['scales'][0]['options']);
+    }
+
+    /** @test */
+    public function a_display_item_with_a_saved_default_and_jump_shares_the_scale_of_an_identical_plain_choice()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'one choice', 'config' => ['options' => ['Yes', 'No']]],
+            ['type' => 'display', 'config' => [
+                'displaySelection' => 'radio',
+                'options' => ['Yes', 'No'],
+                'defaultValue' => 1,
+                'jump' => ['jumpCondition' => '1', 'jumpOver' => 1],
+            ]],
+        ]);
+
+        $items = $this->structure()['questionnaires'][0]['items'];
+
+        $this->assertSame($items[0]['scaleId'], $items[1]['scaleId']);
+    }
+
+    /** @test */
+    public function a_display_item_does_not_share_the_scale_of_an_identical_choice_with_a_default()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'one choice', 'config' => ['options' => ['Yes', 'No'], 'defaultValue' => 1]],
+            ['type' => 'display', 'config' => ['displaySelection' => 'radio', 'options' => ['Yes', 'No'], 'defaultValue' => 1]],
+        ]);
+
+        $items = $this->structure()['questionnaires'][0]['items'];
+
+        $this->assertNotSame($items[0]['scaleId'], $items[1]['scaleId']);
+    }
+
+    /** @test */
+    public function a_display_item_does_not_share_the_scale_of_an_identical_choice_with_a_jump()
+    {
+        $jump = ['jumpCondition' => '0', 'jumpOver' => 1];
+        $this->addQuestionnaire([
+            ['type' => 'one choice', 'config' => ['options' => ['Yes', 'No'], 'jump' => $jump]],
+            ['type' => 'display', 'config' => ['displaySelection' => 'radio', 'options' => ['Yes', 'No'], 'jump' => $jump]],
+        ]);
+
+        $items = $this->structure()['questionnaires'][0]['items'];
+
+        $this->assertNotSame($items[0]['scaleId'], $items[1]['scaleId']);
+    }
+
+    /** @test */
+    public function a_display_item_is_never_randomized()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'display', 'config' => [
+                'displaySelection' => 'checkbox',
+                'options' => ['Option 1', 'Option 2'],
+                'randomizeAnswers' => true,
+            ]],
+        ]);
+
+        $this->assertFalse($this->structure()['questionnaires'][0]['items'][0]['options']['randomizeAnswers']);
+    }
+
     /** @test */
     public function metag_single_choice_values_stay_as_they_are()
     {

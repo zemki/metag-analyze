@@ -741,6 +741,36 @@
                     <p v-if="question.type === 'display'" class="mt-1 text-xs text-blue-600">
                       {{ trans('This item will show text without requiring an answer (instructions, headers, etc.)') }}
                     </p>
+
+                    <!-- Answer options shown disabled, as Directus can. The app greys
+                         out the options of an item without an itemId. -->
+                    <div v-if="question.type === 'display'" class="mt-3 space-y-2">
+                      <div class="flex items-center">
+                        <input
+                            type="checkbox"
+                            :id="'display-selection-' + index"
+                            :checked="!!question.displaySelection"
+                            @change="question.displaySelection = $event.target.checked ? 'radio' : ''"
+                            class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
+                        />
+                        <label :for="'display-selection-' + index" class="ml-2 block text-sm text-gray-700">
+                          {{ trans('Show answer options (disabled)') }}
+                        </label>
+                      </div>
+                      <div v-if="question.displaySelection" class="ml-6">
+                        <select
+                            :id="'display-selection-type-' + index"
+                            v-model="question.displaySelection"
+                            class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                        >
+                          <option value="radio">{{ trans('Single Choice') }}</option>
+                          <option value="checkbox">{{ trans('Multiple Choice') }}</option>
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">
+                          {{ trans('Participants see the options but cannot pick one, and nothing is recorded.') }}
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
                   <!-- Placeholder (for text/textarea) -->
@@ -823,8 +853,9 @@
                     </div>
                   </div>
 
-                  <!-- Choice Options (labels for a slider with labels) -->
-                  <div v-if="hasOptions(question.type)" class="space-y-3">
+                  <!-- Choice Options (labels for a slider with labels, or a display
+                       item's disabled options) -->
+                  <div v-if="showsOptions(question)" class="space-y-3">
                     <label class="block text-sm font-medium text-gray-700">
                       {{ question.type === 'rangeValues' ? trans('Labels') : trans('Options') }}
                     </label>
@@ -861,8 +892,9 @@
                       {{ trans('Add Option') }}
                     </button>
 
-                    <!-- Randomize Answers Checkbox (not for a slider with labels) -->
-                    <div v-if="question.type !== 'rangeValues'" class="flex items-center mt-3 pt-3 border-t border-gray-200">
+                    <!-- Randomize Answers Checkbox (choices only: not for a slider
+                         with labels or a display item) -->
+                    <div v-if="question.type === 'radio' || question.type === 'checkbox'" class="flex items-center mt-3 pt-3 border-t border-gray-200">
                       <input
                           type="checkbox"
                           :id="'randomize-answers-' + index"
@@ -961,8 +993,9 @@
                     </p>
                   </div>
 
-                  <!-- Timer Options (applies to all question types) -->
-                  <div class="space-y-3 p-4 bg-amber-50 rounded-lg border border-amber-200">
+                  <!-- Timer Options (all question types except a plain display item,
+                       which has no scale to carry a timer) -->
+                  <div v-if="question.type !== 'display' || showsDisabledOptions(question)" class="space-y-3 p-4 bg-amber-50 rounded-lg border border-amber-200">
                     <div class="flex items-center">
                       <input
                           type="checkbox"
@@ -1368,7 +1401,7 @@ export default {
       for (const question of this.formData.questions) {
         if (!question.text || !question.type) return false;
 
-        if (this.hasOptions(question.type) && this.optionCount(question) < 2) {
+        if (this.showsOptions(question) && this.optionCount(question) < 2) {
           return false;
         }
 
@@ -1559,6 +1592,8 @@ export default {
           includeOtherOption: config.includeOtherOption || false,
           otherOptionLabel: config.otherOptionLabel || '',
           otherTextType: config.otherTextType || 'text',
+          // A display item's disabled options: 'radio', 'checkbox', or '' for none.
+          displaySelection: config.displaySelection || '',
           itemGroup: config.itemGroup || null,
           useTimer: !!timer.time,
           timerSeconds: timer.time || 30,
@@ -1773,6 +1808,7 @@ export default {
         includeOtherOption: false,
         otherOptionLabel: '',
         otherTextType: 'text',
+        displaySelection: '',
         itemGroup: null,
         useTimer: false,
         timerSeconds: 30,
@@ -1890,6 +1926,17 @@ export default {
       return ['radio', 'checkbox', 'rangeValues'].includes(type);
     },
 
+    // A display item can show a choice's options, disabled. It keeps its
+    // type, has no default, jump or randomize, and is never answered.
+    showsDisabledOptions(question) {
+      return question.type === 'display' && !!question.displaySelection;
+    },
+
+    // Whether the question has an options list to fill in.
+    showsOptions(question) {
+      return this.hasOptions(question.type) || this.showsDisabledOptions(question);
+    },
+
     // Blank choice options are dropped on save; a slider keeps a blank label
     // as a step.
     optionCount(question) {
@@ -1924,7 +1971,11 @@ export default {
             // Labels only: no "Other" option, no jump. Every label is a step
             // on the slider, so a blank one stays, as empty text.
             config.options = q.answers.map(a => (a.trim() ? a : ''));
-          } else if (q.type === 'radio' || q.type === 'checkbox') {
+          } else if (q.type === 'radio' || q.type === 'checkbox' || this.showsDisabledOptions(q)) {
+            // A display item's options are a choice's, shown disabled.
+            if (q.type === 'display') {
+              config.displaySelection = q.displaySelection;
+            }
             config.options = q.answers.filter(a => a.trim());
             // Include "Other" text field option flag and custom label
             if (q.includeOtherOption) {
@@ -1980,8 +2031,9 @@ export default {
             }
           }
 
-          // Add timer config if enabled
-          if (q.useTimer) {
+          // Add timer config if enabled. A plain display item has no scale,
+          // so its timer would never reach the app.
+          if (q.useTimer && (q.type !== 'display' || this.showsDisabledOptions(q))) {
             config.timer = {
               time: q.timerSeconds,
               showCountdown: q.showCountdown
@@ -2014,12 +2066,15 @@ export default {
 
           // No noValueAllowed here: `mandatory` already carries it and lands in
           // is_mandatory. The API derives the inverse on the way out.
+          // A display item is never mandatory: the app never answers one, and
+          // its checkbox is hidden, so a row saved as mandatory can't be fixed
+          // by hand.
           const questionData = {
             text: q.text,
             image_url: q.imageUrl || null,
             video_url: q.videoUrl || null,
             type: backendType,
-            mandatory: q.mandatory,
+            mandatory: q.type === 'display' ? false : q.mandatory,
             config: config
           };
 
@@ -2077,7 +2132,7 @@ export default {
       const question = this.formData.questions[index];
       if (!question.text || !question.type) return true;
 
-      if (this.hasOptions(question.type) && this.optionCount(question) < 2) {
+      if (this.showsOptions(question) && this.optionCount(question) < 2) {
         return true;
       }
 

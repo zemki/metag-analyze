@@ -5,6 +5,7 @@ namespace App\Http\Resources\Mart;
 use App\Mart\MartDeviceInfo;
 use App\Mart\MartEntry;
 use App\Mart\MartProject;
+use App\Mart\MartQuestion;
 use App\Mart\MartSchedule;
 use App\Mart\MartStat;
 use App\User;
@@ -76,8 +77,10 @@ class MartStructureResource extends JsonResource
                         // options share one scale; the app copies it for each item.
                         $itemScaleIds = [];
                         foreach ($scheduleQuestions as $index => $question) {
-                            // Skip display-only items - they have no scale (itemId/scaleId are null)
-                            if (($question['type'] ?? '') === 'display') {
+                            // A display item has no scale, unless it shows a choice's
+                            // options, disabled. Its itemId stays null either way.
+                            $isDisplay = ($question['type'] ?? '') === 'display';
+                            if ($isDisplay && MartQuestion::displaySelectionType($question['config'] ?? null) === null) {
                                 continue;
                             }
                             $options = (new ScaleResource((object) $question, $index, true))->scaleOptions();

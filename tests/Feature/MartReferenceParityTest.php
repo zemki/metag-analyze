@@ -44,9 +44,6 @@ class MartReferenceParityTest extends TestCase
         // Sent by MART only: textOptions.type on a text scale. The app reads it
         // only for an "other" answer.
         'questionnaires.1.items.6.scale.textOptions.type: only in MART ("textarea")',
-        // Gap 7: a text-only item can't have a scale.
-        'questionnaires.1.items.14.scale: only in Directus ("checkbox")',
-        'questionnaires.1.items.15.scale: only in Directus ("checkbox")',
         // Not in the gap list: Directus scales 12 and 13 have an "other" option
         // without textOptions, so the app shows no field for it. The editor
         // always adds a field.

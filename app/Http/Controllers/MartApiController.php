@@ -134,7 +134,9 @@ class MartApiController extends Controller
             "sheetId" => "nullable|numeric", // DEPRECATED: Legacy field from old "QuestionSheets" terminology. Use questionnaireId instead.
             "questionnaireStarted" => "required|numeric",
             "questionnaireDuration" => "required|numeric",
-            "answers" => "required|array",
+            // present, not required: a questionnaire of display items only
+            // has no itemId to answer, and the app sends `answers: {}`.
+            'answers' => 'present|array',
             "answers.*" => "present", // Explicitly allow any type for answer values
             "timestamp" => "required|numeric",
             "timestampInherited" => "nullable|numeric",
@@ -692,6 +694,12 @@ class MartApiController extends Controller
         // Check for missing required questions
         // Mobile app uses itemId (array index + 1) as key
         foreach ($questionsArray as $index => $question) {
+            // The app sends no answer for a display item, which has no itemId,
+            // so one saved as mandatory must not fail the submit.
+            if ($question->type === 'display') {
+                continue;
+            }
+
             $itemId = $index + 1;
             // Check for both string and int keys for compatibility
             if (

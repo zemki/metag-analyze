@@ -24,11 +24,10 @@ use Illuminate\Support\Str;
  * files are skipped answers, and media URLs point at example.test.
  *
  * Questions carry the config the editor saves (AddEditQuestionnaireDialog's
- * save() and MartQuestionnaireController::store). Items the editor can't build
- * yet get the nearest stand-in, so the item order stays the same:
- *  - an item with a scale but no item ID (gap 7) becomes text only
- * posterUrl and randomPositionWithinQuestionnaire (gap 9) are left out until
- * the editor can set them. MartReferenceParityTest lists each difference.
+ * save() and MartQuestionnaireController::store), one per Directus item, so
+ * the item order stays the same. posterUrl and
+ * randomPositionWithinQuestionnaire (gap 9) are left out until the editor can
+ * set them. MartReferenceParityTest lists each difference.
  *
  * Every account gets a random password, shown once. An account that already
  * exists keeps its password and its roles.
@@ -302,11 +301,14 @@ class MartReferenceProjectSeeder extends Seeder
         $itemOptions = $item['options'] ?? [];
 
         // An item without an item ID is text only. Directus can give one a
-        // scale, shown as a disabled selection (gap 7).
+        // scale, which the app shows as a disabled selection.
         $isTextOnly = ($item['itemId'] ?? null) === null;
-        [$type, $config] = $isTextOnly
-            ? ['display', []]
-            : $this->typeAndConfig($scales[(string) $item['scaleId']]);
+        $scale = isset($item['scaleId']) ? $scales[(string) $item['scaleId']] : null;
+        if ($isTextOnly) {
+            [$type, $config] = ['display', $scale === null ? [] : $this->displaySelectionConfig($scale)];
+        } else {
+            [$type, $config] = $this->typeAndConfig($scale);
+        }
 
         if (! empty($itemOptions['randomizationGroupId'])) {
             $config['randomizationGroupId'] = $itemOptions['randomizationGroupId'];
@@ -407,6 +409,21 @@ class MartReferenceProjectSeeder extends Seeder
         }
 
         throw new RuntimeException("Unknown Directus scale type: {$scale['type']}");
+    }
+
+    /**
+     * A text-only item's scale as the editor saves a display item with
+     * answer options. The editor offers single and multiple choice only, so
+     * another scale (the app greys out a text field too) gives a plain
+     * text-only item, and MartReferenceParityTest lists the difference.
+     */
+    private function displaySelectionConfig(array $scale): array
+    {
+        if (! in_array($scale['type'], ['radio', 'checkbox'], true)) {
+            return [];
+        }
+
+        return ['displaySelection' => $scale['type']] + $this->choiceConfig($scale, $scale[$scale['type'] . 'Options']);
     }
 
     private function choiceConfig(array $scale, array $options): array

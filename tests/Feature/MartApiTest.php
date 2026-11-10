@@ -1152,6 +1152,248 @@ class MartApiTest extends TestCase
     }
 
     /**
+     * The app sends an answer for every item with an itemId and none for a
+     * display item, so a display item saved as mandatory used to fail every
+     * submit with a 422.
+     *
+     * @test
+     */
+    public function a_submit_without_an_answer_for_a_mandatory_display_item_is_accepted()
+    {
+        MartQuestion::create([
+            'schedule_id' => $this->questionOfSchedule2()->schedule_id,
+            'position' => 2,
+            'text' => 'Options shown disabled',
+            'type' => 'display',
+            'config' => ['displaySelection' => 'checkbox', 'options' => ['Option 1', 'Option 2']],
+            'is_mandatory' => true,
+            'version' => 1,
+        ]);
+
+        $this->actingAs($this->user, 'api')
+            ->postJson("/api/mobile/cases/{$this->case->id}/submit", [
+                'userId' => $this->user->email,
+                'projectId' => $this->project->id,
+                'questionnaireId' => $this->questionnaireId2,
+                'participantId' => $this->case->name,
+                'answers' => ['1' => []],
+                'questionnaireStarted' => now()->timestamp * 1000,
+                'questionnaireDuration' => 60000,
+                'timestamp' => now()->timestamp * 1000,
+                'timestampInherited' => 0,
+                'timezone' => 'Europe/Berlin',
+            ])
+            ->assertOk()
+            ->assertJson(['success' => true]);
+    }
+
+    /**
+     * With no item that has an itemId, the app sends `answers: {}`, which
+     * Laravel decodes to an empty array. `required` refused that, and the
+     * submission stayed on the phone.
+     *
+     * @test
+     */
+    public function a_questionnaire_with_only_display_items_can_be_submitted()
+    {
+        $schedule = $this->displayOnlySchedule();
+
+        $response = $this->submitAnswersOverHttp($schedule, ['answers' => (object) []])->assertOk();
+
+        $entry = MartEntry::findOrFail($response->json('entry_id'));
+        $this->assertSame([$schedule->id, 0], [$entry->schedule_id, $entry->answers()->count()]);
+    }
+
+    /** @test */
+    public function a_submit_without_an_answers_key_is_refused()
+    {
+        $this->submitAnswersOverHttp($this->displayOnlySchedule(), [])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['answers']);
+    }
+
+    /** @test */
+    public function the_questionnaire_route_rejects_a_blank_option_between_others_on_a_display_item()
+    {
+        // ScaleResource would send the blank one as an option without text.
+        $this->storeDisplayQuestionnaire(['displaySelection' => 'radio', 'options' => ['A', '', 'B']])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['questions.0']);
+    }
+
+    /** @test */
+    public function the_questionnaire_route_accepts_two_options_on_a_display_item()
+    {
+        $this->storeDisplayQuestionnaire(['displaySelection' => 'radio', 'options' => ['A', 'B']])->assertOk();
+    }
+
+    /** @test */
+    public function the_questionnaire_route_keeps_every_config_key_of_a_display_item_with_answer_options()
+    {
+        $config = [
+            'displaySelection' => 'checkbox',
+            'options' => ['Option 1', 'Option 2'],
+            'includeOtherOption' => true,
+            'otherTextType' => 'textarea',
+            'otherOptionLabel' => 'etwas anders',
+            'timer' => ['time' => 10, 'showCountdown' => true],
+            'itemGroup' => '2',
+        ];
+
+        $response = $this->storeDisplayQuestionnaire($config)->assertOk();
+        $question = MartSchedule::findOrFail($response->json('schedule.id'))->questions()->firstOrFail();
+
+        $this->assertEquals(['display', $config], [$question->type, $question->config]);
+    }
+
+    /** @test */
+    public function the_questions_route_keeps_every_config_key_of_a_display_item_with_answer_options()
+    {
+        $question = $this->questionOfSchedule2();
+        $config = [
+            'displaySelection' => 'radio',
+            'options' => ['Yes', 'No'],
+            'includeOtherOption' => true,
+            'otherTextType' => 'text',
+        ];
+
+        $this->updateToDisplay($question, $config)->assertOk();
+
+        $this->assertEquals(['display', $config], [$question->fresh()->type, $question->fresh()->config]);
+    }
+
+    /** @test */
+    public function the_questionnaire_route_saves_a_display_item_without_answer_options()
+    {
+        $this->storeDisplayQuestionnaire([])->assertOk();
+    }
+
+    /** @test */
+    public function the_questionnaire_route_rejects_answer_options_on_a_display_item_with_one_option()
+    {
+        $this->storeDisplayQuestionnaire(['displaySelection' => 'radio', 'options' => ['Only']])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['questions.0']);
+    }
+
+    /** @test */
+    public function the_questionnaire_route_rejects_a_blank_second_option_on_a_display_item()
+    {
+        // ConvertEmptyStringsToNull turns the blank option into null.
+        $this->storeDisplayQuestionnaire(['displaySelection' => 'checkbox', 'options' => ['Option 1', '']])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['questions.0']);
+    }
+
+    /** @test */
+    public function the_questionnaire_route_rejects_a_display_selection_other_than_single_or_multiple_choice()
+    {
+        $this->storeDisplayQuestionnaire(['displaySelection' => 'dropdown', 'options' => ['Yes', 'No']])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['questions.0']);
+    }
+
+    /** @test */
+    public function the_questions_route_rejects_answer_options_on_a_display_item_with_one_option()
+    {
+        $question = $this->questionOfSchedule2();
+
+        $this->updateToDisplay($question, ['displaySelection' => 'checkbox', 'options' => ['Only']])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['questions.0']);
+
+        $this->assertSame('text', $question->fresh()->type);
+    }
+
+    /**
+     * A questionnaire whose items are all text only, so none has an itemId.
+     */
+    private function displayOnlySchedule(): MartSchedule
+    {
+        $schedule = MartSchedule::create([
+            'mart_project_id' => $this->project->martProject()->id,
+            'questionnaire_id' => $this->project->id * 1000 + 3,
+            'name' => 'Information only',
+            'type' => 'single',
+            'timing_config' => ['start_date_time' => ['date' => '2025-01-01', 'time' => '09:00']],
+            'notification_config' => [],
+        ]);
+
+        foreach (['Welcome', 'Thank you'] as $position => $text) {
+            MartQuestion::create([
+                'schedule_id' => $schedule->id,
+                'position' => $position + 1,
+                'text' => $text,
+                'type' => 'display',
+                'config' => [],
+                'is_mandatory' => false,
+                'version' => 1,
+            ]);
+        }
+
+        return $schedule;
+    }
+
+    /**
+     * Submits to the questionnaire as the app does, with $fields merged in.
+     */
+    private function submitAnswersOverHttp(MartSchedule $schedule, array $fields): TestResponse
+    {
+        return $this->actingAs($this->user, 'api')
+            ->postJson("/api/mobile/cases/{$this->case->id}/submit", [
+                'userId' => $this->user->email,
+                'projectId' => $this->project->id,
+                'questionnaireId' => $schedule->questionnaire_id,
+                'participantId' => $this->case->name,
+                'questionnaireStarted' => now()->timestamp * 1000,
+                'questionnaireDuration' => 60000,
+                'timestamp' => now()->timestamp * 1000,
+                'timestampInherited' => 0,
+                'timezone' => 'Europe/Berlin',
+                ...$fields,
+            ]);
+    }
+
+    /**
+     * Posts a questionnaire with one display item to the questionnaire route.
+     */
+    private function storeDisplayQuestionnaire(array $config): TestResponse
+    {
+        return $this->actingAs($this->user)
+            ->postJson("/projects/{$this->project->id}/questionnaires", [
+                'questionnaire_id' => $this->project->id * 1000 + 502,
+                'name' => 'Display ' . uniqid(),
+                'type' => 'single',
+                'start_date_time' => ['date' => '2025-01-01', 'time' => '09:00'],
+                'show_progress_bar' => true,
+                'show_notifications' => false,
+                'questions' => [[
+                    'text' => 'Options shown disabled',
+                    'type' => 'display',
+                    'mandatory' => false,
+                    'config' => $config,
+                ]],
+            ]);
+    }
+
+    /**
+     * Turns the question into a display item through the questions route.
+     */
+    private function updateToDisplay(MartQuestion $question, array $config): TestResponse
+    {
+        return $this->actingAs($this->user)
+            ->putJson("/questionnaires/{$question->schedule_id}/questions", [
+                'questions' => [[
+                    'uuid' => $question->uuid,
+                    'text' => $question->text,
+                    'type' => 'display',
+                    'mandatory' => false,
+                    'config' => $config,
+                ]],
+            ]);
+    }
+
+    /**
      * Posts a questionnaire with one file upload question to the
      * questionnaire route.
      */

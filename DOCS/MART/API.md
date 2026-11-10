@@ -32,7 +32,7 @@ the same limits. There's no removal date, but new code should use `/api/mobile`.
 | `projectId` | integer | The project's numeric primary key. |
 | `questionnaireId` | integer | The schedule's questionnaire id (1-based per project). |
 | `itemId` | integer | A question's place in its questionnaire, from 1. It restarts in each questionnaire and is `null` for `display` items. |
-| `scaleId` | integer | The scale an item uses, unique across the whole payload. `null` for `display` items. |
+| `scaleId` | integer | The scale an item uses, unique across the whole payload. `null` for `display` items, unless the item shows answer options, disabled. |
 | `bearerToken` | string | 30-day API access token returned by `check-password`. |
 | `refreshToken` | string | 7-day rotation token returned by `check-password`. |
 
@@ -292,7 +292,7 @@ per-participant data when `participant_id` is provided.
 | `audioUpload` | `audio` | same flow as `photoUpload` |
 | `videoUpload` | `video` | same flow as `photoUpload` |
 | `fileUpload` | `file` | any file, within `fileUploadOptions`; same flow as `photoUpload` |
-| `display` | `display` | non-input element (instructions, headers) |
+| `display` | `display` | non-input element (instructions, headers). It has no `type` of its own: with answer options it gets a `radio` or `checkbox` scale, shown disabled, see below |
 
 For upload types the mobile uploads the bytes first, then submits the entry. The app's
 answer is `[fileUrl, file_id]`: the `fileUrl` from the upload response with the app's API
@@ -368,6 +368,28 @@ optional question sends `[]`, and a mandatory one keeps Next disabled.
 }
 ```
 
+**Answer options on a text-only item:** the app greys out the options of any item whose
+`itemId` is `null`, and sends no answer for it. A `display` question with `displaySelection`
+(`radio` or `checkbox`) in its config gets the scale a single or multiple choice question with
+the same options gets, "other" option included, so the two can share one scale: the app copies
+the scale for each item and decides from the item's `itemId` whether its options can be picked.
+The item keeps `itemId: null`, `noValueAllowed: true` and `randomizeAnswers: false`, and still
+takes its place, so later items keep their `itemId`. Its scale never has a `defaultValue` or a
+`jump`, whatever the config holds: the app copies a default into the answer and jumps on it even
+without an `itemId`, so a display item could skip questions unseen. A timer is sent, see
+"Timers" below. The questionnaire routes reject a `displaySelection` other than `radio` or
+`checkbox`, fewer than 2 options, or a blank one, with a 422. Without `displaySelection`, a
+`display` item has no scale, so no timer either.
+
+```json
+{
+  "itemId": null,
+  "scaleId": 1008,
+  "text": "Es wird eine deaktivierte Auswahl angezeigt",
+  "options": { "randomizationGroupId": null, "randomizeAnswers": false, "randomPositionWithinQuestionnaire": false, "itemGroup": null, "noValueAllowed": true }
+}
+```
+
 **Option values:** `radio`, `checkbox` and `rangeValues` options are numbered from 1, in their
 saved order. That's the option number in the editor, the value in an answer and the value in an
 export. `mart_questions.config` keeps 0-based keys, and the API adds 1 to `value`, `jumpCondition`
@@ -386,6 +408,13 @@ read: that one falls back to `minValue`.
 **Jumps:** `jump` sits in a scale's `options` as `{ "jumpCondition": 1, "jumpOver": 2 }`.
 `jumpCondition` is always a number, the `value` of the option that triggers the jump. The app
 compares it strictly with the chosen `radio` value, so a `checkbox` scale can't trigger a jump.
+
+**Timers:** `timer` sits in a scale's `options` as `{ "time": 30, "showCountdown": true }`, with
+`time` in seconds. The app starts it when the item opens, whatever the item's `itemId`. Next does
+nothing until the timer runs out, then the app moves on by itself. On an item with
+`noValueAllowed: true`, a display item included, the button isn't greyed out meanwhile.
+When a timed item is the last one, that move goes past the end: the app shows a blank page with a
+disabled "Weiter", and the participant has to tap Back to reach "Absenden".
 
 **Item options** (`questionnaires[].items[].options`): the block is always present, and the
 values come from the question's configuration.
@@ -453,6 +482,11 @@ answer holds the option's value and the typed text, such as `["text", "typed wor
 export shows it as `text, typed words`. A `rangeValues` answer is the chosen option's `value`:
 a number such as `[2]` when the participant keeps the default, and a string such as `["2"]`
 once they move the slider. Both are stored as sent, and the export shows `2`.
+
+The app sends a key for every item with an `itemId`, `[]` when it's unanswered, and none for
+a `display` item. So a `display` item is never required, even one saved as mandatory, and the
+export has no column for it. A questionnaire of display items only gives `answers: {}`: the key
+must be there, but it can be empty.
 
 > **Deprecated:** `sheetId` is accepted for backward compatibility but ignored.
 > Use `questionnaireId` instead.

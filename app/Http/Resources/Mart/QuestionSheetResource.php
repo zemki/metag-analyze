@@ -43,20 +43,23 @@ class QuestionSheetResource extends JsonResource
                 $config = $question['config'] ?? [];
 
                 $item = [
-                    // Per martTypes.ts: itemId/scaleId are null for display-only items (text without question)
+                    // A display item has no itemId, so the app sends no answer for
+                    // it and greys out the options of its scale, if it has one.
+                    // It still takes its place, so later items keep index + 1.
                     'itemId' => $isDisplayOnly ? null : $index + 1,
                     'scaleId' => $this->itemScaleIds[$index] ?? null,
                     'text' => $question['text'] ?? $question['name'] ?? '',
                     'options' => [
                         'randomizationGroupId' => $config['randomizationGroupId'] ?? null,
-                        'randomizeAnswers' => $config['randomizeAnswers'] ?? false,
+                        // Never for a display item: its options are shown, not picked.
+                        'randomizeAnswers' => $isDisplayOnly ? false : ($config['randomizeAnswers'] ?? false),
                         'randomPositionWithinQuestionnaire' => $config['randomPositionWithinQuestionnaire'] ?? false,
                         // martTypes.ts declares itemGroup as a string; older
                         // data may hold an int, so normalise here.
                         'itemGroup' => isset($config['itemGroup']) ? (string) $config['itemGroup'] : null,
                         // Inverse of is_mandatory. A display item is never
-                        // answerable, and the editor can still mark one
-                        // mandatory, so that branch stays.
+                        // answerable, and rows saved before the editor stopped
+                        // marking one mandatory still are, so that branch stays.
                         'noValueAllowed' => $isDisplayOnly ? true : ! ($question['is_mandatory'] ?? true),
                     ],
                 ];
