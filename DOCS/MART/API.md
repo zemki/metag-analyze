@@ -26,7 +26,7 @@ the same limits. There's no removal date, but new code should use `/api/mobile`.
 
 | Field | Type | What it is |
 |---|---|---|
-| `userId` | string | The participant's email address. Must match the case owner's email. |
+| `userId` | string | The participant's email address. Must match the case owner's email, ignoring case. |
 | `participantId` | string | The case's `name` field — any string. Auto-generated as `P` + 6 hex chars (e.g. `P1A2B3C`) when the participant registers via the 3-screen MART auth flow; cases created manually in the admin panel can have any string (e.g. `participant-003`). Use whatever `check-access` returns; do not assume the `P…` format. |
 | `caseId` | integer | The case's numeric primary key, used only inside URL paths (e.g. `/cases/{caseId}/...`). Different from `participantId`. |
 | `projectId` | integer | The project's numeric primary key. |
@@ -468,7 +468,7 @@ table.
 - `400` — Case does not belong to `projectId`
 - `401` — Missing or invalid Bearer token
 - `404` — Project or questionnaire schedule not found
-- `422` — Validation error, OR `userId` does not match the case owner's email,
+- `422` — Validation error, OR `userId` does not match the case owner's email (ignoring case),
   OR case is completed / not accepting submissions (response includes `case_status`)
 - `500` — Cross-DB transaction failed (both main and MART DBs rolled back)
 

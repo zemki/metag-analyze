@@ -126,7 +126,7 @@ Editing a question writes a `mart_question_history` row and bumps `version`; ans
 - `is_ios_data_donation` and `is_android_data_donation` are mutually exclusive per schedule.
 
 ### Submissions and files
-- Completed cases reject submissions with 422. `userId` must match the case owner's email.
+- Completed cases reject submissions with 422. `userId` must match the case owner's email, ignoring case (invites keep the email as typed, login finds it in any case).
 - Each submit writes `mart_entries` and `mart_answers` only, and `entry_id` in the response is the `mart_entries` id.
 - The web entry routes (`/cases/{case}/entries`) refuse MART cases with 403. Case lists build a MART case's `entries` from `mart_entries`, so those rows carry `mart_entries` ids, not `entries` ids.
 - `device-infos` and `stats` return 403 when `userId` is not the bearer token's account.

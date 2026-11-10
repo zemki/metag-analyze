@@ -818,6 +818,33 @@ class MartApiTest extends TestCase
         $this->assertEquals('userId does not match the case owner', $responseData['message']);
     }
 
+    /**
+     * The invite keeps the email as the researcher typed it, and login finds
+     * the account in any case, so the app may send another case on submit.
+     *
+     * @test
+     */
+    public function it_accepts_submit_when_userId_differs_from_the_case_owner_only_in_case()
+    {
+        $this->user->update(['email' => 'Anna.Mueller@Example.com']);
+
+        $request = new \Illuminate\Http\Request([
+            'projectId' => $this->project->id,
+            'questionnaireId' => $this->questionnaireId1,
+            'userId' => 'anna.mueller@example.com',
+            'participantId' => $this->case->name,
+            'questionnaireStarted' => now()->timestamp * 1000,
+            'questionnaireDuration' => 300000,
+            'answers' => ['1' => 2],
+            'timestamp' => now()->timestamp * 1000,
+            'timezone' => 'Europe/Berlin',
+        ]);
+
+        $response = (new \App\Http\Controllers\MartApiController)->submitEntry($request, $this->case->fresh());
+
+        $this->assertTrue($response->getData(true)['success']);
+    }
+
     /** @test */
     public function it_returns_404_when_participant_id_is_invalid()
     {

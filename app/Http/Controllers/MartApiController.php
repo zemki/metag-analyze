@@ -155,7 +155,9 @@ class MartApiController extends Controller
 
         // Verify the userId in the body matches the case owner. Without this,
         // any authenticated caller could attribute submissions to any string.
-        if ($case->user && $case->user->email !== $request->userId) {
+        // Case-insensitive: the invite keeps the email as typed, login finds the
+        // account in any case, and the app sends the email the participant typed.
+        if ($case->user && strcasecmp($case->user->email, (string) $request->userId) !== 0) {
             return response()->json(
                 [
                     "success" => false,
