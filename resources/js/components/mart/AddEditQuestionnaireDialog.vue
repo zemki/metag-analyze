@@ -1263,13 +1263,12 @@ import { emitter } from '../../app.js';
 // The extensions a file upload question can allow. Must match
 // MartFile::FILE_UPLOAD_EXTENSIONS, in the same order: the questionnaire routes
 // refuse any other, and MartFileUploadTest uploads a real file of each. Left
-// out: .wav and .aac, which the server's content check reads as audio/x-wav and
-// audio/x-hx-aac-adts, and .svg, since an inline SVG can run script on our origin.
+// out: .svg, since an inline SVG can run script on our origin.
 const FILE_UPLOAD_FORMATS = [
   { label: 'Images', formats: ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.heif'] },
   { label: 'Documents', formats: ['.pdf'] },
   { label: 'Video', formats: ['.mp4', '.mov', '.webm', '.3gp', '.avi'] },
-  { label: 'Audio', formats: ['.mp3', '.m4a', '.ogg', '.flac'] },
+  { label: 'Audio', formats: ['.mp3', '.m4a', '.ogg', '.flac', '.wav', '.aac'] },
 ];
 const ALL_FILE_UPLOAD_FORMATS = FILE_UPLOAD_FORMATS.flatMap(group => group.formats);
 

@@ -415,7 +415,7 @@ describe('AddEditQuestionnaireDialog questions', () => {
       '.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.heif',
       '.pdf',
       '.mp4', '.mov', '.webm', '.3gp', '.avi',
-      '.mp3', '.m4a', '.ogg', '.flac',
+      '.mp3', '.m4a', '.ogg', '.flac', '.wav', '.aac',
     ];
 
     function fileQuestion(fileUploadOptions = {}) {

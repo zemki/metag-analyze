@@ -32,7 +32,8 @@ class MartFileUploadTest extends TestCase
         '.heic' => 'photo', '.heif' => 'photo',
         '.pdf' => 'document',
         '.mp4' => 'video', '.mov' => 'video', '.webm' => 'video', '.3gp' => 'video', '.avi' => 'video',
-        '.mp3' => 'audio', '.m4a' => 'audio', '.ogg' => 'audio', '.flac' => 'audio',
+        '.mp3' => 'audio', '.m4a' => 'audio', '.ogg' => 'audio', '.flac' => 'audio', '.wav' => 'audio',
+        '.aac' => 'audio',
     ];
 
     private int $nextQuestionnaireNumber = 100;
@@ -476,6 +477,80 @@ class MartFileUploadTest extends TestCase
     }
 
     /**
+     * The app's recorder takes the first of audio/mp4, audio/webm;codecs=opus,
+     * audio/webm and audio/ogg;codecs=opus that the phone supports, and
+     * uploads it with file_type "audio", as it does a picked audio file. The
+     * content check reads most of these containers as video.
+     *
+     * @test
+     *
+     * @dataProvider audioUploads
+     */
+    public function an_audio_upload_is_stored_in_the_audio_bucket(string $fixture)
+    {
+        $fileId = $this->appUpload($this->fixture($fixture), 'audio', $fixture)
+            ->assertCreated()
+            ->json('file_id');
+
+        $this->assertSame('audio', MartFile::find($fileId)->file_type);
+    }
+
+    public static function audioUploads(): array
+    {
+        return [
+            'a recording, aac in fragmented mp4' => ['recording-aac-frag.mp4'],
+            'a recording, opus in webm' => ['recording-opus.webm'],
+            'an audio-only 3gp' => ['recording-aac.3gp'],
+            'a wav file' => ['sample.wav'],
+            'an adts aac file' => ['sample.aac'],
+        ];
+    }
+
+    /** @test */
+    public function a_video_upload_still_takes_an_mp4()
+    {
+        $fileId = $this->appUpload($this->fixture('sample.mp4'), 'video', 'video.mp4')
+            ->assertCreated()
+            ->json('file_id');
+
+        $this->assertSame('video', MartFile::find($fileId)->file_type);
+    }
+
+    /**
+     * The audio bucket takes video types too, but the content still picks
+     * video for them, because video comes first.
+     *
+     * @test
+     *
+     * @dataProvider uploadsWithoutABucket
+     */
+    public function a_recording_uploaded_without_a_bucket_lands_in_video(?string $fileType)
+    {
+        $fileId = $this->appUpload($this->fixture('recording-aac-frag.mp4'), $fileType, 'recording.mp4')
+            ->assertCreated()
+            ->json('file_id');
+
+        $this->assertSame('video', MartFile::find($fileId)->file_type);
+    }
+
+    public static function uploadsWithoutABucket(): array
+    {
+        return [
+            'file_type "file"' => ['file'],
+            'no file_type' => [null],
+        ];
+    }
+
+    /** @test */
+    public function the_content_still_picks_video_for_every_video_type()
+    {
+        $this->assertSame(
+            ['video', 'video', 'video'],
+            array_map([MartFile::class, 'fileTypeForMime'], ['video/mp4', 'video/webm', 'video/3gpp']),
+        );
+    }
+
+    /**
      * Two upload questions in one submit: each file gets its own question.
      *
      * @test
@@ -609,23 +684,28 @@ class MartFileUploadTest extends TestCase
     /**
      * Uploads the way the app's usePost does for a "files" item: a JSON body,
      * raw base64 (cut from a data: URL at the first comma), the zero question
-     * UUID, and file_type from the scale type ("file" for fileUpload).
+     * UUID, and file_type from the scale type ("file" for fileUpload). A null
+     * file_type is left out of the body.
      */
     private function appUpload(
         string $content,
-        string $fileType = 'file',
+        ?string $fileType = 'file',
         string $originalName = 'upload.pdf',
         ?User $as = null,
         ?Cases $case = null,
     ): TestResponse {
         $case ??= $this->case;
-
-        return $this->actingAs($as ?? $this->user, 'api')->postJson("/mart-api/cases/{$case->id}/files", [
+        $body = [
             'question_uuid' => self::ZERO_UUID,
             'file_type' => $fileType,
             'file' => base64_encode($content),
             'original_name' => $originalName,
-        ]);
+        ];
+        if ($fileType === null) {
+            unset($body['file_type']);
+        }
+
+        return $this->actingAs($as ?? $this->user, 'api')->postJson("/mart-api/cases/{$case->id}/files", $body);
     }
 
     /**

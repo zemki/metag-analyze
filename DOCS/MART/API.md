@@ -321,8 +321,7 @@ reads, so it isn't sent. The questionnaire routes reject a `file` question with 
 `MartFile::FILE_UPLOAD_EXTENSIONS` (any case, with or without the dot; a blank entry is
 refused). Otherwise the app takes a file the upload endpoint refuses, and the app stops the
 whole submit. Those are the extensions whose files the server takes, and the ones the editor
-offers. `.svg` is left out because an inline SVG can run script on our origin, and `.wav` and
-`.aac` because the content check doesn't take them.
+offers. `.svg` is left out because an inline SVG can run script on our origin.
 
 ```json
 {
@@ -636,10 +635,19 @@ the same way.
 |-------------|---------------------|
 | `photo`     | image/jpeg, image/png, image/gif, image/webp, image/heic, image/heif |
 | `video`     | video/mp4, video/quicktime, video/webm, video/3gpp, video/x-msvideo |
-| `audio`     | audio/mpeg, audio/mp4, audio/wav, audio/ogg, audio/aac, audio/x-m4a, audio/webm, audio/flac |
+| `audio`     | audio/mpeg, audio/mp4, audio/wav, audio/x-wav, audio/ogg, audio/aac, audio/x-hx-aac-adts, audio/x-m4a, audio/webm, audio/flac, audio/x-flac, video/mp4, video/webm, video/3gpp |
 | `document`  | application/pdf, image/jpeg, image/png |
 
 Files not matching the whitelist are rejected with `422` and logged.
+
+**Audio recordings:** the app records with the first of `audio/mp4`, `audio/webm;codecs=opus`,
+`audio/webm` and `audio/ogg;codecs=opus` that the phone supports, and uploads the recording
+with `file_type` `audio`, as it does a picked audio file. So recordings arrive in mp4, webm,
+ogg or 3gp containers, and the content check reads most of them as video (`video/mp4`,
+`video/webm`, `video/3gpp`). The `audio` bucket accepts those types too. Sent without a
+`file_type`, or with `file`, the same content still lands in `video`, because `video` comes
+first. `audio/x-wav`, `audio/x-hx-aac-adts` and `audio/x-flac` are the names libmagic gives
+WAV, ADTS AAC and (in older versions) FLAC files.
 
 **Response (201):**
 ```json
