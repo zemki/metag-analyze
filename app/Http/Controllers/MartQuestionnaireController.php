@@ -74,10 +74,11 @@ class MartQuestionnaireController extends Controller
             'quest_available_at' => 'nullable|in:startOfInterval,randomTimeWithinInterval',
             'show_after_repeating' => 'nullable|array',
             'questions' => 'required|array',
+            'questions.*' => [$this->rangeValuesHaveTwoOptions()],
             'questions.*.text' => 'required|string',
             'questions.*.image_url' => 'nullable|url|max:2048',
             'questions.*.video_url' => 'nullable|url|max:2048',
-            'questions.*.type' => 'required|in:number,range,text,textarea,one choice,multiple choice,display,photo,audio,video',
+            'questions.*.type' => 'required|in:number,range,range values,text,textarea,one choice,multiple choice,display,photo,audio,video',
             'questions.*.mandatory' => 'required|boolean',
             'questions.*.config' => 'nullable|array',
         ]);
@@ -254,11 +255,12 @@ class MartQuestionnaireController extends Controller
             'quest_available_at' => 'nullable|in:startOfInterval,randomTimeWithinInterval',
             'show_after_repeating' => 'nullable|array',
             'questions' => 'required|array',
+            'questions.*' => [$this->rangeValuesHaveTwoOptions()],
             'questions.*.uuid' => 'nullable|string',
             'questions.*.text' => 'required|string',
             'questions.*.image_url' => 'nullable|url|max:2048',
             'questions.*.video_url' => 'nullable|url|max:2048',
-            'questions.*.type' => 'required|in:number,range,text,textarea,one choice,multiple choice,display,photo,audio,video',
+            'questions.*.type' => 'required|in:number,range,range values,text,textarea,one choice,multiple choice,display,photo,audio,video',
             'questions.*.mandatory' => 'required|boolean',
             'questions.*.config' => 'nullable|array',
         ]);
@@ -411,6 +413,28 @@ class MartQuestionnaireController extends Controller
                 'message' => $e->getMessage(),
             ], 422);
         }
+    }
+
+    /**
+     * A range values question needs at least 2 options: the app reads the
+     * first and last one without a check, and crashes on an empty list.
+     *
+     * The rule sits on the whole question, so it also catches a missing
+     * config. A rule on questions.*.config.options would make validate()
+     * drop every other config key.
+     */
+    private function rangeValuesHaveTwoOptions(): \Closure
+    {
+        return function (string $attribute, $question, \Closure $fail) {
+            if (! is_array($question) || ($question['type'] ?? null) !== 'range values') {
+                return;
+            }
+
+            $options = $question['config']['options'] ?? null;
+            if (! is_array($options) || count($options) < 2) {
+                $fail('A slider with labels needs at least 2 options.');
+            }
+        };
     }
 
     /**

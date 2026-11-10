@@ -285,6 +285,7 @@ per-participant data when `participant_id` is provided.
 | `textarea` | `textarea` | multi-line text input, with an optional `textOptions.placeholder` |
 | `number` | `number` | integer or decimal entry |
 | `range` | `range` | slider with `minValue` / `maxValue` / `steps` |
+| `rangeValues` | `range values` | slider with a label on each step, from `rangeValueOptions` |
 | `radio` (a.k.a. `one choice`) | `one choice` | single-select, optionally with an "other" option |
 | `checkbox` (a.k.a. `multiple choice`) | `multiple choice` | multi-select, optionally with an "other" option |
 | `photoUpload` | `photo` | participant uploads via `POST /api/mobile/cases/{caseId}/files`, then references the returned `file_id` in the answer |
@@ -324,17 +325,38 @@ defaults.
 }
 ```
 
-**Option values:** `radio` and `checkbox` options are numbered from 1, in their saved order.
-That's the option number in the editor, the value in an answer and the value in an export.
-`mart_questions.config` keeps 0-based keys, and the API adds 1 to `value`, `jumpCondition` and
-a choice `defaultValue`. Values can't start at 0 because the app drops a `radio` value of 0.
+**Sliders with labels:** a `rangeValues` scale has no "other" option and no jump. The app
+slides from the first `value` to the last and shows the label of the chosen value, so the values
+run from 1 in order. Every label is a step: a blank one is sent with empty `text`. The
+questionnaire routes reject a `range values` question with fewer than 2 options with a 422,
+because the app crashes on an empty list. A default sits next to `rangeValueOptions`, at the top
+of `options`. Without one, the app records nothing until the participant moves the slider: an
+optional question sends `[]`, and a mandatory one keeps Next disabled.
+
+```json
+{
+  "type": "rangeValues",
+  "rangeValueOptions": [
+    { "value": 1, "text": "sehr schlecht" },
+    { "value": 2, "text": "ok" },
+    { "value": 3, "text": "sehr gut" }
+  ],
+  "defaultValue": 2
+}
+```
+
+**Option values:** `radio`, `checkbox` and `rangeValues` options are numbered from 1, in their
+saved order. That's the option number in the editor, the value in an answer and the value in an
+export. `mart_questions.config` keeps 0-based keys, and the API adds 1 to `value`, `jumpCondition`
+and a choice `defaultValue`. Values can't start at 0 because the app drops a `radio` value of 0.
 It does the same to a `number` or `range` answer of 0, which arrives as `[]`, like a skipped
 question. Only an app change can fix that.
 
 **Default answers:** `defaultValue` sits at the top of a scale's `options` for every type,
-and is only there when the researcher set one. It's a number for `range`, `number`, `radio`
-and `checkbox` (an option's `value`), and a string for `text` and `textarea`. The app has
-two limits: it ignores a `range` default of `0`, and it never applies one to `number`. `range` also
+and is only there when the researcher set one. It's a number for `range` and `number`, an
+option's `value` for `radio`, `checkbox` and `rangeValues`, and a string for `text` and
+`textarea`. The app has two limits: it ignores a `range` default of `0`, and it never applies
+one to `number`. `range` also
 keeps `rangeOptions.defaultValue`, which `martTypes.ts` requires and which the app doesn't
 read: that one falls back to `minValue`.
 
@@ -348,7 +370,7 @@ values come from the question's configuration.
 | Field | Default | Notes |
 |---|---|---|
 | `randomizationGroupId` | `null` | Groups questions for randomized presentation |
-| `randomizeAnswers` | `false` | Shuffles the answer options |
+| `randomizeAnswers` | `false` | Shuffles the answer options. The app and the editor use it for `radio` and `checkbox` only. |
 | `randomPositionWithinQuestionnaire` | `false` | Randomizes the item's position |
 | `itemGroup` | `null` | String. Items in a group show together on one page. |
 | `noValueAllowed` | | The inverse of "mandatory": `true` for optional questions. Always `true` for `display` items. |
@@ -404,7 +426,9 @@ POST /api/mobile/cases/{caseId}/submit
 Values can be numbers (scale), arrays (multiple choice), strings (text), or file UUIDs
 returned from File Upload. The app sends every value as an array, such as `[1]`. An "other"
 answer holds the option's value and the typed text, such as `["text", "typed words"]`, and the
-export shows it as `text, typed words`.
+export shows it as `text, typed words`. A `rangeValues` answer is the chosen option's `value`:
+a number such as `[2]` when the participant keeps the default, and a string such as `["2"]`
+once they move the slider. Both are stored as sent, and the export shows `2`.
 
 > **Deprecated:** `sheetId` is accepted for backward compatibility but ignored.
 > Use `questionnaireId` instead.

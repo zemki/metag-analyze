@@ -502,6 +502,57 @@ class MartScalePayloadTest extends TestCase
     }
 
     /** @test */
+    public function range_values_labels_are_numbered_from_1()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'range values', 'config' => ['options' => ['sehr schlecht', 'ok', 'sehr gut']]],
+        ]);
+
+        $this->assertSame([
+            'type' => 'rangeValues',
+            'rangeValueOptions' => [
+                ['value' => 1, 'text' => 'sehr schlecht'],
+                ['value' => 2, 'text' => 'ok'],
+                ['value' => 3, 'text' => 'sehr gut'],
+            ],
+        ], $this->structure()['scales'][0]['options']);
+    }
+
+    /** @test */
+    public function a_range_values_default_is_the_value_of_its_option()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'range values', 'config' => ['options' => ['Low', 'Mid', 'High'], 'defaultValue' => 1]],
+        ]);
+
+        $this->assertSame(2, $this->structure()['scales'][0]['options']['defaultValue']);
+    }
+
+    /** @test */
+    public function a_range_values_scale_without_a_default_has_none()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'range values', 'config' => ['options' => ['Low', 'High']]],
+        ]);
+
+        $this->assertSame(['type', 'rangeValueOptions'], array_keys($this->structure()['scales'][0]['options']));
+    }
+
+    /** @test */
+    public function a_range_values_default_shows_its_own_label()
+    {
+        $this->addQuestionnaire(array_map(fn ($key) => ['type' => 'range values', 'config' => [
+            'options' => ['Low', 'Mid', 'High'],
+            'defaultValue' => $key,
+        ]], [0, 1, 2]));
+
+        $this->assertSame(
+            ['Low', 'Mid', 'High'],
+            array_map(fn ($scale) => $this->appRangeValuesLabel($scale['options']), $this->structure()['scales']),
+        );
+    }
+
+    /** @test */
     public function metag_single_choice_values_stay_as_they_are()
     {
         $options = $this->metagScaleOptions('one choice')['radioOptions'];
@@ -552,6 +603,18 @@ class MartScalePayloadTest extends TestCase
     private function appRadioAnswer(int|string $value): array
     {
         return $value ? [$value] : [];
+    }
+
+    /**
+     * The label the app shows for a range values default: it sets the answer
+     * to Number(defaultValue) when that is truthy, then shows
+     * rangeValueOptions[answer - 1].text.
+     */
+    private function appRangeValuesLabel(array $options): ?string
+    {
+        $answer = ! empty($options['defaultValue']) ? (int) $options['defaultValue'] : null;
+
+        return $answer ? ($options['rangeValueOptions'][$answer - 1]['text'] ?? null) : null;
     }
 
     /**

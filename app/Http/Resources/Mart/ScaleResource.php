@@ -103,6 +103,27 @@ class ScaleResource extends JsonResource
                     ], 'checkboxOptions', $config);
                     break;
 
+                // A slider with a label on each step. The app shows
+                // rangeValueOptions[answer - 1] and slides from the first value
+                // to the last, so values run 1..N in order. No "other" option.
+                // A blank label is a step too; it's stored as null, because
+                // ConvertEmptyStringsToNull runs on the editor's request.
+                case 'range values':
+                    $options = [];
+                    if (isset($config['options']) && is_array($config['options'])) {
+                        foreach ($config['options'] as $key => $text) {
+                            $options[] = [
+                                'value' => $key + 1,
+                                'text' => (string) $text,
+                            ];
+                        }
+                    }
+                    $scaleOptions = [
+                        'type' => 'rangeValues',
+                        'rangeValueOptions' => $options,
+                    ];
+                    break;
+
                 case 'text':
                 case 'textarea':
                     $scaleOptions = ['type' => $questionType];
@@ -274,7 +295,7 @@ class ScaleResource extends JsonResource
 
             // The app reads the default from here for every type, range included.
             if (isset($config['defaultValue'])) {
-                $isChoice = in_array($this->type, ['one choice', 'multiple choice'], true);
+                $isChoice = in_array($this->type, ['one choice', 'multiple choice', 'range values'], true);
                 $scaleOptions['defaultValue'] = $isChoice
                     ? (int) $config['defaultValue'] + 1
                     : $config['defaultValue'];

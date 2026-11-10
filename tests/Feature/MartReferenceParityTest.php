@@ -54,8 +54,6 @@ class MartReferenceParityTest extends TestCase
         'questionnaires.1.items.18.scale.textOptions.type: only in MART ("text")',
         // Sent by MART only: martTypes.ts requires rangeOptions.defaultValue.
         'questionnaires.1.items.28.scale.rangeOptions.defaultValue: only in MART (55)',
-        // Gap 1: rangeValues, seeded as single choice.
-        'questionnaires.1.items.29.scale: Directus "rangeValues", MART "radio"',
         // Gap 9: the editor can't set posterUrl or randomPositionWithinQuestionnaire.
         'questionnaires.1.items.32.posterUrl: only in Directus ("https://example.test/assets/media-3")',
         // Gap 2: fileUpload, seeded as photo upload.
@@ -63,8 +61,6 @@ class MartReferenceParityTest extends TestCase
         'questionnaires.1.items.35.scale: Directus "fileUpload", MART "photoUpload"',
         // Gap 9.
         'questionnaires.1.items.41.options.randomPositionWithinQuestionnaire: Directus true, MART false',
-        // Gap 1.
-        'questionnaires.3.items.2.scale: Directus "rangeValues", MART "radio"',
         // Gap 2.
         'questionnaires.5.items.2.scale: Directus "fileUpload", MART "photoUpload"',
         'questionnaires.5.items.3.scale: Directus "fileUpload", MART "photoUpload"',

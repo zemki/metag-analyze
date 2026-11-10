@@ -16,6 +16,8 @@ use Illuminate\Support\Str;
  * - 'display': Display text only (no answer required, itemId/scaleId are null in API)
  * - 'number': Numeric input field (sends type='number' with minValue/maxValue to mobile)
  * - 'range': Range slider (sends type='range' with rangeOptions to mobile)
+ * - 'range values': Slider with a label per step (sends type='rangeValues'
+ *   with rangeValueOptions to mobile; config holds options like a choice)
  * - 'text': Single-line text input field
  * - 'textarea': Multi-line text input field
  * - 'one choice': Single selection (radio buttons)

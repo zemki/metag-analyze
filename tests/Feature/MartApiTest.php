@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Cases;
+use App\Mart\MartAnswer;
 use App\Mart\MartDeviceInfo;
 use App\Mart\MartEntry;
 use App\Mart\MartPage;
@@ -913,5 +914,181 @@ class MartApiTest extends TestCase
         // Display item: skippable despite is_mandatory being true.
         $this->assertNull($second[2]['itemId']);
         $this->assertTrue($second[2]['options']['noValueAllowed']);
+    }
+
+    /** @test */
+    public function the_questionnaire_route_saves_a_range_values_question()
+    {
+        $question = $this->rangeValuesQuestion();
+
+        $this->assertSame('range values', $question->type);
+        $this->assertSame(['options' => ['bad', 'ok', 'good'], 'defaultValue' => 1], $question->config);
+    }
+
+    /** @test */
+    public function the_questions_route_can_turn_a_question_into_range_values()
+    {
+        $question = $this->questionOfSchedule2();
+
+        $this->updateToRangeValues($question, ['options' => ['bad', 'ok', 'good']])->assertOk();
+
+        $this->assertSame('range values', $question->fresh()->type);
+    }
+
+    /** @test */
+    public function the_questionnaire_route_keeps_every_config_key_of_a_range_values_question()
+    {
+        $config = [
+            'options' => ['gar nicht', 'mittel', 'sehr'],
+            'defaultValue' => 1,
+            'timer' => ['time' => 30, 'showCountdown' => true],
+            'randomizationGroupId' => 2,
+            'itemGroup' => '3',
+        ];
+
+        $this->assertEquals($config, $this->rangeValuesQuestion($config)->config);
+    }
+
+    /** @test */
+    public function a_blank_range_values_label_is_sent_as_empty_text()
+    {
+        // ConvertEmptyStringsToNull stores the blank label as null.
+        $question = $this->rangeValuesQuestion(['options' => ['gar nicht', '', 'sehr']]);
+
+        $scale = (new \App\Http\Resources\Mart\ScaleResource($question, 0, true))->scaleOptions();
+
+        $this->assertSame(['gar nicht', '', 'sehr'], array_column($scale['rangeValueOptions'], 'text'));
+    }
+
+    /** @test */
+    public function the_questionnaire_route_rejects_range_values_without_options()
+    {
+        // The app reads rangeValueOptions[0] without a check, so an empty list crashes it.
+        $this->storeRangeValuesQuestionnaire(['config' => []])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['questions.0']);
+    }
+
+    /** @test */
+    public function the_questionnaire_route_rejects_range_values_without_a_config()
+    {
+        $this->storeRangeValuesQuestionnaire([])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['questions.0']);
+    }
+
+    /** @test */
+    public function the_questions_route_rejects_range_values_with_one_option()
+    {
+        $question = $this->questionOfSchedule2();
+
+        $this->updateToRangeValues($question, ['options' => ['Only']])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['questions.0']);
+
+        $this->assertSame('text', $question->fresh()->type);
+    }
+
+    /** @test */
+    public function an_untouched_range_values_answer_is_stored_as_sent()
+    {
+        // The app sends the default as a number when the slider isn't moved.
+        $question = $this->rangeValuesQuestion();
+
+        $this->assertSame('[2]', $this->submitRangeValuesAnswer($question, [2]));
+    }
+
+    /** @test */
+    public function a_moved_range_values_answer_is_stored_as_sent()
+    {
+        // A moved slider gives the app a string.
+        $question = $this->rangeValuesQuestion();
+
+        $this->assertSame('["2"]', $this->submitRangeValuesAnswer($question, ['2']));
+    }
+
+    /**
+     * A questionnaire with one range values question, saved through the
+     * questionnaire route.
+     */
+    private function rangeValuesQuestion(array $config = ['options' => ['bad', 'ok', 'good'], 'defaultValue' => 1]): MartQuestion
+    {
+        $response = $this->storeRangeValuesQuestionnaire(['config' => $config])->assertOk();
+
+        return MartSchedule::findOrFail($response->json('schedule.id'))->questions()->firstOrFail();
+    }
+
+    /**
+     * Posts a questionnaire with one range values question, merged with
+     * $fields, to the questionnaire route.
+     */
+    private function storeRangeValuesQuestionnaire(array $fields): \Illuminate\Testing\TestResponse
+    {
+        return $this->actingAs($this->user)
+            ->postJson("/projects/{$this->project->id}/questionnaires", [
+                'questionnaire_id' => $this->project->id * 1000 + 500,
+                'name' => 'Mood ' . uniqid(),
+                'type' => 'single',
+                'start_date_time' => ['date' => '2025-01-01', 'time' => '09:00'],
+                'show_progress_bar' => true,
+                'show_notifications' => false,
+                'questions' => [[
+                    'text' => 'How do you feel?',
+                    'type' => 'range values',
+                    'mandatory' => true,
+                    ...$fields,
+                ]],
+            ]);
+    }
+
+    private function questionOfSchedule2(): MartQuestion
+    {
+        return MartSchedule::where('mart_project_id', $this->project->martProject()->id)
+            ->where('questionnaire_id', $this->questionnaireId2)
+            ->firstOrFail()
+            ->questions()
+            ->firstOrFail();
+    }
+
+    /**
+     * Turns the question into a range values question through the questions
+     * route.
+     */
+    private function updateToRangeValues(MartQuestion $question, array $config): \Illuminate\Testing\TestResponse
+    {
+        return $this->actingAs($this->user)
+            ->putJson("/questionnaires/{$question->schedule_id}/questions", [
+                'questions' => [[
+                    'uuid' => $question->uuid,
+                    'text' => $question->text,
+                    'type' => 'range values',
+                    'mandatory' => false,
+                    'config' => $config,
+                ]],
+            ]);
+    }
+
+    /**
+     * Submits one answer to the question's questionnaire and returns the
+     * stored value.
+     */
+    private function submitRangeValuesAnswer(MartQuestion $question, array $answer): string
+    {
+        $request = new \Illuminate\Http\Request([
+            'projectId' => $this->project->id,
+            'questionnaireId' => $question->schedule->questionnaire_id,
+            'userId' => 'test@example.com',
+            'participantId' => 'Participant_001',
+            'questionnaireStarted' => now()->timestamp * 1000,
+            'questionnaireDuration' => 300000,
+            'answers' => ['1' => $answer],
+            'timestamp' => now()->timestamp * 1000,
+            'timezone' => 'Europe/Berlin',
+        ]);
+
+        $response = (new \App\Http\Controllers\MartApiController)->submitEntry($request, $this->case);
+        $this->assertTrue($response->getData(true)['success']);
+
+        return MartAnswer::where('question_uuid', $question->uuid)->sole()->answer_value;
     }
 }

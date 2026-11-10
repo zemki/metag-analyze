@@ -26,7 +26,6 @@ use Illuminate\Support\Str;
  * Questions carry the config the editor saves (AddEditQuestionnaireDialog's
  * save() and MartQuestionnaireController::store). Items the editor can't build
  * yet get the nearest stand-in, so the item order stays the same:
- *  - rangeValues (gap 1) becomes single choice, with the same options
  *  - fileUpload (gap 2) becomes photo upload with file selection
  *  - an item with a scale but no item ID (gap 7) becomes text only
  * posterUrl and randomPositionWithinQuestionnaire (gap 9) are left out until
@@ -358,8 +357,8 @@ class MartReferenceProjectSeeder extends Seeder
             case 'checkbox':
                 return ['multiple choice', $this->choiceConfig($scale, $scale['checkboxOptions'])];
 
-            case 'rangeValues': // Gap 1: single choice until the type exists.
-                return ['one choice', $this->choiceConfig($scale, $scale['rangeValueOptions'])];
+            case 'rangeValues':
+                return ['range values', $this->choiceConfig($scale, $scale['rangeValueOptions'])];
 
             case 'text':
             case 'textarea':

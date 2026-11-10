@@ -82,14 +82,16 @@ How MART API types map to database storage.
 | `radio` | `one choice` | `options[]` in config, sent with `value` = key + 1. With `includeOtherOption`, adds an option with the value `text` (label from `otherOptionLabel`) and `textOptions.type` from `otherTextType` |
 | `checkbox` | `multiple choice` | Same as `radio` |
 | `range` | `range` | `minValue`, `maxValue`, `steps`, `defaultValue` in `rangeOptions` |
-| `rangeValues` | `range values` | `rangeValueOptions[]` |
+| `rangeValues` | `range values` | `options[]` in config (the labels; a blank one is stored as `null` and sent as `""`), sent as `rangeValueOptions` with `value` = key + 1. At least 2 options, checked on save. No "other" option |
 | `photoUpload` | `photo` | `photoUploadOptions` |
 | `audioUpload` | `audio` | `audioUploadOptions` |
 | `videoUpload` | `video` | `videoUploadOptions` |
 
-`defaultValue` in config goes to `options.defaultValue` for any type. For `radio` and
-`checkbox`, config holds the option's 0-based key and the API sends key + 1, the same as the
-option's `value`. `jump.jumpCondition` works the same way.
+`defaultValue` in config goes to `options.defaultValue` for any type. For `radio`, `checkbox`
+and `rangeValues`, config holds the option's 0-based key and the API sends key + 1, the same as
+the option's `value`. `jump.jumpCondition` works the same way (`radio` and `checkbox` only).
+The editor finds a choice default by its text, and a `rangeValues` default by its position,
+because a slider's labels can be blank or repeat.
 
 ## Page
 

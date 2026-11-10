@@ -214,6 +214,217 @@ describe('AddEditQuestionnaireDialog questions', () => {
     });
   });
 
+  describe('range values', () => {
+    const rangeValuesQuestion = { type: 'rangeValues', answers: ['Low', 'Mid', 'High'] };
+
+    function questionError(fields) {
+      return methods.hasQuestionError.call(dialogWith([formQuestion(fields)]), 0);
+    }
+
+    // isEditMode skips the schedule fields, so only the question is checked.
+    function formIsValid(fields) {
+      return AddEditQuestionnaireDialog.computed.isValid.call({
+        ...dialogWith([formQuestion(fields)]),
+        isEditMode: true,
+      });
+    }
+
+    it('saves as the range values type', async () => {
+      const saved = await savedQuestion(rangeValuesQuestion);
+
+      expect(saved.type).toBe('range values');
+    });
+
+    // A slider has a step for every label, so a blank label is a step too.
+    it('keeps blank labels as empty steps, in order', async () => {
+      const saved = await savedQuestion({ ...rangeValuesQuestion, answers: ['gar nicht', '', ' ', '', 'sehr'] });
+
+      expect(saved.config.options).toEqual(['gar nicht', '', '', '', 'sehr']);
+    });
+
+    // The form holds the default's position, so repeated labels can't mix it up.
+    it('saves the default as its position', async () => {
+      const saved = await savedQuestion({ ...rangeValuesQuestion, defaultValue: 1 });
+
+      expect(saved.config.defaultValue).toBe(1);
+    });
+
+    it('saves a default on the first step as 0', async () => {
+      const saved = await savedQuestion({ ...rangeValuesQuestion, defaultValue: 0 });
+
+      expect(saved.config.defaultValue).toBe(0);
+    });
+
+    it('saves a default on a repeated label at its own position', async () => {
+      const saved = await savedQuestion({ ...rangeValuesQuestion, answers: ['-', '-', '-'], defaultValue: 2 });
+
+      expect(saved.config.defaultValue).toBe(2);
+    });
+
+    it('saves a default on a blank step', async () => {
+      const saved = await savedQuestion({ ...rangeValuesQuestion, answers: ['gar nicht', '', 'sehr'], defaultValue: 1 });
+
+      expect(saved.config.defaultValue).toBe(1);
+    });
+
+    // removeOption changes the answers in place, so each test has its own list.
+    function afterRemovingStep(defaultValue, removedIndex) {
+      const dialog = dialogWith([formQuestion({ type: 'rangeValues', answers: ['Low', 'Mid', 'High'], defaultValue })]);
+      methods.removeOption.call(dialog, 0, removedIndex);
+
+      return dialog.formData.questions[0].defaultValue;
+    }
+
+    it('moves the default with its step when an earlier step is removed', () => {
+      expect(afterRemovingStep(2, 0)).toBe(1);
+    });
+
+    it('clears the default when its step is removed', () => {
+      expect(afterRemovingStep(1, 1)).toBe('');
+    });
+
+    it('keeps the default when a later step is removed', () => {
+      expect(afterRemovingStep(0, 2)).toBe(0);
+    });
+
+    it('leaves the default out when none is set', async () => {
+      const saved = await savedQuestion({ ...rangeValuesQuestion, defaultValue: '' });
+
+      expect(saved.config).not.toHaveProperty('defaultValue');
+    });
+
+    it('saves no "other" option', async () => {
+      const saved = await savedQuestion({
+        ...rangeValuesQuestion,
+        includeOtherOption: true,
+        otherOptionLabel: 'Something else',
+        otherTextType: 'text',
+      });
+
+      expect(saved.config).toEqual({ options: ['Low', 'Mid', 'High'] });
+    });
+
+    it('saves no jump', async () => {
+      const saved = await savedQuestion({ ...rangeValuesQuestion, useJump: true, jumpCondition: 1, jumpOver: 1 });
+
+      expect(saved.config).not.toHaveProperty('jump');
+    });
+
+    it('restores the type when a saved question is opened', () => {
+      const question = loadedQuestion({ type: 'range values', config: { options: ['Low', 'Mid'] } });
+
+      expect(question.type).toBe('rangeValues');
+    });
+
+    it('restores the labels', () => {
+      const question = loadedQuestion({ type: 'range values', config: { options: ['Low', 'Mid', 'High'] } });
+
+      expect(question.answers).toEqual(['Low', 'Mid', 'High']);
+    });
+
+    it('restores the default as its position', () => {
+      const question = loadedQuestion({
+        type: 'range values',
+        config: { options: ['-', '-', '-'], defaultValue: 2 },
+      });
+
+      expect(question.defaultValue).toBe(2);
+    });
+
+    it('restores a default on the first step', () => {
+      const question = loadedQuestion({
+        type: 'range values',
+        config: { options: ['Low', 'High'], defaultValue: 0 },
+      });
+
+      expect(question.defaultValue).toBe(0);
+    });
+
+    // Laravel turns an empty string into null, so a blank label comes back as null.
+    it('restores blank labels as empty steps', () => {
+      const question = loadedQuestion({ type: 'range values', config: { options: ['gar nicht', null, 'sehr'] } });
+
+      expect(question.answers).toEqual(['gar nicht', '', 'sehr']);
+    });
+
+    it('marks a question with fewer than 2 steps', () => {
+      expect(questionError({ ...rangeValuesQuestion, answers: ['Only'] })).toBe(true);
+    });
+
+    it('cannot be saved with fewer than 2 steps', () => {
+      expect(formIsValid({ ...rangeValuesQuestion, answers: ['Only'] })).toBe(false);
+    });
+
+    it('can be saved with 2 labels', () => {
+      expect(formIsValid({ ...rangeValuesQuestion, answers: ['Low', 'High'] })).toBe(true);
+    });
+
+    it('counts a blank label as a step', () => {
+      expect(formIsValid({ ...rangeValuesQuestion, answers: ['gar nicht', ''] })).toBe(true);
+    });
+
+    it('does not mark a question whose second step is blank', () => {
+      expect(questionError({ ...rangeValuesQuestion, answers: ['gar nicht', ' '] })).toBe(false);
+    });
+
+    it('offers every step as a default, blank ones too', async () => {
+      const wrapper = mount(AddEditQuestionnaireDialog, {
+        props: { projectId: 1, nextQuestionnaireId: 1 },
+        global: { stubs: { SchedulePreview: true } },
+      });
+      wrapper.vm.addQuestion();
+      Object.assign(wrapper.vm.formData.questions[0], { ...rangeValuesQuestion, answers: ['-', '', '-'] });
+      await wrapper.vm.$nextTick();
+
+      const defaultSelect = wrapper.findAll('select').find(select => select.text().includes('No default'));
+
+      expect(defaultSelect.findAll('option').map(option => option.element.value)).toEqual(['', '0', '1', '2']);
+    });
+
+    it('shows the labels without randomize or "other" options', async () => {
+      const wrapper = mount(AddEditQuestionnaireDialog, {
+        props: { projectId: 1, nextQuestionnaireId: 1 },
+        global: { stubs: { SchedulePreview: true } },
+      });
+      wrapper.vm.addQuestion();
+      Object.assign(wrapper.vm.formData.questions[0], { ...rangeValuesQuestion });
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.findAll('input[type="text"]').map(input => input.element.value)).toEqual(
+        expect.arrayContaining(['Low', 'Mid', 'High']),
+      );
+      expect(wrapper.find('#randomize-answers-0').exists()).toBe(false);
+      expect(wrapper.find('#include-other-0').exists()).toBe(false);
+    });
+  });
+
+  // The app only shuffles radio and checkbox options.
+  describe('randomize answers', () => {
+    it('is saved for single choice', async () => {
+      const saved = await savedQuestion({ type: 'radio', answers: ['Yes', 'No'], randomizeAnswers: true });
+
+      expect(saved.config.randomizeAnswers).toBe(true);
+    });
+
+    it('is saved for multiple choice', async () => {
+      const saved = await savedQuestion({ type: 'checkbox', answers: ['Yes', 'No'], randomizeAnswers: true });
+
+      expect(saved.config.randomizeAnswers).toBe(true);
+    });
+
+    it('is left out for a slider with labels, where it has no checkbox', async () => {
+      const saved = await savedQuestion({ type: 'rangeValues', answers: ['Low', 'High'], randomizeAnswers: true });
+
+      expect(saved.config).not.toHaveProperty('randomizeAnswers');
+    });
+
+    it('is left out for types without options', async () => {
+      const saved = await savedQuestion({ type: 'text', randomizeAnswers: true });
+
+      expect(saved.config).not.toHaveProperty('randomizeAnswers');
+    });
+  });
+
   // config keeps the option's key. The API adds 1, which gives the option number.
   describe('jump', () => {
     const jumpQuestion = { type: 'radio', answers: ['Yes', 'No'], useJump: true, jumpOver: 1 };

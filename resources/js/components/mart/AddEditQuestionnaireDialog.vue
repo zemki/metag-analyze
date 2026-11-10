@@ -730,6 +730,7 @@
                       <option value="textarea">{{ trans('Text Area') }}</option>
                       <option value="number">{{ trans('Number') }}</option>
                       <option value="range">{{ trans('Range/Slider') }}</option>
+                      <option value="rangeValues">{{ trans('Slider with Labels') }}</option>
                       <option value="radio">{{ trans('Single Choice') }}</option>
                       <option value="checkbox">{{ trans('Multiple Choice') }}</option>
                       <option value="photoUpload">{{ trans('Photo Upload') }}</option>
@@ -821,9 +822,14 @@
                     </div>
                   </div>
 
-                  <!-- Choice Options -->
-                  <div v-if="question.type === 'radio' || question.type === 'checkbox'" class="space-y-3">
-                    <label class="block text-sm font-medium text-gray-700">{{ trans('Options') }}</label>
+                  <!-- Choice Options (labels for a slider with labels) -->
+                  <div v-if="hasOptions(question.type)" class="space-y-3">
+                    <label class="block text-sm font-medium text-gray-700">
+                      {{ question.type === 'rangeValues' ? trans('Labels') : trans('Options') }}
+                    </label>
+                    <p v-if="question.type === 'rangeValues'" class="text-xs text-gray-500">
+                      {{ trans('One label per slider step, from left to right. A label can be blank. At least 2 steps.') }}
+                    </p>
                     <div v-for="(answer, aIndex) in question.answers" :key="aIndex" class="flex items-center space-x-2">
                       <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gray-200 text-gray-700 text-sm font-medium flex-shrink-0">
                         {{ aIndex + 1 }}
@@ -854,8 +860,8 @@
                       {{ trans('Add Option') }}
                     </button>
 
-                    <!-- Randomize Answers Checkbox -->
-                    <div class="flex items-center mt-3 pt-3 border-t border-gray-200">
+                    <!-- Randomize Answers Checkbox (not for a slider with labels) -->
+                    <div v-if="question.type !== 'rangeValues'" class="flex items-center mt-3 pt-3 border-t border-gray-200">
                       <input
                           type="checkbox"
                           :id="'randomize-answers-' + index"
@@ -867,8 +873,8 @@
                       </label>
                     </div>
 
-                    <!-- Include "Other" Text Field Checkbox -->
-                    <div class="flex items-center mt-2">
+                    <!-- Include "Other" Text Field Checkbox (not for a slider with labels) -->
+                    <div v-if="question.type !== 'rangeValues'" class="flex items-center mt-2">
                       <input
                           type="checkbox"
                           :id="'include-other-' + index"
@@ -880,7 +886,7 @@
                       </label>
                     </div>
                     <!-- Custom label for "Other" option -->
-                    <div v-if="question.includeOtherOption" class="mt-2 ml-6">
+                    <div v-if="question.includeOtherOption && question.type !== 'rangeValues'" class="mt-2 ml-6">
                       <label class="block text-sm font-medium text-gray-700">{{ trans('"Other" Option Label') }}</label>
                       <input
                           type="text"
@@ -905,8 +911,23 @@
                   <!-- Default Value -->
                   <div v-if="hasDefaultValue(question.type)">
                     <label class="block text-sm font-medium text-gray-700">{{ trans('Default Value (Optional)') }}</label>
+                    <!-- A slider's labels can be blank or repeat, so its default is a position. -->
                     <select
-                        v-if="question.type === 'radio' || question.type === 'checkbox'"
+                        v-if="question.type === 'rangeValues'"
+                        v-model="question.defaultValue"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="">{{ trans('No default') }}</option>
+                      <option
+                          v-for="(answer, aIndex) in question.answers"
+                          :key="aIndex"
+                          :value="aIndex"
+                      >
+                        {{ aIndex + 1 }}{{ answer.trim() ? ': ' + answer : '' }}
+                      </option>
+                    </select>
+                    <select
+                        v-else-if="hasOptions(question.type)"
                         v-model="question.defaultValue"
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
                     >
@@ -933,6 +954,9 @@
                     />
                     <p class="mt-1 text-xs text-gray-500">
                       {{ trans('Answer already filled in when the question opens.') }}
+                    </p>
+                    <p v-if="question.type === 'rangeValues'" class="mt-1 text-xs text-gray-500">
+                      {{ trans('Without a default, nothing is recorded until the participant moves the slider.') }}
                     </p>
                   </div>
 
@@ -1276,8 +1300,7 @@ export default {
       for (const question of this.formData.questions) {
         if (!question.text || !question.type) return false;
 
-        if ((question.type === 'radio' || question.type === 'checkbox') &&
-            (!question.answers || question.answers.filter(a => a.trim()).length < 2)) {
+        if (this.hasOptions(question.type) && this.optionCount(question) < 2) {
           return false;
         }
       }
@@ -1475,10 +1498,12 @@ export default {
           placeholder: config.placeholder || '',
           // A choice default is saved as the option's key. The form holds the
           // option's text, so it can't drift when options are added or removed.
-          defaultValue: config.options
+          // A slider's labels can be blank or repeat, so its form keeps the key.
+          defaultValue: q.type !== 'range values' && config.options
               ? config.options[config.defaultValue] ?? ''
               : config.defaultValue ?? '',
-          answers: config.options || [],
+          // A slider's blank label is stored as null (Laravel turns '' into null).
+          answers: (config.options || []).map(a => a ?? ''),
           config: {
             minValue: config.min || 0,
             maxValue: config.max || 10,
@@ -1615,17 +1640,18 @@ export default {
     },
 
     // Map backend/DB types to form types.
-    // DB stores: number, range, text, textarea, one choice, multiple choice, display,
-    //            photo, audio, video.
-    // Form uses: number, range, text, textarea, radio, checkbox, display,
-    //            photoUpload, audioUpload, videoUpload (form values match the
-    //            mobile API contract).
+    // DB stores: number, range, range values, text, textarea, one choice,
+    //            multiple choice, display, photo, audio, video.
+    // Form uses: number, range, rangeValues, text, textarea, radio, checkbox,
+    //            display, photoUpload, audioUpload, videoUpload (form values
+    //            match the mobile API contract).
     mapBackendTypeToFormType(backendType) {
       const mapping = {
         'text': 'text',
         'textarea': 'textarea',
         'number': 'number',
         'range': 'range',
+        'range values': 'rangeValues',
         'one choice': 'radio',
         'multiple choice': 'checkbox',
         'display': 'display',
@@ -1637,8 +1663,8 @@ export default {
     },
 
     // Map form types to backend/DB types.
-    // DB stores: number, range, text, textarea, one choice, multiple choice, display,
-    //            photo, audio, video.
+    // DB stores: number, range, range values, text, textarea, one choice,
+    //            multiple choice, display, photo, audio, video.
     // Mobile API expects the form values verbatim (e.g. `photoUpload` for a photo
     // question); the mapping below is just the storage half of the round-trip.
     mapFormTypeToBackendType(formType) {
@@ -1647,6 +1673,7 @@ export default {
         'textarea': 'textarea',
         'number': 'number',
         'range': 'range',
+        'rangeValues': 'range values',
         'radio': 'one choice',
         'checkbox': 'multiple choice',
         'display': 'display',
@@ -1721,14 +1748,37 @@ export default {
     },
 
     removeOption(questionIndex, optionIndex) {
-      const answers = this.formData.questions[questionIndex].answers;
+      const question = this.formData.questions[questionIndex];
+      const answers = question.answers;
       if (answers.length > 1) {
         answers.splice(optionIndex, 1);
+
+        // A slider's default is a position, so it follows its step.
+        if (question.type === 'rangeValues' && question.defaultValue !== '') {
+          if (question.defaultValue === optionIndex) {
+            question.defaultValue = '';
+          } else if (question.defaultValue > optionIndex) {
+            question.defaultValue -= 1;
+          }
+        }
       }
     },
 
     hasDefaultValue(type) {
-      return ['range', 'number', 'radio', 'checkbox', 'text', 'textarea'].includes(type);
+      return ['range', 'rangeValues', 'number', 'radio', 'checkbox', 'text', 'textarea'].includes(type);
+    },
+
+    // Types whose answers come from a list the researcher writes. Their
+    // default is saved as the key of an option. Jumps are radio/checkbox only.
+    hasOptions(type) {
+      return ['radio', 'checkbox', 'rangeValues'].includes(type);
+    },
+
+    // Blank choice options are dropped on save; a slider keeps a blank label
+    // as a step.
+    optionCount(question) {
+      const answers = question.answers || [];
+      return question.type === 'rangeValues' ? answers.length : answers.filter(a => a.trim()).length;
     },
 
     async save() {
@@ -1754,6 +1804,10 @@ export default {
             if (q.config.maxDigits) {
               config.maxDigits = q.config.maxDigits;
             }
+          } else if (q.type === 'rangeValues') {
+            // Labels only: no "Other" option, no jump. Every label is a step
+            // on the slider, so a blank one stays, as empty text.
+            config.options = q.answers.map(a => (a.trim() ? a : ''));
           } else if (q.type === 'radio' || q.type === 'checkbox') {
             config.options = q.answers.filter(a => a.trim());
             // Include "Other" text field option flag and custom label
@@ -1794,6 +1848,8 @@ export default {
           }
 
           if (this.hasDefaultValue(q.type)) {
+            // The form holds a choice default as its text and a slider's as
+            // its position, which is already the key.
             const isChoice = q.type === 'radio' || q.type === 'checkbox';
             const defaultValue = isChoice ? config.options.indexOf(q.defaultValue) : q.defaultValue;
             if (defaultValue !== '' && defaultValue !== -1 && defaultValue !== undefined) {
@@ -1824,7 +1880,9 @@ export default {
           if (q.randomizationGroupId) {
             config.randomizationGroupId = q.randomizationGroupId;
           }
-          if (q.randomizeAnswers) {
+          // Only radio and checkbox have the checkbox, and the app only
+          // shuffles their options.
+          if (q.randomizeAnswers && (q.type === 'radio' || q.type === 'checkbox')) {
             config.randomizeAnswers = true;
           }
           if (q.itemGroup) {
@@ -1896,8 +1954,7 @@ export default {
       const question = this.formData.questions[index];
       if (!question.text || !question.type) return true;
 
-      if ((question.type === 'radio' || question.type === 'checkbox') &&
-          (!question.answers || question.answers.filter(a => a.trim()).length < 2)) {
+      if (this.hasOptions(question.type) && this.optionCount(question) < 2) {
         return true;
       }
 
