@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mart\MartFile;
 use App\Mart\MartProject;
 use App\Mart\MartQuestion;
 use App\Mart\MartSchedule;
@@ -74,11 +75,11 @@ class MartQuestionnaireController extends Controller
             'quest_available_at' => 'nullable|in:startOfInterval,randomTimeWithinInterval',
             'show_after_repeating' => 'nullable|array',
             'questions' => 'required|array',
-            'questions.*' => [$this->rangeValuesHaveTwoOptions()],
+            'questions.*' => [$this->rangeValuesHaveTwoOptions(), $this->fileUploadHasLimits()],
             'questions.*.text' => 'required|string',
             'questions.*.image_url' => 'nullable|url|max:2048',
             'questions.*.video_url' => 'nullable|url|max:2048',
-            'questions.*.type' => 'required|in:number,range,range values,text,textarea,one choice,multiple choice,display,photo,audio,video',
+            'questions.*.type' => 'required|in:number,range,range values,text,textarea,one choice,multiple choice,display,photo,audio,video,file',
             'questions.*.mandatory' => 'required|boolean',
             'questions.*.config' => 'nullable|array',
         ]);
@@ -255,12 +256,12 @@ class MartQuestionnaireController extends Controller
             'quest_available_at' => 'nullable|in:startOfInterval,randomTimeWithinInterval',
             'show_after_repeating' => 'nullable|array',
             'questions' => 'required|array',
-            'questions.*' => [$this->rangeValuesHaveTwoOptions()],
+            'questions.*' => [$this->rangeValuesHaveTwoOptions(), $this->fileUploadHasLimits()],
             'questions.*.uuid' => 'nullable|string',
             'questions.*.text' => 'required|string',
             'questions.*.image_url' => 'nullable|url|max:2048',
             'questions.*.video_url' => 'nullable|url|max:2048',
-            'questions.*.type' => 'required|in:number,range,range values,text,textarea,one choice,multiple choice,display,photo,audio,video',
+            'questions.*.type' => 'required|in:number,range,range values,text,textarea,one choice,multiple choice,display,photo,audio,video,file',
             'questions.*.mandatory' => 'required|boolean',
             'questions.*.config' => 'nullable|array',
         ]);
@@ -433,6 +434,50 @@ class MartQuestionnaireController extends Controller
             $options = $question['config']['options'] ?? null;
             if (! is_array($options) || count($options) < 2) {
                 $fail('A slider with labels needs at least 2 options.');
+            }
+        };
+    }
+
+    /**
+     * A file upload question needs a size from 1 to 50 MB and at least one
+     * format, each one the server takes. Otherwise the app lets the
+     * participant pick a file the server refuses, and then stops the whole
+     * submit with a message that is usually off screen.
+     *
+     * A blank format arrives as null (TrimStrings, ConvertEmptyStringsToNull)
+     * and is refused too: the app would read no formats as any file. The
+     * config is saved as sent; ScaleResource normalises it on the way out.
+     *
+     * On the whole question, like rangeValuesHaveTwoOptions(), so the other
+     * config keys are kept.
+     */
+    private function fileUploadHasLimits(): \Closure
+    {
+        return function (string $attribute, $question, \Closure $fail) {
+            if (! is_array($question) || ($question['type'] ?? null) !== 'file') {
+                return;
+            }
+
+            $options = $question['config']['fileUploadOptions'] ?? null;
+            $maxFileSize = $options['maxFileSize'] ?? null;
+            $serverLimit = MartFile::MAX_FILE_SIZE / 1024 / 1024;
+            if (! is_numeric($maxFileSize) || $maxFileSize < 1 || $maxFileSize > $serverLimit) {
+                $fail("A file upload needs a maximum file size from 1 to {$serverLimit} MB.");
+            }
+
+            $formats = $options['allowedFormats'] ?? null;
+            if (! is_array($formats) || $formats === []) {
+                $fail('A file upload needs at least one file format.');
+
+                return;
+            }
+
+            foreach ($formats as $format) {
+                if (! in_array(MartFile::normaliseFileFormat($format), MartFile::FILE_UPLOAD_EXTENSIONS, true)) {
+                    $fail('A file upload can only allow ' . implode(', ', MartFile::FILE_UPLOAD_EXTENSIONS) . '.');
+
+                    return;
+                }
             }
         };
     }

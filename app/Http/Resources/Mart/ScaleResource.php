@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Mart;
 
+use App\Mart\MartFile;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class ScaleResource extends JsonResource
@@ -159,6 +160,19 @@ class ScaleResource extends JsonResource
                     $scaleOptions = ['type' => 'videoUpload'];
                     if (! empty($config['videoUploadOptions']) && is_array($config['videoUploadOptions'])) {
                         $scaleOptions['videoUploadOptions'] = $config['videoUploadOptions'];
+                    }
+                    break;
+
+                case 'file':
+                    // Any file. The app reads only maxFileSize (MB) and
+                    // allowedFormats, which it matches against "." + the
+                    // file's lowercased extension and uses as the picker's
+                    // accept list. A missing key means no limit there.
+                    // martTypes.ts's fileType isn't sent: the app never reads it.
+                    $scaleOptions = ['type' => 'fileUpload'];
+                    $fileUploadOptions = $this->fileUploadOptions($config['fileUploadOptions'] ?? []);
+                    if ($fileUploadOptions) {
+                        $scaleOptions['fileUploadOptions'] = $fileUploadOptions;
                     }
                     break;
             }
@@ -319,6 +333,36 @@ class ScaleResource extends JsonResource
         }
 
         return $scaleOptions;
+    }
+
+    /**
+     * A file question's options as the app matches them: the size as a
+     * number, each format lowercase with one leading dot, listed once. Keys
+     * without a value are left out.
+     */
+    private function fileUploadOptions($options): array
+    {
+        if (! is_array($options)) {
+            return [];
+        }
+
+        $fileUploadOptions = [];
+        if (is_numeric($options['maxFileSize'] ?? null)) {
+            $fileUploadOptions['maxFileSize'] = $options['maxFileSize'] + 0;
+        }
+
+        $formats = [];
+        foreach ((array) ($options['allowedFormats'] ?? []) as $format) {
+            $normalised = MartFile::normaliseFileFormat($format);
+            if ($normalised !== null) {
+                $formats[] = $normalised;
+            }
+        }
+        if ($formats) {
+            $fileUploadOptions['allowedFormats'] = array_values(array_unique($formats));
+        }
+
+        return $fileUploadOptions;
     }
 
     /**

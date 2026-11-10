@@ -86,6 +86,7 @@ How MART API types map to database storage.
 | `photoUpload` | `photo` | `photoUploadOptions` |
 | `audioUpload` | `audio` | `audioUploadOptions` |
 | `videoUpload` | `video` | `videoUploadOptions` |
+| `fileUpload` | `file` | `fileUploadOptions` {`maxFileSize` (MB), `allowedFormats`} in config, saved as sent. Sent with `maxFileSize` as a number and each format lowercase with one leading dot (`MartFile::normaliseFileFormat`), listed once; a key without a value is left out. No `fileType`. A size from 1 to 50 and at least one format, each one from `MartFile::FILE_UPLOAD_EXTENSIONS`, checked on save |
 
 `defaultValue` in config goes to `options.defaultValue` for any type. For `radio`, `checkbox`
 and `rangeValues`, config holds the option's 0-based key and the API sends key + 1, the same as
@@ -116,6 +117,13 @@ because a slider's labels can be blank or repeat.
 | `answers` | `mart_answers.answer_value` | Per question UUID |
 | `timestamp` | `mart_entries.timestamp` | Unix timestamp |
 | `timezone` | `mart_entries.timezone` | |
+
+An upload answer (`photo`, `audio`, `video`, `file`) is `[fileUrl, file_id]`, stored as sent
+in `mart_answers.answer_value`. The submit links the `mart_files` row of that `file_id`, when
+it belongs to the submitting case: `mart_entry_id` is set to the entry and `question_uuid` to
+the answered question, replacing the zero UUID the app uploads with. `mart_files.file_type`
+is the bucket inferred from the content (`photo`, `video`, `audio`, `document`) when the app
+sends `file`.
 
 ## DeviceInfo
 

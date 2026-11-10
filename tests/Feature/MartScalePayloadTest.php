@@ -552,6 +552,81 @@ class MartScalePayloadTest extends TestCase
         );
     }
 
+    /**
+     * The app reads only maxFileSize and allowedFormats. martTypes.ts also
+     * names a fileType, which the app never reads, so it isn't sent.
+     *
+     * @test
+     */
+    public function a_file_upload_sends_its_size_and_formats()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'file', 'config' => ['fileUploadOptions' => ['maxFileSize' => 20, 'allowedFormats' => ['.jpg', '.pdf']]]],
+        ]);
+
+        $this->assertSame([
+            'type' => 'fileUpload',
+            'fileUploadOptions' => ['maxFileSize' => 20, 'allowedFormats' => ['.jpg', '.pdf']],
+        ], $this->structure()['scales'][0]['options']);
+    }
+
+    /** @test */
+    public function file_upload_formats_are_sent_lowercase_with_a_leading_dot_and_once()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'file', 'config' => ['fileUploadOptions' => ['allowedFormats' => [' JPG', 'pdf', '.Pdf', '.mp4 ']]]],
+        ]);
+
+        $this->assertSame(
+            ['.jpg', '.pdf', '.mp4'],
+            $this->structure()['scales'][0]['options']['fileUploadOptions']['allowedFormats'],
+        );
+    }
+
+    /** @test */
+    public function a_file_upload_leaves_out_options_without_a_value()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'file', 'config' => ['fileUploadOptions' => ['maxFileSize' => null, 'allowedFormats' => ['.pdf']]]],
+        ]);
+
+        $this->assertSame(['allowedFormats' => ['.pdf']], $this->structure()['scales'][0]['options']['fileUploadOptions']);
+    }
+
+    /** @test */
+    public function a_file_upload_size_saved_as_text_is_sent_as_a_number()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'file', 'config' => ['fileUploadOptions' => ['maxFileSize' => '20', 'allowedFormats' => ['.pdf']]]],
+        ]);
+
+        $this->assertSame(20, $this->structure()['scales'][0]['options']['fileUploadOptions']['maxFileSize']);
+    }
+
+    /** @test */
+    public function a_bare_file_upload_has_only_its_type()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'file', 'config' => ['fileUploadOptions' => ['maxFileSize' => null, 'allowedFormats' => []]]],
+        ]);
+
+        $this->assertSame(['type' => 'fileUpload'], $this->structure()['scales'][0]['options']);
+    }
+
+    /** @test */
+    public function the_app_takes_only_files_with_a_listed_extension_in_any_case()
+    {
+        $this->addQuestionnaire([
+            ['type' => 'file', 'config' => ['fileUploadOptions' => ['allowedFormats' => ['PDF']]]],
+        ]);
+        $options = $this->structure()['scales'][0]['options'];
+
+        $this->assertSame(
+            [true, false],
+            [$this->appAllowsFile($options, 'Scan.Final.PDF'), $this->appAllowsFile($options, 'notes.txt')],
+        );
+    }
+
     /** @test */
     public function metag_single_choice_values_stay_as_they_are()
     {
@@ -615,6 +690,18 @@ class MartScalePayloadTest extends TestCase
         $answer = ! empty($options['defaultValue']) ? (int) $options['defaultValue'] : null;
 
         return $answer ? ($options['rangeValueOptions'][$answer - 1]['text'] ?? null) : null;
+    }
+
+    /**
+     * The app's file check: no allowedFormats means any file, otherwise
+     * "." + the lowercased last extension of the name must be listed.
+     */
+    private function appAllowsFile(array $options, string $fileName): bool
+    {
+        $formats = $options['fileUploadOptions']['allowedFormats'] ?? [];
+        $parts = explode('.', $fileName);
+
+        return $formats === [] || in_array('.' . strtolower(end($parts)), $formats, true);
     }
 
     /**

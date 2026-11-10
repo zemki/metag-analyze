@@ -14,6 +14,7 @@ use App\Mart\MartStat;
 use App\MartPage as OldMartPage;
 use App\Project;
 use App\User;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class MartApiTest extends TestCase
@@ -1005,6 +1006,163 @@ class MartApiTest extends TestCase
         $question = $this->rangeValuesQuestion();
 
         $this->assertSame('["2"]', $this->submitRangeValuesAnswer($question, ['2']));
+    }
+
+    /** @test */
+    public function the_questionnaire_route_keeps_every_config_key_of_a_file_upload_question()
+    {
+        $config = [
+            'fileUploadOptions' => ['maxFileSize' => 20, 'allowedFormats' => ['.jpg', '.pdf']],
+            'timer' => ['time' => 30, 'showCountdown' => true],
+            'itemGroup' => '3',
+        ];
+
+        $response = $this->storeFileUploadQuestionnaire($config)->assertOk();
+        $question = MartSchedule::findOrFail($response->json('schedule.id'))->questions()->firstOrFail();
+
+        $this->assertEquals(['file', $config], [$question->type, $question->config]);
+    }
+
+    /** @test */
+    public function the_questions_route_can_turn_a_question_into_a_file_upload()
+    {
+        $question = $this->questionOfSchedule2();
+
+        $this->updateToFileUpload($question, ['fileUploadOptions' => ['maxFileSize' => 5, 'allowedFormats' => ['.pdf']]])
+            ->assertOk();
+
+        $this->assertSame('file', $question->fresh()->type);
+    }
+
+    /**
+     * Without formats the app takes any file. When the upload endpoint
+     * refuses it, the app stops the whole submit.
+     *
+     * @test
+     */
+    public function the_questionnaire_route_rejects_a_file_upload_without_formats()
+    {
+        $this->storeFileUploadQuestionnaire(['fileUploadOptions' => ['maxFileSize' => 20, 'allowedFormats' => []]])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['questions.0']);
+    }
+
+    /**
+     * The server takes files up to 50 MB. A larger file passes the app's own
+     * check, the upload is refused, and the app stops the whole submit.
+     *
+     * @test
+     */
+    public function the_questionnaire_route_rejects_a_file_upload_over_50_mb()
+    {
+        $this->storeFileUploadQuestionnaire(['fileUploadOptions' => ['maxFileSize' => 51, 'allowedFormats' => ['.pdf']]])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['questions.0']);
+    }
+
+    /** @test */
+    public function the_questionnaire_route_rejects_a_file_upload_without_a_size()
+    {
+        // ConvertEmptyStringsToNull turns the empty field into null.
+        $this->storeFileUploadQuestionnaire(['fileUploadOptions' => ['maxFileSize' => '', 'allowedFormats' => ['.pdf']]])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['questions.0']);
+    }
+
+    /**
+     * The upload endpoint refuses these, and the app then stops the submit.
+     * TrimStrings and ConvertEmptyStringsToNull turn a blank format into
+     * null, which the app would read as no formats at all: any file.
+     *
+     * @test
+     *
+     * @dataProvider formatsTheServerDoesNotTake
+     */
+    public function the_questionnaire_route_rejects_a_format_the_server_does_not_take(array $formats)
+    {
+        $this->storeFileUploadQuestionnaire(['fileUploadOptions' => ['maxFileSize' => 20, 'allowedFormats' => $formats]])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['questions.0']);
+    }
+
+    public static function formatsTheServerDoesNotTake(): array
+    {
+        return [
+            'an office file' => [['.pdf', '.docx']],
+            'svg' => [['.svg']],
+            'a blank entry' => [['']],
+            'a blank entry among offered ones' => [['.pdf', ' ']],
+            'a number' => [[5]],
+        ];
+    }
+
+    /**
+     * The config is saved as sent. ScaleResource sends the formats as the
+     * app matches them.
+     *
+     * @test
+     */
+    public function the_questionnaire_route_takes_formats_in_any_case_and_without_a_dot()
+    {
+        $config = ['fileUploadOptions' => ['maxFileSize' => 20, 'allowedFormats' => ['PDF', 'jpg']]];
+
+        $response = $this->storeFileUploadQuestionnaire($config)->assertOk();
+        $question = MartSchedule::findOrFail($response->json('schedule.id'))->questions()->firstOrFail();
+
+        $this->assertSame($config, $question->config);
+    }
+
+    /** @test */
+    public function the_questions_route_rejects_a_file_upload_without_formats()
+    {
+        $question = $this->questionOfSchedule2();
+
+        $this->updateToFileUpload($question, ['fileUploadOptions' => ['maxFileSize' => 5]])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['questions.0']);
+
+        $this->assertSame('text', $question->fresh()->type);
+    }
+
+    /**
+     * Posts a questionnaire with one file upload question to the
+     * questionnaire route.
+     */
+    private function storeFileUploadQuestionnaire(array $config): TestResponse
+    {
+        return $this->actingAs($this->user)
+            ->postJson("/projects/{$this->project->id}/questionnaires", [
+                'questionnaire_id' => $this->project->id * 1000 + 501,
+                'name' => 'Files ' . uniqid(),
+                'type' => 'single',
+                'start_date_time' => ['date' => '2025-01-01', 'time' => '09:00'],
+                'show_progress_bar' => true,
+                'show_notifications' => false,
+                'questions' => [[
+                    'text' => 'Upload your screenshot',
+                    'type' => 'file',
+                    'mandatory' => true,
+                    'config' => $config,
+                ]],
+            ]);
+    }
+
+    /**
+     * Turns the question into a file upload question through the questions
+     * route.
+     */
+    private function updateToFileUpload(MartQuestion $question, array $config): TestResponse
+    {
+        return $this->actingAs($this->user)
+            ->putJson("/questionnaires/{$question->schedule_id}/questions", [
+                'questions' => [[
+                    'uuid' => $question->uuid,
+                    'text' => $question->text,
+                    'type' => 'file',
+                    'mandatory' => false,
+                    'config' => $config,
+                ]],
+            ]);
     }
 
     /**

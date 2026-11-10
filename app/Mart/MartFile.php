@@ -137,6 +137,21 @@ class MartFile extends Model
     ];
 
     /**
+     * The extensions a fileUpload question can allow, in the editor's order:
+     * those whose real files pass the content check against
+     * ALLOWED_MIME_TYPES, one upload test each in MartFileUploadTest. Not
+     * .wav or .aac, which sniff as audio/x-wav and audio/x-hx-aac-adts, and
+     * not .svg: an inline SVG can run script on our origin.
+     * FILE_UPLOAD_FORMATS in AddEditQuestionnaireDialog.vue lists the same.
+     */
+    public const FILE_UPLOAD_EXTENSIONS = [
+        '.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.heif',
+        '.pdf',
+        '.mp4', '.mov', '.webm', '.3gp', '.avi',
+        '.mp3', '.m4a', '.ogg', '.flac',
+    ];
+
+    /**
      * Maximum file size in bytes (50MB).
      */
     public const MAX_FILE_SIZE = 50 * 1024 * 1024;
@@ -147,6 +162,22 @@ class MartFile extends Model
     public static function maxSizeInKilobytes(): int
     {
         return (int) (self::MAX_FILE_SIZE / 1024);
+    }
+
+    /**
+     * A fileUpload format as the app matches it: "." plus the lowercased
+     * extension, so " PDF", "pdf" and ".pdf" are all ".pdf". Null for
+     * anything that isn't a string with an extension in it.
+     */
+    public static function normaliseFileFormat(mixed $format): ?string
+    {
+        if (! is_string($format)) {
+            return null;
+        }
+
+        $extension = ltrim(strtolower(trim($format)), '.');
+
+        return $extension === '' ? null : '.' . $extension;
     }
 
     /**
@@ -323,14 +354,19 @@ class MartFile extends Model
     }
 
     /**
-     * Link this file to a MART entry.
+     * Link this file to a MART entry, and to the question it answers when
+     * one is given.
      *
      * @param int $entryId
+     * @param  string|null  $questionUuid  The question the file answers; null keeps the stored one
      * @return bool
      */
-    public function linkToEntry(int $entryId): bool
+    public function linkToEntry(int $entryId, ?string $questionUuid = null): bool
     {
         $this->mart_entry_id = $entryId;
+        if ($questionUuid !== null) {
+            $this->question_uuid = $questionUuid;
+        }
 
         return $this->save();
     }

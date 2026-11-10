@@ -36,6 +36,16 @@ function loadedQuestion(backendQuestion) {
   return dialog.formData.questions[0];
 }
 
+// Opens a saved question, lets the test change it as the researcher would,
+// then saves it again.
+async function savedAfterLoading(backendQuestion, change = () => {}) {
+  const question = loadedQuestion(backendQuestion);
+  change(question);
+  await methods.save.call(dialogWith([question]));
+
+  return window.axios.post.mock.calls[0][1].questions[0];
+}
+
 describe('AddEditQuestionnaireDialog questions', () => {
   beforeEach(() => {
     window.axios = { post: jest.fn().mockResolvedValue({}) };
@@ -395,6 +405,227 @@ describe('AddEditQuestionnaireDialog questions', () => {
       );
       expect(wrapper.find('#randomize-answers-0').exists()).toBe(false);
       expect(wrapper.find('#include-other-0').exists()).toBe(false);
+    });
+  });
+
+  describe('file upload', () => {
+    // The extensions whose real files MartFileUploadTest uploads. No .svg: an
+    // inline SVG can run script on our origin.
+    const SERVER_FORMATS = [
+      '.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.heif',
+      '.pdf',
+      '.mp4', '.mov', '.webm', '.3gp', '.avi',
+      '.mp3', '.m4a', '.ogg', '.flac',
+    ];
+
+    function fileQuestion(fileUploadOptions = {}) {
+      return {
+        type: 'fileUpload',
+        config: { fileUploadOptions: { maxFileSize: 20, allowedFormats: ['.jpg', '.pdf'], ...fileUploadOptions } },
+      };
+    }
+
+    function questionError(fields) {
+      return methods.hasQuestionError.call(dialogWith([formQuestion(fields)]), 0);
+    }
+
+    // isEditMode skips the schedule fields, so only the question is checked.
+    function formIsValid(fields) {
+      return AddEditQuestionnaireDialog.computed.isValid.call({
+        ...dialogWith([formQuestion(fields)]),
+        isEditMode: true,
+      });
+    }
+
+    it('saves as the file type', async () => {
+      const saved = await savedQuestion(fileQuestion());
+
+      expect(saved.type).toBe('file');
+    });
+
+    it('saves the size and the formats as fileUploadOptions', async () => {
+      const saved = await savedQuestion(fileQuestion());
+
+      expect(saved.config).toEqual({ fileUploadOptions: { maxFileSize: 20, allowedFormats: ['.jpg', '.pdf'] } });
+    });
+
+    it('saves the formats in the order of the list', async () => {
+      const saved = await savedQuestion(fileQuestion({ allowedFormats: ['.pdf', '.mp4', '.jpg'] }));
+
+      expect(saved.config.fileUploadOptions.allowedFormats).toEqual(['.jpg', '.pdf', '.mp4']);
+    });
+
+    it('drops a saved format the server does not take', async () => {
+      const saved = await savedQuestion(fileQuestion({ allowedFormats: ['.jpg', '.svg'] }));
+
+      expect(saved.config.fileUploadOptions.allowedFormats).toEqual(['.jpg']);
+    });
+
+    it('restores the type when a saved question is opened', () => {
+      const question = loadedQuestion({ type: 'file', config: fileQuestion().config });
+
+      expect(question.type).toBe('fileUpload');
+    });
+
+    it('restores the size and the formats', () => {
+      const question = loadedQuestion({ type: 'file', config: fileQuestion().config });
+
+      expect(question.config.fileUploadOptions).toEqual({ maxFileSize: 20, allowedFormats: ['.jpg', '.pdf'] });
+    });
+
+    it('starts a new question at 20 MB with every format ticked', () => {
+      const dialog = dialogWith([]);
+      methods.addQuestion.call(dialog);
+
+      expect(dialog.formData.questions[0].config.fileUploadOptions).toEqual({
+        maxFileSize: 20,
+        allowedFormats: SERVER_FORMATS,
+      });
+    });
+
+    it('offers exactly the formats the server takes', async () => {
+      const wrapper = mount(AddEditQuestionnaireDialog, {
+        props: { projectId: 1, nextQuestionnaireId: 1 },
+        global: { stubs: { SchedulePreview: true } },
+      });
+      wrapper.vm.addQuestion();
+      wrapper.vm.formData.questions[0].type = 'fileUpload';
+      await wrapper.vm.$nextTick();
+
+      const offered = wrapper.findAll('input[type="checkbox"]')
+        .map(input => input.element.value)
+        .filter(value => value.startsWith('.'));
+
+      expect(offered).toEqual(SERVER_FORMATS);
+    });
+
+    it('marks a question without a format', () => {
+      expect(questionError(fileQuestion({ allowedFormats: [] }))).toBe(true);
+    });
+
+    it('marks a question without a size', () => {
+      expect(questionError(fileQuestion({ maxFileSize: '' }))).toBe(true);
+    });
+
+    it('marks a size over 50 MB', () => {
+      expect(questionError(fileQuestion({ maxFileSize: 51 }))).toBe(true);
+    });
+
+    it('marks a size under 1 MB', () => {
+      expect(questionError(fileQuestion({ maxFileSize: 0 }))).toBe(true);
+    });
+
+    it('does not mark a question with a size of 50 MB and one format', () => {
+      expect(questionError(fileQuestion({ maxFileSize: 50, allowedFormats: ['.pdf'] }))).toBe(false);
+    });
+
+    it('cannot be saved without a format', () => {
+      expect(formIsValid(fileQuestion({ allowedFormats: [] }))).toBe(false);
+    });
+
+    it('cannot be saved with only a format the server does not take', () => {
+      expect(formIsValid(fileQuestion({ allowedFormats: ['.svg'] }))).toBe(false);
+    });
+
+    it('can be saved with a size and a format', () => {
+      expect(formIsValid(fileQuestion())).toBe(true);
+    });
+
+    // The server takes a size saved as text and formats in another spelling,
+    // so a question saved like that has to open without errors.
+    describe('saved in another spelling', () => {
+      const backendQuestion = {
+        text: 'Upload your screenshot',
+        type: 'file',
+        config: { fileUploadOptions: { maxFileSize: '20', allowedFormats: ['PDF', 'jpg'] } },
+      };
+
+      it('opens with the size as a number', () => {
+        expect(loadedQuestion(backendQuestion).config.fileUploadOptions.maxFileSize).toBe(20);
+      });
+
+      it('opens with each format as the list writes it', () => {
+        expect(loadedQuestion(backendQuestion).config.fileUploadOptions.allowedFormats).toEqual(['.pdf', '.jpg']);
+      });
+
+      it('shows the size and ticks its formats', async () => {
+        const wrapper = mount(AddEditQuestionnaireDialog, {
+          props: { projectId: 1, nextQuestionnaireId: 1, schedule: { id: 7, questions: [backendQuestion] } },
+          global: { stubs: { SchedulePreview: true } },
+        });
+        await wrapper.vm.$nextTick();
+
+        const ticked = wrapper.findAll('input[type="checkbox"]')
+          .filter(input => input.element.value.startsWith('.') && input.element.checked)
+          .map(input => input.element.value);
+
+        expect([wrapper.find('#file_max_size_0').element.value, ticked]).toEqual(['20', ['.jpg', '.pdf']]);
+      });
+
+      it('has no question error', () => {
+        const dialog = dialogWith([loadedQuestion(backendQuestion)]);
+
+        expect(methods.hasQuestionError.call(dialog, 0)).toBe(false);
+      });
+
+      it('saves the size as a number and the formats in list order', async () => {
+        const saved = await savedAfterLoading(backendQuestion);
+
+        expect(saved.config.fileUploadOptions).toEqual({ maxFileSize: 20, allowedFormats: ['.jpg', '.pdf'] });
+      });
+    });
+
+    it('keeps its options when opened and saved', async () => {
+      const config = { fileUploadOptions: { maxFileSize: 10, allowedFormats: ['.png', '.mp4', '.flac'] } };
+
+      const saved = await savedAfterLoading({ type: 'file', config });
+
+      expect(saved.config).toEqual(config);
+    });
+
+    it('starts at 20 MB with every format when another type is switched to it', async () => {
+      const saved = await savedAfterLoading({ type: 'text', config: {} }, question => {
+        question.type = 'fileUpload';
+      });
+
+      expect(saved.config).toEqual({ fileUploadOptions: { maxFileSize: 20, allowedFormats: SERVER_FORMATS } });
+    });
+
+    it('drops its options when switched to another type', async () => {
+      const saved = await savedAfterLoading({ type: 'file', config: fileQuestion().config }, question => {
+        question.type = 'text';
+      });
+
+      expect(saved.config).not.toHaveProperty('fileUploadOptions');
+    });
+
+    it('shows its options when a new question is switched to it', async () => {
+      const wrapper = mount(AddEditQuestionnaireDialog, {
+        props: { projectId: 1, nextQuestionnaireId: 1 },
+        global: { stubs: { SchedulePreview: true } },
+      });
+      wrapper.vm.addQuestion();
+      await wrapper.vm.$nextTick();
+
+      const typeSelect = wrapper.findAll('select').find(select => select.find('option[value="fileUpload"]').exists());
+      await typeSelect.setValue('fileUpload');
+
+      expect(wrapper.find('#file_max_size_0').element.value).toBe('20');
+    });
+
+    it('hides its options when switched to another type', async () => {
+      const wrapper = mount(AddEditQuestionnaireDialog, {
+        props: { projectId: 1, nextQuestionnaireId: 1 },
+        global: { stubs: { SchedulePreview: true } },
+      });
+      wrapper.vm.addQuestion();
+      wrapper.vm.formData.questions[0].type = 'fileUpload';
+      await wrapper.vm.$nextTick();
+
+      const typeSelect = wrapper.findAll('select').find(select => select.find('option[value="fileUpload"]').exists());
+      await typeSelect.setValue('text');
+
+      expect(wrapper.find('#file_max_size_0').exists()).toBe(false);
     });
   });
 

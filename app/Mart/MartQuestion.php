@@ -22,6 +22,10 @@ use Illuminate\Support\Str;
  * - 'textarea': Multi-line text input field
  * - 'one choice': Single selection (radio buttons)
  * - 'multiple choice': Multiple selection (checkboxes)
+ * - 'photo' / 'audio' / 'video': Uploads (sent as photoUpload / audioUpload /
+ *   videoUpload with their *UploadOptions)
+ * - 'file': Any file (sent as fileUpload; config holds fileUploadOptions
+ *   {maxFileSize, allowedFormats})
  *
  * Item Options (stored inside `config`, emitted by QuestionSheetResource as
  * the item's `options` block per martTypes.ts):

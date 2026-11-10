@@ -736,6 +736,7 @@
                       <option value="photoUpload">{{ trans('Photo Upload') }}</option>
                       <option value="audioUpload">{{ trans('Audio Upload') }}</option>
                       <option value="videoUpload">{{ trans('Video Upload') }}</option>
+                      <option value="fileUpload">{{ trans('File Upload') }}</option>
                     </select>
                     <p v-if="question.type === 'display'" class="mt-1 text-xs text-blue-600">
                       {{ trans('This item will show text without requiring an answer (instructions, headers, etc.)') }}
@@ -1122,6 +1123,47 @@
                     </div>
                   </div>
 
+                  <!-- File Upload Options. The app reads maxFileSize (MB) and
+                       allowedFormats, which it matches against the file name's extension. -->
+                  <div v-if="question.type === 'fileUpload'" class="space-y-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <h4 class="text-sm font-medium text-gray-900">{{ trans('File Upload Options') }}</h4>
+                    <div>
+                      <label :for="'file_max_size_' + index" class="block text-sm font-medium text-gray-700">{{ trans('Max file size (MB)') }} *</label>
+                      <input
+                          type="number"
+                          :id="'file_max_size_' + index"
+                          v-model.number="question.config.fileUploadOptions.maxFileSize"
+                          min="1"
+                          :max="maxFileSizeMb"
+                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                          :placeholder="trans('e.g., 20')"
+                      />
+                      <p class="mt-1 text-xs text-gray-500">
+                        {{ trans('From 1 to 50 MB. The app refuses a larger file before it is sent.') }}
+                      </p>
+                    </div>
+                    <div>
+                      <span class="block text-sm font-medium text-gray-700">{{ trans('Allowed formats') }} *</span>
+                      <div v-for="group in fileUploadFormats" :key="group.label" class="mt-2">
+                        <p class="text-xs font-medium text-gray-500">{{ trans(group.label) }}</p>
+                        <div class="mt-1 flex flex-wrap gap-x-4 gap-y-1">
+                          <label v-for="format in group.formats" :key="format" class="inline-flex items-center text-sm text-gray-700">
+                            <input
+                                type="checkbox"
+                                :value="format"
+                                v-model="question.config.fileUploadOptions.allowedFormats"
+                                class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
+                            />
+                            <span class="ml-1">{{ format }}</span>
+                          </label>
+                        </div>
+                      </div>
+                      <p class="mt-2 text-xs text-gray-500">
+                        {{ trans('Only formats the server takes are listed. The app checks the extension of the file name, so tick both .jpg and .jpeg for JPEG files.') }}
+                      </p>
+                    </div>
+                  </div>
+
                   <!-- Jump/Filter Options (radio and checkbox only) -->
                   <div v-if="question.type === 'radio' || question.type === 'checkbox'" class="space-y-3 p-4 bg-purple-50 rounded-lg border border-purple-200">
                     <div class="flex items-center">
@@ -1218,6 +1260,31 @@
 import SchedulePreview from './SchedulePreview.vue';
 import { emitter } from '../../app.js';
 
+// The extensions a file upload question can allow. Must match
+// MartFile::FILE_UPLOAD_EXTENSIONS, in the same order: the questionnaire routes
+// refuse any other, and MartFileUploadTest uploads a real file of each. Left
+// out: .wav and .aac, which the server's content check reads as audio/x-wav and
+// audio/x-hx-aac-adts, and .svg, since an inline SVG can run script on our origin.
+const FILE_UPLOAD_FORMATS = [
+  { label: 'Images', formats: ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.heif'] },
+  { label: 'Documents', formats: ['.pdf'] },
+  { label: 'Video', formats: ['.mp4', '.mov', '.webm', '.3gp', '.avi'] },
+  { label: 'Audio', formats: ['.mp3', '.m4a', '.ogg', '.flac'] },
+];
+const ALL_FILE_UPLOAD_FORMATS = FILE_UPLOAD_FORMATS.flatMap(group => group.formats);
+
+// A format as the app matches it, like MartFile::normaliseFileFormat: "." plus
+// the lowercased extension. Null for anything without an extension in it.
+function normaliseFileFormat(format) {
+  if (typeof format !== 'string') return null;
+  const extension = format.trim().toLowerCase().replace(/^\.+/, '');
+
+  return extension === '' ? null : `.${extension}`;
+}
+
+// MartFile::MAX_FILE_SIZE, the most the server takes.
+const MAX_FILE_SIZE_MB = 50;
+
 export default {
   name: 'AddEditQuestionnaireDialog',
 
@@ -1249,6 +1316,8 @@ export default {
       saving: false,
       showFormula: false,
       saveAttempted: false,
+      fileUploadFormats: FILE_UPLOAD_FORMATS,
+      maxFileSizeMb: MAX_FILE_SIZE_MB,
       formData: {
         questionnaire_id: this.nextQuestionnaireId,
         name: '',
@@ -1301,6 +1370,10 @@ export default {
         if (!question.text || !question.type) return false;
 
         if (this.hasOptions(question.type) && this.optionCount(question) < 2) {
+          return false;
+        }
+
+        if (question.type === 'fileUpload' && this.fileUploadLimitsMissing(question)) {
           return false;
         }
       }
@@ -1528,6 +1601,9 @@ export default {
               maxFileSize: config.videoUploadOptions?.maxFileSize ?? null,
               maxVideoLength: config.videoUploadOptions?.maxVideoLength ?? null,
             },
+            fileUploadOptions: config.fileUploadOptions
+              ? this.loadedFileUploadOptions(config.fileUploadOptions)
+              : this.defaultFileUploadOptions(),
           }
         };
       });
@@ -1641,10 +1717,10 @@ export default {
 
     // Map backend/DB types to form types.
     // DB stores: number, range, range values, text, textarea, one choice,
-    //            multiple choice, display, photo, audio, video.
+    //            multiple choice, display, photo, audio, video, file.
     // Form uses: number, range, rangeValues, text, textarea, radio, checkbox,
-    //            display, photoUpload, audioUpload, videoUpload (form values
-    //            match the mobile API contract).
+    //            display, photoUpload, audioUpload, videoUpload, fileUpload
+    //            (form values match the mobile API contract).
     mapBackendTypeToFormType(backendType) {
       const mapping = {
         'text': 'text',
@@ -1658,13 +1734,14 @@ export default {
         'photo': 'photoUpload',
         'audio': 'audioUpload',
         'video': 'videoUpload',
+        'file': 'fileUpload',
       };
       return mapping[backendType] || 'text';
     },
 
     // Map form types to backend/DB types.
     // DB stores: number, range, range values, text, textarea, one choice,
-    //            multiple choice, display, photo, audio, video.
+    //            multiple choice, display, photo, audio, video, file.
     // Mobile API expects the form values verbatim (e.g. `photoUpload` for a photo
     // question); the mapping below is just the storage half of the round-trip.
     mapFormTypeToBackendType(formType) {
@@ -1680,6 +1757,7 @@ export default {
         'photoUpload': 'photo',
         'audioUpload': 'audio',
         'videoUpload': 'video',
+        'fileUpload': 'file',
       };
       return mapping[formType] || 'text';
     },
@@ -1732,8 +1810,47 @@ export default {
             maxFileSize: null,
             maxVideoLength: null,
           },
+          fileUploadOptions: this.defaultFileUploadOptions(),
         }
       });
+    },
+
+    // A new file upload question takes every format the server takes, up
+    // to 20 MB: Directus project 1's size, and the upload body is base64,
+    // about 1.37 times the file.
+    defaultFileUploadOptions() {
+      return { maxFileSize: 20, allowedFormats: [...ALL_FILE_UPLOAD_FORMATS] };
+    },
+
+    // Saved options in the form's terms. The server also takes a size saved
+    // as text and formats in another spelling, such as "PDF", so the size
+    // becomes a number and each format is written the way the list writes it.
+    loadedFileUploadOptions(options) {
+      const size = options.maxFileSize;
+      const isNumericText = typeof size === 'string' && size.trim() !== '' && !Number.isNaN(Number(size));
+      const formats = (options.allowedFormats || []).map(normaliseFileFormat).filter(format => format !== null);
+
+      return {
+        maxFileSize: isNumericText ? Number(size) : size ?? '',
+        allowedFormats: [...new Set(formats)],
+      };
+    },
+
+    // The offered formats among these, in the list's order. Any other
+    // (such as .svg) is dropped: the server refuses it.
+    offeredFileFormats(formats) {
+      return ALL_FILE_UPLOAD_FORMATS.filter(format => (formats || []).includes(format));
+    },
+
+    // Without a size and a format the app takes any file. When the server
+    // refuses it, the app stops the whole submit with a message that is
+    // usually off screen.
+    fileUploadLimitsMissing(question) {
+      const options = question.config?.fileUploadOptions || {};
+      const size = options.maxFileSize;
+
+      return typeof size !== 'number' || size < 1 || size > MAX_FILE_SIZE_MB ||
+          this.offeredFileFormats(options.allowedFormats).length === 0;
     },
 
     removeQuestion(index) {
@@ -1845,6 +1962,13 @@ export default {
               maxVideoLength: q.config.videoUploadOptions.maxVideoLength ?? null,
               maxFileSize: q.config.videoUploadOptions.maxFileSize ?? null,
             };
+          } else if (q.type === 'fileUpload') {
+            // ScaleResource sends both as fileUploadOptions, without the
+            // fileType from martTypes.ts, which the app never reads.
+            config.fileUploadOptions = {
+              maxFileSize: q.config.fileUploadOptions.maxFileSize,
+              allowedFormats: this.offeredFileFormats(q.config.fileUploadOptions.allowedFormats),
+            };
           }
 
           if (this.hasDefaultValue(q.type)) {
@@ -1955,6 +2079,10 @@ export default {
       if (!question.text || !question.type) return true;
 
       if (this.hasOptions(question.type) && this.optionCount(question) < 2) {
+        return true;
+      }
+
+      if (question.type === 'fileUpload' && this.fileUploadLimitsMissing(question)) {
         return true;
       }
 

@@ -38,6 +38,7 @@ MART enables researchers to:
 | `photoUpload` | Camera/gallery photo |
 | `audioUpload` | Audio recording |
 | `videoUpload` | Video recording |
+| `fileUpload` | Any file, within a size and a list of formats |
 
 ### Page Types
 

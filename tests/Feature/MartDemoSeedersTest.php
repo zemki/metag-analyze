@@ -30,13 +30,13 @@ use Tests\TestCase;
  */
 class MartDemoSeedersTest extends TestCase
 {
-    private const EDITOR_TYPES = ['number', 'range', 'range values', 'text', 'textarea', 'one choice', 'multiple choice', 'display', 'photo', 'audio', 'video'];
+    private const EDITOR_TYPES = ['number', 'range', 'range values', 'text', 'textarea', 'one choice', 'multiple choice', 'display', 'photo', 'audio', 'video', 'file'];
 
     /** The scale type the app gets for each question type. */
     private const APP_SCALE_TYPES = [
         'number' => 'number', 'range' => 'range', 'range values' => 'rangeValues', 'text' => 'text', 'textarea' => 'textarea',
         'one choice' => 'radio', 'multiple choice' => 'checkbox',
-        'photo' => 'photoUpload', 'audio' => 'audioUpload', 'video' => 'videoUpload',
+        'photo' => 'photoUpload', 'audio' => 'audioUpload', 'video' => 'videoUpload', 'file' => 'fileUpload',
     ];
 
     private const DEMO_PROJECTS = ['Daily Wellbeing Tracker', 'Workplace Stress Research', 'Social Media & Mood Study', 'ESM Demo - Consultable Entries'];

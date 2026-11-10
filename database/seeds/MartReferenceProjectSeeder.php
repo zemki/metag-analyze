@@ -26,7 +26,6 @@ use Illuminate\Support\Str;
  * Questions carry the config the editor saves (AddEditQuestionnaireDialog's
  * save() and MartQuestionnaireController::store). Items the editor can't build
  * yet get the nearest stand-in, so the item order stays the same:
- *  - fileUpload (gap 2) becomes photo upload with file selection
  *  - an item with a scale but no item ID (gap 7) becomes text only
  * posterUrl and randomPositionWithinQuestionnaire (gap 9) are left out until
  * the editor can set them. MartReferenceParityTest lists each difference.
@@ -378,11 +377,14 @@ class MartReferenceProjectSeeder extends Seeder
                     'quality' => $options['quality'] ?? null,
                 ]], $scale)];
 
-            case 'fileUpload': // Gap 2: photo upload with file selection until the type exists.
-                return ['photo', $this->withBehaviour(['photoUploadOptions' => [
-                    'allowFileSelection' => true,
-                    'allowEditing' => false,
-                    'quality' => null,
+            case 'fileUpload':
+                // The editor doesn't offer .svg (an inline SVG can run script
+                // on our origin), so the seeded question leaves it out too.
+                $options = $scale['fileUploadOptions'] ?? [];
+
+                return ['file', $this->withBehaviour(['fileUploadOptions' => [
+                    'maxFileSize' => $options['maxFileSize'] ?? null,
+                    'allowedFormats' => array_values(array_diff($options['allowedFormats'] ?? [], ['.svg'])),
                 ]], $scale)];
 
             case 'audioUpload':

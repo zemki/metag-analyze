@@ -281,6 +281,7 @@ class MartApiController extends Controller
 
             // Step 2: Create MART answers for each question
             $questions = $this->questionsInItemOrder($schedule);
+            // File UUIDs to link, by the UUID of the question they answer.
             $fileIdsToLink = [];
 
             foreach ($request->answers as $itemId => $answerValue) {
@@ -288,10 +289,11 @@ class MartApiController extends Controller
 
                 if ($question) {
                     // Check if this is a file-type answer (contains file UUIDs)
-                    // File answers are arrays of UUIDs for upload-type questions.
-                    // The editor stores these types as photo / audio / video; the
+                    // The app sends [fileUrl, fileId] for upload-type questions,
+                    // and only the bare UUID matches below. The editor stores
+                    // these types as photo / audio / video / file; the
                     // photoUpload names only exist in the API payload.
-                    if (in_array($question->type, ["photo", "audio", "video"], true)) {
+                    if (in_array($question->type, ['photo', 'audio', 'video', 'file'], true)) {
                         // Collect file IDs to link to entry
                         $fileIds = is_array($answerValue)
                             ? $answerValue
@@ -301,7 +303,7 @@ class MartApiController extends Controller
                                 is_string($fileId) &&
                                 preg_match('/^[0-9a-f-]{36}$/i', $fileId)
                             ) {
-                                $fileIdsToLink[] = $fileId;
+                                $fileIdsToLink[$question->uuid][] = $fileId;
                             }
                         }
                     }
@@ -317,19 +319,22 @@ class MartApiController extends Controller
                 }
             }
 
-            // Step 3: Link uploaded files to the entry
-            if (!empty($fileIdsToLink)) {
+            // Step 3: Link uploaded files to the entry and their question
+            $linkErrors = [];
+            foreach ($fileIdsToLink as $questionUuid => $fileIds) {
                 $linkResults = MartFileController::linkFilesToEntry(
-                    $fileIdsToLink,
+                    $fileIds,
                     $martEntry->id,
                     $case->id,
+                    $questionUuid,
                 );
-                if (!empty($linkResults["errors"])) {
-                    \Log::warning("Some files could not be linked to entry", [
-                        "entry_id" => $martEntry->id,
-                        "errors" => $linkResults["errors"],
-                    ]);
-                }
+                $linkErrors = array_merge($linkErrors, $linkResults['errors']);
+            }
+            if (! empty($linkErrors)) {
+                \Log::warning('Some files could not be linked to entry', [
+                    'entry_id' => $martEntry->id,
+                    'errors' => $linkErrors,
+                ]);
             }
 
             DB::connection("mart")->commit();

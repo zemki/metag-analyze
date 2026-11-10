@@ -113,8 +113,7 @@ Interactive docs: `/docs/api` (Scramble + Stoplight), HTTP Basic auth via `API_D
 | `multiple choice` | `checkbox` | `checkboxOptions`, "other" works the same way |
 | `range values` | `rangeValues` | `rangeValueOptions` [{value, text}] from `config.options`, values from 1. A blank label (stored as null) is sent as `""`. No "other", no jump. At least 2 options, checked on store and update |
 | `photo` / `audio` / `video` | `photoUpload` / `audioUpload` / `videoUpload` | optional `*UploadOptions` passed through |
-
-Not implemented yet: `fileUpload`.
+| `file` | `fileUpload` | `fileUploadOptions` {maxFileSize (MB), allowedFormats} from config. Size sent as a number; formats sent lowercase with one leading dot, once; keys without a value left out; no `fileType`. On store and update: a size from 1 to 50 and at least one format, each from `MartFile::FILE_UPLOAD_EXTENSIONS` (any case, dot optional, no SVG) |
 
 Question-level options (stored in `config`, emitted under `items[].options`): `randomizationGroupId`, `randomizeAnswers` (the editor saves it for radio and checkbox only), `randomPositionWithinQuestionnaire`, `itemGroup`. `noValueAllowed` is derived (`! is_mandatory`, always true for `display`). `posterUrl` is stored in `config` too but emitted on the item. `timer` and `jump` go under scale `options`. Question text may contain HTML. `image_url` / `video_url` are columns and appear as `imageUrl` / `videoUrl`.
 
@@ -132,7 +131,7 @@ Editing a question writes a `mart_question_history` row and bumps `version`; ans
 - The web entry routes (`/cases/{case}/entries`) refuse MART cases with 403. Case lists build a MART case's `entries` from `mart_entries`, so those rows carry `mart_entries` ids, not `entries` ids.
 - `device-infos` and `stats` return 403 when `userId` is not the bearer token's account.
 - Push: `POST /api/mobile/device-token` (or `fcmToken` on `device-infos`) stores FCM tokens in `users.deviceID`, newest 10. `notification:cleanID` clears them once the latest case has ended.
-- Files: `POST /api/mobile/cases/{case}/files` accepts multipart (`file`) or JSON base64. MIME is detected from content and checked against `MartFile::ALLOWED_MIME_TYPES`; 50 MB max; stored encrypted under `storage/app/mart/`. Upload first, then reference the returned `file_id` in the answer.
+- Files: `POST /api/mobile/cases/{case}/files` accepts multipart (`file`) or JSON base64. Only the case's owner may upload (403 otherwise). MIME is detected from content and checked against `MartFile::ALLOWED_MIME_TYPES`; `file_type` `file` (the app's fileUpload) or none means the bucket is inferred; 50 MB max; stored encrypted under `storage/app/mart/`. The app uploads with the zero `question_uuid` and answers `[fileUrl, file_id]`; the submit links the case's file to the entry and sets its `question_uuid` to the answered question.
 
 ## Admin and settings
 - Filament panel at `/admin`. Settings keys: `mart_enabled`, `max_studies_per_user`, `api_v2_cutoff_date`, `mart_max_login_attempts`, `mart_lockout_duration`. Read with `Setting::get('key', $default)`.

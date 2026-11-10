@@ -291,12 +291,15 @@ per-participant data when `participant_id` is provided.
 | `photoUpload` | `photo` | participant uploads via `POST /api/mobile/cases/{caseId}/files`, then references the returned `file_id` in the answer |
 | `audioUpload` | `audio` | same flow as `photoUpload` |
 | `videoUpload` | `video` | same flow as `photoUpload` |
+| `fileUpload` | `file` | any file, within `fileUploadOptions`; same flow as `photoUpload` |
 | `display` | `display` | non-input element (instructions, headers) |
 
-For upload types the answer value is the `file_id` (UUID) returned by the file
-upload endpoint; the mobile must upload the bytes first, then submit the entry
-referencing the resulting `file_id`. See the "Upload File" / "Retrieve File"
-section below.
+For upload types the mobile uploads the bytes first, then submits the entry. The app's
+answer is `[fileUrl, file_id]`: the `fileUrl` from the upload response with the app's API
+base in front, then the `file_id` (UUID). The submit links the file whose UUID is in the
+answer to the entry, if it belongs to the submitting case and isn't linked yet, and sets its `question_uuid` to
+the answered question, replacing the zero UUID the app uploads with. This works the same for
+every upload type. See the "File Upload" / "Retrieve File" sections below.
 
 When a researcher configures upload-specific options in the admin (e.g.
 `allowFileSelection`, `quality` for photo; `maxFileSize`, `maxAudioLength`
@@ -305,7 +308,28 @@ under `scaleOptions.photoUploadOptions` / `audioUploadOptions` /
 `videoUploadOptions` respectively. The full field set per upload type is
 defined in `martTypes.ts` — the API passes whatever the researcher set
 through verbatim; unset fields are omitted, and the mobile applies its own
-defaults.
+defaults. `fileUploadOptions` is the exception, see "File uploads" below.
+
+**File uploads:** a `fileUpload` scale carries `fileUploadOptions` with `maxFileSize` (MB)
+and `allowedFormats`. The app checks the picked file before it uploads: its size against
+`maxFileSize`, and `"."` plus its lowercased extension against `allowedFormats`, which is
+also the picker's accept list. So the API sends `maxFileSize` as a number and each format
+lowercase with one leading dot, listed once, and leaves out a key without a value: the app
+reads a missing one as no limit. `martTypes.ts` also names a `fileType`, which the app never
+reads, so it isn't sent. The questionnaire routes reject a `file` question with a 422 unless
+`maxFileSize` is from 1 to 50 and `allowedFormats` lists at least one format, each one from
+`MartFile::FILE_UPLOAD_EXTENSIONS` (any case, with or without the dot; a blank entry is
+refused). Otherwise the app takes a file the upload endpoint refuses, and the app stops the
+whole submit. Those are the extensions whose files the server takes, and the ones the editor
+offers. `.svg` is left out because an inline SVG can run script on our origin, and `.wav` and
+`.aac` because the content check doesn't take them.
+
+```json
+{
+  "type": "fileUpload",
+  "fileUploadOptions": { "maxFileSize": 20, "allowedFormats": [".jpg", ".jpeg", ".pdf"] }
+}
+```
 
 **"Other" options:** there's no separate type. An "other" option is the last entry in
 `radioOptions` or `checkboxOptions`, with the value `"text"` and the researcher's label, or
@@ -424,7 +448,8 @@ POST /api/mobile/cases/{caseId}/submit
 ```
 `answers` is an **object** keyed by `itemId` (1-based question index), not an array.
 Values can be numbers (scale), arrays (multiple choice), strings (text), or file UUIDs
-returned from File Upload. The app sends every value as an array, such as `[1]`. An "other"
+returned from File Upload. The app sends every value as an array, such as `[1]`. An upload
+answer is `[fileUrl, file_id]`, stored as sent; the export shows both, comma-separated. An "other"
 answer holds the option's value and the typed text, such as `["text", "typed words"]`, and the
 export shows it as `text, typed words`. A `rangeValues` answer is the chosen option's `value`:
 a number such as `[2]` when the participant keeps the default, and a string such as `["2"]`
@@ -582,11 +607,25 @@ Content-Type: multipart/form-data
 - `file` — plain base64, no `data:` URI prefix
 - `file_type` is optional; inferred from detected MIME when omitted
 
+The app uses mode B. It reads the file as a `data:` URL and sends what follows the first
+comma, with `question_uuid` `"00000000-0000-0000-0000-000000000000"` and `file_type` from
+the scale type: `photo`, `video`, `audio`, or `file` for a `fileUpload` question. When an
+upload fails, the app sets "File upload failed." on that upload item and stops the submit, so
+no answer of the questionnaire is sent. The message is usually off screen, and a retry fails
+the same way.
+
 **Common rules (both modes):**
-- `file_type` — one of `photo`, `video`, `audio`, `document`
-- `question_uuid` *(optional)* — link the file to a specific question; can also be linked
-  later when the submission is sent
-- Max size: 50MB
+- Only the participant who owns the case can upload to it: another account gets `403`
+- `file_type` — one of `photo`, `video`, `audio`, `document`, or `file`, which names no
+  bucket and is inferred from the detected MIME like a missing `file_type`
+- `question_uuid` *(optional)* — stored as sent. The submit that links the file replaces it
+  with the question the answer belongs to
+- Max size: 50MB, checked on the decoded file. That's also the largest `maxFileSize` a
+  `fileUpload` question can have, which the app checks before it uploads. Whether the server
+  takes a file that size depends on its `post_max_size`, `memory_limit` and nginx body limit,
+  because the base64 body is about 1.37 times the file. Measured without the framework, a
+  20 MB file is a 27 MB body and peaks at about 180 MB of memory; a 50 MB file is a 68 MB body
+  and about 440 MB.
 - Files are validated by actual content (not declared MIME) and encrypted at rest
 - When a MIME type maps to multiple buckets (e.g. `image/jpeg` → `photo` or `document`),
   the first match wins in declaration order (`photo` wins over `document`). Send
@@ -614,11 +653,13 @@ Files not matching the whitelist are rejected with `422` and logged.
 }
 ```
 Use `file_id` (UUID) in questionnaire answer values for file-type questions.
-Use `fileUrl` to retrieve the file via `GET /api/mobile/files/{file_id}`.
+Use `fileUrl` to retrieve the file via `GET /api/mobile/files/{file_id}`. `fileUrl` is a
+path: the app puts its API base in front of it.
 
 **Errors:**
 - `400` — Case does not belong to a MART project, or base64 decode failed (base64 mode only)
 - `401` — Missing or invalid Bearer token
+- `403` — The Bearer token's account does not own the case
 - `422` — Validation error, or file content is not in the allowed MIME whitelist,
   or file exceeds 50MB
 - `500` — File storage failure

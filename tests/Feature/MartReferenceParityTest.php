@@ -56,16 +56,18 @@ class MartReferenceParityTest extends TestCase
         'questionnaires.1.items.28.scale.rangeOptions.defaultValue: only in MART (55)',
         // Gap 9: the editor can't set posterUrl or randomPositionWithinQuestionnaire.
         'questionnaires.1.items.32.posterUrl: only in Directus ("https://example.test/assets/media-3")',
-        // Gap 2: fileUpload, seeded as photo upload.
-        'questionnaires.1.items.34.scale: Directus "fileUpload", MART "photoUpload"',
-        'questionnaires.1.items.35.scale: Directus "fileUpload", MART "photoUpload"',
+        // Not offered by design: Directus scale 501 allows .svg, which stays
+        // out because an inline SVG can run script on our origin. The scale
+        // is used by six items, hence six lines.
+        'questionnaires.1.items.34.scale.fileUploadOptions.allowedFormats: Directus [".jpg",".jpeg",".pdf",".svg",".mp4"], MART [".jpg",".jpeg",".pdf",".mp4"]',
+        'questionnaires.1.items.35.scale.fileUploadOptions.allowedFormats: Directus [".jpg",".jpeg",".pdf",".svg",".mp4"], MART [".jpg",".jpeg",".pdf",".mp4"]',
         // Gap 9.
         'questionnaires.1.items.41.options.randomPositionWithinQuestionnaire: Directus true, MART false',
-        // Gap 2.
-        'questionnaires.5.items.2.scale: Directus "fileUpload", MART "photoUpload"',
-        'questionnaires.5.items.3.scale: Directus "fileUpload", MART "photoUpload"',
-        'questionnaires.6.items.6.scale: Directus "fileUpload", MART "photoUpload"',
-        'questionnaires.7.items.5.scale: Directus "fileUpload", MART "photoUpload"',
+        // .svg, see above.
+        'questionnaires.5.items.2.scale.fileUploadOptions.allowedFormats: Directus [".jpg",".jpeg",".pdf",".svg",".mp4"], MART [".jpg",".jpeg",".pdf",".mp4"]',
+        'questionnaires.5.items.3.scale.fileUploadOptions.allowedFormats: Directus [".jpg",".jpeg",".pdf",".svg",".mp4"], MART [".jpg",".jpeg",".pdf",".mp4"]',
+        'questionnaires.6.items.6.scale.fileUploadOptions.allowedFormats: Directus [".jpg",".jpeg",".pdf",".svg",".mp4"], MART [".jpg",".jpeg",".pdf",".mp4"]',
+        'questionnaires.7.items.5.scale.fileUploadOptions.allowedFormats: Directus [".jpg",".jpeg",".pdf",".svg",".mp4"], MART [".jpg",".jpeg",".pdf",".mp4"]',
     ];
 
     /** What the app assumes when Directus leaves a key out. */
@@ -75,6 +77,9 @@ class MartReferenceParityTest extends TestCase
         'photoUploadOptions' => ['allowFileSelection' => false, 'allowEditing' => false],
         'videoUploadOptions' => ['allowFileSelection' => false],
         'audioUploadOptions' => ['allowFileSelection' => false],
+        // A missing maxFileSize or allowedFormats means no limit, the same as
+        // leaving the key out.
+        'fileUploadOptions' => [],
     ];
 
     private const PAGE_REFERENCES = [
@@ -208,7 +213,7 @@ class MartReferenceParityTest extends TestCase
 
     private function directusScale(array $scale): array
     {
-        foreach (['photoUploadOptions', 'videoUploadOptions', 'audioUploadOptions'] as $key) {
+        foreach (['photoUploadOptions', 'videoUploadOptions', 'audioUploadOptions', 'fileUploadOptions'] as $key) {
             if (isset($scale[$key])) {
                 unset($scale[$key]['fileRequired']);
                 $scale[$key] += self::APP_DEFAULTS[$key];
