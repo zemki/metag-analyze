@@ -182,8 +182,14 @@ class MartQuestion extends Model
 
         // Update question with new data
         $this->text = $newData['text'] ?? $this->text;
-        $this->image_url = $newData['image_url'] ?? $this->image_url;
-        $this->video_url = $newData['video_url'] ?? $this->video_url;
+        // A URL sent as null clears it (the editor sends null for a cleared
+        // field); a URL left out is kept.
+        if (array_key_exists('image_url', $newData)) {
+            $this->image_url = $newData['image_url'];
+        }
+        if (array_key_exists('video_url', $newData)) {
+            $this->video_url = $newData['video_url'];
+        }
         $this->type = $newData['type'] ?? $this->type;
         $this->config = $newData['config'] ?? $this->config;
         $this->is_mandatory = $newData['is_mandatory'] ?? $this->is_mandatory;

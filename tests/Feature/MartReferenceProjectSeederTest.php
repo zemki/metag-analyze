@@ -141,6 +141,22 @@ class MartReferenceProjectSeederTest extends TestCase
         $this->assertSame(['display', []], [$payload['type'], $payload['config']]);
     }
 
+    /**
+     * The editor saves a poster only with a video. No item in the current
+     * fixtures has a poster without one.
+     *
+     * @test
+     */
+    public function a_poster_without_a_video_is_left_out_as_the_editor_does()
+    {
+        $item = ['itemId' => null, 'scaleId' => null, 'text' => 'Read this', 'posterUrl' => 'https://example.test/poster.jpg'];
+
+        $payload = (new \ReflectionMethod(MartReferenceProjectSeeder::class, 'questionPayload'))
+            ->invoke(new MartReferenceProjectSeeder, $item, []);
+
+        $this->assertArrayNotHasKey('posterUrl', $payload['config']);
+    }
+
     /** @test */
     public function the_fixtures_hold_no_personal_data()
     {

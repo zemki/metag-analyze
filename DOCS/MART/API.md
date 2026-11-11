@@ -423,12 +423,26 @@ values come from the question's configuration.
 |---|---|---|
 | `randomizationGroupId` | `null` | Groups questions for randomized presentation |
 | `randomizeAnswers` | `false` | Shuffles the answer options. The app and the editor use it for `radio` and `checkbox` only. |
-| `randomPositionWithinQuestionnaire` | `false` | Randomizes the item's position |
+| `randomPositionWithinQuestionnaire` | `false` | The app moves the item to a random place. From `config.randomPositionWithinQuestionnaire`, which the editor saves only when ticked. See below. |
 | `itemGroup` | `null` | String. Items in a group show together on one page. |
 | `noValueAllowed` | | The inverse of "mandatory": `true` for optional questions. Always `true` for `display` items. |
 
+**Random position:** the app reads `randomPositionWithinQuestionnaire` only for an item without a
+`randomizationGroupId`, and not for the first such item right after a randomization group, which
+stays in place. An item in a group is shuffled within its group instead; the editor shows a hint
+when both are set. The app takes the moved items out, then puts them back one at a time, each at
+a random index from 1 to the list's current length minus 1: never first, and never last while at
+least two other items stay in place. Afterwards, a flagged item whose two neighbours share an
+`itemGroup` (both empty counts) takes their `itemGroup`. Answers stay keyed by `itemId`. The
+questionnaire routes take only `true`, `false` or `null` in the config, with a 422 otherwise.
+
 An item can also carry `imageUrl`, `videoUrl` and `posterUrl` next to `options`. They're left
-out when empty.
+out when empty. `imageUrl` and `videoUrl` come from the `image_url` and `video_url` columns,
+`posterUrl` from `config.posterUrl`. The app shows the poster on a video file until it plays, and
+not on a YouTube or Vimeo link, which it embeds. The editor offers the poster only with a video
+URL and drops it when the video URL is cleared. The questionnaire routes check it like
+`image_url` and `video_url`: a URL of at most 2048 characters, or a 422. On the questions route,
+an `image_url` or `video_url` sent as null clears the column.
 
 **Scale IDs:** the app looks a scale up by `scaleId` over the whole `scales` list, so an id
 never repeats across questionnaires. It's `questionnaireId * 1000 + index + 1`, where `index`

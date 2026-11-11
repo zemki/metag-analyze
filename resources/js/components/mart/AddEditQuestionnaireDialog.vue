@@ -672,6 +672,20 @@
                         {{ trans('Video shown above the question') }}
                       </p>
                     </div>
+                    <!-- Saved only with a video: the app shows it on the video. -->
+                    <div v-if="question.videoUrl && question.videoUrl.trim()">
+                      <label :for="'poster-url-' + index" class="block text-sm font-medium text-gray-700">{{ trans('Poster image URL (Optional)') }}</label>
+                      <input
+                          type="url"
+                          :id="'poster-url-' + index"
+                          v-model="question.posterUrl"
+                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                          :placeholder="trans('https://example.com/poster.jpg')"
+                      />
+                      <p class="mt-1 text-xs text-gray-500">
+                        {{ trans('Still image shown until the video plays. Not used for YouTube or Vimeo links.') }}
+                      </p>
+                    </div>
                   </div>
 
                   <!-- Randomization Group -->
@@ -686,6 +700,33 @@
                     />
                     <p class="mt-1 text-xs text-gray-500">
                       {{ trans('Items with same group number will be randomized together. Leave empty for no randomization.') }}
+                    </p>
+                  </div>
+
+                  <!-- Random Position Within Questionnaire -->
+                  <div>
+                    <div class="flex items-center">
+                      <input
+                          type="checkbox"
+                          :id="'random-position-' + index"
+                          v-model="question.randomPositionWithinQuestionnaire"
+                          class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
+                      />
+                      <label :for="'random-position-' + index" class="ml-2 block text-sm text-gray-700">
+                        {{ trans('Random position within questionnaire') }}
+                      </label>
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500">
+                      {{ trans('The app moves this item to a random place between the first and the last item.') }}
+                    </p>
+                    <!-- The app reads the random position only for an item
+                         without a randomization group. -->
+                    <p
+                        v-if="question.randomPositionWithinQuestionnaire && question.randomizationGroupId"
+                        :id="'random-position-hint-' + index"
+                        class="mt-1 text-xs text-amber-700"
+                    >
+                      {{ trans('The app ignores the random position of an item in a randomization group: it shuffles the item within its group instead.') }}
                     </p>
                   </div>
 
@@ -1582,6 +1623,8 @@ export default {
           text: q.text || '',
           imageUrl: q.image_url || '',
           videoUrl: q.video_url || '',
+          // Unlike the image and video URLs, the poster lives in config.
+          posterUrl: config.posterUrl || '',
           type: this.mapBackendTypeToFormType(q.type) || '',
           mandatory: q.is_mandatory !== undefined ? q.is_mandatory : true,
           // These live in config, same as includeOtherOption below. They used
@@ -1589,6 +1632,7 @@ export default {
           // silently reset them.
           randomizationGroupId: config.randomizationGroupId || null,
           randomizeAnswers: config.randomizeAnswers || false,
+          randomPositionWithinQuestionnaire: !!config.randomPositionWithinQuestionnaire,
           includeOtherOption: config.includeOtherOption || false,
           otherOptionLabel: config.otherOptionLabel || '',
           otherTextType: config.otherTextType || 'text',
@@ -1801,10 +1845,12 @@ export default {
         text: '',
         imageUrl: '',
         videoUrl: '',
+        posterUrl: '',
         type: '',
         mandatory: false,
         randomizationGroupId: null,
         randomizeAnswers: false,
+        randomPositionWithinQuestionnaire: false,
         includeOtherOption: false,
         otherOptionLabel: '',
         otherTextType: 'text',
@@ -2060,8 +2106,16 @@ export default {
           if (q.randomizeAnswers && (q.type === 'radio' || q.type === 'checkbox')) {
             config.randomizeAnswers = true;
           }
+          if (q.randomPositionWithinQuestionnaire) {
+            config.randomPositionWithinQuestionnaire = true;
+          }
           if (q.itemGroup) {
             config.itemGroup = String(q.itemGroup);
+          }
+          // The app shows the poster on the video, so it goes with it. Trimmed
+          // because the server turns a blank video URL into null.
+          if (q.videoUrl?.trim() && q.posterUrl?.trim()) {
+            config.posterUrl = q.posterUrl;
           }
 
           // No noValueAllowed here: `mandatory` already carries it and lands in

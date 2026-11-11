@@ -25,9 +25,8 @@ use Illuminate\Support\Str;
  *
  * Questions carry the config the editor saves (AddEditQuestionnaireDialog's
  * save() and MartQuestionnaireController::store), one per Directus item, so
- * the item order stays the same. posterUrl and
- * randomPositionWithinQuestionnaire (gap 9) are left out until the editor can
- * set them. MartReferenceParityTest lists each difference.
+ * the item order stays the same. MartReferenceParityTest lists each
+ * difference.
  *
  * Every account gets a random password, shown once. An account that already
  * exists keeps its password and its roles.
@@ -316,8 +315,15 @@ class MartReferenceProjectSeeder extends Seeder
         if (! empty($itemOptions['randomizeAnswers'])) {
             $config['randomizeAnswers'] = true;
         }
+        if (! empty($itemOptions['randomPositionWithinQuestionnaire'])) {
+            $config['randomPositionWithinQuestionnaire'] = true;
+        }
         if (! empty($itemOptions['itemGroup'])) {
             $config['itemGroup'] = (string) $itemOptions['itemGroup'];
+        }
+        // The editor saves a poster only with a video.
+        if (! empty($item['videoUrl']) && ! empty($item['posterUrl'])) {
+            $config['posterUrl'] = $item['posterUrl'];
         }
 
         return [

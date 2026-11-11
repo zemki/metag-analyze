@@ -69,8 +69,10 @@ How MART API types map to database storage.
 | `videoUrl` | `mart_questions.config->video_url` | JSON |
 | `options.randomizationGroupId` | `mart_questions.config->randomization_group_id` | JSON |
 | `options.randomizeAnswers` | `mart_questions.config->randomize_answers` | JSON |
+| `options.randomPositionWithinQuestionnaire` | `mart_questions.config->randomPositionWithinQuestionnaire` | JSON, `true`, `false` or `null` (checked on save); missing or `null` means `false` |
 | `options.noValueAllowed` | `!mart_questions.is_mandatory` | Inverse |
 | `options.itemGroup` | `mart_questions.config->item_group` | JSON |
+| `posterUrl` | `mart_questions.config->posterUrl` | JSON, a URL of at most 2048 characters (checked on save); the editor saves it only with a video; left out when empty |
 
 ## Scale (Question Type Config)
 

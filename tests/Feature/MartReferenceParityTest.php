@@ -51,16 +51,11 @@ class MartReferenceParityTest extends TestCase
         'questionnaires.1.items.18.scale.textOptions.type: only in MART ("text")',
         // Sent by MART only: martTypes.ts requires rangeOptions.defaultValue.
         'questionnaires.1.items.28.scale.rangeOptions.defaultValue: only in MART (55)',
-        // Gap 9: the editor can't set posterUrl or randomPositionWithinQuestionnaire.
-        'questionnaires.1.items.32.posterUrl: only in Directus ("https://example.test/assets/media-3")',
         // Not offered by design: Directus scale 501 allows .svg, which stays
         // out because an inline SVG can run script on our origin. The scale
         // is used by six items, hence six lines.
         'questionnaires.1.items.34.scale.fileUploadOptions.allowedFormats: Directus [".jpg",".jpeg",".pdf",".svg",".mp4"], MART [".jpg",".jpeg",".pdf",".mp4"]',
         'questionnaires.1.items.35.scale.fileUploadOptions.allowedFormats: Directus [".jpg",".jpeg",".pdf",".svg",".mp4"], MART [".jpg",".jpeg",".pdf",".mp4"]',
-        // Gap 9.
-        'questionnaires.1.items.41.options.randomPositionWithinQuestionnaire: Directus true, MART false',
-        // .svg, see above.
         'questionnaires.5.items.2.scale.fileUploadOptions.allowedFormats: Directus [".jpg",".jpeg",".pdf",".svg",".mp4"], MART [".jpg",".jpeg",".pdf",".mp4"]',
         'questionnaires.5.items.3.scale.fileUploadOptions.allowedFormats: Directus [".jpg",".jpeg",".pdf",".svg",".mp4"], MART [".jpg",".jpeg",".pdf",".mp4"]',
         'questionnaires.6.items.6.scale.fileUploadOptions.allowedFormats: Directus [".jpg",".jpeg",".pdf",".svg",".mp4"], MART [".jpg",".jpeg",".pdf",".mp4"]',

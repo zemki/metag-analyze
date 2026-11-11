@@ -10,6 +10,7 @@ use App\MartQuestionnaireSchedule;
 use App\Project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class MartQuestionnaireController extends Controller
 {
@@ -75,7 +76,7 @@ class MartQuestionnaireController extends Controller
             'quest_available_at' => 'nullable|in:startOfInterval,randomTimeWithinInterval',
             'show_after_repeating' => 'nullable|array',
             'questions' => 'required|array',
-            'questions.*' => [$this->rangeValuesHaveTwoOptions(), $this->fileUploadHasLimits(), $this->displaySelectionHasTwoOptions()],
+            'questions.*' => [$this->rangeValuesHaveTwoOptions(), $this->fileUploadHasLimits(), $this->displaySelectionHasTwoOptions(), $this->posterUrlIsAUrl(), $this->randomPositionIsABoolean()],
             'questions.*.text' => 'required|string',
             'questions.*.image_url' => 'nullable|url|max:2048',
             'questions.*.video_url' => 'nullable|url|max:2048',
@@ -256,7 +257,7 @@ class MartQuestionnaireController extends Controller
             'quest_available_at' => 'nullable|in:startOfInterval,randomTimeWithinInterval',
             'show_after_repeating' => 'nullable|array',
             'questions' => 'required|array',
-            'questions.*' => [$this->rangeValuesHaveTwoOptions(), $this->fileUploadHasLimits(), $this->displaySelectionHasTwoOptions()],
+            'questions.*' => [$this->rangeValuesHaveTwoOptions(), $this->fileUploadHasLimits(), $this->displaySelectionHasTwoOptions(), $this->posterUrlIsAUrl(), $this->randomPositionIsABoolean()],
             'questions.*.uuid' => 'nullable|string',
             'questions.*.text' => 'required|string',
             'questions.*.image_url' => 'nullable|url|max:2048',
@@ -514,6 +515,55 @@ class MartQuestionnaireController extends Controller
             $filledIn = array_filter($options, fn ($option) => is_string($option) && trim($option) !== '');
             if (count($options) < 2 || count($filledIn) !== count($options)) {
                 $fail('Answer options on a text-only item need at least 2 options, none of them blank.');
+            }
+        };
+    }
+
+    /**
+     * The app shows config.posterUrl on a video until it plays, so it's
+     * checked like image_url and video_url: a URL of at most 2048
+     * characters, by the check the url rule uses. An empty field arrives as
+     * null (ConvertEmptyStringsToNull) and passes; the API leaves it out.
+     *
+     * On the whole question, like rangeValuesHaveTwoOptions(), so the other
+     * config keys are kept.
+     */
+    private function posterUrlIsAUrl(): \Closure
+    {
+        return function (string $attribute, $question, \Closure $fail) {
+            if (! is_array($question) || ! is_array($question['config'] ?? null)) {
+                return;
+            }
+
+            $posterUrl = $question['config']['posterUrl'] ?? null;
+            if ($posterUrl === null) {
+                return;
+            }
+
+            if (! is_string($posterUrl) || ! Str::isUrl($posterUrl) || mb_strlen($posterUrl) > 2048) {
+                $fail('The poster image needs a valid URL of at most 2048 characters.');
+            }
+        };
+    }
+
+    /**
+     * config.randomPositionWithinQuestionnaire is saved as sent and reaches
+     * the app as it is, so it has to be true or false. The boolean rule
+     * would also take 1 and "1".
+     *
+     * On the whole question, like rangeValuesHaveTwoOptions(), so the other
+     * config keys are kept.
+     */
+    private function randomPositionIsABoolean(): \Closure
+    {
+        return function (string $attribute, $question, \Closure $fail) {
+            if (! is_array($question) || ! is_array($question['config'] ?? null)) {
+                return;
+            }
+
+            $randomPosition = $question['config']['randomPositionWithinQuestionnaire'] ?? null;
+            if ($randomPosition !== null && ! is_bool($randomPosition)) {
+                $fail('Random position within questionnaire must be true or false.');
             }
         };
     }

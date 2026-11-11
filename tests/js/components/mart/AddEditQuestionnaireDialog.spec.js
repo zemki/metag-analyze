@@ -900,4 +900,173 @@ describe('AddEditQuestionnaireDialog questions', () => {
       expect(question.jumpCondition).toBe(2);
     });
   });
+
+  function mountedWithQuestion(fields) {
+    const wrapper = mount(AddEditQuestionnaireDialog, {
+      props: { projectId: 1, nextQuestionnaireId: 1 },
+      global: { stubs: { SchedulePreview: true } },
+    });
+    wrapper.vm.addQuestion();
+    Object.assign(wrapper.vm.formData.questions[0], fields);
+
+    return wrapper;
+  }
+
+  // The app shows the poster on a video file until it plays.
+  describe('poster image', () => {
+    const posterUrl = 'https://example.test/poster.jpg';
+    const videoQuestion = { type: 'text', videoUrl: 'https://example.test/video.mp4' };
+
+    it('is saved with a video', async () => {
+      const saved = await savedQuestion({ ...videoQuestion, posterUrl });
+
+      expect(saved.config.posterUrl).toBe(posterUrl);
+    });
+
+    it('is left out when empty', async () => {
+      const saved = await savedQuestion({ ...videoQuestion, posterUrl: '' });
+
+      expect(saved.config).not.toHaveProperty('posterUrl');
+    });
+
+    it('is left out without a video', async () => {
+      const saved = await savedQuestion({ ...videoQuestion, videoUrl: '', posterUrl });
+
+      expect(saved.config).not.toHaveProperty('posterUrl');
+    });
+
+    it('starts empty on a new question', () => {
+      const dialog = dialogWith([]);
+      methods.addQuestion.call(dialog);
+
+      expect(dialog.formData.questions[0].posterUrl).toBe('');
+    });
+
+    it('is restored when a saved question is opened', () => {
+      const question = loadedQuestion({ type: 'text', video_url: videoQuestion.videoUrl, config: { posterUrl } });
+
+      expect(question.posterUrl).toBe(posterUrl);
+    });
+
+    it('is empty for a question saved without one', () => {
+      expect(loadedQuestion({ type: 'text', config: {} }).posterUrl).toBe('');
+    });
+
+    it('is kept when opened and saved', async () => {
+      const saved = await savedAfterLoading({ type: 'text', video_url: videoQuestion.videoUrl, config: { posterUrl } });
+
+      expect(saved.config).toEqual({ posterUrl });
+    });
+
+    it('is dropped when the video is cleared', async () => {
+      const saved = await savedAfterLoading(
+        { type: 'text', video_url: videoQuestion.videoUrl, config: { posterUrl } },
+        question => { question.videoUrl = ''; },
+      );
+
+      expect(saved.config).not.toHaveProperty('posterUrl');
+    });
+
+    it('is offered with a video', async () => {
+      const wrapper = mountedWithQuestion(videoQuestion);
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.find('#poster-url-0').exists()).toBe(true);
+    });
+
+    it('is not offered without a video', async () => {
+      const wrapper = mountedWithQuestion({ type: 'text' });
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.find('#poster-url-0').exists()).toBe(false);
+    });
+  });
+
+  describe('random position within questionnaire', () => {
+    it('is saved when ticked', async () => {
+      const saved = await savedQuestion({ type: 'text', randomPositionWithinQuestionnaire: true });
+
+      expect(saved.config.randomPositionWithinQuestionnaire).toBe(true);
+    });
+
+    it('is left out when not ticked', async () => {
+      const saved = await savedQuestion({ type: 'text', randomPositionWithinQuestionnaire: false });
+
+      expect(saved.config).not.toHaveProperty('randomPositionWithinQuestionnaire');
+    });
+
+    it('starts unticked on a new question', () => {
+      const dialog = dialogWith([]);
+      methods.addQuestion.call(dialog);
+
+      expect(dialog.formData.questions[0].randomPositionWithinQuestionnaire).toBe(false);
+    });
+
+    it('is restored when a saved question is opened', () => {
+      const question = loadedQuestion({ type: 'text', config: { randomPositionWithinQuestionnaire: true } });
+
+      expect(question.randomPositionWithinQuestionnaire).toBe(true);
+    });
+
+    it('is unticked for a question saved without it', () => {
+      expect(loadedQuestion({ type: 'text', config: {} }).randomPositionWithinQuestionnaire).toBe(false);
+    });
+
+    it('is kept when opened and saved', async () => {
+      const saved = await savedAfterLoading({ type: 'text', config: { randomPositionWithinQuestionnaire: true } });
+
+      expect(saved.config).toEqual({ randomPositionWithinQuestionnaire: true });
+    });
+
+    // The app shuffles an item with a randomization group inside its group
+    // and never reads its random position.
+    it('shows a hint when the question also has a randomization group', async () => {
+      const wrapper = mountedWithQuestion({ type: 'text', randomPositionWithinQuestionnaire: true, randomizationGroupId: 2 });
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.find('#random-position-hint-0').exists()).toBe(true);
+    });
+
+    it('shows no hint without a randomization group', async () => {
+      const wrapper = mountedWithQuestion({ type: 'text', randomPositionWithinQuestionnaire: true, randomizationGroupId: null });
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.find('#random-position-hint-0').exists()).toBe(false);
+    });
+
+    it('shows no hint when not ticked', async () => {
+      const wrapper = mountedWithQuestion({ type: 'text', randomPositionWithinQuestionnaire: false, randomizationGroupId: 2 });
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.find('#random-position-hint-0').exists()).toBe(false);
+    });
+
+    it('can be ticked in the form', async () => {
+      const wrapper = mountedWithQuestion({ type: 'text' });
+      await wrapper.vm.$nextTick();
+
+      await wrapper.find('#random-position-0').setValue(true);
+
+      expect(wrapper.vm.formData.questions[0].randomPositionWithinQuestionnaire).toBe(true);
+    });
+  });
+
+  // A question opened, left as it is and saved again keeps both fields,
+  // next to the rest of its config.
+  it('keeps the poster and the random position when a choice question is opened and saved', async () => {
+    const config = {
+      options: ['Yes', 'No'],
+      randomPositionWithinQuestionnaire: true,
+      posterUrl: 'https://example.test/poster.jpg',
+    };
+
+    const saved = await savedAfterLoading({
+      type: 'one choice',
+      video_url: 'https://example.test/video.mp4',
+      is_mandatory: true,
+      config,
+    });
+
+    expect(saved.config).toEqual(config);
+  });
 });
