@@ -231,7 +231,9 @@ per-participant data when `participant_id` is provided.
         "collectDeviceInfos": true,
         "iOSDataDonationQuestionnaire": null,
         "androidDataDonationQuestionnaire": null,
-        "collectAndroidStats": false
+        "collectAndroidStats": false,
+        "minBreakBetweenDataDonationQuestionnaires": 1,
+        "minBreakBetweenAndroidStats": 6
       }
     },
     "questionnaires": [
@@ -247,6 +249,16 @@ per-participant data when `participant_id` is provided.
   }
 }
 ```
+
+**Minimum breaks** (`projectOptions.options`, both optional, in hours, decimals allowed):
+- `minBreakBetweenDataDonationQuestionnaires`: the minimum break between two data donation
+  questionnaires. It only matters when the project has one.
+- `minBreakBetweenAndroidStats`: the minimum break between two Android stats collections,
+  which run after a single or repeating questionnaire is submitted.
+- Both are stored in `projects.inputs`, in the MART entry's `projectOptions`. The app applies
+  a break only when its key is present, so a key is sent only when its value is a number of
+  0 or more, and left out when empty. The editor deletes the key when its field is emptied,
+  negative or not a number.
 
 **Query params:**
 - `participant_id` *(optional)* — when provided, the response also includes per-case data

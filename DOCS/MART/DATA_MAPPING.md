@@ -14,6 +14,8 @@ How MART API types map to database storage.
 | `collectDeviceInfos` | `projects.inputs` JSON | In `martConfig.projectOptions` |
 | `initialHoursOfAndroidStats` | `projects.inputs` JSON | In `martConfig.projectOptions` |
 | `overlapAndroidStatsHours` | `projects.inputs` JSON | In `martConfig.projectOptions` |
+| `minBreakBetweenDataDonationQuestionnaires` | `projects.inputs` JSON | In `martConfig.projectOptions`, hours (decimals allowed). Sent only when a number of 0 or more; left out when empty |
+| `minBreakBetweenAndroidStats` | `projects.inputs` JSON | In `martConfig.projectOptions`, hours (decimals allowed). Sent only when a number of 0 or more; left out when empty |
 | `pages` | `mart_pages.id` array | MART DB, derived |
 | `pagesToShowInMenu` | `mart_pages` where `show_in_menu=true` | MART DB |
 | `pagesToShowOnFirstAppStart` | `mart_pages` where `show_on_first_app_start=true` | MART DB |

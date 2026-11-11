@@ -38,9 +38,6 @@ class MartReferenceParityTest extends TestCase
      * shrinks.
      */
     private const EXPECTED_DIFFERENCES = [
-        // Gap 8: neither minimum break is stored or sent.
-        'projectOptions.minBreakBetweenAndroidStats: only in Directus (6)',
-        'projectOptions.minBreakBetweenDataDonationQuestionnaires: only in Directus (1)',
         // Sent by MART only: textOptions.type on a text scale. The app reads it
         // only for an "other" answer.
         'questionnaires.1.items.6.scale.textOptions.type: only in MART ("textarea")',

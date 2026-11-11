@@ -110,6 +110,7 @@ class ProjectOptionsResource extends JsonResource
                     'collectAndroidStats' => $projectOptions['collectAndroidStats'] ?? false,
                     'initialHoursOfAndroidStats' => $projectOptions['initialHoursOfAndroidStats'] ?? 24,
                     'overlapAndroidStatsHours' => $projectOptions['overlapAndroidStatsHours'] ?? 2,
+                    ...$this->minimumBreaks($projectOptions),
                     'pages' => $this->pages()->pluck('id')->toArray(),
                     'pagesToShowInMenu' => $this->pages()->where('show_in_menu', true)->orderBy('sort_order')->pluck('id')->toArray(),
                     'pagesToShowOnFirstAppStart' => $this->pages()->where('show_on_first_app_start', true)->orderBy('sort_order')->pluck('id')->toArray(),
@@ -152,6 +153,25 @@ class ProjectOptionsResource extends JsonResource
                 ],
             ];
         }
+    }
+
+    /**
+     * The two minimum breaks, in hours. The app applies a break only when its
+     * key is present, so a key without a usable value is left out. `+ 0`
+     * keeps 6 an integer and 1.5 a decimal.
+     */
+    private function minimumBreaks(array $projectOptions): array
+    {
+        $breaks = [];
+
+        foreach (['minBreakBetweenDataDonationQuestionnaires', 'minBreakBetweenAndroidStats'] as $key) {
+            $value = $projectOptions[$key] ?? null;
+            if (is_numeric($value) && $value >= 0) {
+                $breaks[$key] = $value + 0;
+            }
+        }
+
+        return $breaks;
     }
 
     /**

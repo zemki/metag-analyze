@@ -75,6 +75,41 @@ class ProjectDuplicationMartTest extends TestCase
     }
 
     /** @test */
+    public function duplicating_a_mart_project_keeps_its_minimum_breaks()
+    {
+        $user = User::factory()->researcher()->create([
+            'email_verified_at' => now(),
+        ]);
+
+        $originalProject = Project::factory()->create([
+            'created_by' => $user->id,
+            'name' => 'MART Project with Minimum Breaks',
+            'inputs' => json_encode([[
+                'type' => 'mart',
+                'name' => 'MART Configuration',
+                'answers' => [],
+                'projectOptions' => [
+                    'minBreakBetweenDataDonationQuestionnaires' => 1.5,
+                    'minBreakBetweenAndroidStats' => 6,
+                ],
+            ]]),
+        ]);
+        MartProject::firstOrCreate(['main_project_id' => $originalProject->id]);
+
+        $this->actingAs($user)
+            ->get("/projects/{$originalProject->id}/duplicate")
+            ->assertStatus(200);
+
+        $duplicatedProject = Project::where('id', '!=', $originalProject->id)
+            ->where('name', 'MART Project with Minimum Breaks')
+            ->firstOrFail();
+        $projectOptions = json_decode($duplicatedProject->inputs, true)[0]['projectOptions'];
+
+        $this->assertSame(1.5, $projectOptions['minBreakBetweenDataDonationQuestionnaires']);
+        $this->assertSame(6, $projectOptions['minBreakBetweenAndroidStats']);
+    }
+
+    /** @test */
     public function duplicating_non_mart_project_does_not_add_mart_configuration()
     {
         $user = User::factory()->researcher()->create([

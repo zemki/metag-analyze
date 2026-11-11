@@ -110,6 +110,8 @@ class ProjectOptionsPersistenceTest extends TestCase
                     'endDateAndTime' => ['date' => '2027-06-06', 'time' => '19:30'],
                     'collectAndroidStats' => true,
                     'initialHoursOfAndroidStats' => 480,
+                    'minBreakBetweenDataDonationQuestionnaires' => 12,
+                    'minBreakBetweenAndroidStats' => 4,
                 ],
             ]]),
         ])->assertSuccessful();
@@ -120,6 +122,13 @@ class ProjectOptionsPersistenceTest extends TestCase
         $this->assertSame(['date' => '2027-06-06', 'time' => '19:30'], $options['endDateAndTime']);
         $this->assertTrue($options['collectAndroidStats']);
         $this->assertSame(480, $options['initialHoursOfAndroidStats']);
+        $this->assertSame(12, $options['minBreakBetweenDataDonationQuestionnaires']);
+        $this->assertSame(4, $options['minBreakBetweenAndroidStats']);
+
+        $served = $this->structureOptions($this->project);
+
+        $this->assertSame(12, $served['minBreakBetweenDataDonationQuestionnaires']);
+        $this->assertSame(4, $served['minBreakBetweenAndroidStats']);
     }
 
     /** @test */
@@ -150,6 +159,8 @@ class ProjectOptionsPersistenceTest extends TestCase
             'collectAndroidStats' => true,
             'initialHoursOfAndroidStats' => 720,
             'overlapAndroidStatsHours' => 3,
+            'minBreakBetweenDataDonationQuestionnaires' => 1,
+            'minBreakBetweenAndroidStats' => 6,
         ]);
 
         $options = $this->structureOptions($this->project);
@@ -162,5 +173,87 @@ class ProjectOptionsPersistenceTest extends TestCase
         $this->assertTrue($options['collectAndroidStats']);
         $this->assertSame(720, $options['initialHoursOfAndroidStats']);
         $this->assertSame(3, $options['overlapAndroidStatsHours']);
+        $this->assertSame(1, $options['minBreakBetweenDataDonationQuestionnaires']);
+        $this->assertSame(6, $options['minBreakBetweenAndroidStats']);
+    }
+
+    /**
+     * The app applies a minimum break only when its key is present, so a
+     * project without one must not send the key at all.
+     *
+     * @test
+     */
+    public function minimum_breaks_that_were_never_set_are_left_out_of_the_payload()
+    {
+        $this->makeMartProject(['collectAndroidStats' => true]);
+
+        $options = $this->structureOptions($this->project);
+
+        $this->assertArrayNotHasKey('minBreakBetweenDataDonationQuestionnaires', $options);
+        $this->assertArrayNotHasKey('minBreakBetweenAndroidStats', $options);
+    }
+
+    /** @test */
+    public function blank_minimum_breaks_are_left_out_of_the_payload()
+    {
+        $this->makeMartProject([
+            'minBreakBetweenDataDonationQuestionnaires' => null,
+            'minBreakBetweenAndroidStats' => '',
+        ]);
+
+        $options = $this->structureOptions($this->project);
+
+        $this->assertArrayNotHasKey('minBreakBetweenDataDonationQuestionnaires', $options);
+        $this->assertArrayNotHasKey('minBreakBetweenAndroidStats', $options);
+    }
+
+    /** @test */
+    public function negative_or_non_numeric_minimum_breaks_are_left_out_of_the_payload()
+    {
+        $this->makeMartProject([
+            'minBreakBetweenDataDonationQuestionnaires' => -1,
+            'minBreakBetweenAndroidStats' => 'six',
+        ]);
+
+        $options = $this->structureOptions($this->project);
+
+        $this->assertArrayNotHasKey('minBreakBetweenDataDonationQuestionnaires', $options);
+        $this->assertArrayNotHasKey('minBreakBetweenAndroidStats', $options);
+    }
+
+    /** @test */
+    public function a_zero_minimum_break_is_sent_as_zero()
+    {
+        $this->makeMartProject(['minBreakBetweenAndroidStats' => 0]);
+
+        $this->assertSame(0, $this->structureOptions($this->project)['minBreakBetweenAndroidStats']);
+    }
+
+    /** @test */
+    public function a_decimal_minimum_break_stays_a_decimal()
+    {
+        $this->makeMartProject([
+            'minBreakBetweenDataDonationQuestionnaires' => 1.5,
+            'minBreakBetweenAndroidStats' => 0.25,
+        ]);
+
+        $options = $this->structureOptions($this->project);
+
+        $this->assertSame(1.5, $options['minBreakBetweenDataDonationQuestionnaires']);
+        $this->assertSame(0.25, $options['minBreakBetweenAndroidStats']);
+    }
+
+    /** @test */
+    public function a_minimum_break_stored_as_a_string_is_sent_as_a_number()
+    {
+        $this->makeMartProject([
+            'minBreakBetweenDataDonationQuestionnaires' => '1.5',
+            'minBreakBetweenAndroidStats' => '6',
+        ]);
+
+        $options = $this->structureOptions($this->project);
+
+        $this->assertSame(1.5, $options['minBreakBetweenDataDonationQuestionnaires']);
+        $this->assertSame(6, $options['minBreakBetweenAndroidStats']);
     }
 }

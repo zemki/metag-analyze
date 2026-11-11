@@ -234,6 +234,8 @@ class MartReferenceProjectSeeder extends Seeder
             'collectAndroidStats' => $options['collectAndroidStats'],
             'initialHoursOfAndroidStats' => $options['initialHoursOfAndroidStats'],
             'overlapAndroidStatsHours' => $options['overlapAndroidStatsHours'],
+            'minBreakBetweenDataDonationQuestionnaires' => $options['minBreakBetweenDataDonationQuestionnaires'],
+            'minBreakBetweenAndroidStats' => $options['minBreakBetweenAndroidStats'],
         ];
         $project->update(['inputs' => json_encode($inputs)]);
     }

@@ -101,6 +101,7 @@ Interactive docs: `/docs/api` (Scramble + Stoplight), HTTP Basic auth via `API_D
 - Pages carry both `id` and `pageId`.
 - Participant fields are filled when `participant_id` is passed; an unknown `participant_id` is a 404.
 - Data-donation schedules are excluded from `singleQuestionnaires`.
+- `projectOptions.options.minBreakBetweenDataDonationQuestionnaires` and `minBreakBetweenAndroidStats` are optional, in hours (decimals allowed), stored in the MART entry's `projectOptions`. The app applies a break only when its key is present, so `ProjectOptionsResource` sends a key only when its value is numeric and not negative (as `$value + 0`, so 6 stays 6 and 1.5 stays 1.5), and `editproject.vue` deletes the key when its field is empty, negative or not a number.
 
 ### Question types
 | Storage (`mart_questions.type`) | API `options.type` | Notes |
