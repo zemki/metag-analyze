@@ -286,6 +286,12 @@ per-participant data when `participant_id` is provided.
   them up via `projectOptions.options.iOSDataDonationQuestionnaire` /
   `androidDataDonationQuestionnaire` (which return the donation questionnaire's `id`)
   and find the actual content in the top-level `questionnaires[]` catalog.
+- So the app never reads a data-donation questionnaire's `showProgressBar` or notification
+  settings: it always shows the progress bar and sends no notifications for it. The editor
+  hides both settings for a data-donation questionnaire and saves `show_progress_bar` true
+  and `show_notifications` false; the questionnaire list shows no progress bar or notification
+  badges for them. A new one needs no start date: the editor hides the date fields, and the
+  API never sends a donation questionnaire's start date.
 - Each questionnaire in `questionnaires[]` carries its own `name` from its schedule
   (rather than a single project-level name reused for every questionnaire).
 

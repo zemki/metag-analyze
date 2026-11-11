@@ -1070,3 +1070,221 @@ describe('AddEditQuestionnaireDialog questions', () => {
     expect(saved.config).toEqual(config);
   });
 });
+
+// The app leaves a data donation questionnaire out of its schedule lists, so
+// it always shows the progress bar and never sends a notification for one.
+describe('AddEditQuestionnaireDialog data donation questionnaire settings', () => {
+  beforeEach(() => {
+    window.axios = { post: jest.fn().mockResolvedValue({}), put: jest.fn().mockResolvedValue({}) };
+  });
+
+  const settingIds = ['#show_progress_bar', '#show_notifications', '#notification_text'];
+
+  function mountedDialog(schedule = null) {
+    return mount(AddEditQuestionnaireDialog, {
+      props: { projectId: 1, nextQuestionnaireId: 1, schedule },
+      global: { stubs: { SchedulePreview: true } },
+    });
+  }
+
+  // A new questionnaire that passes isValid, so save() sends it.
+  function newQuestionnaire() {
+    const wrapper = mountedDialog();
+    wrapper.vm.formData.name = 'Donation';
+    wrapper.vm.formData.start_date_time.date = '2026-11-11';
+    wrapper.vm.addQuestion();
+    Object.assign(wrapper.vm.formData.questions[0], { text: 'Question', type: 'text' });
+
+    return wrapper;
+  }
+
+  function openedQuestionnaire(fields) {
+    return mountedDialog({
+      id: 7,
+      name: 'Donation',
+      questionnaire_id: 3,
+      type: 'single',
+      questions: [{ uuid: 'q-1', text: 'Question', type: 'text', is_mandatory: true, config: {} }],
+      ...fields,
+    });
+  }
+
+  function shownSettings(wrapper) {
+    return settingIds.filter(id => wrapper.find(id).exists());
+  }
+
+  function sentSettings(payload) {
+    return { show_progress_bar: payload.show_progress_bar, show_notifications: payload.show_notifications };
+  }
+
+  function ticked(wrapper) {
+    return {
+      progressBar: wrapper.find('#show_progress_bar').element.checked,
+      notifications: wrapper.find('#show_notifications').element.checked,
+    };
+  }
+
+  // The date fields are hidden for a data donation questionnaire, and the
+  // server never sends its start date to the app.
+  describe('without a start date', () => {
+    function undatedQuestionnaire() {
+      const wrapper = mountedDialog();
+      wrapper.vm.formData.name = 'Donation';
+      wrapper.vm.addQuestion();
+      Object.assign(wrapper.vm.formData.questions[0], { text: 'Question', type: 'text' });
+
+      return wrapper;
+    }
+
+    it('can save a new data donation questionnaire whose type was picked before any date', async () => {
+      const wrapper = undatedQuestionnaire();
+      await wrapper.find('#data_donation_ios').setValue();
+
+      await wrapper.vm.save();
+
+      expect(window.axios.post).toHaveBeenCalledTimes(1);
+    });
+
+    it('still needs a start date for a new questionnaire that is not a data donation one', async () => {
+      const wrapper = undatedQuestionnaire();
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.vm.isValid).toBe(false);
+    });
+  });
+
+  describe('in the form', () => {
+    it('shows the progress bar and notification settings for a questionnaire that is not a data donation one', async () => {
+      const wrapper = mountedDialog();
+      await wrapper.vm.$nextTick();
+
+      expect(shownSettings(wrapper)).toEqual(settingIds);
+    });
+
+    it('hides the progress bar and notification settings for an iOS data donation questionnaire', async () => {
+      const wrapper = mountedDialog();
+      await wrapper.find('#data_donation_ios').setValue();
+
+      expect(shownSettings(wrapper)).toEqual([]);
+    });
+
+    it('hides the progress bar and notification settings for an Android data donation questionnaire', async () => {
+      const wrapper = mountedDialog();
+      await wrapper.find('#data_donation_android').setValue();
+
+      expect(shownSettings(wrapper)).toEqual([]);
+    });
+
+    it('hides them on an opened data donation questionnaire', async () => {
+      const wrapper = openedQuestionnaire({ is_android_data_donation: true });
+      await wrapper.vm.$nextTick();
+
+      expect(shownSettings(wrapper)).toEqual([]);
+    });
+
+    it('says what the app does instead for a data donation questionnaire', async () => {
+      const wrapper = mountedDialog();
+      await wrapper.find('#data_donation_ios').setValue();
+
+      expect(wrapper.find('#donation-progress-notifications-note').exists()).toBe(true);
+    });
+
+    it('shows no such note for a questionnaire that is not a data donation one', async () => {
+      const wrapper = mountedDialog();
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.find('#donation-progress-notifications-note').exists()).toBe(false);
+    });
+  });
+
+  describe('on save', () => {
+    it('sends the progress bar on and notifications off for a new iOS data donation questionnaire', async () => {
+      const wrapper = newQuestionnaire();
+      await wrapper.find('#show_progress_bar').setValue(false);
+      await wrapper.find('#data_donation_ios').setValue();
+
+      await wrapper.vm.save();
+
+      expect(sentSettings(window.axios.post.mock.calls[0][1])).toEqual({ show_progress_bar: true, show_notifications: false });
+    });
+
+    it('sends the progress bar on and notifications off for a new Android data donation questionnaire', async () => {
+      const wrapper = newQuestionnaire();
+      await wrapper.find('#show_progress_bar').setValue(false);
+      await wrapper.find('#data_donation_android').setValue();
+
+      await wrapper.vm.save();
+
+      expect(sentSettings(window.axios.post.mock.calls[0][1])).toEqual({ show_progress_bar: true, show_notifications: false });
+    });
+
+    it('sends the progress bar on and notifications off for an opened data donation questionnaire saved with other values', async () => {
+      const wrapper = openedQuestionnaire({
+        is_ios_data_donation: true,
+        notification_config: { show_progress_bar: false, show_notifications: true, notification_text: 'Hello' },
+      });
+      await wrapper.vm.$nextTick();
+
+      await wrapper.vm.save();
+
+      expect(sentSettings(window.axios.put.mock.calls[0][1])).toEqual({ show_progress_bar: true, show_notifications: false });
+    });
+
+    it('sends the progress bar on and notifications off when an opened questionnaire becomes a data donation one', async () => {
+      const wrapper = openedQuestionnaire({
+        notification_config: { show_progress_bar: false, show_notifications: true, notification_text: 'Hello' },
+      });
+      await wrapper.find('#data_donation_android').setValue();
+
+      await wrapper.vm.save();
+
+      expect(sentSettings(window.axios.put.mock.calls[0][1])).toEqual({ show_progress_bar: true, show_notifications: false });
+    });
+
+    it('sends the form values for a questionnaire that is not a data donation one', async () => {
+      const wrapper = newQuestionnaire();
+      await wrapper.find('#show_progress_bar').setValue(false);
+
+      await wrapper.vm.save();
+
+      expect(sentSettings(window.axios.post.mock.calls[0][1])).toEqual({ show_progress_bar: false, show_notifications: true });
+    });
+  });
+
+  // The hidden values are left as they were, so switching back shows them.
+  describe('when switched back to not a data donation questionnaire', () => {
+    it('shows the values the new questionnaire had before', async () => {
+      const wrapper = mountedDialog();
+      await wrapper.find('#show_progress_bar').setValue(false);
+      await wrapper.find('#data_donation_ios').setValue();
+
+      await wrapper.find('#data_donation_none').setValue();
+
+      expect(ticked(wrapper)).toEqual({ progressBar: false, notifications: true });
+    });
+
+    // Saved before the editor hid the settings, so they can hold anything.
+    it('shows the saved values of an opened data donation questionnaire', async () => {
+      const wrapper = openedQuestionnaire({
+        is_ios_data_donation: true,
+        notification_config: { show_progress_bar: false, show_notifications: true },
+      });
+      await wrapper.vm.$nextTick();
+
+      await wrapper.find('#data_donation_none').setValue();
+
+      expect(ticked(wrapper)).toEqual({ progressBar: false, notifications: true });
+    });
+
+    it('sends the values it shows', async () => {
+      const wrapper = newQuestionnaire();
+      await wrapper.find('#show_progress_bar').setValue(false);
+      await wrapper.find('#data_donation_ios').setValue();
+      await wrapper.find('#data_donation_none').setValue();
+
+      await wrapper.vm.save();
+
+      expect(sentSettings(window.axios.post.mock.calls[0][1])).toEqual({ show_progress_bar: false, show_notifications: true });
+    });
+  });
+});

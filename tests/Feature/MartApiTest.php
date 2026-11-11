@@ -553,6 +553,42 @@ class MartApiTest extends TestCase
     }
 
     /**
+     * The editor hides the date fields for a data donation questionnaire, so
+     * it sends an empty start date.
+     *
+     * @test
+     */
+    public function a_data_donation_questionnaire_without_a_start_date_is_stored_and_served()
+    {
+        $questionnaireId = $this->project->id * 1000 + 504;
+
+        $this->actingAs($this->user)
+            ->postJson("/projects/{$this->project->id}/questionnaires", [
+                'questionnaire_id' => $questionnaireId,
+                'name' => 'Donation ' . uniqid(),
+                'type' => 'single',
+                'start_date_time' => ['date' => '', 'time' => '09:00'],
+                'show_progress_bar' => true,
+                'show_notifications' => false,
+                'is_ios_data_donation' => true,
+                'questions' => [[
+                    'text' => 'Screen time',
+                    'type' => 'text',
+                    'mandatory' => true,
+                    'config' => [],
+                ]],
+            ])->assertOk();
+
+        $request = \Illuminate\Http\Request::create('/test', 'GET', ['participant_id' => $this->case->name]);
+        $structure = (new \App\Http\Controllers\MartApiController)
+            ->getProjectStructure($request, $this->project)
+            ->response()->getData(true)['data'];
+
+        $this->assertSame($questionnaireId, $structure['projectOptions']['options']['iOSDataDonationQuestionnaire']);
+        $this->assertContains($questionnaireId, array_column($structure['questionnaires'], 'questionnaireId'));
+    }
+
+    /**
      * BE.7 from Stefan's round-2 report: the "Show after completing a
      * repeating questionnaire" option was not persisting when a
      * questionnaire was *edited* (creating worked). Root cause: the update

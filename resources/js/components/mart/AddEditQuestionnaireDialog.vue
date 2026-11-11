@@ -475,8 +475,13 @@
                 </div>
               </div>
 
-              <!-- Notification Settings -->
-              <div class="space-y-3">
+              <!-- Notification Settings — hidden for data-donation questionnaires:
+                   the app leaves them out of its schedule lists, so it always
+                   shows the progress bar and sends no notifications for them. -->
+              <p v-if="dataDonationType !== 'none'" id="donation-progress-notifications-note" class="text-xs text-gray-500">
+                {{ trans('The app always shows the progress bar and sends no notifications for data donation questionnaires.') }}
+              </p>
+              <div v-else class="space-y-3">
                 <div class="flex items-center">
                   <input
                       v-model="formData.show_progress_bar"
@@ -502,10 +507,11 @@
                 </div>
 
                 <div v-if="formData.show_notifications">
-                  <label class="block text-sm font-medium text-gray-700">{{ trans('Notification Text') }}</label>
+                  <label for="notification_text" class="block text-sm font-medium text-gray-700">{{ trans('Notification Text') }}</label>
                   <input
                       v-model="formData.notification_text"
                       type="text"
+                      id="notification_text"
                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
                       :placeholder="trans('Time for your questionnaire!')"
                   />
@@ -1453,8 +1459,10 @@ export default {
 
       if (!this.isEditMode) {
         if (!this.formData.name) return false;
-        // Start date is required only if not using "start on first login"
-        if (!this.formData.start_on_first_login && !this.formData.start_date_time.date) return false;
+        // Start date is required only if not using "start on first login".
+        // A data donation questionnaire hides the date fields, and the
+        // server never sends its start date to the app, so it needs none.
+        if (this.dataDonationType === 'none' && !this.formData.start_on_first_login && !this.formData.start_date_time.date) return false;
         if (this.formData.type === 'repeating' && !this.formData.use_dynamic_end_date && !this.formData.end_date_time.date) return false;
 
         // Validate max_daily_submits doesn't exceed number of intervals
@@ -2155,6 +2163,15 @@ export default {
           show_after_repeating: showAfterRepeating,
           questions: processedQuestions
         };
+
+        // The app always shows the progress bar for a data donation
+        // questionnaire and sends no notifications for it, so that's what is
+        // saved. The form keeps its values, which come back if the type is
+        // switched back.
+        if (this.formData.is_ios_data_donation || this.formData.is_android_data_donation) {
+          payload.show_progress_bar = true;
+          payload.show_notifications = false;
+        }
 
         if (this.isEditMode) {
           // Update questions, settings, and introductory text

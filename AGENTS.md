@@ -100,7 +100,7 @@ Interactive docs: `/docs/api` (Scramble + Stoplight), HTTP Basic auth via `API_D
 - Choice and `range values` option `value`s start at 1, because the app drops a radio value of 0. `config` keeps 0-based keys, and `ScaleResource` adds 1 on output to `value`, `jumpCondition` and a choice or `range values` `defaultValue`. MeTag scales stay 0-based.
 - Pages carry both `id` and `pageId`.
 - Participant fields are filled when `participant_id` is passed; an unknown `participant_id` is a 404.
-- Data-donation schedules are excluded from `singleQuestionnaires`.
+- Data-donation schedules are excluded from `singleQuestionnaires` and `repeatingQuestionnaires`, so the app never reads their `showProgressBar` or notification settings: it always shows the progress bar and sends no notifications for them. The editor hides those settings for a donation questionnaire and saves `show_progress_bar` true and `show_notifications` false, keeping the form's values for a switch back to none; the questionnaire list shows no progress bar or notification badges for them.
 - `projectOptions.options.minBreakBetweenDataDonationQuestionnaires` and `minBreakBetweenAndroidStats` are optional, in hours (decimals allowed), stored in the MART entry's `projectOptions`. The app applies a break only when its key is present, so `ProjectOptionsResource` sends a key only when its value is numeric and not negative (as `$value + 0`, so 6 stays 6 and 1.5 stays 1.5), and `editproject.vue` deletes the key when its field is empty, negative or not a number.
 
 ### Question types
