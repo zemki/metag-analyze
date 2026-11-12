@@ -469,6 +469,17 @@ first item's scale, so `scales` can be shorter than the list of items. Don't sto
 they can change when a questionnaire is edited. Submits use `itemId` and exports use the
 question's UUID.
 
+**Question order:** `itemId` is the item's place, and the submit maps each answer back to the
+question in that place. A phone that loaded the questionnaire before a reorder would send answers
+that land on the wrong questions. So once a questionnaire has a submission (a `mart_entries` row
+for its schedule), the researcher route `PUT /questionnaires/{schedule}/questions` answers 422
+with `success: false` and a `message`, and saves nothing, when the saved questions it is sent
+(those with a `uuid`) are in another order than the stored one, or when a new question (no
+`uuid`) comes before a saved one. New questions can go at the end. Deleting a question still
+works, although the items after it move up a place. `GET /projects/{project}/questionnaires`
+gives each questionnaire `has_entries` (`true` or `false`), and the editor then only lets new
+questions move, among themselves.
+
 **Project Availability Window (`projectOptions.options.startDateAndTime` / `endDateAndTime`):**
 Both objects always have shape `{ date, time }` with non-null values, so the mobile
 client never has to handle nullability. Both are optional on the researcher side; if

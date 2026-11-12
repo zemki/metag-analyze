@@ -32,9 +32,11 @@ class MartQuestionnaireController extends Controller
             ], 404);
         }
 
-        // Get questionnaires with questions from MART database
+        // Get questionnaires with questions from MART database.
+        // has_entries tells the editor to lock the question order.
         $questionnaires = MartSchedule::forProject($martProject->id)
             ->with('questions')
+            ->withExists('entries as has_entries')
             ->orderBy('questionnaire_id')
             ->get();
 
@@ -287,6 +289,19 @@ class MartQuestionnaireController extends Controller
             ], 422);
         }
 
+        // Positions follow the order the questions arrive in. Without this, a
+        // questions object with keys out of order would pass the guard below
+        // in one order and be saved in another.
+        $validated['questions'] = array_values($validated['questions']);
+
+        // Checked before anything is written, so a refused request changes nothing.
+        if ($schedule->entries()->exists() && $this->movesSavedQuestions($schedule, $validated['questions'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This questionnaire already has answers, so its saved questions can\'t be moved: the app matches answers to questions by their position. Add new questions at the end.',
+            ], 422);
+        }
+
         DB::connection('mart')->beginTransaction();
 
         try {
@@ -415,6 +430,42 @@ class MartQuestionnaireController extends Controller
                 'message' => $e->getMessage(),
             ], 422);
         }
+    }
+
+    /**
+     * Whether the sent questions put a saved question in another place. The
+     * app numbers items by position (itemId = index + 1) and the submit maps
+     * each answer back by that position, so once there are answers a phone
+     * with the old order would store them against the wrong questions.
+     *
+     * The saved questions that are sent must keep their stored order (a
+     * question left out is deleted, which is allowed), and a new question,
+     * without a uuid, must come after all of them. A uuid from another
+     * schedule is left to the save, which refuses it. Uuids are compared
+     * without case, as the save's lookups are (the column's collation
+     * ignores case).
+     */
+    private function movesSavedQuestions(MartSchedule $schedule, array $questions): bool
+    {
+        $sentUuids = array_map('strtolower', array_values(array_filter(array_column($questions, 'uuid'))));
+        $storedUuids = array_map('strtolower', $schedule->questions->pluck('uuid')->all());
+
+        $sentSaved = array_values(array_intersect($sentUuids, $storedUuids));
+        $storedSent = array_values(array_intersect($storedUuids, $sentUuids));
+        if ($sentSaved !== $storedSent) {
+            return true;
+        }
+
+        $newQuestionSeen = false;
+        foreach ($questions as $question) {
+            if (empty($question['uuid'])) {
+                $newQuestionSeen = true;
+            } elseif ($newQuestionSeen && in_array(strtolower($question['uuid']), $storedUuids, true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

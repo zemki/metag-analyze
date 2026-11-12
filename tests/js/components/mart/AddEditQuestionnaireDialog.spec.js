@@ -1288,3 +1288,318 @@ describe('AddEditQuestionnaireDialog data donation questionnaire settings', () =
     });
   });
 });
+
+// The app numbers items by position, and the server maps each answer back to
+// a question by its place. Questions move with up and down buttons; once a
+// questionnaire has answers, saved questions stay where they are.
+describe('AddEditQuestionnaireDialog question order', () => {
+  beforeEach(() => {
+    window.axios = { post: jest.fn().mockResolvedValue({}), put: jest.fn().mockResolvedValue({}) };
+  });
+
+  function backendQuestion(uuid, fields = {}) {
+    return { uuid, text: `Question ${uuid}`, type: 'text', is_mandatory: true, config: {}, ...fields };
+  }
+
+  function openedQuestionnaire(questions, fields = {}) {
+    return mount(AddEditQuestionnaireDialog, {
+      props: {
+        projectId: 1,
+        nextQuestionnaireId: 1,
+        schedule: { id: 7, name: 'Daily', questionnaire_id: 3, type: 'single', questions, ...fields },
+      },
+      global: { stubs: { SchedulePreview: true } },
+    });
+  }
+
+  function withSaved(uuids, fields = {}) {
+    return openedQuestionnaire(uuids.map(uuid => backendQuestion(uuid)), fields);
+  }
+
+  async function addNewQuestion(wrapper, text) {
+    wrapper.vm.addQuestion();
+    Object.assign(wrapper.vm.formData.questions.at(-1), { text, type: 'text' });
+    await wrapper.vm.$nextTick();
+  }
+
+  // Saved questions by uuid, new ones by text.
+  function order(wrapper) {
+    return wrapper.vm.formData.questions.map(q => q.uuid || q.text);
+  }
+
+  function isDisabled(wrapper, selector) {
+    return wrapper.find(selector).attributes('disabled') !== undefined;
+  }
+
+  function textareaShowing(wrapper, text) {
+    return wrapper.findAll('textarea').find(textarea => textarea.element.value === text).element;
+  }
+
+  describe('moving', () => {
+    it('moves a question down, keeping its uuid and fields', async () => {
+      const wrapper = openedQuestionnaire([
+        backendQuestion('q-a', { config: { placeholder: 'Type here' } }),
+        backendQuestion('q-b'),
+      ]);
+      await wrapper.vm.$nextTick();
+
+      await wrapper.find('#move-down-0').trigger('click');
+
+      expect(wrapper.vm.formData.questions[1]).toMatchObject({ uuid: 'q-a', text: 'Question q-a', placeholder: 'Type here' });
+    });
+
+    it('moves a question up', async () => {
+      const wrapper = withSaved(['q-a', 'q-b']);
+      await wrapper.vm.$nextTick();
+
+      await wrapper.find('#move-up-1').trigger('click');
+
+      expect(order(wrapper)).toEqual(['q-b', 'q-a']);
+    });
+
+    it('saves the questions in their new order', async () => {
+      const wrapper = withSaved(['q-a', 'q-b']);
+      await wrapper.vm.$nextTick();
+      await wrapper.find('#move-down-0').trigger('click');
+
+      await wrapper.vm.save();
+
+      expect(window.axios.put.mock.calls[0][1].questions.map(q => q.uuid)).toEqual(['q-b', 'q-a']);
+    });
+
+    it('cannot move the first question up', async () => {
+      const wrapper = withSaved(['q-a', 'q-b']);
+      await wrapper.vm.$nextTick();
+
+      expect(isDisabled(wrapper, '#move-up-0')).toBe(true);
+    });
+
+    it('cannot move the last question down', async () => {
+      const wrapper = withSaved(['q-a', 'q-b']);
+      await wrapper.vm.$nextTick();
+
+      expect(isDisabled(wrapper, '#move-down-1')).toBe(true);
+    });
+
+    it('leaves the order alone when asked to move the first question up', () => {
+      const wrapper = withSaved(['q-a', 'q-b']);
+
+      wrapper.vm.moveQuestion(0, -1);
+
+      expect(order(wrapper)).toEqual(['q-a', 'q-b']);
+    });
+
+    it('sends a new question without its client-side key', async () => {
+      const wrapper = withSaved(['q-a']);
+      await addNewQuestion(wrapper, 'New question');
+
+      await wrapper.vm.save();
+
+      expect(Object.keys(window.axios.put.mock.calls[0][1].questions[1]))
+        .toEqual(['text', 'image_url', 'video_url', 'type', 'mandatory', 'config']);
+    });
+  });
+
+  // With the list keyed by index, Vue would patch each card in place and the
+  // moved question's text would show up in another card's textarea.
+  describe('list key', () => {
+    it('keeps a saved question in its own card when it moves', async () => {
+      const wrapper = withSaved(['q-a', 'q-b']);
+      await wrapper.vm.$nextTick();
+      const textarea = textareaShowing(wrapper, 'Question q-a');
+
+      await wrapper.find('#move-down-0').trigger('click');
+
+      expect(textareaShowing(wrapper, 'Question q-a')).toBe(textarea);
+    });
+
+    it('keeps a new question in its own card when it moves', async () => {
+      const wrapper = withSaved(['q-a']);
+      await addNewQuestion(wrapper, 'New one');
+      await addNewQuestion(wrapper, 'New two');
+      const textarea = textareaShowing(wrapper, 'New two');
+
+      await wrapper.find('#move-up-2').trigger('click');
+
+      expect(textareaShowing(wrapper, 'New two')).toBe(textarea);
+    });
+  });
+
+  describe('when the questionnaire has answers', () => {
+    it('cannot move a saved question down', async () => {
+      const wrapper = withSaved(['q-a', 'q-b'], { has_entries: true });
+      await wrapper.vm.$nextTick();
+
+      expect(isDisabled(wrapper, '#move-down-0')).toBe(true);
+    });
+
+    it('cannot move a saved question up', async () => {
+      const wrapper = withSaved(['q-a', 'q-b'], { has_entries: true });
+      await wrapper.vm.$nextTick();
+
+      expect(isDisabled(wrapper, '#move-up-1')).toBe(true);
+    });
+
+    it('leaves a saved question where it is when asked to move it', () => {
+      const wrapper = withSaved(['q-a', 'q-b'], { has_entries: true });
+
+      wrapper.vm.moveQuestion(0, 1);
+
+      expect(order(wrapper)).toEqual(['q-a', 'q-b']);
+    });
+
+    it('cannot move a new question above a saved one', async () => {
+      const wrapper = withSaved(['q-a', 'q-b'], { has_entries: true });
+      await addNewQuestion(wrapper, 'New one');
+
+      expect(isDisabled(wrapper, '#move-up-2')).toBe(true);
+    });
+
+    it('leaves a new question below the saved ones when asked to move it up', async () => {
+      const wrapper = withSaved(['q-a', 'q-b'], { has_entries: true });
+      await addNewQuestion(wrapper, 'New one');
+
+      wrapper.vm.moveQuestion(2, -1);
+
+      expect(order(wrapper)).toEqual(['q-a', 'q-b', 'New one']);
+    });
+
+    it('moves a new question among the new ones', async () => {
+      const wrapper = withSaved(['q-a', 'q-b'], { has_entries: true });
+      await addNewQuestion(wrapper, 'New one');
+      await addNewQuestion(wrapper, 'New two');
+
+      await wrapper.find('#move-up-3').trigger('click');
+
+      expect(order(wrapper)).toEqual(['q-a', 'q-b', 'New two', 'New one']);
+    });
+
+    it('says why the order is locked', async () => {
+      const wrapper = withSaved(['q-a', 'q-b'], { has_entries: true });
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.find('#question-order-locked-note').exists()).toBe(true);
+    });
+  });
+
+  describe('when the questionnaire has no answers', () => {
+    it('can move a saved question', async () => {
+      const wrapper = withSaved(['q-a', 'q-b'], { has_entries: false });
+      await wrapper.vm.$nextTick();
+
+      expect(isDisabled(wrapper, '#move-down-0')).toBe(false);
+    });
+
+    it('shows no lock note', async () => {
+      const wrapper = withSaved(['q-a', 'q-b'], { has_entries: false });
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.find('#question-order-locked-note').exists()).toBe(false);
+    });
+  });
+
+  // The app counts a jump's items and a randomization group's members by
+  // position, so a move can change what they cover. The editor warns, and
+  // still saves.
+  describe('jump and randomization group warning', () => {
+    const jumpOverOne = { type: 'one choice', config: { options: ['Yes', 'No'], jump: { jumpCondition: '0', jumpOver: 1 } } };
+    const inGroupOne = { config: { randomizationGroupId: 1 } };
+
+    async function moved(questions, ...buttons) {
+      const wrapper = openedQuestionnaire(questions);
+      await wrapper.vm.$nextTick();
+      for (const button of buttons) {
+        await wrapper.find(button).trigger('click');
+      }
+
+      return wrapper;
+    }
+
+    function warned(wrapper, which) {
+      return wrapper.find(`#question-order-${which}-warning`).exists();
+    }
+
+    it('warns when a move changes which question a jump skips', async () => {
+      const wrapper = await moved(
+        [backendQuestion('q-a', jumpOverOne), backendQuestion('q-b'), backendQuestion('q-c')],
+        '#move-up-2',
+      );
+
+      expect(warned(wrapper, 'jump')).toBe(true);
+    });
+
+    it('warns when the question with the jump moves', async () => {
+      const wrapper = await moved(
+        [backendQuestion('q-a', jumpOverOne), backendQuestion('q-b'), backendQuestion('q-c')],
+        '#move-down-0',
+      );
+
+      expect(warned(wrapper, 'jump')).toBe(true);
+    });
+
+    it('does not warn about a jump when the skipped question stays the same', async () => {
+      const wrapper = await moved(
+        [backendQuestion('q-a', jumpOverOne), backendQuestion('q-b'), backendQuestion('q-c'), backendQuestion('q-d')],
+        '#move-up-3',
+      );
+
+      expect(warned(wrapper, 'jump')).toBe(false);
+    });
+
+    it('does not warn about a jump when the skipped questions only swap places', async () => {
+      const jumpOverTwo = { ...jumpOverOne, config: { ...jumpOverOne.config, jump: { jumpCondition: '0', jumpOver: 2 } } };
+      const wrapper = await moved(
+        [backendQuestion('q-a', jumpOverTwo), backendQuestion('q-b'), backendQuestion('q-c'), backendQuestion('q-d')],
+        '#move-up-2',
+      );
+
+      expect(warned(wrapper, 'jump')).toBe(false);
+    });
+
+    it('does not warn about a jump once a question is moved there and back', async () => {
+      const wrapper = await moved(
+        [backendQuestion('q-a', jumpOverOne), backendQuestion('q-b'), backendQuestion('q-c')],
+        '#move-up-2',
+        '#move-down-1',
+      );
+
+      expect(warned(wrapper, 'jump')).toBe(false);
+    });
+
+    it('warns when a move splits a randomization group', async () => {
+      const wrapper = await moved(
+        [backendQuestion('q-a', inGroupOne), backendQuestion('q-b', inGroupOne), backendQuestion('q-c')],
+        '#move-up-2',
+      );
+
+      expect(warned(wrapper, 'group')).toBe(true);
+    });
+
+    it('does not warn about a group that stays together', async () => {
+      const wrapper = await moved(
+        [backendQuestion('q-a', inGroupOne), backendQuestion('q-b', inGroupOne), backendQuestion('q-c'), backendQuestion('q-d')],
+        '#move-up-3',
+      );
+
+      expect(warned(wrapper, 'group')).toBe(false);
+    });
+
+    it('does not warn about a group that was already split when the questionnaire was opened', async () => {
+      const wrapper = await moved(
+        [backendQuestion('q-a', inGroupOne), backendQuestion('q-b'), backendQuestion('q-c', inGroupOne), backendQuestion('q-d')],
+        '#move-up-3',
+      );
+
+      expect(warned(wrapper, 'group')).toBe(false);
+    });
+
+    it('shows no warning before any move', async () => {
+      const jumpInGroupOne = { ...jumpOverOne, config: { ...jumpOverOne.config, randomizationGroupId: 1 } };
+      const wrapper = await moved(
+        [backendQuestion('q-a', jumpInGroupOne), backendQuestion('q-b'), backendQuestion('q-c', inGroupOne)],
+      );
+
+      expect([warned(wrapper, 'jump'), warned(wrapper, 'group')]).toEqual([false, false]);
+    });
+  });
+});

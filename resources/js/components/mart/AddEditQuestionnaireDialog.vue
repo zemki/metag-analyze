@@ -598,6 +598,17 @@
             <div class="pt-6 border-t border-gray-200">
               <div class="mb-4">
                 <h4 class="text-md font-medium text-gray-900">{{ trans('Questions') }}</h4>
+                <p v-if="orderLocked" id="question-order-locked-note" class="mt-1 text-xs text-gray-600">
+                  {{ trans('This questionnaire already has answers, so saved questions keep their places: the app matches answers to questions by position. New questions go at the end and can be moved among themselves.') }}
+                </p>
+                <!-- The app counts a jump's items and a randomization group's
+                     members by position. A warning only: the move is saved. -->
+                <p v-if="jumpMovedOver" id="question-order-jump-warning" class="mt-1 text-xs text-amber-700">
+                  {{ trans('A move changed which questions a jump skips: the app counts the items to skip by position. Check the jump settings.') }}
+                </p>
+                <p v-if="groupMovedApart" id="question-order-group-warning" class="mt-1 text-xs text-amber-700">
+                  {{ trans('A move split a randomization group: the app only shuffles consecutive items with the same group number. Keep the group\'s items together.') }}
+                </p>
               </div>
 
               <!-- Questions List -->
@@ -611,7 +622,7 @@
               <div v-else class="space-y-4">
                 <div
                     v-for="(question, index) in formData.questions"
-                    :key="index"
+                    :key="questionKey(question)"
                     class="border-2 border-gray-200 rounded-lg p-4 space-y-4 hover:border-blue-300 transition-colors duration-150"
                     :class="{'border-red-300 bg-red-50': saveAttempted && hasQuestionError(index)}"
                 >
@@ -628,16 +639,42 @@
                         </svg>
                       </span>
                     </div>
-                    <button
-                        type="button"
-                        @click="removeQuestion(index)"
-                        class="text-red-600 hover:text-red-900 hover:bg-red-50 p-1 rounded transition-colors"
-                        :title="trans('Delete question')"
-                    >
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                      </svg>
-                    </button>
+                    <div class="flex items-center space-x-1">
+                      <button
+                          type="button"
+                          :id="'move-up-' + index"
+                          @click="moveQuestion(index, -1)"
+                          :disabled="!canMoveQuestion(index, -1)"
+                          class="text-gray-500 hover:text-gray-900 hover:bg-gray-100 p-1 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                          :title="trans('Move question up')"
+                      >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                        </svg>
+                      </button>
+                      <button
+                          type="button"
+                          :id="'move-down-' + index"
+                          @click="moveQuestion(index, 1)"
+                          :disabled="!canMoveQuestion(index, 1)"
+                          class="text-gray-500 hover:text-gray-900 hover:bg-gray-100 p-1 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                          :title="trans('Move question down')"
+                      >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                      </button>
+                      <button
+                          type="button"
+                          @click="removeQuestion(index)"
+                          class="text-red-600 hover:text-red-900 hover:bg-red-50 p-1 rounded transition-colors"
+                          :title="trans('Delete question')"
+                      >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                      </button>
+                    </div>
                   </div>
 
                   <!-- Question Text -->
@@ -1364,6 +1401,16 @@ function normaliseFileFormat(format) {
 // MartFile::MAX_FILE_SIZE, the most the server takes.
 const MAX_FILE_SIZE_MB = 50;
 
+// The list key of a question without a uuid yet, so each question keeps its
+// own card when questions move. Never sent to the server. Counts up, so it
+// also tells the order new questions were added in.
+let lastClientId = 0;
+function newClientId() {
+  lastClientId += 1;
+
+  return lastClientId;
+}
+
 export default {
   name: 'AddEditQuestionnaireDialog',
 
@@ -1397,6 +1444,8 @@ export default {
       saveAttempted: false,
       fileUploadFormats: FILE_UPLOAD_FORMATS,
       maxFileSizeMb: MAX_FILE_SIZE_MB,
+      // Question keys in the order the dialog opened with.
+      openedOrder: [],
       formData: {
         questionnaire_id: this.nextQuestionnaireId,
         name: '',
@@ -1430,6 +1479,51 @@ export default {
   computed: {
     isEditMode() {
       return this.schedule !== null;
+    },
+
+    // Once a questionnaire has answers its saved questions keep their places:
+    // the app numbers items by position, and the server maps each answer
+    // back to a question by it. The server refuses a reorder too.
+    orderLocked() {
+      return this.isEditMode && !!this.schedule.has_entries;
+    },
+
+    // The questions in the order they'd have without any move: as opened,
+    // then the new ones in the order they were added, always at the end.
+    unmovedQuestions() {
+      const rank = question => {
+        const opened = this.openedOrder.indexOf(this.questionKey(question));
+        return opened !== -1 ? opened : this.openedOrder.length + (question.clientId || 0);
+      };
+
+      return [...this.formData.questions].sort((a, b) => rank(a) - rank(b));
+    },
+
+    // Whether a move changed which questions a jump skips: the app counts
+    // the items to skip by position. Their order among themselves doesn't
+    // matter, all of them are skipped.
+    jumpMovedOver() {
+      const questions = this.formData.questions;
+      const unmoved = this.unmovedQuestions;
+
+      return questions.some((question, index) => {
+        if (!this.savesJump(question)) return false;
+
+        const count = Number(question.jumpOver) || 0;
+        const unmovedIndex = unmoved.indexOf(question);
+        const skipped = questions.slice(index + 1, index + 1 + count);
+        const skippedUnmoved = unmoved.slice(unmovedIndex + 1, unmovedIndex + 1 + count);
+
+        return skipped.length !== skippedUnmoved.length || skipped.some(item => !skippedUnmoved.includes(item));
+      });
+    },
+
+    // Whether a move split a randomization group that was together: the
+    // app shuffles consecutive items with the same group number.
+    groupMovedApart() {
+      const splitUnmoved = this.splitRandomizationGroups(this.unmovedQuestions);
+
+      return this.splitRandomizationGroups(this.formData.questions).some(group => !splitUnmoved.includes(group));
     },
 
     repeatingQuestionnaires() {
@@ -1599,6 +1693,7 @@ export default {
       this.formData.introductory_text = this.schedule.introductory_text || '';
       this.loadScheduleData();
     }
+    this.openedOrder = this.formData.questions.map(question => this.questionKey(question));
   },
 
   methods: {
@@ -1628,6 +1723,8 @@ export default {
 
         return {
           uuid: q.uuid,  // Include UUID for updates
+          // The list key of a question without a uuid; not sent.
+          clientId: q.uuid ? null : newClientId(),
           text: q.text || '',
           imageUrl: q.image_url || '',
           videoUrl: q.video_url || '',
@@ -1850,6 +1947,8 @@ export default {
 
     addQuestion() {
       this.formData.questions.push({
+        // The list key until the question is saved; not sent.
+        clientId: newClientId(),
         text: '',
         imageUrl: '',
         videoUrl: '',
@@ -1944,6 +2043,52 @@ export default {
 
     removeQuestion(index) {
       this.formData.questions.splice(index, 1);
+    },
+
+    // The uuid of a saved question, the client-side id of a new one.
+    questionKey(question) {
+      return question.uuid || question.clientId;
+    },
+
+    // Swaps the question with its neighbour above (-1) or below (1).
+    moveQuestion(index, direction) {
+      if (!this.canMoveQuestion(index, direction)) return;
+
+      const questions = this.formData.questions;
+      const [question] = questions.splice(index, 1);
+      questions.splice(index + direction, 0, question);
+    },
+
+    // Never past either end. With the order locked only new questions trade
+    // places, so none goes above a saved one.
+    canMoveQuestion(index, direction) {
+      const questions = this.formData.questions;
+      const target = index + direction;
+      if (target < 0 || target >= questions.length) return false;
+
+      return !this.orderLocked || (!questions[index].uuid && !questions[target].uuid);
+    },
+
+    // Whether save() sends a jump for this question.
+    savesJump(question) {
+      return !!question.useJump && (question.type === 'radio' || question.type === 'checkbox');
+    },
+
+    // The randomization groups whose questions are not next to each other.
+    splitRandomizationGroups(questions) {
+      const places = {};
+      questions.forEach((question, index) => {
+        if (!question.randomizationGroupId) return;
+
+        const group = String(question.randomizationGroupId);
+        if (!places[group]) places[group] = [];
+        places[group].push(index);
+      });
+
+      return Object.keys(places).filter(group => {
+        const indexes = places[group];
+        return indexes[indexes.length - 1] - indexes[0] + 1 !== indexes.length;
+      });
     },
 
     addOption(questionIndex) {
