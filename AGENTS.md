@@ -138,6 +138,7 @@ Editing a question writes a `mart_question_history` row and bumps `version`; ans
 - Seeders must use `bcrypt()`, not `Hash::make()`.
 - Trigger migrations need `SUPER` or `log_bin_trust_function_creators=1`; they skip with a warning otherwise.
 - Case lists and exports for MART come from the MART DB; the main `entries` row holds no answers.
+- Blade Icons components are off (`config/blade-icons.php`), so `<x-heroicon-*>` and `<x-fi-*>` don't exist. Use `@svg('heroicon-o-check')` or `<x-filament::icon icon="heroicon-o-check" />`.
 
 ## Docs
 - `DOCS/MART/API.md` (endpoint reference), `DOCS/MART/DATA_MAPPING.md`, `DOCS/MART/README.md`.
