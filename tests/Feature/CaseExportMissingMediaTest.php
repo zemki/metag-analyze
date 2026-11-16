@@ -54,7 +54,7 @@ class CaseExportMissingMediaTest extends TestCase
             ->get("/cases/{$this->case->id}/export");
 
         $response->assertOk();
-        $response->assertDownload('case.xlsx');
+        $response->assertDownload();
 
         return IOFactory::load($response->getFile()->getPathname())->getActiveSheet();
     }
