@@ -399,9 +399,6 @@ class MartAuthFlowTest extends TestCase
 
         $refreshToken = $loginResponse->json('refreshToken');
 
-        // Wait a moment to ensure new tokens are different
-        sleep(1);
-
         // Refresh tokens
         $response = $this->postJson('/api/mart/refresh', [
             'refreshToken' => $refreshToken,
@@ -520,6 +517,37 @@ class MartAuthFlowTest extends TestCase
             ->assertJson([
                 'step' => 'email_check_required',
             ]);
+    }
+
+    /**
+     * A participant may need a while between the two screens, for example to
+     * look up the password, so the email check lasts 10 minutes.
+     *
+     * @test
+     */
+    public function it_accepts_password_check_up_to_10_minutes_after_email_check()
+    {
+        $this->postJson('/api/mart/check-email', ['email' => 'testuser@example.com']);
+
+        $this->travel(9)->minutes();
+
+        $this->postJson('/api/mart/check-password', [
+            'email' => 'testuser@example.com',
+            'password' => $this->testPassword,
+        ])->assertStatus(200);
+    }
+
+    /** @test */
+    public function it_rejects_password_check_more_than_10_minutes_after_email_check()
+    {
+        $this->postJson('/api/mart/check-email', ['email' => 'testuser@example.com']);
+
+        $this->travel(11)->minutes();
+
+        $this->postJson('/api/mart/check-password', [
+            'email' => 'testuser@example.com',
+            'password' => $this->testPassword,
+        ])->assertStatus(403)->assertJson(['step' => 'email_check_required']);
     }
 
     /** @test */

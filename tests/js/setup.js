@@ -1,6 +1,15 @@
 // Import any global test utilities
 import '@testing-library/jest-dom';
 import { emitter, viteEnv } from './mocks/app';
+import { TextEncoder, TextDecoder } from 'util';
+
+// jsdom does not provide TextEncoder/TextDecoder; altcha (imported via app.js) needs them
+if (typeof global.TextEncoder === 'undefined') {
+  global.TextEncoder = TextEncoder;
+}
+if (typeof global.TextDecoder === 'undefined') {
+  global.TextDecoder = TextDecoder;
+}
 
 // Mock import.meta.env
 global.import = {

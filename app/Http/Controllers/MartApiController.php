@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Cases;
-use App\Entry;
 use App\Http\Resources\Mart\MartStructureResource;
 use App\Mart\MartAnswer;
 use App\Mart\MartDeviceInfo;
@@ -97,7 +96,7 @@ class MartApiController extends Controller
                 ]);
 
                 // Calculate dynamic dates for schedules with "start on login"
-                $this->calculateMartDynamicEndDates($case);
+                \App\Mart\MartCaseSchedule::calculateForCase($case);
             }
 
             $participantId = $case->name;
@@ -109,6 +108,7 @@ class MartApiController extends Controller
         $resource = new MartStructureResource($project, $schedules);
         $resource->setParticipantId($participantId);
         $resource->setCaseId($caseId);
+        $resource->setUserEmail($case?->user?->email);
 
         return $resource;
     }
@@ -134,7 +134,9 @@ class MartApiController extends Controller
             "sheetId" => "nullable|numeric", // DEPRECATED: Legacy field from old "QuestionSheets" terminology. Use questionnaireId instead.
             "questionnaireStarted" => "required|numeric",
             "questionnaireDuration" => "required|numeric",
-            "answers" => "required|array",
+            // present, not required: a questionnaire of display items only
+            // has no itemId to answer, and the app sends `answers: {}`.
+            'answers' => 'present|array',
             "answers.*" => "present", // Explicitly allow any type for answer values
             "timestamp" => "required|numeric",
             "timestampInherited" => "nullable|numeric",
@@ -155,7 +157,9 @@ class MartApiController extends Controller
 
         // Verify the userId in the body matches the case owner. Without this,
         // any authenticated caller could attribute submissions to any string.
-        if ($case->user && $case->user->email !== $request->userId) {
+        // Case-insensitive: the invite keeps the email as typed, login finds the
+        // account in any case, and the app sends the email the participant typed.
+        if ($case->user && strcasecmp($case->user->email, (string) $request->userId) !== 0) {
             return response()->json(
                 [
                     "success" => false,
@@ -225,37 +229,6 @@ class MartApiController extends Controller
             );
         }
 
-        // Handle entity/media selection (skip for MART projects)
-        $entityId = null;
-        $project = Project::find($request->projectId);
-
-        if ($project && !$project->isMartProject()) {
-            if ($request->has("mediaId") && $request->mediaId) {
-                // Use provided media ID if valid
-                $mediaExists = DB::table("media")
-                    ->where("id", $request->mediaId)
-                    ->exists();
-                if ($mediaExists) {
-                    $entityId = $request->mediaId;
-                }
-            } else {
-                // Try to find a default entity for the project
-                $defaultEntity = DB::table("media")
-                    ->join(
-                        "project_media",
-                        "media.id",
-                        "=",
-                        "project_media.media_id",
-                    )
-                    ->where("project_media.project_id", $request->projectId)
-                    ->first();
-
-                if ($defaultEntity) {
-                    $entityId = $defaultEntity->id;
-                }
-            }
-        }
-
         // Get MART project and schedule from MART DB
         $martProject = $project->martProject();
         if (!$martProject) {
@@ -283,32 +256,12 @@ class MartApiController extends Controller
             );
         }
 
-        DB::connection("mysql")->beginTransaction();
         DB::connection("mart")->beginTransaction();
 
         try {
-            // Step 1: Create entry in main database
-            $entryData = [
-                "begin" => date(
-                    "Y-m-d H:i:s",
-                    $request->questionnaireStarted / 1000,
-                ),
-                "end" => date(
-                    "Y-m-d H:i:s",
-                    ($request->questionnaireStarted +
-                        $request->questionnaireDuration) /
-                        1000,
-                ),
-                "case_id" => $case->id,
-                "media_id" => $entityId,
-                "inputs" => json_encode([]), // No longer store answers here
-            ];
-
-            $entry = Entry::create($entryData);
-
-            // Step 2: Create MART entry in MART database
+            // Step 1: Create MART entry in MART database
             $martEntryData = [
-                "main_entry_id" => $entry->id,
+                "case_id" => $case->id,
                 "schedule_id" => $schedule->id,
                 "questionnaire_id" => $request->questionnaireId,
                 "participant_id" => $request->participantId,
@@ -330,25 +283,21 @@ class MartApiController extends Controller
 
             $martEntry = MartEntry::create($martEntryData);
 
-            // Step 3: Create MART answers for each question
-            $questions = $schedule->questions->keyBy("position");
+            // Step 2: Create MART answers for each question
+            $questions = $this->questionsInItemOrder($schedule);
+            // File UUIDs to link, by the UUID of the question they answer.
             $fileIdsToLink = [];
 
             foreach ($request->answers as $itemId => $answerValue) {
-                // Convert itemId to position: itemId = position + 1, so position = itemId - 1
-                $itemIdInt = (int) $itemId;
-                $position = $itemIdInt - 1;
-                $question = $questions->get($position);
+                $question = $questions[(int) $itemId - 1] ?? null;
 
                 if ($question) {
                     // Check if this is a file-type answer (contains file UUIDs)
-                    // File answers are arrays of UUIDs for upload-type questions
-                    if (
-                        $question->type === "photoUpload" ||
-                        $question->type === "videoUpload" ||
-                        $question->type === "audioUpload" ||
-                        $question->type === "fileUpload"
-                    ) {
+                    // The app sends [fileUrl, fileId] for upload-type questions,
+                    // and only the bare UUID matches below. The editor stores
+                    // these types as photo / audio / video / file; the
+                    // photoUpload names only exist in the API payload.
+                    if (in_array($question->type, ['photo', 'audio', 'video', 'file'], true)) {
                         // Collect file IDs to link to entry
                         $fileIds = is_array($answerValue)
                             ? $answerValue
@@ -358,7 +307,7 @@ class MartApiController extends Controller
                                 is_string($fileId) &&
                                 preg_match('/^[0-9a-f-]{36}$/i', $fileId)
                             ) {
-                                $fileIdsToLink[] = $fileId;
+                                $fileIdsToLink[$question->uuid][] = $fileId;
                             }
                         }
                     }
@@ -374,39 +323,49 @@ class MartApiController extends Controller
                 }
             }
 
-            // Step 4: Link uploaded files to the entry
-            if (!empty($fileIdsToLink)) {
+            // Step 3: Link uploaded files to the entry and their question
+            $linkErrors = [];
+            foreach ($fileIdsToLink as $questionUuid => $fileIds) {
                 $linkResults = MartFileController::linkFilesToEntry(
-                    $fileIdsToLink,
+                    $fileIds,
                     $martEntry->id,
                     $case->id,
+                    $questionUuid,
                 );
-                if (!empty($linkResults["errors"])) {
-                    \Log::warning("Some files could not be linked to entry", [
-                        "entry_id" => $martEntry->id,
-                        "errors" => $linkResults["errors"],
-                    ]);
-                }
+                $linkErrors = array_merge($linkErrors, $linkResults['errors']);
+            }
+            if (! empty($linkErrors)) {
+                \Log::warning('Some files could not be linked to entry', [
+                    'entry_id' => $martEntry->id,
+                    'errors' => $linkErrors,
+                ]);
             }
 
-            // Commit both transactions
-            DB::connection("mysql")->commit();
             DB::connection("mart")->commit();
 
             return response()->json([
                 "success" => true,
-                "entry_id" => $entry->id,
+                "entry_id" => $martEntry->id,
                 "message" => "Entry created successfully",
             ]);
         } catch (\Exception $e) {
-            // Rollback both transactions on error
-            DB::connection("mysql")->rollBack();
             DB::connection("mart")->rollBack();
+
+            // Not the exception message, here or in the response: a database
+            // error's message holds the SQL values, such as participant IDs
+            // and emails.
+            \Log::error("MART submit failed", [
+                "case_id" => $case->id,
+                "exception" => get_class($e),
+                "code" => $e->getCode(),
+                "file" => $e->getFile(),
+                "line" => $e->getLine(),
+            ]);
 
             return response()->json(
                 [
                     "success" => false,
-                    "message" => "Failed to create entry: " . $e->getMessage(),
+                    "message" => "Failed to create entry",
                 ],
                 500,
             );
@@ -434,6 +393,8 @@ class MartApiController extends Controller
             "manufacturer" => "required|string",
             "timestamp" => "required|numeric",
             "timezone" => "required|string",
+            // Optional so existing clients keep working unchanged.
+            "fcmToken" => "sometimes|nullable|string|max:4096",
         ]);
 
         // Verify user access
@@ -457,10 +418,62 @@ class MartApiController extends Controller
             ],
         );
 
+        // Registering the push token here is a convenience: it saves the app a
+        // second call at login. Token *refresh* still needs the dedicated
+        // endpoint below, because FCM can rotate a token at any time, outside
+        // any project context.
+        $tokenStored = false;
+        if ($request->filled("fcmToken")) {
+            $tokenStored = $user->addDeviceToken($request->input("fcmToken"));
+        }
+
         return response()->json([
             "success" => true,
             "message" => "Device information stored successfully",
             "device_info_id" => $deviceInfo->id,
+            "push_token_registered" => $tokenStored,
+        ]);
+    }
+
+    /**
+     * Register or unregister this device's FCM token for the authenticated user.
+     *
+     * Without this the notifications the researcher schedules have nowhere to
+     * go: routeNotificationForFcm() reads User::$deviceID, and until now
+     * nothing ever wrote to it.
+     *
+     * The app must call this after notification permission is granted, and
+     * again whenever FCM issues a new token (Android onNewToken / the iOS
+     * delegate equivalent) - otherwise delivery decays as tokens rotate.
+     */
+    public function storeDeviceToken(Request $request): JsonResponse
+    {
+        $request->validate([
+            "token" => "required|string|max:4096",
+            "action" => "sometimes|in:register,unregister",
+        ]);
+
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json(
+                ["success" => false, "message" => "Unauthenticated"],
+                401,
+            );
+        }
+
+        $unregister = $request->input("action") === "unregister";
+
+        $changed = $unregister
+            ? $user->removeDeviceToken($request->input("token"))
+            : $user->addDeviceToken($request->input("token"));
+
+        return response()->json([
+            "success" => true,
+            // false simply means the token was already in (or already absent
+            // from) the list - not an error.
+            "changed" => $changed,
+            "registered_devices" => count((array) ($user->fresh()->deviceID ?? [])),
         ]);
     }
 
@@ -573,6 +586,22 @@ class MartApiController extends Controller
             );
         }
 
+        // The token holder may only act for themselves. Otherwise anyone with a
+        // token who knows another participant's email and participantId could
+        // file device info or stats in their name, or take over their push
+        // notifications through fcmToken.
+        if ($request->user()?->id !== $user->id) {
+            return response()->json(
+                [
+                    "success" => false,
+                    "message" => "userId does not match the authenticated user",
+                    "hint" =>
+                        "The userId field must be the email address of the account the bearer token belongs to.",
+                ],
+                403,
+            );
+        }
+
         // Verify user has access to the project through a case
         $hasAccess = Cases::where("project_id", $request->projectId)
             ->where("name", $request->participantId)
@@ -636,27 +665,21 @@ class MartApiController extends Controller
             ];
         }
 
-        // Build question map by array index (not DB position!)
-        // Mobile app receives scaleId = index + 1, so itemId corresponds to array index
-        $questionsArray = $questions->sortBy("position")->values()->all();
-        $questionMap = [];
-        foreach ($questionsArray as $index => $question) {
-            $questionMap[$index] = $question;
-        }
+        $questionsArray = $this->questionsInItemOrder($schedule);
 
         // Validate each answer
-        // Note: Mobile app sends answers keyed by itemId (scaleIndex + 1)
+        // Note: Mobile app sends answers keyed by itemId (index + 1)
         foreach ($answers as $itemId => $answer) {
             // Convert itemId to array index: itemId = index + 1, so index = itemId - 1
             $itemIdInt = (int) $itemId;
             $index = $itemIdInt - 1;
 
-            if (!isset($questionMap[$index])) {
+            if (!isset($questionsArray[$index])) {
                 $errors[] = "Question with itemId $itemId (index $index) does not exist in schedule";
                 continue;
             }
 
-            $question = $questionMap[$index];
+            $question = $questionsArray[$index];
             $validationResult = $this->validateSingleAnswer(
                 $answer,
                 $question,
@@ -671,6 +694,12 @@ class MartApiController extends Controller
         // Check for missing required questions
         // Mobile app uses itemId (array index + 1) as key
         foreach ($questionsArray as $index => $question) {
+            // The app sends no answer for a display item, which has no itemId,
+            // so one saved as mandatory must not fail the submit.
+            if ($question->type === 'display') {
+                continue;
+            }
+
             $itemId = $index + 1;
             // Check for both string and int keys for compatibility
             if (
@@ -689,6 +718,16 @@ class MartApiController extends Controller
     }
 
     /**
+     * A schedule's questions in the order the structure lists them, so that
+     * index = itemId - 1. This is not the DB position, which starts at 1 for
+     * questions saved in the editor.
+     */
+    private function questionsInItemOrder(MartSchedule $schedule): array
+    {
+        return $schedule->questions->sortBy("position")->values()->all();
+    }
+
+    /**
      * Validate a single answer against its question constraints.
      *
      * Currently accepts any answer type/value.
@@ -703,77 +742,5 @@ class MartApiController extends Controller
             "valid" => true,
             "errors" => [],
         ];
-    }
-
-    /**
-     * Calculate dynamic start/end dates for questionnaires with "start on login"
-     *
-     * Creates per-case schedule overrides in mart_case_schedules table.
-     *
-     * @param  \App\Cases  $case
-     */
-    protected function calculateMartDynamicEndDates($case)
-    {
-        $project = $case->project;
-        $martProject = $project->martProject();
-
-        if (!$martProject) {
-            return;
-        }
-
-        $schedules = MartSchedule::where(
-            "mart_project_id",
-            $martProject->id,
-        )->get();
-
-        foreach ($schedules as $schedule) {
-            $timing = $schedule->timing_config ?? [];
-            $overrides = [];
-
-            // Calculate start date if start_on_first_login is true (only for single questionnaires)
-            if (
-                ($timing["start_on_first_login"] ?? false) &&
-                $schedule->type === "single"
-            ) {
-                $overrides["start_date_time"] = [
-                    "date" => $case->first_login_at->format("Y-m-d"),
-                    "time" => $timing["daily_start_time"] ?? "09:00",
-                ];
-            }
-
-            // Calculate end date if use_dynamic_end_date is true
-            if ($timing["use_dynamic_end_date"] ?? false) {
-                // Use the override start date if set, otherwise use schedule's static start date
-                $startDate =
-                    $overrides["start_date_time"]["date"] ??
-                    ($timing["start_date_time"]["date"] ?? null);
-
-                if ($startDate) {
-                    $maxTotalSubmits = $timing["max_total_submits"] ?? 30;
-                    $maxDailySubmits = $timing["max_daily_submits"] ?? 6;
-
-                    $durationDays = (int) ceil(
-                        $maxTotalSubmits / $maxDailySubmits,
-                    );
-                    $endDate = \Carbon\Carbon::parse($startDate)->addDays(
-                        $durationDays,
-                    );
-
-                    $overrides["end_date_time"] = [
-                        "date" => $endDate->format("Y-m-d"),
-                        "time" => $timing["daily_end_time"] ?? "21:00",
-                    ];
-                }
-            }
-
-            // Store in MART database if there are any overrides
-            if (!empty($overrides)) {
-                \App\Mart\MartCaseSchedule::setForCase(
-                    $case->id,
-                    $schedule->id,
-                    $overrides,
-                );
-            }
-        }
     }
 }

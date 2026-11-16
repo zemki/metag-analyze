@@ -21,8 +21,10 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
+use Throwable;
 
 class ProjectController extends Controller
 {
@@ -96,7 +98,9 @@ class ProjectController extends Controller
                 $case->consultable = $case->isConsultable() && ! $case->notYetStarted();
                 $case->backend = $case->isBackend();
 
-                // Attach project data for frontend access
+                // Attach project data for frontend access. The checks above load the
+                // real project relation, which would win over this in the JSON.
+                $case->unsetRelation('project');
                 $case->project = (object) [
                     'id' => $project->id,
                     'is_mart_project' => $project->isMartProject(),
@@ -200,6 +204,10 @@ class ProjectController extends Controller
         $perPage = $request->input('per_page', 50);
         $cases = $query->paginate($perPage);
 
+        if ($project->isMartProject()) {
+            Cases::loadMartEntries($cases->getCollection());
+        }
+
         // Process cases with computed properties
         $cases->getCollection()->transform(function ($case) use ($project) {
             $case->first_day = $case->firstDay();
@@ -211,7 +219,9 @@ class ProjectController extends Controller
             $case->consultable = $case->isAccessible(); // Use new accessibility logic
             $case->backend = $case->isBackend();
 
-            // Attach project data for frontend access
+            // Attach project data for frontend access. The checks above load the
+            // real project relation, which would win over this in the JSON.
+            $case->unsetRelation('project');
             $case->project = (object) [
                 'id' => $project->id,
                 'is_mart_project' => $project->isMartProject(),
@@ -381,8 +391,9 @@ class ProjectController extends Controller
                 DB::connection('mart')->commit();
             } catch (\Exception $e) {
                 DB::connection('mart')->rollBack();
-                // Also delete the main project to maintain consistency
-                $project->delete();
+                // Also delete the main project to maintain consistency. Quietly:
+                // the model's delete hook would hit the same MART failure.
+                $project->deleteQuietly();
                 throw new \Exception('Failed to create MART project: ' . $e->getMessage());
             }
         }
@@ -471,23 +482,29 @@ class ProjectController extends Controller
             'entityName' => self::NULLABLE,
             'useEntity' => 'boolean|nullable',
         ]);
-        // Check if inputs is already a JSON string or an array
-        if (is_string($attributes[self::INPUTS]) && $this->isJson($attributes[self::INPUTS])) {
-            $decodedAttributes = json_decode($attributes[self::INPUTS], true);
+        // An edit that sends no inputs (e.g. a rename) keeps the stored ones,
+        // including the MART config, instead of failing on them.
+        if (! isset($attributes[self::INPUTS])) {
+            unset($attributes[self::INPUTS]);
         } else {
-            $decodedAttributes = $attributes[self::INPUTS];
-        }
-
-        foreach ($decodedAttributes as $input => $value) {
-            if (isset($value['answers'])) {
-                $decodedAttributes[$input]['answers'] = array_filter($value['answers'], fn ($v) => ! is_null($v) && $v !== '');
+            // Check if inputs is already a JSON string or an array
+            if (is_string($attributes[self::INPUTS]) && $this->isJson($attributes[self::INPUTS])) {
+                $decodedAttributes = json_decode($attributes[self::INPUTS], true);
             } else {
-                // Initialize an empty array for non-choice type inputs
-                $decodedAttributes[$input]['answers'] = [];
+                $decodedAttributes = $attributes[self::INPUTS];
             }
-        }
 
-        $attributes[self::INPUTS] = json_encode($decodedAttributes);
+            foreach ($decodedAttributes as $input => $value) {
+                if (isset($value['answers'])) {
+                    $decodedAttributes[$input]['answers'] = array_filter($value['answers'], fn ($v) => ! is_null($v) && $v !== '');
+                } else {
+                    // Initialize an empty array for non-choice type inputs
+                    $decodedAttributes[$input]['answers'] = [];
+                }
+            }
+
+            $attributes[self::INPUTS] = json_encode($decodedAttributes);
+        }
 
         // Only update entity_name and use_entity for non-legacy projects
         if (request()->has('entityName') || request()->has('useEntity')) {
@@ -563,6 +580,8 @@ class ProjectController extends Controller
 
     public function duplicate(Project $project)
     {
+        $this->authorize('view', $project);
+
         // Check if original project has MART data
         $originalMartProject = $project->martProject();
         $isMartProject = $originalMartProject !== null;
@@ -619,6 +638,8 @@ class ProjectController extends Controller
                             'type' => $originalQuestion->type,
                             'config' => $originalQuestion->config,
                             'is_mandatory' => $originalQuestion->is_mandatory,
+                            'image_url' => $originalQuestion->image_url,
+                            'video_url' => $originalQuestion->video_url,
                             'version' => 1, // Reset version for new copy
                             // uuid will be auto-generated by MartQuestion model
                         ]);
@@ -684,30 +705,74 @@ class ProjectController extends Controller
         // without colliding with the UNIQUE email index. Restore happens in
         // Auth\VerificationController::newpassword once they prove ownership.
         $user = User::withTrashed()->where('email', '=', $request->email)->first();
+
+        // Whether this invitation needs a "set your password" mail: either the
+        // account is brand new, or it exists but was never verified.
+        $needsInvitationMail = false;
+
         if (! $user) {
             $user = new User;
             $user->email = $request->email;
             $user->password = Helper::random_str(60);
             $user->password_token = Helper::random_str(60);
-            $user->save();
-            Mail::to($user->email)->send(new VerificationEmail($user, $request->emailtext ? $request->emailtext : config('utilities.emailDefaultText')));
-            $role = Role::where('name', '=', 'researcher')->first();
-            $user->roles()->sync($role);
+            $needsInvitationMail = true;
         } elseif (! $user->hasVerifiedEmail()) {
             $user->api_token = Helper::random_str(60);
             $user->password_token = Helper::random_str(60);
-            $user->save();
-            Mail::to($user->email)->send(new VerificationEmail($user, $request->emailtext ? $request->emailtext : config('utilities.emailDefaultText')));
-            $role = Role::where('name', '=', 'researcher')->first();
-            $user->roles()->sync($role);
+            $needsInvitationMail = true;
         }
-        $project->invited()->syncWithoutDetaching($user->id);
+
+        // Persist the account, its role and the project invitation together.
+        DB::transaction(function () use ($user, $project, $needsInvitationMail) {
+            if ($needsInvitationMail) {
+                $user->save();
+
+                $role = Role::where('name', '=', 'researcher')->first();
+
+                // Guard against a missing role: sync(null) would silently
+                // detach every role the user has instead of assigning one.
+                if ($role) {
+                    $user->roles()->sync($role);
+                }
+            }
+
+            $project->invited()->syncWithoutDetaching($user->id);
+        });
+
+        // Sent only after the transaction has committed, so the message can
+        // never reference a user that was rolled back.
+        if ($needsInvitationMail) {
+            try {
+                Mail::to($user->email)->send(new VerificationEmail($user, $request->emailtext ? $request->emailtext : config('utilities.emailDefaultText')));
+            } catch (Throwable $e) {
+                Log::error('Failed to send project invitation email', [
+                    'email' => $user->email,
+                    'project_id' => $project->id,
+                    'error' => $e->getMessage(),
+                ]);
+
+                // The invitation itself succeeded, so this is not an error
+                // response: the researcher needs to know the mail did not go
+                // out, while the user stays in the invited list.
+                return response()->json([
+                    'user' => $user,
+                    self::MESSAGE => 'The user was invited, but the invitation email could not be sent. Please check the mail configuration and invite again.',
+                    'mail_failed' => true,
+                ], 200);
+            }
+        }
 
         return response()->json(['user' => $user, self::MESSAGE => 'user was invited!'], 200);
     }
 
     public function removeFromProject(Request $request)
     {
+        // Without a project, detach() would remove every invitation of that user.
+        $request->validate([
+            'email' => 'required|email',
+            self::PROJECT => 'required|integer|exists:projects,id',
+        ]);
+
         $userWantsToBeRemovedFromStudy = $request->email != auth()->user()->email;
         if ($userWantsToBeRemovedFromStudy) {
             $this->authorize(self::UPDATESTRING, Project::where('id', $request->input(self::PROJECT))->first());
@@ -754,10 +819,23 @@ class ProjectController extends Controller
     }
 
     /**
+     * Cases of MeTag projects are skipped, so this stays off the MART database
+     * unless the list holds a MART project.
+     */
+    private function loadMartEntriesCounts($projects): void
+    {
+        Cases::loadMartEntriesCounts(
+            $projects->filter(fn ($project) => $project->isMartProject())->flatMap->cases
+        );
+    }
+
+    /**
      * Prepare Projects Data
      */
     private function prepareProjects($projects)
     {
+        $this->loadMartEntriesCounts($projects);
+
         foreach ($projects as $key => $project) {
             $projects[$key]['authiscreator'] = auth()->user()->is($project->creator());
             $projects[$key]['entries'] = $project->cases->sum('entries_count');
@@ -780,6 +858,8 @@ class ProjectController extends Controller
      */
     private function prepareInvites($invites)
     {
+        $this->loadMartEntriesCounts($invites);
+
         foreach ($invites as $key => $invite) {
             $invites[$key]['casescount'] = $invite->cases()->count();
             $invites[$key]['authiscreator'] = false;
@@ -889,6 +969,8 @@ class ProjectController extends Controller
         if (auth()->user()->notOwnerNorInvited($project) && ! auth()->user()->isAdmin()) {
             abort(403);
         }
+
+        abort_if($project->isMartProject(), 403, 'The treemap is not available for MART projects.');
 
         // Prepare breadcrumb
         $data['breadcrumb'] = [

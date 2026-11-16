@@ -10,6 +10,10 @@ class notifyUserforNewCaseWhenAlreadyRegistered extends Notification
 {
     use Queueable;
 
+    protected string $message;
+
+    protected string $subject;
+
     /**
      * Create a new notification instance.
      *
@@ -17,8 +21,8 @@ class notifyUserforNewCaseWhenAlreadyRegistered extends Notification
      */
     public function __construct($details)
     {
-        $this->message = $details['message'];
-        $this->subject = $details['subject'];
+        $this->message = (string) ($details['message'] ?? '');
+        $this->subject = (string) ($details['subject'] ?? '');
     }
 
     /**
@@ -41,8 +45,11 @@ class notifyUserforNewCaseWhenAlreadyRegistered extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->subject(strlen($this->subject) > 0 ? $this->subject : 'New Case on ' . env('APP_NAME'))
-            ->lineIf(strlen($this->message) == 0, 'You have been added to a new case, please login in ' . env('APP_NAME') . ' to check it out.')
+            // config(), not env(): after `php artisan config:cache` the .env
+            // file is not loaded and env() returns null, which would leave the
+            // application name blank in the subject and body.
+            ->subject(strlen($this->subject) > 0 ? $this->subject : 'New Case on ' . config('app.name'))
+            ->lineIf(strlen($this->message) == 0, 'You have been added to a new case, please login in ' . config('app.name') . ' to check it out.')
             ->lineIf(strlen($this->message) > 0, $this->message);
     }
 

@@ -1,9 +1,7 @@
 <?php
 
 use App\Cases;
-use App\Entry;
-use App\Mart\MartAnswer;
-use App\Mart\MartEntry;
+use App\Http\Controllers\MartApiController;
 use App\Mart\MartPage;
 use App\Mart\MartProject;
 use App\Mart\MartQuestion;
@@ -12,16 +10,28 @@ use App\Project;
 use App\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
+/**
+ * Four demo MART projects, optionally with made-up experience sampling data.
+ *
+ * Questions carry the config the editor saves, and live only in the MART
+ * database. Answers go through the same code as the app's submits: option
+ * values from 1, an array for every item, and never 0 on a range, which the
+ * app would drop. Random numbers come from a fixed seed, so runs repeat.
+ *
+ * The demo cases all belong to the project owner, so they're for the
+ * researcher's screens and exports. Only one of them could sign in to the app.
+ */
 class MartProjectSeeder extends Seeder
 {
-    /**
-     * Run the database seeds for MART projects.
-     *
-     * @return void
-     */
+    /** Answers per case. Null picks a realistic number; tests set a small one. */
+    public ?int $answersPerCase = null;
+
+    private const RANDOM_SEED = 20261108;
+
     public function run()
     {
         $this->command->info('Creating MART projects...');
@@ -32,30 +42,21 @@ class MartProjectSeeder extends Seeder
             true // Default to yes
         );
 
-        // Get or create admin user (same approach as RealisticDataSeeder)
-        $user = User::find(1);
+        mt_srand(self::RANDOM_SEED);
 
-        if (! $user) {
-            $this->command->info('No admin user found, creating one...');
-            $user = User::firstOrCreate(
-                ['email' => 'admin@metag-analyze.test'],
-                [
-                    'password' => bcrypt('admin123'),
-                    'deviceID' => 'ADMIN_' . Str::random(10),
-                    'email_verified_at' => now(),
-                ]
-            );
+        try {
+            $user = $this->owner();
+            $this->command->info("Assigning MART projects to user: {$user->email} (ID: {$user->id})");
+
+            $projects = [
+                $this->createWellbeingProject($user, $includeEsmData),
+                $this->createStressStudyProject($user, $includeEsmData),
+                $this->createSocialMediaProject($user, $includeEsmData),
+                $this->createConsultableDemoProject($user, $includeEsmData),
+            ];
+        } finally {
+            mt_srand();
         }
-
-        $this->command->info("Assigning MART projects to user: {$user->email} (ID: {$user->id})");
-
-        // Create MART projects
-        $projects = [
-            $this->createWellbeingProject($user, $includeEsmData),
-            $this->createStressStudyProject($user, $includeEsmData),
-            $this->createSocialMediaProject($user, $includeEsmData),
-            $this->createConsultableDemoProject($user, $includeEsmData),
-        ];
 
         $this->command->info('Created ' . count($projects) . ' MART projects.');
 
@@ -69,100 +70,60 @@ class MartProjectSeeder extends Seeder
     }
 
     /**
+     * The first user, as for RealisticDataSeeder, or a new admin with a random
+     * password shown once.
+     */
+    private function owner(): User
+    {
+        $user = User::find(1);
+        if ($user) {
+            return $user;
+        }
+
+        $password = Str::password(20, symbols: false);
+        $user = User::create([
+            'email' => 'admin@metag-analyze.test',
+            'password' => bcrypt($password),
+            'deviceID' => 'ADMIN_' . Str::random(10),
+        ]);
+        $user->forceFill(['email_verified_at' => now()])->save();
+        $this->command->info("No user 1, so created {$user->email}  password: {$password}");
+
+        return $user;
+    }
+
+    /**
      * Create a wellbeing tracking MART project
      */
     private function createWellbeingProject($user, $includeEsmData)
     {
-        $project = Project::create([
-            'name' => 'Daily Wellbeing Tracker',
-            'description' => 'A mobile experience sampling study tracking daily mood, stress levels, and activities to understand patterns in psychological wellbeing.',
-            'created_by' => $user->id,
-            'is_locked' => false,
-            'use_entity' => false, // MART projects don't use entities
-            'entity_name' => null,
-            'inputs' => json_encode([
-                // MART configuration
+        $project = $this->createProject($user, 'Daily Wellbeing Tracker',
+            'A mobile experience sampling study tracking daily mood, stress levels, and activities to understand patterns in psychological wellbeing.',
+            'Daily Wellbeing Check-in',
+            [
                 [
-                    'type' => 'mart',
-                    'questionnaireName' => 'Daily Wellbeing Check-in',
-                    'projectOptions' => [
-                        'pages' => [
-                            [
-                                'name' => 'Welcome',
-                                'content' => '<h1>Welcome to the Daily Wellbeing Study</h1><p>Thank you for participating in our research. Over the next 14 days, you\'ll receive notifications to complete brief surveys about your mood and activities.</p><p><strong>Important:</strong> Please respond as honestly as possible. Your responses are completely anonymous.</p>',
-                                'buttonText' => 'Start Study',
-                                'showOnFirstAppStart' => true,
-                                'sortOrder' => 0,
-                            ],
-                            [
-                                'name' => 'Instructions',
-                                'content' => '<h2>How it works</h2><ul><li>You\'ll receive 5 random notifications per day</li><li>Each survey takes 2-3 minutes</li><li>Answer based on how you feel <em>right now</em></li><li>Don\'t worry if you miss some - just answer when you can</li></ul>',
-                                'buttonText' => 'Got it!',
-                                'showOnFirstAppStart' => true,
-                                'sortOrder' => 1,
-                            ],
-                        ],
-                    ],
-                ],
-                // Questionnaire questions
-                [
-                    'name' => 'How are you feeling right now?',
-                    'type' => 'one choice',
-                    'mandatory' => true,
-                    'answers' => ['Very bad', 'Bad', 'Neutral', 'Good', 'Very good'],
-                    'numberofanswer' => 5,
-                    'martMetadata' => [
-                        'originalType' => 'radio',
-                        'minValue' => null,
-                        'maxValue' => null,
-                        'steps' => null,
-                    ],
+                    'name' => 'Welcome',
+                    'content' => '<h1>Welcome to the Daily Wellbeing Study</h1><p>Thank you for participating in our research. Over the next 14 days, you\'ll receive notifications to complete brief surveys about your mood and activities.</p><p><strong>Important:</strong> Please respond as honestly as possible. Your responses are completely anonymous.</p>',
+                    'buttonText' => 'Start Study',
+                    'showOnFirstAppStart' => true,
+                    'sortOrder' => 0,
                 ],
                 [
-                    'name' => 'Rate your current stress level',
-                    'type' => 'scale',
-                    'mandatory' => true,
-                    'answers' => [],
-                    'martMetadata' => [
-                        'originalType' => 'range',
-                        'minValue' => 0,
-                        'maxValue' => 10,
-                        'steps' => 1,
-                    ],
+                    'name' => 'Instructions',
+                    'content' => '<h2>How it works</h2><ul><li>You\'ll receive 5 random notifications per day</li><li>Each survey takes 2-3 minutes</li><li>Answer based on how you feel <em>right now</em></li><li>Don\'t worry if you miss some - just answer when you can</li></ul>',
+                    'buttonText' => 'Got it!',
+                    'showOnFirstAppStart' => true,
+                    'sortOrder' => 1,
                 ],
-                [
-                    'name' => 'What are you doing right now?',
-                    'type' => 'multiple choice',
-                    'mandatory' => false,
-                    'answers' => ['Working/studying', 'Socializing', 'Exercising', 'Eating', 'Traveling', 'Relaxing', 'Other'],
-                    'numberofanswer' => 7,
-                    'martMetadata' => [
-                        'originalType' => 'checkbox',
-                        'minValue' => null,
-                        'maxValue' => null,
-                        'steps' => null,
-                    ],
-                ],
-                [
-                    'name' => 'Any additional thoughts or feelings?',
-                    'type' => 'text',
-                    'mandatory' => false,
-                    'answers' => [],
-                    'martMetadata' => [
-                        'originalType' => 'textarea',
-                        'minValue' => null,
-                        'maxValue' => null,
-                        'steps' => null,
-                    ],
-                ],
-            ]),
+            ],
+        );
+
+        $this->createQuestionnaireSchedules($project, 'wellbeing', [
+            $this->choice('How are you feeling right now?', ['Very bad', 'Bad', 'Neutral', 'Good', 'Very good'], true),
+            $this->range('Rate your current stress level', 0, 10, 1, true),
+            $this->choice('What are you doing right now?', ['Working/studying', 'Socializing', 'Exercising', 'Eating', 'Traveling', 'Relaxing', 'Other'], false, multiple: true),
+            $this->textarea('Any additional thoughts or feelings?', false),
         ]);
-
-        // Create MART pages
-        $this->createMartPages($project);
-
-        // Create questionnaire schedules
-        $this->createQuestionnaireSchedules($project, 'wellbeing');
 
         if ($includeEsmData) {
             $this->createEsmCases($project, 'wellbeing');
@@ -176,100 +137,27 @@ class MartProjectSeeder extends Seeder
      */
     private function createStressStudyProject($user, $includeEsmData)
     {
-        $project = Project::create([
-            'name' => 'Workplace Stress Research',
-            'description' => 'An ESM study examining workplace stress patterns, coping mechanisms, and their impact on performance and wellbeing among office workers.',
-            'created_by' => $user->id,
-            'is_locked' => false,
-            'use_entity' => false,
-            'entity_name' => null,
-            'inputs' => json_encode([
-                // MART configuration
+        $project = $this->createProject($user, 'Workplace Stress Research',
+            'An ESM study examining workplace stress patterns, coping mechanisms, and their impact on performance and wellbeing among office workers.',
+            'Workplace Stress Monitor',
+            [
                 [
-                    'type' => 'mart',
-                    'questionnaireName' => 'Workplace Stress Monitor',
-                    'projectOptions' => [
-                        'pages' => [
-                            [
-                                'name' => 'Study Information',
-                                'content' => '<h1>Workplace Stress Research</h1><p>This study investigates how workplace stress affects daily performance and wellbeing.</p><p><strong>Duration:</strong> 21 days<br><strong>Frequency:</strong> 4 times per day during work hours</p><p>Your participation helps us understand stress patterns in modern workplaces.</p>',
-                                'buttonText' => 'Continue',
-                                'showOnFirstAppStart' => true,
-                                'sortOrder' => 0,
-                            ],
-                        ],
-                    ],
+                    'name' => 'Study Information',
+                    'content' => '<h1>Workplace Stress Research</h1><p>This study investigates how workplace stress affects daily performance and wellbeing.</p><p><strong>Duration:</strong> 21 days<br><strong>Frequency:</strong> 4 times per day during work hours</p><p>Your participation helps us understand stress patterns in modern workplaces.</p>',
+                    'buttonText' => 'Continue',
+                    'showOnFirstAppStart' => true,
+                    'sortOrder' => 0,
                 ],
-                // Questionnaire questions
-                [
-                    'name' => 'Rate your current stress level',
-                    'type' => 'scale',
-                    'mandatory' => true,
-                    'answers' => [],
-                    'martMetadata' => [
-                        'originalType' => 'range',
-                        'minValue' => 1,
-                        'maxValue' => 7,
-                        'steps' => 1,
-                    ],
-                ],
-                [
-                    'name' => 'What is your primary work activity right now?',
-                    'type' => 'one choice',
-                    'mandatory' => true,
-                    'answers' => ['Email/communication', 'Meetings', 'Focused work', 'Planning/organizing', 'Problem-solving', 'Break/pause', 'Other'],
-                    'numberofanswer' => 7,
-                    'martMetadata' => [
-                        'originalType' => 'radio',
-                        'minValue' => null,
-                        'maxValue' => null,
-                        'steps' => null,
-                    ],
-                ],
-                [
-                    'name' => 'How demanding is your current task?',
-                    'type' => 'scale',
-                    'mandatory' => true,
-                    'answers' => [],
-                    'martMetadata' => [
-                        'originalType' => 'range',
-                        'minValue' => 1,
-                        'maxValue' => 5,
-                        'steps' => 1,
-                    ],
-                ],
-                [
-                    'name' => 'Which stressors are affecting you right now?',
-                    'type' => 'multiple choice',
-                    'mandatory' => false,
-                    'answers' => ['Time pressure', 'Workload', 'Difficult colleagues', 'Technical issues', 'Unclear instructions', 'Interruptions', 'None'],
-                    'numberofanswer' => 7,
-                    'martMetadata' => [
-                        'originalType' => 'checkbox',
-                        'minValue' => null,
-                        'maxValue' => null,
-                        'steps' => null,
-                    ],
-                ],
-                [
-                    'name' => 'Rate your current energy level',
-                    'type' => 'scale',
-                    'mandatory' => true,
-                    'answers' => [],
-                    'martMetadata' => [
-                        'originalType' => 'range',
-                        'minValue' => 1,
-                        'maxValue' => 10,
-                        'steps' => 1,
-                    ],
-                ],
-            ]),
+            ],
+        );
+
+        $this->createQuestionnaireSchedules($project, 'workplace', [
+            $this->range('Rate your current stress level', 1, 7, 1, true),
+            $this->choice('What is your primary work activity right now?', ['Email/communication', 'Meetings', 'Focused work', 'Planning/organizing', 'Problem-solving', 'Break/pause', 'Other'], true),
+            $this->range('How demanding is your current task?', 1, 5, 1, true),
+            $this->choice('Which stressors are affecting you right now?', ['Time pressure', 'Workload', 'Difficult colleagues', 'Technical issues', 'Unclear instructions', 'Interruptions', 'None'], false, multiple: true),
+            $this->range('Rate your current energy level', 1, 10, 1, true),
         ]);
-
-        $this->createMartPages($project);
-
-        // Create questionnaire schedules
-        $this->createQuestionnaireSchedules($project, 'workplace');
 
         if ($includeEsmData) {
             $this->createEsmCases($project, 'stress');
@@ -283,101 +171,27 @@ class MartProjectSeeder extends Seeder
      */
     private function createSocialMediaProject($user, $includeEsmData)
     {
-        $project = Project::create([
-            'name' => 'Social Media & Mood Study',
-            'description' => 'An experience sampling study exploring the relationship between social media usage patterns and emotional wellbeing in young adults.',
-            'created_by' => $user->id,
-            'is_locked' => false,
-            'use_entity' => false,
-            'entity_name' => null,
-            'inputs' => json_encode([
-                // MART configuration
+        $project = $this->createProject($user, 'Social Media & Mood Study',
+            'An experience sampling study exploring the relationship between social media usage patterns and emotional wellbeing in young adults.',
+            'Social Media & Mood Check',
+            [
                 [
-                    'type' => 'mart',
-                    'questionnaireName' => 'Social Media & Mood Check',
-                    'projectOptions' => [
-                        'pages' => [
-                            [
-                                'name' => 'Study Overview',
-                                'content' => '<h1>Social Media & Mood Study</h1><p>Help us understand how social media affects daily mood and wellbeing.</p><p><strong>What we\'ll ask:</strong></p><ul><li>Your current mood</li><li>Recent social media activity</li><li>Social interactions</li></ul><p>All responses are anonymous and confidential.</p>',
-                                'buttonText' => 'Begin',
-                                'showOnFirstAppStart' => true,
-                                'sortOrder' => 0,
-                            ],
-                        ],
-                    ],
+                    'name' => 'Study Overview',
+                    'content' => '<h1>Social Media & Mood Study</h1><p>Help us understand how social media affects daily mood and wellbeing.</p><p><strong>What we\'ll ask:</strong></p><ul><li>Your current mood</li><li>Recent social media activity</li><li>Social interactions</li></ul><p>All responses are anonymous and confidential.</p>',
+                    'buttonText' => 'Begin',
+                    'showOnFirstAppStart' => true,
+                    'sortOrder' => 0,
                 ],
-                // Questionnaire questions
-                [
-                    'name' => 'How would you describe your current mood?',
-                    'type' => 'one choice',
-                    'mandatory' => true,
-                    'answers' => ['Very negative', 'Negative', 'Neutral', 'Positive', 'Very positive'],
-                    'numberofanswer' => 5,
-                    'martMetadata' => [
-                        'originalType' => 'radio',
-                        'minValue' => null,
-                        'maxValue' => null,
-                        'steps' => null,
-                    ],
-                ],
-                [
-                    'name' => 'In the past hour, how much time did you spend on social media?',
-                    'type' => 'scale',
-                    'mandatory' => true,
-                    'answers' => [],
-                    'martMetadata' => [
-                        'originalType' => 'range',
-                        'minValue' => 0,
-                        'maxValue' => 60,
-                        'steps' => 5,
-                    ],
-                ],
-                [
-                    'name' => 'Which social media platforms did you use?',
-                    'type' => 'multiple choice',
-                    'mandatory' => false,
-                    'answers' => ['Instagram', 'Facebook', 'Twitter/X', 'TikTok', 'YouTube', 'LinkedIn', 'Other', 'None'],
-                    'numberofanswer' => 8,
-                    'martMetadata' => [
-                        'originalType' => 'checkbox',
-                        'minValue' => null,
-                        'maxValue' => null,
-                        'steps' => null,
-                    ],
-                ],
-                [
-                    'name' => 'How did social media make you feel?',
-                    'type' => 'one choice',
-                    'mandatory' => false,
-                    'answers' => ['Much worse', 'Worse', 'No change', 'Better', 'Much better', 'Did not use social media'],
-                    'numberofanswer' => 6,
-                    'martMetadata' => [
-                        'originalType' => 'radio',
-                        'minValue' => null,
-                        'maxValue' => null,
-                        'steps' => null,
-                    ],
-                ],
-                [
-                    'name' => 'Rate your current social connectedness',
-                    'type' => 'scale',
-                    'mandatory' => true,
-                    'answers' => [],
-                    'martMetadata' => [
-                        'originalType' => 'range',
-                        'minValue' => 1,
-                        'maxValue' => 7,
-                        'steps' => 1,
-                    ],
-                ],
-            ]),
+            ],
+        );
+
+        $this->createQuestionnaireSchedules($project, 'social', [
+            $this->choice('How would you describe your current mood?', ['Very negative', 'Negative', 'Neutral', 'Positive', 'Very positive'], true),
+            $this->range('In the past hour, how much time did you spend on social media?', 0, 60, 5, true),
+            $this->choice('Which social media platforms did you use?', ['Instagram', 'Facebook', 'Twitter/X', 'TikTok', 'YouTube', 'LinkedIn', 'Other', 'None'], false, multiple: true),
+            $this->choice('How did social media make you feel?', ['Much worse', 'Worse', 'No change', 'Better', 'Much better', 'Did not use social media'], false),
+            $this->range('Rate your current social connectedness', 1, 7, 1, true),
         ]);
-
-        $this->createMartPages($project);
-
-        // Create questionnaire schedules
-        $this->createQuestionnaireSchedules($project, 'social');
 
         if ($includeEsmData) {
             $this->createEsmCases($project, 'social_media');
@@ -391,100 +205,27 @@ class MartProjectSeeder extends Seeder
      */
     private function createConsultableDemoProject($user, $includeEsmData)
     {
-        $project = Project::create([
-            'name' => 'ESM Demo - Consultable Entries',
-            'description' => 'A demonstration ESM project with clear, readable entries for testing and consultation. Contains structured data that is easy to analyze and understand.',
-            'created_by' => $user->id,
-            'is_locked' => false,
-            'use_entity' => false,
-            'entity_name' => null,
-            'inputs' => json_encode([
-                // MART configuration
+        $project = $this->createProject($user, 'ESM Demo - Consultable Entries',
+            'A demonstration ESM project with clear, readable entries for testing and consultation. Contains structured data that is easy to analyze and understand.',
+            'Daily Experience Survey',
+            [
                 [
-                    'type' => 'mart',
-                    'questionnaireName' => 'Daily Experience Survey',
-                    'projectOptions' => [
-                        'pages' => [
-                            [
-                                'name' => 'Demo Instructions',
-                                'content' => '<h1>ESM Demo Project</h1><p>This is a demonstration project showing how ESM data collection works.</p><p><strong>Purpose:</strong> To provide clear, consultable entries that researchers can easily analyze.</p><ul><li>Questions are simple and clear</li><li>Responses are realistic and varied</li><li>Data structure is optimized for analysis</li></ul>',
-                                'buttonText' => 'Start Demo',
-                                'showOnFirstAppStart' => true,
-                                'sortOrder' => 0,
-                            ],
-                        ],
-                    ],
+                    'name' => 'Demo Instructions',
+                    'content' => '<h1>ESM Demo Project</h1><p>This is a demonstration project showing how ESM data collection works.</p><p><strong>Purpose:</strong> To provide clear, consultable entries that researchers can easily analyze.</p><ul><li>Questions are simple and clear</li><li>Responses are realistic and varied</li><li>Data structure is optimized for analysis</li></ul>',
+                    'buttonText' => 'Start Demo',
+                    'showOnFirstAppStart' => true,
+                    'sortOrder' => 0,
                 ],
-                // Simple, clear questions
-                [
-                    'name' => 'Current mood (1-10 scale)',
-                    'type' => 'scale',
-                    'mandatory' => true,
-                    'answers' => [],
-                    'martMetadata' => [
-                        'originalType' => 'range',
-                        'minValue' => 1,
-                        'maxValue' => 10,
-                        'steps' => 1,
-                    ],
-                ],
-                [
-                    'name' => 'Primary activity right now',
-                    'type' => 'one choice',
-                    'mandatory' => true,
-                    'answers' => ['Working', 'Studying', 'Socializing', 'Exercising', 'Eating', 'Commuting', 'Relaxing', 'Sleeping'],
-                    'numberofanswer' => 8,
-                    'martMetadata' => [
-                        'originalType' => 'radio',
-                        'minValue' => null,
-                        'maxValue' => null,
-                        'steps' => null,
-                    ],
-                ],
-                [
-                    'name' => 'Energy level (1-5 scale)',
-                    'type' => 'scale',
-                    'mandatory' => true,
-                    'answers' => [],
-                    'martMetadata' => [
-                        'originalType' => 'range',
-                        'minValue' => 1,
-                        'maxValue' => 5,
-                        'steps' => 1,
-                    ],
-                ],
-                [
-                    'name' => 'Location',
-                    'type' => 'one choice',
-                    'mandatory' => false,
-                    'answers' => ['Home', 'Office', 'School', 'Transportation', 'Restaurant/Cafe', 'Gym', 'Outdoors', 'Other'],
-                    'numberofanswer' => 8,
-                    'martMetadata' => [
-                        'originalType' => 'radio',
-                        'minValue' => null,
-                        'maxValue' => null,
-                        'steps' => null,
-                    ],
-                ],
-                [
-                    'name' => 'Notable thoughts or events',
-                    'type' => 'text',
-                    'mandatory' => false,
-                    'answers' => [],
-                    'martMetadata' => [
-                        'originalType' => 'textarea',
-                        'minValue' => null,
-                        'maxValue' => null,
-                        'steps' => null,
-                    ],
-                ],
-            ]),
+            ],
+        );
+
+        $this->createQuestionnaireSchedules($project, 'demo', [
+            $this->range('Current mood (1-10 scale)', 1, 10, 1, true),
+            $this->choice('Primary activity right now', ['Working', 'Studying', 'Socializing', 'Exercising', 'Eating', 'Commuting', 'Relaxing', 'Sleeping'], true),
+            $this->range('Energy level (1-5 scale)', 1, 5, 1, true),
+            $this->choice('Location', ['Home', 'Office', 'School', 'Transportation', 'Restaurant/Cafe', 'Gym', 'Outdoors', 'Other'], false),
+            $this->textarea('Notable thoughts or events', false),
         ]);
-
-        $this->createMartPages($project);
-
-        // Create questionnaire schedules
-        $this->createQuestionnaireSchedules($project, 'demo');
 
         if ($includeEsmData) {
             $this->createConsultableDemoData($project);
@@ -494,131 +235,265 @@ class MartProjectSeeder extends Seeder
     }
 
     /**
+     * The project row with only the MART marker in inputs, as
+     * ProjectController and editproject.vue save it, plus its MART rows.
+     */
+    protected function createProject(User $user, string $name, string $description, string $questionnaireName, array $pages): Project
+    {
+        $project = Project::create([
+            'name' => $name,
+            'description' => $description,
+            'created_by' => $user->id,
+            'is_locked' => false,
+            'use_entity' => false, // MART projects don't use entities
+            'entity_name' => null,
+            'inputs' => json_encode([[
+                'type' => 'mart',
+                'name' => 'MART Configuration',
+                'answers' => [],
+                'questionnaireName' => $questionnaireName,
+                'projectOptions' => ['pages' => $pages],
+            ]]),
+        ]);
+
+        $martProject = MartProject::create(['main_project_id' => $project->id]);
+
+        foreach ($pages as $page) {
+            MartPage::create([
+                'mart_project_id' => $martProject->id,
+                'name' => $page['name'],
+                'content' => $page['content'],
+                'button_text' => $page['buttonText'],
+                'show_on_first_app_start' => $page['showOnFirstAppStart'],
+                'sort_order' => $page['sortOrder'],
+            ]);
+        }
+
+        return $project;
+    }
+
+    /**
+     * Questions as the editor saves them.
+     */
+    private function choice(string $text, array $options, bool $mandatory, bool $multiple = false): array
+    {
+        return [
+            'text' => $text,
+            'type' => $multiple ? 'multiple choice' : 'one choice',
+            'mandatory' => $mandatory,
+            'config' => ['options' => $options],
+        ];
+    }
+
+    private function range(string $text, int $min, int $max, int $step, bool $mandatory): array
+    {
+        return [
+            'text' => $text,
+            'type' => 'range',
+            'mandatory' => $mandatory,
+            'config' => ['min' => $min, 'max' => $max, 'step' => $step],
+        ];
+    }
+
+    private function textarea(string $text, bool $mandatory): array
+    {
+        return ['text' => $text, 'type' => 'textarea', 'mandatory' => $mandatory, 'config' => []];
+    }
+
+    /**
      * Create highly structured, consultable demo data
      */
     private function createConsultableDemoData($project)
     {
         // Create 3 demo participants with different patterns
         $participants = [
-            [
-                'name' => 'Demo_Participant_A_HighMood',
-                'pattern' => 'high_mood',
-                'entries' => 25,
-            ],
-            [
-                'name' => 'Demo_Participant_B_WorkStress',
-                'pattern' => 'work_stress',
-                'entries' => 30,
-            ],
-            [
-                'name' => 'Demo_Participant_C_Balanced',
-                'pattern' => 'balanced',
-                'entries' => 28,
-            ],
+            ['name' => 'Demo_Participant_A_HighMood', 'pattern' => 'high_mood', 'entries' => 25],
+            ['name' => 'Demo_Participant_B_WorkStress', 'pattern' => 'work_stress', 'entries' => 30],
+            ['name' => 'Demo_Participant_C_Balanced', 'pattern' => 'balanced', 'entries' => 28],
         ];
 
         foreach ($participants as $participantData) {
-            $case = Cases::create([
-                'project_id' => $project->id,
-                'user_id' => $project->created_by,
-                'name' => $participantData['name'],
-                'duration' => $this->calculateCompletedDuration($participantData['entries']),
-                'created_at' => now()->subDays(rand(15, 25)), // Created 15-25 days ago
-            ]);
+            // A finished 7-day study, so its cases are completed.
+            $firstDay = Carbon::now()->subDays(rand(10, 20))->startOfDay();
+            $lastDay = $firstDay->copy()->addDays(7);
 
-            $this->createPatternedEntries($case, $participantData['entries'], $participantData['pattern']);
+            $this->createCaseWithAnswers(
+                $project,
+                $participantData['name'],
+                $firstDay,
+                $lastDay,
+                $this->answersPerCase ?? $participantData['entries'],
+                fn ($index, $entryDate) => $this->generatePatternedInputs($participantData['pattern'], $index, $entryDate),
+            );
         }
     }
 
     /**
-     * Create entries following specific patterns for easy consultation (both main and MART DB)
+     * Create ESM cases and entries for a project
      */
-    private function createPatternedEntries($case, $entryCount, $pattern)
+    private function createEsmCases($project, $type)
     {
-        $startDate = $case->created_at;
+        $participants = [
+            'Participant_001' => [20, 40],
+            'Participant_002' => [15, 35],
+            'Participant_003' => [25, 45],
+            'Participant_004' => [18, 38],
+            'Participant_005' => [22, 42],
+        ];
 
-        // Get MART project and schedules
-        $martProject = MartProject::where('main_project_id', $case->project_id)->first();
-        if (!$martProject) {
-            return;
+        foreach ($participants as $name => [$least, $most]) {
+            [$firstDay, $lastDay] = $this->caseWindow();
+
+            $this->createCaseWithAnswers(
+                $project,
+                $name,
+                $firstDay,
+                $lastDay,
+                $this->answersPerCase ?? rand($least, $most),
+                fn ($index) => $this->generateRealisticInputs($type, $index),
+            );
+        }
+    }
+
+    /**
+     * A case window: a third finished, a third running, a third not started.
+     */
+    private function caseWindow(): array
+    {
+        $chance = rand(1, 3);
+
+        if ($chance === 1) {
+            $firstDay = Carbon::now()->subDays(rand(15, 30))->startOfDay();
+
+            return [$firstDay, $firstDay->copy()->addDays(7)];
+        }
+        if ($chance === 2) {
+            $firstDay = Carbon::now()->subDays(rand(3, 8))->startOfDay();
+
+            return [$firstDay, $firstDay->copy()->addDays(14)];
         }
 
-        // Get the demo schedule
-        $schedule = MartSchedule::where('mart_project_id', $martProject->id)
+        $firstDay = Carbon::now()->addDays(rand(1, 10))->startOfDay();
+
+        return [$firstDay, $firstDay->copy()->addDays(7)];
+    }
+
+    /**
+     * A case that answers questionnaire 1 while it's open, like a participant
+     * during the study, and then gets its final dates. A case that hasn't
+     * started yet has no answers.
+     */
+    private function createCaseWithAnswers(Project $project, string $name, Carbon $firstDay, Carbon $lastDay, int $answerCount, callable $inputs): void
+    {
+        $case = Cases::create([
+            'project_id' => $project->id,
+            'user_id' => $project->created_by,
+            'name' => $name,
+            'duration' => "firstDay:{$firstDay->format('d.m.Y')}|",
+            'created_at' => $firstDay->copy()->min(now()),
+        ]);
+
+        $schedule = MartSchedule::where('mart_project_id', $project->martProject()->id)
             ->where('questionnaire_id', 1)
-            ->first();
+            ->firstOrFail();
+        $questions = $schedule->questions()->get();
 
-        if (!$schedule) {
-            return;
-        }
-
-        // Get questions for this schedule
-        $questions = MartQuestion::where('schedule_id', $schedule->id)
-            ->orderBy('position')
-            ->get();
-
-        for ($i = 0; $i < $entryCount; $i++) {
-            $entryDate = $startDate->copy()
-                ->addDays(rand(0, 6)) // Within 7-day study period
-                ->addHours(rand(7, 22))
-                ->addMinutes(rand(0, 59));
-
-            $inputs = $this->generatePatternedInputs($pattern, $i, $entryDate);
-            $durationMinutes = rand(2, 5);
-            $endDate = $entryDate->copy()->addMinutes($durationMinutes);
-
-            // Use cross-DB transaction
-            DB::connection('mysql')->beginTransaction();
-            DB::connection('mart')->beginTransaction();
-
-            try {
-                // Create Entry in main DB
-                $entry = Entry::create([
-                    'case_id' => $case->id,
-                    'begin' => $entryDate->format('Y-m-d H:i:s'),
-                    'end' => $endDate->format('Y-m-d H:i:s'),
-                    'inputs' => json_encode($inputs),
-                    'media_id' => null,
-                    'created_at' => $entryDate,
-                    'updated_at' => $entryDate,
-                ]);
-
-                // Create MartEntry in MART DB
-                $martEntry = MartEntry::create([
-                    'main_entry_id' => $entry->id,
-                    'schedule_id' => $schedule->id,
-                    'questionnaire_id' => $schedule->questionnaire_id,
-                    'participant_id' => $case->name,
-                    'user_id' => 'demo@example.com',
-                    'started_at' => $entryDate,
-                    'completed_at' => $endDate,
-                    'duration_ms' => $durationMinutes * 60 * 1000,
-                    'timezone' => 'Europe/Berlin',
-                    'timestamp' => $entryDate->timestamp * 1000,
-                ]);
-
-                // Create MartAnswer records for each question
-                foreach ($questions as $question) {
-                    $answerValue = $inputs[$question->text] ?? null;
-
-                    if ($answerValue !== null) {
-                        MartAnswer::create([
-                            'entry_id' => $martEntry->id,
-                            'question_uuid' => $question->uuid,
-                            'question_version' => $question->version,
-                            'answer_value' => is_array($answerValue) ? json_encode($answerValue) : $answerValue,
-                        ]);
-                    }
-                }
-
-                DB::connection('mysql')->commit();
-                DB::connection('mart')->commit();
-            } catch (\Exception $e) {
-                DB::connection('mysql')->rollBack();
-                DB::connection('mart')->rollBack();
-                throw $e;
+        // Answers end 10 minutes before now at the latest.
+        $answerWindow = (int) $firstDay->diffInMinutes($lastDay->copy()->min(now()->subMinutes(10)), false);
+        if ($answerWindow > 0) {
+            for ($i = 0; $i < $answerCount; $i++) {
+                $startedAt = $firstDay->copy()->addMinutes(rand(0, $answerWindow));
+                $this->submit($case, $schedule, $questions, $inputs($i, $startedAt), $startedAt, rand(2, 5) * 60);
             }
         }
+
+        $minutes = $answerCount * rand(2, 4);
+        $case->update([
+            'duration' => "duration:{$minutes}min|firstDay:{$firstDay->format('d.m.Y')}|lastDay:{$lastDay->format('d.m.Y')}|value:{$minutes}min",
+        ]);
+    }
+
+    /**
+     * One submit through the same code as the app's.
+     */
+    protected function submit(Cases $case, MartSchedule $schedule, Collection $questions, array $inputs, Carbon $startedAt, int $durationSeconds): void
+    {
+        $answers = [];
+        foreach ($questions->values() as $index => $question) {
+            // A text-only item has no itemId, so the app sends nothing for it;
+            // later items keep their place-based itemIds.
+            if ($question->type === 'display') {
+                continue;
+            }
+            $answers[(string) ($index + 1)] = $this->appAnswer($question, $inputs[$question->text] ?? null);
+        }
+
+        $request = new Request([
+            'projectId' => $case->project_id,
+            'questionnaireId' => $schedule->questionnaire_id,
+            'userId' => $case->user->email,
+            'participantId' => $case->name,
+            'questionnaireStarted' => $startedAt->getTimestampMs(),
+            'questionnaireDuration' => $durationSeconds * 1000,
+            'answers' => $answers,
+            'timestamp' => $startedAt->copy()->addSeconds($durationSeconds)->getTimestampMs(),
+            'timezone' => 'Europe/Berlin',
+        ]);
+
+        $result = (new MartApiController)->submitEntry($request, $case)->getData(true);
+        if (! ($result['success'] ?? false)) {
+            throw new RuntimeException('A seeded submit was rejected: ' . ($result['message'] ?? 'no message'));
+        }
+    }
+
+    /**
+     * The answer as the app sends it: always an array, empty when unanswered.
+     * Choices and sliders with labels are option values from 1, given here as
+     * their label. The app drops a range or number of 0.
+     */
+    private function appAnswer(MartQuestion $question, $value): array
+    {
+        if ($value === null || $value === '' || $value === []) {
+            return [];
+        }
+
+        return match ($question->type) {
+            'one choice' => $this->choiceValues($question, [$value]),
+            'multiple choice' => $this->choiceValues($question, $value),
+            'range values' => [$this->optionValue($question, $value)],
+            'range', 'number' => $value === 0 ? [] : [$value],
+            default => [$value],
+        };
+    }
+
+    /**
+     * Option values from 1. An ['other' => typed words] choice becomes "text"
+     * followed by the typed words, as the app sends the "other" option.
+     */
+    private function choiceValues(MartQuestion $question, array $choices): array
+    {
+        $values = [];
+        foreach ($choices as $choice) {
+            if (is_array($choice) && isset($choice['other'])) {
+                $values[] = 'text';
+                $values[] = $choice['other'];
+
+                continue;
+            }
+            $values[] = $this->optionValue($question, $choice);
+        }
+
+        return $values;
+    }
+
+    private function optionValue(MartQuestion $question, string $text): int
+    {
+        $key = array_search($text, $question->config['options'], true);
+        if ($key === false) {
+            throw new RuntimeException("\"{$text}\" is not an option of \"{$question->text}\".");
+        }
+
+        return $key + 1;
     }
 
     /**
@@ -794,43 +669,14 @@ class MartProjectSeeder extends Seeder
     }
 
     /**
-     * Create MART pages for a project in MART database
-     */
-    private function createMartPages($project)
-    {
-        // Get or create MartProject
-        $martProject = MartProject::firstOrCreate(['main_project_id' => $project->id]);
-
-        $inputs = json_decode($project->inputs, true);
-        $martConfig = collect($inputs)->firstWhere('type', 'mart');
-
-        if ($martConfig && isset($martConfig['projectOptions']['pages'])) {
-            foreach ($martConfig['projectOptions']['pages'] as $pageData) {
-                MartPage::create([
-                    'mart_project_id' => $martProject->id,
-                    'name' => $pageData['name'],
-                    'content' => $pageData['content'],
-                    'button_text' => $pageData['buttonText'],
-                    'show_on_first_app_start' => $pageData['showOnFirstAppStart'],
-                    'sort_order' => $pageData['sortOrder'],
-                ]);
-            }
-        }
-    }
-
-    /**
      * Create questionnaire schedules for a MART project in MART database
      */
-    private function createQuestionnaireSchedules($project, $type)
+    private function createQuestionnaireSchedules($project, $type, array $questions)
     {
-        // Get or create MartProject
-        $martProject = MartProject::firstOrCreate(['main_project_id' => $project->id]);
+        $martProject = $project->martProject();
 
         $startDate = Carbon::now()->startOfDay();
         $endDate = Carbon::now()->addMonths(3)->endOfDay();
-
-        // Extract questions from project to assign to schedules
-        $questions = $this->extractQuestionsFromProject($project);
 
         switch ($type) {
             case 'wellbeing':
@@ -863,7 +709,6 @@ class MartProjectSeeder extends Seeder
                     ],
                 ]);
 
-                // Create individual MartQuestion records
                 $this->createQuestionsForSchedule($schedule, $questions);
                 break;
 
@@ -989,169 +834,27 @@ class MartProjectSeeder extends Seeder
     }
 
     /**
-     * Create individual MartQuestion records for a schedule
+     * Create individual MartQuestion records for a schedule, positions from 1
+     * as the editor saves them.
      */
-    private function createQuestionsForSchedule($schedule, $questions)
+    protected function createQuestionsForSchedule($schedule, array $questions)
     {
-        foreach ($questions as $position => $questionData) {
-            // Map question types from old format to new format
-            $type = $this->mapQuestionType($questionData['type'] ?? 'text');
-
-            // Build config from question data
-            $config = [];
-            if (isset($questionData['martMetadata'])) {
-                $config = $questionData['martMetadata'];
-            }
-            if (isset($questionData['answers']) && !empty($questionData['answers'])) {
-                $config['options'] = $questionData['answers'];
-            }
-
+        foreach ($questions as $index => $question) {
             MartQuestion::create([
                 'schedule_id' => $schedule->id,
-                'position' => $position + 1,
-                'text' => $questionData['name'] ?? "Question " . ($position + 1),
-                'type' => $type,
-                'config' => $config,
-                'is_mandatory' => $questionData['mandatory'] ?? true,
+                'position' => $index + 1,
+                'text' => $question['text'],
+                'type' => $question['type'],
+                'config' => $question['config'],
+                'is_mandatory' => $question['mandatory'],
                 'version' => 1,
             ]);
         }
     }
 
     /**
-     * Map old question types to new types
-     */
-    private function mapQuestionType($oldType)
-    {
-        $mapping = [
-            'one choice' => 'multiple choice',  // Will be handled as single-select in config
-            'multiple choice' => 'multiple choice',
-            'scale' => 'scale',
-            'text' => 'text',
-        ];
-
-        return $mapping[$oldType] ?? 'text';
-    }
-
-    /**
-     * Create ESM cases and entries for a project
-     */
-    private function createEsmCases($project, $type)
-    {
-        $participants = [
-            ['name' => 'Participant_001', 'responses' => rand(20, 40)],
-            ['name' => 'Participant_002', 'responses' => rand(15, 35)],
-            ['name' => 'Participant_003', 'responses' => rand(25, 45)],
-            ['name' => 'Participant_004', 'responses' => rand(18, 38)],
-            ['name' => 'Participant_005', 'responses' => rand(22, 42)],
-        ];
-
-        foreach ($participants as $participant) {
-            $case = Cases::create([
-                'project_id' => $project->id,
-                'user_id' => $project->created_by,
-                'name' => $participant['name'],
-                'duration' => $this->calculateDuration($participant['responses']),
-                'created_at' => now()->subDays(rand(1, 7)),
-            ]);
-
-            $this->createEsmEntries($case, $participant['responses'], $type);
-        }
-    }
-
-    /**
-     * Create ESM entries for a case (both main DB and MART DB)
-     */
-    private function createEsmEntries($case, $responseCount, $type)
-    {
-        $startDate = $case->created_at;
-        $studyDuration = $this->getStudyDuration($type); // Get duration based on study type
-
-        // Get MART project and schedules
-        $martProject = MartProject::where('main_project_id', $case->project_id)->first();
-        if (!$martProject) {
-            return;
-        }
-
-        // Get the first repeating schedule (questionnaire_id = 1)
-        $schedule = MartSchedule::where('mart_project_id', $martProject->id)
-            ->where('questionnaire_id', 1)
-            ->first();
-
-        if (!$schedule) {
-            return;
-        }
-
-        // Get questions for this schedule
-        $questions = MartQuestion::where('schedule_id', $schedule->id)
-            ->orderBy('position')
-            ->get();
-
-        for ($i = 0; $i < $responseCount; $i++) {
-            $entryDate = $startDate->copy()->addDays(rand(0, $studyDuration - 1))
-                ->addHours(rand(8, 20))
-                ->addMinutes(rand(0, 59));
-
-            $inputs = $this->generateRealisticInputs($type, $i);
-            $durationMinutes = rand(2, 5);
-            $endDate = $entryDate->copy()->addMinutes($durationMinutes);
-
-            // Use cross-DB transaction
-            DB::connection('mysql')->beginTransaction();
-            DB::connection('mart')->beginTransaction();
-
-            try {
-                // Create Entry in main DB
-                $entry = Entry::create([
-                    'case_id' => $case->id,
-                    'begin' => $entryDate->format('Y-m-d H:i:s'),
-                    'end' => $endDate->format('Y-m-d H:i:s'),
-                    'inputs' => json_encode($inputs),
-                    'media_id' => null, // MART projects don't use media
-                    'created_at' => $entryDate,
-                    'updated_at' => $entryDate,
-                ]);
-
-                // Create MartEntry in MART DB
-                $martEntry = MartEntry::create([
-                    'main_entry_id' => $entry->id,
-                    'schedule_id' => $schedule->id,
-                    'questionnaire_id' => $schedule->questionnaire_id,
-                    'participant_id' => $case->name,
-                    'user_id' => 'seeded@example.com',
-                    'started_at' => $entryDate,
-                    'completed_at' => $endDate,
-                    'duration_ms' => $durationMinutes * 60 * 1000,
-                    'timezone' => 'Europe/Berlin',
-                    'timestamp' => $entryDate->timestamp * 1000,
-                ]);
-
-                // Create MartAnswer records for each question
-                foreach ($questions as $question) {
-                    $answerValue = $inputs[$question->text] ?? null;
-
-                    if ($answerValue !== null) {
-                        MartAnswer::create([
-                            'entry_id' => $martEntry->id,
-                            'question_uuid' => $question->uuid,
-                            'question_version' => $question->version,
-                            'answer_value' => is_array($answerValue) ? json_encode($answerValue) : $answerValue,
-                        ]);
-                    }
-                }
-
-                DB::connection('mysql')->commit();
-                DB::connection('mart')->commit();
-            } catch (\Exception $e) {
-                DB::connection('mysql')->rollBack();
-                DB::connection('mart')->rollBack();
-                throw $e;
-            }
-        }
-    }
-
-    /**
-     * Generate realistic inputs based on project type
+     * Generate realistic inputs based on project type. Ranges never answer 0,
+     * which the app would drop.
      */
     private function generateRealisticInputs($type, $entryIndex)
     {
@@ -1159,7 +862,7 @@ class MartProjectSeeder extends Seeder
             case 'wellbeing':
                 return [
                     'How are you feeling right now?' => $this->randomChoice(['Very bad', 'Bad', 'Neutral', 'Good', 'Very good']),
-                    'Rate your current stress level' => rand(0, 10),
+                    'Rate your current stress level' => rand(1, 10),
                     'What are you doing right now?' => $this->randomMultipleChoice(['Working/studying', 'Socializing', 'Exercising', 'Eating', 'Traveling', 'Relaxing', 'Other']),
                     'Any additional thoughts or feelings?' => $this->randomText([
                         'Feeling productive today',
@@ -1185,7 +888,7 @@ class MartProjectSeeder extends Seeder
             case 'social_media':
                 return [
                     'How would you describe your current mood?' => $this->randomChoice(['Very negative', 'Negative', 'Neutral', 'Positive', 'Very positive']),
-                    'In the past hour, how much time did you spend on social media?' => rand(0, 60),
+                    'In the past hour, how much time did you spend on social media?' => rand(1, 12) * 5,
                     'Which social media platforms did you use?' => $this->randomMultipleChoice(['Instagram', 'Facebook', 'Twitter/X', 'TikTok', 'YouTube', 'LinkedIn', 'Other', 'None']),
                     'How did social media make you feel?' => $this->randomChoice(['Much worse', 'Worse', 'No change', 'Better', 'Much better', 'Did not use social media']),
                     'Rate your current social connectedness' => rand(1, 7),
@@ -1222,86 +925,5 @@ class MartProjectSeeder extends Seeder
     private function randomText($options)
     {
         return $options[array_rand($options)];
-    }
-
-    private function getStudyDuration($type)
-    {
-        // Return study duration in days based on type
-        switch ($type) {
-            case 'wellbeing':
-                return 14; // 14 days
-            case 'stress':
-                return 21; // 21 days
-            case 'social_media':
-                return 10; // 10 days
-            default:
-                return 14; // Default 14 days
-        }
-    }
-
-    private function calculateDuration($responseCount)
-    {
-        // Estimate duration based on response count (2-3 minutes per response)
-        $minutes = $responseCount * rand(2, 4);
-
-        // Create varied date ranges for different case statuses
-        $rand = rand(1, 100);
-
-        if ($rand <= 30) {
-            // 30% chance - Completed cases (ended in the past)
-            $startDate = Carbon::now()->subDays(rand(15, 30));
-            $endDate = $startDate->copy()->addDays(7);
-        } elseif ($rand <= 60) {
-            // 30% chance - Active cases (ongoing)
-            $startDate = Carbon::now()->subDays(rand(3, 8));
-            $endDate = $startDate->copy()->addDays(14);
-        } elseif ($rand <= 90) {
-            // 30% chance - Future/Pending cases (will start in future)
-            $startDate = Carbon::now()->addDays(rand(1, 10));
-            $endDate = $startDate->copy()->addDays(7);
-        } else {
-            // 10% chance - Backend cases (value:0)
-            $startDate = Carbon::now()->subDays(rand(1, 5));
-            $endDate = $startDate->copy()->addDays(7);
-
-            return "duration:0min|firstDay:{$startDate->format('d.m.Y')}|lastDay:{$endDate->format('d.m.Y')}|value:0";
-        }
-
-        return "duration:{$minutes}min|firstDay:{$startDate->format('d.m.Y')}|lastDay:{$endDate->format('d.m.Y')}|value:{$minutes}min";
-    }
-
-    /**
-     * Calculate duration for completed demo cases (for consultable demo project)
-     */
-    private function calculateCompletedDuration($responseCount)
-    {
-        // Estimate duration based on response count (2-3 minutes per response)
-        $minutes = $responseCount * rand(2, 4);
-
-        // Always create completed cases (ended in the past) for demo purposes
-        $startDate = Carbon::now()->subDays(rand(10, 20));
-        $endDate = $startDate->copy()->addDays(7);
-
-        return "duration:{$minutes}min|firstDay:{$startDate->format('d.m.Y')}|lastDay:{$endDate->format('d.m.Y')}|value:{$minutes}min";
-    }
-
-    /**
-     * Extract questions from project inputs and return as array
-     */
-    private function extractQuestionsFromProject($project)
-    {
-        $inputs = json_decode($project->inputs, true);
-        $questions = [];
-
-        if (is_array($inputs)) {
-            foreach ($inputs as $input) {
-                // Skip MART configuration object
-                if (!isset($input['type']) || $input['type'] !== 'mart') {
-                    $questions[] = $input;
-                }
-            }
-        }
-
-        return $questions;
     }
 }

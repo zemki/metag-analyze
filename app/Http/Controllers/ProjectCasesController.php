@@ -35,6 +35,7 @@ class ProjectCasesController extends Controller
         if (auth()->user()->notOwnerNorInvited($project) && ! auth()->user()->isAdmin()) {
             abort(403);
         }
+        $this->refuseMartCase($case);
         [$mediaValues, $availableMedia] = Cases::getMediaValues($case);
         [$availableInputs, $data] = Cases::getInputValues($case, $data);
         $data['entries']['list'] = Entry::where('case_id', '=', $case->id)->get();
@@ -58,6 +59,7 @@ class ProjectCasesController extends Controller
         if (auth()->user()->notOwnerNorInvited($project) && ! auth()->user()->isAdmin()) {
             abort(403);
         }
+        $this->refuseMartCase($case);
         $tempArray = Entry::where('case_id', '=', $case->id)->with('media')->get()->toArray();
         $data['entries'] = [];
         $data['availableInputs'] = $project->getAnswersInputs();
@@ -185,7 +187,12 @@ class ProjectCasesController extends Controller
 
                 $case = $project->addCase($caseName, $duration);
                 $case->addUser($user);
-                $message .= $user->email . " has been invited. \n";
+
+                // The case is created either way; only say the invitation was
+                // delivered when it actually was.
+                $message .= $user->invitationMailFailed
+                    ? $user->email . " was added, but the invitation email could NOT be sent. \n"
+                    : $user->email . " has been invited. \n";
             }
 
             foreach ($project->getInputs() as $object) {
@@ -387,7 +394,7 @@ class ProjectCasesController extends Controller
      */
     private function getGraphBreadcrumb(Project $project, Cases $case, mixed $data)
     {
-        if (env('APP_ENV') === 'production') {
+        if (app()->environment('production')) {
             $slug = '/metag';
         } else {
             $slug = '';

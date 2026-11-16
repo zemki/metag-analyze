@@ -10,6 +10,8 @@ use DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 use mysql_xdevapi\Exception;
 
 class UserController extends Controller
@@ -132,10 +134,28 @@ class UserController extends Controller
             return response()->json(['message' => 'User profile not found.'], 404);
         }
 
+        // Send first, stamp afterwards. last_notification_at used to be written
+        // before the send, so a push that failed still looked like a delivery
+        // and the "enough time has passed" logic suppressed the next attempt.
+        try {
+            $user->notify(new researcherNotificationToUser([
+                'title' => $request->input('title'),
+                'message' => $request->input('message'),
+                'case' => $request->input('cases'),
+            ]));
+        } catch (Throwable $e) {
+            Log::error('Failed to send a push notification to a participant', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'The notification could not be delivered. The participant may have no registered device.',
+            ], 502);
+        }
+
         $user->profile->last_notification_at = date('Y-m-d H:i:s');
         $user->profile->save();
-
-        $user->notify((new researcherNotificationToUser(['title' => $request->input('title'), 'message' => $request->input('message'), 'case' => $request->input('cases')])));
 
         return response()->json(['message' => 'Notification Sent!', 'notified' => date('Y-m-d H:i:s')], 200);
     }
@@ -145,7 +165,26 @@ class UserController extends Controller
         $user = User::where('id', $request->input('user')['id'])->first();
         //   $user->profile->last_notification_at = date("Y-m-d H:i:s");
         $user->profile->save();
-        $user->notify(new researcherNotificationToUser(['title' => $request->input('title'), 'message' => $request->input('message'), 'case' => $request->input('cases'), 'planning' => $request->input('planning')]));
+
+        // A planned notification only writes a database row (via() returns
+        // ['database'] when planning is set), but guard it anyway so a storage
+        // failure is reported rather than surfacing as a bare 500.
+        try {
+            $user->notify(new researcherNotificationToUser([
+                'title' => $request->input('title'),
+                'message' => $request->input('message'),
+                'case' => $request->input('cases'),
+                'planning' => $request->input('planning'),
+            ]));
+        } catch (Throwable $e) {
+            Log::error('Failed to store a planned notification', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json(['message' => 'The notification could not be planned.'], 500);
+        }
+
         $notification = DB::table('notifications')->latest('created_at')->first();
 
         return response()->json(['message' => 'Notification Planned!', 'notification' => $notification], 200);

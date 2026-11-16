@@ -1,9 +1,6 @@
 <?php
 
 use App\Cases;
-use App\Mart\MartPage;
-use App\Mart\MartProject;
-use App\Mart\MartQuestion;
 use App\Mart\MartSchedule;
 use App\Project;
 use App\Role;
@@ -12,13 +9,30 @@ use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
+/**
+ * Accounts for testers on a staging server, each with Directus project 1
+ * (built by MartReferenceProjectSeeder) and a case in it.
+ *
+ * It asks for the accounts in a terminal. Tests pass them in through
+ * $accounts. Without either it stops, so it never creates an account with a
+ * known password. A new account gets the typed password or a random one,
+ * shown once. An existing account keeps its password and its roles.
+ */
 class StagingMartSeeder extends Seeder
 {
     /**
-     * Run the database seeds for staging MART setup.
-     *
-     * @return void
+     * Accounts to create without asking:
+     * [['email' => ..., 'password' => optional, 'projects' => [names]], ...].
      */
+    public array $accounts = [];
+
+    /**
+     * Also give each project the 4 sample participants and their answers, as
+     * completed cases a researcher can consult. Asked in the terminal; tests
+     * set it here.
+     */
+    public bool $withSampleParticipants = false;
+
     public function run()
     {
         $this->command->info('======================================');
@@ -26,9 +40,103 @@ class StagingMartSeeder extends Seeder
         $this->command->info('======================================');
         $this->command->newLine();
 
-        // Step 1: Get number of users
+        $accounts = $this->accounts ?: $this->askForAccounts();
+        $withSampleParticipants = $this->withSampleParticipants
+            || (! $this->accounts && $this->command->confirm('Add the 4 sample participants with their answers, as completed cases you can consult?', false));
+        $reference = (new MartReferenceProjectSeeder)->setContainer($this->container)->setCommand($this->command);
+
+        $users = [];
+        $allProjects = [];
+        $allCases = [];
+
+        foreach ($accounts as $account) {
+            [$user, $password] = $this->account($account['email'], $account['password'] ?? null);
+
+            $userProjects = [];
+            foreach ($account['projects'] as $index => $projectName) {
+                $project = $reference->buildProject($user);
+                $project->update(['name' => $projectName]);
+                $this->startToday($project);
+                $this->command->info("  ✓ {$projectName} created for {$user->email} (ID: {$project->id})");
+
+                $case = Cases::create([
+                    'project_id' => $project->id,
+                    'user_id' => $user->id,
+                    'name' => 'participant-' . str_pad($index + 1, 3, '0', STR_PAD_LEFT),
+                    'duration' => 'startDay:' . now()->format('d.m.Y') . '|lastDay:' . now()->addMonths(3)->format('d.m.Y'),
+                    'created_at' => now(),
+                ]);
+
+                if ($withSampleParticipants) {
+                    $reference->seedSampleData($project);
+                    $this->command->info('    + 4 sample participants with their answers (completed cases)');
+                }
+
+                $userProjects[] = $project;
+                $allProjects[] = $project;
+                $allCases[] = ['case' => $case, 'user_email' => $user->email, 'project_name' => $projectName];
+            }
+
+            $users[] = ['user' => $user, 'email' => $user->email, 'password' => $password, 'projects' => $userProjects];
+        }
+
+        $this->command->info('✓ Created ' . count($allCases) . ' cases across ' . count($allProjects) . ' projects');
+        $this->command->newLine();
+
+        $this->displaySummary($users, $allProjects, $allCases);
+    }
+
+    /**
+     * Directus's dates for project 1 are past: its repeating questionnaires
+     * ended in March 2026. So on staging, the project and each questionnaire
+     * start today at midnight and keep their length, and testers can try the
+     * repeating questionnaires. The reference project keeps Directus's dates.
+     */
+    private function startToday(Project $project): void
+    {
+        $today = Carbon::today();
+
+        $inputs = json_decode($project->inputs, true);
+        $options = $inputs[0]['projectOptions'];
+        [$options['startDateAndTime'], $options['endDateAndTime']] = $this->windowFrom($today, $options['startDateAndTime'], $options['endDateAndTime']);
+        $inputs[0]['projectOptions'] = $options;
+        $project->update(['inputs' => json_encode($inputs)]);
+
+        foreach (MartSchedule::where('mart_project_id', $project->martProject()->id)->get() as $schedule) {
+            $timing = $schedule->timing_config;
+            // Data donation questionnaires have no dates: the participant starts them.
+            if (empty($timing['start_date_time'])) {
+                continue;
+            }
+            [$timing['start_date_time'], $timing['end_date_time']] = $this->windowFrom($today, $timing['start_date_time'], $timing['end_date_time'] ?? null);
+            $schedule->update(['timing_config' => $timing]);
+        }
+    }
+
+    /**
+     * A start and end, moved to start on $day at midnight, as many days long
+     * as before. No end stays no end.
+     */
+    private function windowFrom(Carbon $day, array $start, ?array $end): array
+    {
+        $newStart = ['date' => $day->format('Y-m-d'), 'time' => '00:00'];
+        if ($end === null) {
+            return [$newStart, null];
+        }
+
+        $days = (int) Carbon::parse($start['date'])->diffInDays(Carbon::parse($end['date']));
+
+        return [$newStart, ['date' => $day->copy()->addDays($days)->format('Y-m-d'), 'time' => $end['time']]];
+    }
+
+    /**
+     * The accounts, asked for in the terminal. Without a terminal there is no
+     * email address, so it stops.
+     */
+    private function askForAccounts(): array
+    {
         $userCount = null;
-        while ($userCount === null || !is_numeric($userCount) || $userCount < 1) {
+        while ($userCount === null) {
             $input = $this->command->ask('How many users do you want to create?', '1');
             if (is_numeric($input) && $input >= 1) {
                 $userCount = (int) $input;
@@ -37,44 +145,22 @@ class StagingMartSeeder extends Seeder
             }
         }
 
-        $users = [];
-        $allProjects = [];
-        $allCases = [];
-        $globalProjectCounter = 1;
+        $accounts = [];
+        $projectNumber = 1;
 
         for ($i = 0; $i < $userCount; $i++) {
-            $this->command->info("User " . ($i + 1) . ":");
+            $this->command->info('User ' . ($i + 1) . ':');
             $email = $this->command->ask('  Email address');
-            $password = $this->command->ask('  Password (default: password)', 'password');
-
-            // Create or update user
-            $user = User::firstOrCreate(
-                ['email' => $email],
-                [
-                    'password' => bcrypt($password),
-                    'email_verified_at' => now(),
-                    'deviceID' => 'STAGING_' . Str::random(10),
-                ]
-            );
-
-            // Assign researcher role
-            $researcherRole = Role::where('name', 'researcher')->first();
-            if ($researcherRole) {
-                $user->roles()->sync([$researcherRole->id]);
+            if (! $email) {
+                throw new RuntimeException(
+                    'StagingMartSeeder needs an email address for each account, so run it in a terminal. '
+                    . 'It never creates accounts with a known password.'
+                );
             }
+            $password = $this->command->ask('  Password (leave empty for a random one)');
 
-            // Update password if user already exists
-            if (!$user->wasRecentlyCreated) {
-                $user->password = bcrypt($password);
-                $user->save();
-                $this->command->warn("  User already exists - password updated");
-            } else {
-                $this->command->info("  ✓ User created with researcher role");
-            }
-
-            // Ask how many projects for this user
             $projectCount = null;
-            while ($projectCount === null || !is_numeric($projectCount) || $projectCount < 1) {
+            while ($projectCount === null) {
                 $input = $this->command->ask('  How many MART projects for this user?', '1');
                 if (is_numeric($input) && $input >= 1) {
                     $projectCount = (int) $input;
@@ -83,204 +169,47 @@ class StagingMartSeeder extends Seeder
                 }
             }
 
-            // Create projects for this user
-            $userProjects = [];
+            $projects = [];
             for ($j = 0; $j < $projectCount; $j++) {
-                $projectNumber = $j + 1;
-                $this->command->info("  Project $projectNumber for {$email}:");
-                $projectName = $this->command->ask('    Project name', "Staging MART Project $globalProjectCounter");
-
-                $project = $this->createStagingMartProject($user, $projectName, $globalProjectCounter);
-                $this->command->info("    ✓ Project created (ID: {$project->id})");
-
-                $userProjects[] = $project;
-                $allProjects[] = $project;
-                $globalProjectCounter++;
+                $projects[] = $this->command->ask('    Project name', "Staging MART Project {$projectNumber}");
+                $projectNumber++;
             }
 
-            // Create case for this user in each of their projects
-            $participantCounter = 1;
-            foreach ($userProjects as $project) {
-                $participantName = 'participant-' . str_pad($participantCounter, 3, '0', STR_PAD_LEFT);
-
-                $case = Cases::create([
-                    'project_id' => $project->id,
-                    'user_id' => $user->id,
-                    'name' => $participantName,
-                    'duration' => 'startDay:' . now()->format('d.m.Y') . '|lastDay:' . now()->addMonths(3)->format('d.m.Y'),
-                    'created_at' => now(),
-                ]);
-
-                $allCases[] = [
-                    'case' => $case,
-                    'user_email' => $email,
-                    'project_name' => $project->name,
-                ];
-
-                $participantCounter++;
-            }
-
-            $users[] = [
-                'user' => $user,
-                'email' => $email,
-                'password' => $password,
-                'projects' => $userProjects,
-            ];
-
+            $accounts[] = ['email' => $email, 'password' => $password ?: null, 'projects' => $projects];
             $this->command->newLine();
         }
 
-        $this->command->info("✓ Created " . count($allCases) . " cases across " . count($allProjects) . " projects");
-        $this->command->newLine();
-
-        // Display summary
-        $this->displaySummary($users, $allProjects, $allCases);
+        return $accounts;
     }
 
     /**
-     * Create a simple staging MART project
+     * The account and the password to show, which is null for an account that
+     * already existed: it keeps its password and gains the researcher role.
      */
-    private function createStagingMartProject($owner, $projectName, $projectNumber)
+    private function account(string $email, ?string $password): array
     {
-        // Create main project
-        $project = Project::create([
-            'name' => $projectName,
-            'description' => 'Staging MART project for API testing and development',
-            'created_by' => $owner->id,
-            'is_locked' => false,
-            'use_entity' => false,
-            'entity_name' => null,
-            'inputs' => json_encode([
-                [
-                    'type' => 'mart',
-                    'questionnaireName' => 'Test Questionnaire',
-                    'projectOptions' => [
-                        'pages' => [
-                            [
-                                'name' => 'Welcome',
-                                'content' => '<h1>Welcome to ' . $projectName . '</h1><p>This is a staging environment for API testing.</p>',
-                                'buttonText' => 'Start',
-                                'showOnFirstAppStart' => true,
-                                'sortOrder' => 0,
-                            ],
-                        ],
-                    ],
-                ],
-            ]),
-        ]);
+        $user = User::where('email', $email)->first();
+        $shownPassword = null;
 
-        // Create MART project in MART database
-        $martProject = MartProject::create(['main_project_id' => $project->id]);
-
-        // Create MART pages
-        $this->createMartPages($project, $martProject);
-
-        // Create questionnaire schedule with questions
-        $this->createQuestionnaireSchedule($project, $martProject, $projectNumber);
-
-        return $project;
-    }
-
-    /**
-     * Create MART pages for project
-     */
-    private function createMartPages($project, $martProject)
-    {
-        $inputs = json_decode($project->inputs, true);
-        $martConfig = collect($inputs)->firstWhere('type', 'mart');
-
-        if ($martConfig && isset($martConfig['projectOptions']['pages'])) {
-            foreach ($martConfig['projectOptions']['pages'] as $pageData) {
-                MartPage::create([
-                    'mart_project_id' => $martProject->id,
-                    'name' => $pageData['name'],
-                    'content' => $pageData['content'],
-                    'button_text' => $pageData['buttonText'],
-                    'show_on_first_app_start' => $pageData['showOnFirstAppStart'],
-                    'sort_order' => $pageData['sortOrder'],
-                ]);
-            }
+        if ($user) {
+            $this->command->warn("  {$email} already exists: password and roles unchanged");
+        } else {
+            $shownPassword = $password ?: Str::password(20, symbols: false);
+            $user = User::create([
+                'email' => $email,
+                'password' => bcrypt($shownPassword),
+                'deviceID' => 'STAGING_' . Str::random(10),
+            ]);
+            $user->forceFill(['email_verified_at' => now()])->save();
+            $this->command->info("  ✓ {$email} created with researcher role");
         }
-    }
 
-    /**
-     * Create a simple questionnaire schedule with questions
-     */
-    private function createQuestionnaireSchedule($project, $martProject, $projectNumber)
-    {
-        $startDate = Carbon::now()->startOfDay();
-        $endDate = Carbon::now()->addMonths(3)->endOfDay();
+        $researcherRole = Role::where('name', 'researcher')->first();
+        if ($researcherRole) {
+            $user->roles()->syncWithoutDetaching([$researcherRole->id]);
+        }
 
-        // Create repeating schedule
-        $schedule = MartSchedule::create([
-            'mart_project_id' => $martProject->id,
-            'questionnaire_id' => $projectNumber,
-            'name' => 'Daily Check-in',
-            'type' => 'repeating',
-            'timing_config' => [
-                'start_date_time' => [
-                    'date' => $startDate->format('Y-m-d'),
-                    'time' => '09:00',
-                ],
-                'end_date_time' => [
-                    'date' => $endDate->format('Y-m-d'),
-                    'time' => '21:00',
-                ],
-                'daily_interval_duration' => 4,
-                'min_break_between' => 180,
-                'max_daily_submits' => 5,
-                'daily_start_time' => '09:00',
-                'daily_end_time' => '21:00',
-                'quest_available_at' => 'randomTimeWithinInterval',
-            ],
-            'notification_config' => [
-                'show_progress_bar' => true,
-                'show_notifications' => true,
-                'notification_text' => 'Time for your check-in!',
-            ],
-        ]);
-
-        // Create simple questions for testing
-        MartQuestion::create([
-            'schedule_id' => $schedule->id,
-            'position' => 0,
-            'text' => 'How are you feeling?',
-            'type' => 'scale',
-            'config' => [
-                'minValue' => 1,
-                'maxValue' => 10,
-                'steps' => 1,
-            ],
-            'is_mandatory' => true,
-            'version' => 1,
-        ]);
-
-        MartQuestion::create([
-            'schedule_id' => $schedule->id,
-            'position' => 1,
-            'text' => 'What are you doing?',
-            'type' => 'multiple choice',
-            'config' => [
-                'options' => [
-                    0 => 'Working',
-                    1 => 'Relaxing',
-                    2 => 'Socializing',
-                    3 => 'Other',
-                ],
-            ],
-            'is_mandatory' => false,
-            'version' => 1,
-        ]);
-
-        MartQuestion::create([
-            'schedule_id' => $schedule->id,
-            'position' => 2,
-            'text' => 'Any additional notes?',
-            'type' => 'text',
-            'config' => [],
-            'is_mandatory' => false,
-            'version' => 1,
-        ]);
+        return [$user, $shownPassword];
     }
 
     /**
@@ -295,12 +224,12 @@ class StagingMartSeeder extends Seeder
         $this->command->newLine();
 
         // Users
-        $this->command->info('USERS CREATED:');
+        $this->command->info('USERS:');
         foreach ($users as $userData) {
             $this->command->line("  • Email: {$userData['email']}");
-            $this->command->line("    Password: {$userData['password']}");
+            $this->command->line('    Password: ' . ($userData['password'] ?? 'unchanged (existing account)'));
             $this->command->line("    User ID: {$userData['user']->id}");
-            $this->command->line("    Projects owned: " . count($userData['projects']));
+            $this->command->line('    Projects owned: ' . count($userData['projects']));
         }
         $this->command->newLine();
 
@@ -332,7 +261,7 @@ class StagingMartSeeder extends Seeder
         $this->command->info('EXAMPLE API REQUESTS:');
         $this->command->newLine();
 
-        if (!empty($cases)) {
+        if (! empty($cases)) {
             $firstCase = $cases[0];
             $projectId = $firstCase['case']->project_id;
             $caseId = $firstCase['case']->id;
@@ -345,22 +274,22 @@ class StagingMartSeeder extends Seeder
             $this->command->line("  -H 'Authorization: Bearer mart_test_token_2025'");
             $this->command->newLine();
 
-            // Submit entry
+            // Submit entry: questionnaire 2 is the repeating one, with a text
+            // item and three single-choice questions, so items 2 to 4.
             $this->command->comment('2. Submit Entry:');
             $this->command->line("curl -X POST 'https://metagtest.uni-bremen.de/mart-api/cases/{$caseId}/submit' \\");
             $this->command->line("  -H 'Authorization: Bearer mart_test_token_2025' \\");
             $this->command->line("  -H 'Content-Type: application/json' \\");
             $this->command->line("  -d '{");
             $this->command->line("    \"projectId\": {$projectId},");
-            $this->command->line("    \"questionnaireId\": 1,");
+            $this->command->line('    "questionnaireId": 2,');
             $this->command->line("    \"userId\": \"{$userId}\",");
             $this->command->line("    \"participantId\": \"{$participantId}\",");
-            $this->command->line("    \"sheetId\": 1,");
-            $this->command->line("    \"questionnaireStarted\": " . (now()->timestamp * 1000) . ",");
-            $this->command->line("    \"questionnaireDuration\": 120000,");
-            $this->command->line("    \"answers\": {\"1\": 7, \"2\": [0, 2], \"3\": \"Test note\"},");
-            $this->command->line("    \"timestamp\": " . (now()->timestamp * 1000) . ",");
-            $this->command->line("    \"timezone\": \"Europe/Berlin\"");
+            $this->command->line('    "questionnaireStarted": ' . (now()->timestamp * 1000) . ',');
+            $this->command->line('    "questionnaireDuration": 120000,');
+            $this->command->line('    "answers": {"2": [5], "3": [1], "4": [2]},');
+            $this->command->line('    "timestamp": ' . (now()->timestamp * 1000) . ',');
+            $this->command->line('    "timezone": "Europe/Berlin"');
             $this->command->line("  }'");
             $this->command->newLine();
 
@@ -373,12 +302,12 @@ class StagingMartSeeder extends Seeder
             $this->command->line("    \"projectId\": {$projectId},");
             $this->command->line("    \"userId\": \"{$userId}\",");
             $this->command->line("    \"participantId\": \"{$participantId}\",");
-            $this->command->line("    \"os\": \"android\",");
-            $this->command->line("    \"osVersion\": \"14\",");
-            $this->command->line("    \"model\": \"Pixel 7\",");
-            $this->command->line("    \"manufacturer\": \"Google\",");
-            $this->command->line("    \"timestamp\": " . (now()->timestamp * 1000) . ",");
-            $this->command->line("    \"timezone\": \"Europe/Berlin\"");
+            $this->command->line('    "os": "android",');
+            $this->command->line('    "osVersion": "14",');
+            $this->command->line('    "model": "Pixel 7",');
+            $this->command->line('    "manufacturer": "Google",');
+            $this->command->line('    "timestamp": ' . (now()->timestamp * 1000) . ',');
+            $this->command->line('    "timezone": "Europe/Berlin"');
             $this->command->line("  }'");
         }
 

@@ -3,17 +3,41 @@
 namespace Tests\Feature;
 
 use App\Cases;
+use App\Http\Controllers\MartApiController;
 use App\Http\Controllers\MartFileController;
 use App\Mart\MartFile;
 use App\Mart\MartProject;
+use App\Mart\MartQuestion;
+use App\Mart\MartSchedule;
 use App\Project;
+use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class MartFileUploadTest extends TestCase
 {
+    /** The question UUID the app sends with every upload. */
+    private const ZERO_UUID = '00000000-0000-0000-0000-000000000000';
+
+    /** What the app puts in front of a returned fileUrl (apiBremenBase). */
+    private const APP_API_BASE = 'https://metag.example.test';
+
+    /** The bucket each offered extension's sample file lands in. */
+    private const BUCKETS = [
+        '.jpg' => 'photo', '.jpeg' => 'photo', '.png' => 'photo', '.gif' => 'photo', '.webp' => 'photo',
+        '.heic' => 'photo', '.heif' => 'photo',
+        '.pdf' => 'document',
+        '.mp4' => 'video', '.mov' => 'video', '.webm' => 'video', '.3gp' => 'video', '.avi' => 'video',
+        '.mp3' => 'audio', '.m4a' => 'audio', '.ogg' => 'audio', '.flac' => 'audio', '.wav' => 'audio',
+        '.aac' => 'audio',
+    ];
+
+    private int $nextQuestionnaireNumber = 100;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -33,6 +57,17 @@ class MartFileUploadTest extends TestCase
 
         // Create MART project in MART database (use firstOrCreate since MART DB doesn't rollback)
         MartProject::firstOrCreate(['main_project_id' => $this->project->id]);
+    }
+
+    /**
+     * The request as the case's own participant sends it: the bearer token
+     * makes them the request's user.
+     */
+    private function asOwner(Request $request): Request
+    {
+        $request->setUserResolver(fn () => $this->user);
+
+        return $request;
     }
 
     /**
@@ -62,7 +97,7 @@ class MartFileUploadTest extends TestCase
             'original_name' => 'test-image.png',
         ]);
 
-        $response = $controller->store($request, $this->case);
+        $response = $controller->store($this->asOwner($request), $this->case);
         $responseData = $response->getData(true);
 
         $this->assertTrue($responseData['success']);
@@ -70,7 +105,7 @@ class MartFileUploadTest extends TestCase
         $this->assertEquals('image/png', $responseData['mime_type']);
         $this->assertArrayHasKey('file_id', $responseData);
         $this->assertArrayHasKey('fileUrl', $responseData);
-        $this->assertEquals("/mart-api/files/{$responseData['file_id']}", $responseData['fileUrl']);
+        $this->assertEquals("/api/mobile/files/{$responseData['file_id']}", $responseData['fileUrl']);
 
         // Verify file was saved to database
         $this->assertDatabaseHas('mart_files', [
@@ -95,14 +130,14 @@ class MartFileUploadTest extends TestCase
             'file' => $uploadedFile,
         ]);
 
-        $response = $controller->store($request, $this->case);
+        $response = $controller->store($this->asOwner($request), $this->case);
         $responseData = $response->getData(true);
 
         $this->assertTrue($responseData['success']);
         $this->assertEquals('photo', $responseData['file_type']);
         $this->assertEquals('image/png', $responseData['mime_type']);
         $this->assertArrayHasKey('file_id', $responseData);
-        $this->assertEquals("/mart-api/files/{$responseData['file_id']}", $responseData['fileUrl']);
+        $this->assertEquals("/api/mobile/files/{$responseData['file_id']}", $responseData['fileUrl']);
 
         $this->assertDatabaseHas('mart_files', [
             'case_id' => $this->case->id,
@@ -126,7 +161,7 @@ class MartFileUploadTest extends TestCase
             'file' => $uploadedFile,
         ]);
 
-        $response = $controller->store($request, $this->case);
+        $response = $controller->store($this->asOwner($request), $this->case);
         $responseData = $response->getData(true);
 
         $this->assertTrue($responseData['success']);
@@ -145,7 +180,7 @@ class MartFileUploadTest extends TestCase
             'original_name' => 'photo.png',
         ]);
 
-        $response = $controller->store($request, $this->case);
+        $response = $controller->store($this->asOwner($request), $this->case);
         $responseData = $response->getData(true);
 
         $this->assertTrue($responseData['success']);
@@ -176,7 +211,7 @@ class MartFileUploadTest extends TestCase
             'file' => $this->getTestPngBase64(),
         ]);
 
-        $response = $controller->store($request, $standardCase);
+        $response = $controller->store($this->asOwner($request), $standardCase);
 
         $this->assertEquals(400, $response->getStatusCode());
         $responseData = $response->getData(true);
@@ -194,7 +229,7 @@ class MartFileUploadTest extends TestCase
             'file' => base64_encode('This is not an image file'),
         ]);
 
-        $response = $controller->store($request, $this->case);
+        $response = $controller->store($this->asOwner($request), $this->case);
 
         $this->assertEquals(422, $response->getStatusCode());
         $responseData = $response->getData(true);
@@ -213,7 +248,7 @@ class MartFileUploadTest extends TestCase
             'file' => $this->getTestPngBase64(),
         ]);
 
-        $response = $controller->store($request, $this->case);
+        $response = $controller->store($this->asOwner($request), $this->case);
 
         $this->assertEquals(422, $response->getStatusCode());
         $responseData = $response->getData(true);
@@ -230,7 +265,7 @@ class MartFileUploadTest extends TestCase
             'file' => 'not-valid-base64!!!',
         ]);
 
-        $response = $controller->store($request, $this->case);
+        $response = $controller->store($this->asOwner($request), $this->case);
 
         $this->assertEquals(400, $response->getStatusCode());
         $responseData = $response->getData(true);
@@ -292,7 +327,7 @@ class MartFileUploadTest extends TestCase
             'file_type' => 'photo',
             'file' => $this->getTestPngBase64(),
         ]);
-        $response = $controller->store($request, $this->case);
+        $response = $controller->store($this->asOwner($request), $this->case);
         $fileId = $response->getData(true)['file_id'];
 
         // Verify file is unlinked
@@ -319,7 +354,7 @@ class MartFileUploadTest extends TestCase
             'file_type' => 'photo',
             'file' => $this->getTestPngBase64(),
         ]);
-        $response = $controller->store($request, $this->case);
+        $response = $controller->store($this->asOwner($request), $this->case);
         $fileId = $response->getData(true)['file_id'];
 
         // Try to link with wrong case ID
@@ -339,5 +374,403 @@ class MartFileUploadTest extends TestCase
             str_contains($haystack, $needle),
             "Failed asserting that '$haystack' contains '$needle'"
         );
+    }
+
+    /**
+     * The editor stores upload questions as photo / audio / video. Submit used
+     * to look for photoUpload / audioUpload / videoUpload, so uploaded files
+     * were never linked to the entry they answer.
+     *
+     * @test
+     */
+    public function a_submitted_photo_answer_links_the_uploaded_file_to_the_entry()
+    {
+        $martProject = MartProject::where('main_project_id', $this->project->id)->first();
+        $questionnaireId = $this->project->id * 1000 + 1;
+        $schedule = MartSchedule::create([
+            'mart_project_id' => $martProject->id,
+            'questionnaire_id' => $questionnaireId,
+            'name' => 'Photo diary',
+            'type' => 'single',
+            'timing_config' => [],
+            'notification_config' => [],
+        ]);
+        MartQuestion::create([
+            'schedule_id' => $schedule->id,
+            'position' => 0,
+            'text' => 'Take a photo of your screen',
+            'type' => 'photo',
+            'config' => [],
+            'is_mandatory' => false,
+            'version' => 1,
+        ]);
+
+        $fileId = (new MartFileController)->store($this->asOwner(new Request([
+            'file_type' => 'photo',
+            'file' => $this->getTestPngBase64(),
+            'original_name' => 'screen.png',
+        ])), $this->case)->getData(true)['file_id'];
+
+        $response = (new MartApiController)->submitEntry(new Request([
+            'projectId' => $this->project->id,
+            'questionnaireId' => $questionnaireId,
+            'userId' => $this->user->email,
+            'participantId' => $this->case->name,
+            'questionnaireStarted' => now()->timestamp * 1000,
+            'questionnaireDuration' => 60000,
+            'answers' => ['1' => [$fileId]],
+            'timestamp' => now()->timestamp * 1000,
+            'timezone' => 'Europe/Berlin',
+        ]), $this->case);
+
+        $this->assertTrue($response->getData(true)['success']);
+        $this->assertNotNull(MartFile::find($fileId)->mart_entry_id, 'The uploaded photo was not linked to the entry.');
+    }
+
+    /**
+     * The app's upload for a fileUpload question used to fail validation on
+     * file_type "file", and the app then dropped the whole submit.
+     *
+     * @test
+     */
+    public function the_apps_upload_for_a_file_question_is_accepted()
+    {
+        $this->appUpload($this->fixture('sample.pdf'))
+            ->assertCreated()
+            ->assertJsonPath('success', true);
+    }
+
+    /**
+     * "file" means any bucket, so the content picks it, as when no file_type
+     * is sent.
+     *
+     * @test
+     */
+    public function a_file_question_upload_gets_the_bucket_of_its_content()
+    {
+        $this->appUpload($this->fixture('sample.pdf'))->assertJsonPath('file_type', 'document');
+    }
+
+    /**
+     * Each format a fileUpload question can allow
+     * (MartFile::FILE_UPLOAD_EXTENSIONS), as a real minimal file in
+     * tests/fixtures/mart-uploads.
+     *
+     * @test
+     *
+     * @dataProvider offeredFormats
+     */
+    public function an_offered_format_is_stored_in_the_bucket_of_its_content(string $extension, ?string $bucket)
+    {
+        $fileId = $this->appUpload($this->fixture("sample{$extension}"), 'file', "upload{$extension}")
+            ->assertCreated()
+            ->json('file_id');
+
+        $this->assertSame($bucket, MartFile::find($fileId)->file_type);
+    }
+
+    public static function offeredFormats(): array
+    {
+        return collect(MartFile::FILE_UPLOAD_EXTENSIONS)
+            ->mapWithKeys(fn ($extension) => [$extension => [$extension, self::BUCKETS[$extension] ?? null]])
+            ->all();
+    }
+
+    /**
+     * The app's recorder takes the first of audio/mp4, audio/webm;codecs=opus,
+     * audio/webm and audio/ogg;codecs=opus that the phone supports, and
+     * uploads it with file_type "audio", as it does a picked audio file. The
+     * content check reads most of these containers as video.
+     *
+     * @test
+     *
+     * @dataProvider audioUploads
+     */
+    public function an_audio_upload_is_stored_in_the_audio_bucket(string $fixture)
+    {
+        $fileId = $this->appUpload($this->fixture($fixture), 'audio', $fixture)
+            ->assertCreated()
+            ->json('file_id');
+
+        $this->assertSame('audio', MartFile::find($fileId)->file_type);
+    }
+
+    public static function audioUploads(): array
+    {
+        return [
+            'a recording, aac in fragmented mp4' => ['recording-aac-frag.mp4'],
+            'a recording, opus in webm' => ['recording-opus.webm'],
+            'an audio-only 3gp' => ['recording-aac.3gp'],
+            'a wav file' => ['sample.wav'],
+            'an adts aac file' => ['sample.aac'],
+        ];
+    }
+
+    /** @test */
+    public function a_video_upload_still_takes_an_mp4()
+    {
+        $fileId = $this->appUpload($this->fixture('sample.mp4'), 'video', 'video.mp4')
+            ->assertCreated()
+            ->json('file_id');
+
+        $this->assertSame('video', MartFile::find($fileId)->file_type);
+    }
+
+    /**
+     * The audio bucket takes video types too, but the content still picks
+     * video for them, because video comes first.
+     *
+     * @test
+     *
+     * @dataProvider uploadsWithoutABucket
+     */
+    public function a_recording_uploaded_without_a_bucket_lands_in_video(?string $fileType)
+    {
+        $fileId = $this->appUpload($this->fixture('recording-aac-frag.mp4'), $fileType, 'recording.mp4')
+            ->assertCreated()
+            ->json('file_id');
+
+        $this->assertSame('video', MartFile::find($fileId)->file_type);
+    }
+
+    public static function uploadsWithoutABucket(): array
+    {
+        return [
+            'file_type "file"' => ['file'],
+            'no file_type' => [null],
+        ];
+    }
+
+    /** @test */
+    public function the_content_still_picks_video_for_every_video_type()
+    {
+        $this->assertSame(
+            ['video', 'video', 'video'],
+            array_map([MartFile::class, 'fileTypeForMime'], ['video/mp4', 'video/webm', 'video/3gpp']),
+        );
+    }
+
+    /**
+     * Two upload questions in one submit: each file gets its own question.
+     *
+     * @test
+     */
+    public function each_file_in_a_submit_gets_the_question_it_answers()
+    {
+        [$first, $second] = $this->uploadQuestions(['file', 'file']);
+        $pdf = $this->appUpload($this->fixture('sample.pdf'))->json();
+        $photo = $this->appUpload($this->fixture('sample.jpg'), 'file', 'photo.jpg')->json();
+
+        $this->appSubmitAnswers($first->schedule, [
+            '1' => $this->appFileAnswer($pdf),
+            '2' => $this->appFileAnswer($photo),
+        ])->assertOk();
+
+        $this->assertSame(
+            [$first->uuid, $second->uuid],
+            [MartFile::find($pdf['file_id'])->question_uuid, MartFile::find($photo['file_id'])->question_uuid],
+        );
+    }
+
+    /**
+     * The app uploads with the zero question UUID, so the submit sets the
+     * real one.
+     *
+     * @test
+     */
+    public function a_submitted_file_answer_sets_the_question_of_its_file()
+    {
+        $question = $this->uploadQuestion('file');
+        $upload = $this->appUpload($this->fixture('sample.pdf'))->json();
+
+        $this->appSubmit($question, $this->appFileAnswer($upload))->assertOk();
+
+        $this->assertSame($question->uuid, MartFile::find($upload['file_id'])->question_uuid);
+    }
+
+    /** @test */
+    public function a_submitted_file_answer_links_its_file_to_the_entry()
+    {
+        $question = $this->uploadQuestion('file');
+        $upload = $this->appUpload($this->fixture('sample.pdf'))->json();
+
+        $entryId = $this->appSubmit($question, $this->appFileAnswer($upload))->json('entry_id');
+
+        $this->assertSame($entryId, MartFile::find($upload['file_id'])->mart_entry_id);
+    }
+
+    /**
+     * Photo, audio and video uploads carry the zero UUID too.
+     *
+     * @test
+     */
+    public function a_submitted_photo_answer_sets_the_question_of_its_file()
+    {
+        $question = $this->uploadQuestion('photo');
+        $upload = $this->appUpload($this->fixture('sample.jpg'), 'photo', 'photo.jpg')->json();
+
+        $this->appSubmit($question, $this->appFileAnswer($upload))->assertOk();
+
+        $this->assertSame($question->uuid, MartFile::find($upload['file_id'])->question_uuid);
+    }
+
+    /**
+     * The answer holds the file's id twice, once inside its URL. Only the
+     * bare id is linked, so no link fails.
+     *
+     * @test
+     */
+    public function a_file_answer_links_its_file_once()
+    {
+        $question = $this->uploadQuestion('file');
+        $upload = $this->appUpload($this->fixture('sample.pdf'))->json();
+        Log::spy();
+
+        $this->appSubmit($question, $this->appFileAnswer($upload))->assertOk();
+
+        Log::shouldNotHaveReceived('warning');
+    }
+
+    /** @test */
+    public function a_submit_leaves_a_file_of_another_case_alone()
+    {
+        $question = $this->uploadQuestion('file');
+        $other = User::factory()->create();
+        $otherCase = Cases::factory()->create(['project_id' => $this->project->id, 'user_id' => $other->id]);
+        $upload = $this->appUpload($this->fixture('sample.pdf'), 'file', 'upload.pdf', $other, $otherCase)->json();
+
+        $this->appSubmit($question, $this->appFileAnswer($upload))->assertOk();
+
+        $file = MartFile::find($upload['file_id']);
+        $this->assertSame([null, self::ZERO_UUID], [$file->mart_entry_id, $file->question_uuid]);
+    }
+
+    /**
+     * Only a link sets the question, so sending a linked file again doesn't
+     * move it to another question.
+     *
+     * @test
+     */
+    public function a_linked_file_keeps_its_question_when_it_is_sent_again()
+    {
+        $first = $this->uploadQuestion('file');
+        $second = $this->uploadQuestion('file');
+        $upload = $this->appUpload($this->fixture('sample.pdf'))->json();
+        $this->appSubmit($first, $this->appFileAnswer($upload))->assertOk();
+
+        $this->appSubmit($second, $this->appFileAnswer($upload))->assertOk();
+
+        $this->assertSame($first->uuid, MartFile::find($upload['file_id'])->question_uuid);
+    }
+
+    /**
+     * Only the case's own participant may add files to it.
+     *
+     * @test
+     */
+    public function another_participant_cannot_upload_to_the_case()
+    {
+        $this->appUpload($this->fixture('sample.jpg'), 'photo', 'photo.jpg', User::factory()->create())
+            ->assertForbidden();
+
+        $this->assertFalse(MartFile::where('case_id', $this->case->id)->exists());
+    }
+
+    private function fixture(string $name): string
+    {
+        return file_get_contents(base_path("tests/fixtures/mart-uploads/{$name}"));
+    }
+
+    /**
+     * Uploads the way the app's usePost does for a "files" item: a JSON body,
+     * raw base64 (cut from a data: URL at the first comma), the zero question
+     * UUID, and file_type from the scale type ("file" for fileUpload). A null
+     * file_type is left out of the body.
+     */
+    private function appUpload(
+        string $content,
+        ?string $fileType = 'file',
+        string $originalName = 'upload.pdf',
+        ?User $as = null,
+        ?Cases $case = null,
+    ): TestResponse {
+        $case ??= $this->case;
+        $body = [
+            'question_uuid' => self::ZERO_UUID,
+            'file_type' => $fileType,
+            'file' => base64_encode($content),
+            'original_name' => $originalName,
+        ];
+        if ($fileType === null) {
+            unset($body['file_type']);
+        }
+
+        return $this->actingAs($as ?? $this->user, 'api')->postJson("/mart-api/cases/{$case->id}/files", $body);
+    }
+
+    /**
+     * The answer the app builds from an upload's response: the fileUrl with
+     * the app's API base in front, then the file_id.
+     */
+    private function appFileAnswer(array $upload): array
+    {
+        return [self::APP_API_BASE . $upload['fileUrl'], $upload['file_id']];
+    }
+
+    /** A questionnaire with one mandatory upload question of this type. */
+    private function uploadQuestion(string $type): MartQuestion
+    {
+        return $this->uploadQuestions([$type])[0];
+    }
+
+    /**
+     * A questionnaire with one mandatory upload question per type, in this
+     * order.
+     *
+     * @return MartQuestion[]
+     */
+    private function uploadQuestions(array $types): array
+    {
+        $schedule = MartSchedule::create([
+            'mart_project_id' => MartProject::where('main_project_id', $this->project->id)->firstOrFail()->id,
+            'questionnaire_id' => $this->project->id * 1000 + $this->nextQuestionnaireNumber++,
+            'name' => 'Uploads',
+            'type' => 'single',
+            'timing_config' => [],
+            'notification_config' => [],
+        ]);
+
+        return array_map(fn ($type, $index) => MartQuestion::create([
+            'schedule_id' => $schedule->id,
+            'position' => $index + 1,
+            'text' => 'Upload a file ' . ($index + 1),
+            'type' => $type,
+            'config' => $type === 'file' ? ['fileUploadOptions' => ['maxFileSize' => 20, 'allowedFormats' => ['.pdf', '.jpg']]] : [],
+            'is_mandatory' => true,
+            'version' => 1,
+        ]), $types, array_keys($types));
+    }
+
+    /** Submits the question's answer the way the app does, keyed by its item ID. */
+    private function appSubmit(MartQuestion $question, array $answer): TestResponse
+    {
+        return $this->appSubmitAnswers($question->schedule, ['1' => $answer]);
+    }
+
+    /** Submits answers keyed by item ID, the way the app does. */
+    private function appSubmitAnswers(MartSchedule $schedule, array $answers): TestResponse
+    {
+        return $this->actingAs($this->user, 'api')->postJson("/mart-api/cases/{$this->case->id}/submit", [
+            'userId' => $this->user->email,
+            'projectId' => $this->project->id,
+            'questionnaireId' => $schedule->questionnaire_id,
+            'participantId' => $this->case->name,
+            'answers' => $answers,
+            'questionnaireStarted' => now()->timestamp * 1000,
+            'questionnaireDuration' => 60000,
+            'timestamp' => now()->timestamp * 1000,
+            'timestampInherited' => 0,
+            'timezone' => 'Europe/Berlin',
+        ]);
     }
 }

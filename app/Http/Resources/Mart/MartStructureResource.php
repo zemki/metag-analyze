@@ -4,6 +4,8 @@ namespace App\Http\Resources\Mart;
 
 use App\Mart\MartDeviceInfo;
 use App\Mart\MartEntry;
+use App\Mart\MartProject;
+use App\Mart\MartQuestion;
 use App\Mart\MartSchedule;
 use App\Mart\MartStat;
 use App\User;
@@ -14,6 +16,7 @@ class MartStructureResource extends JsonResource
     protected $schedules;
     protected $participantId;
     protected $caseId;
+    protected $userEmail;
 
     public function __construct($resource, $schedules = null)
     {
@@ -29,6 +32,11 @@ class MartStructureResource extends JsonResource
     public function setCaseId($caseId)
     {
         $this->caseId = $caseId;
+    }
+
+    public function setUserEmail($userEmail)
+    {
+        $this->userEmail = $userEmail;
     }
 
     public function toArray($request)
@@ -64,6 +72,26 @@ class MartStructureResource extends JsonResource
                     $scheduleQuestions = $schedule->questions ?? [];
 
                     if (!empty($scheduleQuestions)) {
+                        // The app looks a scale up by id over the whole list, so ids
+                        // must be unique across questionnaires. Items with identical
+                        // options share one scale; the app copies it for each item.
+                        $itemScaleIds = [];
+                        foreach ($scheduleQuestions as $index => $question) {
+                            // A display item has no scale, unless it shows a choice's
+                            // options, disabled. Its itemId stays null either way.
+                            $isDisplay = ($question['type'] ?? '') === 'display';
+                            if ($isDisplay && MartQuestion::displaySelectionType($question['config'] ?? null) === null) {
+                                continue;
+                            }
+                            $options = (new ScaleResource((object) $question, $index, true))->scaleOptions();
+                            $key = json_encode($options);
+                            $scales[$key] ??= [
+                                'scaleId' => $schedule->questionnaire_id * 1000 + $index + 1,
+                                'options' => $options,
+                            ];
+                            $itemScaleIds[$index] = $scales[$key]['scaleId'];
+                        }
+
                         // Create questionnaire for this schedule, passing the schedule's
                         // own name so each questionnaire is named distinctly in the response.
                         $questionnaires[] = new QuestionSheetResource(
@@ -71,20 +99,9 @@ class MartStructureResource extends JsonResource
                             $scheduleQuestions,
                             $martConfig,
                             $schedule->questionnaire_id,
-                            $schedule->name
+                            $schedule->name,
+                            $itemScaleIds
                         );
-
-                        // Create scales for this schedule's questions (skip display-only items)
-                        // Use item index to keep scaleId consistent with the item's scaleId reference
-                        foreach ($scheduleQuestions as $index => $question) {
-                            // Skip display-only items - they have no scale (itemId/scaleId are null)
-                            if (($question['type'] ?? '') === 'display') {
-                                continue;
-                            }
-                            $question['projectId'] = $project->id;
-                            // Use the item's index so scaleId matches the item's scaleId reference
-                            $scales[] = new ScaleResource((object) $question, $index, true); // true = isMartProject
-                        }
                     }
                 }
             }
@@ -99,14 +116,9 @@ class MartStructureResource extends JsonResource
             $response = [
                 'projectOptions' => new ProjectOptionsResource($project, $martConfig, $this->schedules, $this->caseId),
                 'questionnaires' => $questionnaires,
-                'scales' => $scales,
+                'scales' => array_values($scales),
                 'pages' => $pageResources,
-                // Always include these fields (required by martTypes.ts)
-                'deviceInfos' => $this->participantId ? $this->getDeviceInfo($this->participantId) : [],
-                'repeatingSubmits' => $this->participantId ? $this->getSubmissionsByType($this->participantId, 'repeating') : [],
-                'singleSubmits' => $this->participantId ? $this->getSubmissionsByType($this->participantId, 'single') : [],
-                'lastDataDonationSubmit' => $this->participantId ? $this->getLastDataDonationSubmit($this->participantId, $project) : null,
-                'lastAndroidStatsSubmit' => $this->participantId ? $this->getLastAndroidStatsSubmit($this->participantId) : null,
+                ...$this->participantData($martProject),
             ];
 
             return $response;
@@ -128,12 +140,7 @@ class MartStructureResource extends JsonResource
                 'questionnaires' => [$questionSheet],
                 'scales' => $scales,
                 'pages' => [], // Standard projects don't have pages
-                // Always include these fields (required by martTypes.ts)
-                'deviceInfos' => $this->participantId ? $this->getDeviceInfo($this->participantId) : [],
-                'repeatingSubmits' => $this->participantId ? $this->getSubmissionsByType($this->participantId, 'repeating') : [],
-                'singleSubmits' => $this->participantId ? $this->getSubmissionsByType($this->participantId, 'single') : [],
-                'lastDataDonationSubmit' => $this->participantId ? $this->getLastDataDonationSubmit($this->participantId, $project) : null,
-                'lastAndroidStatsSubmit' => $this->participantId ? $this->getLastAndroidStatsSubmit($this->participantId) : null,
+                ...$this->participantData($project->martProject()),
             ];
 
             return $response;
@@ -141,12 +148,46 @@ class MartStructureResource extends JsonResource
     }
 
     /**
-     * Get device info for participant from MART database
+     * The participant's own data, always present (martTypes.ts requires the
+     * keys). Case names can repeat across projects, so every lookup is
+     * limited to this project, as Directus filters by projectId and
+     * participantId.
+     */
+    private function participantData(?MartProject $martProject): array
+    {
+        if (! $this->participantId || ! $martProject) {
+            return [
+                'deviceInfos' => [],
+                'repeatingSubmits' => [],
+                'singleSubmits' => [],
+                'lastDataDonationSubmit' => null,
+                'lastAndroidStatsSubmit' => null,
+            ];
+        }
+
+        return [
+            'deviceInfos' => $this->getDeviceInfo($this->participantId),
+            'repeatingSubmits' => $this->getSubmissionsByType($this->participantId, 'repeating', $martProject),
+            'singleSubmits' => $this->getSubmissionsByType($this->participantId, 'single', $martProject),
+            'lastDataDonationSubmit' => $this->getLastDataDonationSubmit($this->participantId, $martProject),
+            'lastAndroidStatsSubmit' => $this->getLastAndroidStatsSubmit($this->participantId, $martProject),
+        ];
+    }
+
+    /**
+     * Get device info for participant from MART database. Device infos have
+     * no project column, so they are matched on the case owner's email too:
+     * a same-named participant in another project is someone else.
      */
     private function getDeviceInfo($participantId)
     {
-        // Query MART database for device info
-        $deviceInfos = MartDeviceInfo::forParticipant($participantId)->get();
+        if (! $this->userEmail) {
+            return [];
+        }
+
+        $deviceInfos = MartDeviceInfo::forParticipant($participantId)
+            ->forUser($this->userEmail)
+            ->get();
 
         return $deviceInfos->map(function ($deviceInfo) {
             return [
@@ -164,10 +205,11 @@ class MartStructureResource extends JsonResource
      * ('single' or 'repeating'). Joins mart_entries -> mart_schedules so we
      * can return only the submissions whose schedule matches the requested type.
      */
-    private function getSubmissionsByType($participantId, string $type)
+    private function getSubmissionsByType($participantId, string $type, MartProject $martProject)
     {
         $entries = MartEntry::forParticipant($participantId)
             ->join('mart_schedules', 'mart_entries.schedule_id', '=', 'mart_schedules.id')
+            ->where('mart_schedules.mart_project_id', $martProject->id)
             ->where('mart_schedules.type', $type)
             ->orderBy('mart_entries.timestamp', 'desc')
             ->get(['mart_entries.questionnaire_id', 'mart_entries.timestamp']);
@@ -193,13 +235,8 @@ class MartStructureResource extends JsonResource
      *
      * Returns { timestamp: number } per martTypes.ts (no questionnaireId).
      */
-    private function getLastDataDonationSubmit($participantId, $project)
+    private function getLastDataDonationSubmit($participantId, MartProject $martProject)
     {
-        $martProject = $project->martProject();
-        if (!$martProject) {
-            return null;
-        }
-
         $donationScheduleIds = MartSchedule::where('mart_project_id', $martProject->id)
             ->where(function ($q) {
                 $q->where('is_ios_data_donation', true)
@@ -222,12 +259,11 @@ class MartStructureResource extends JsonResource
     /**
      * Get last automatic Android stats submission timestamp
      * Returns object per martTypes.ts: { timestamp: number }
-     * Now queries MART database
      */
-    private function getLastAndroidStatsSubmit($participantId)
+    private function getLastAndroidStatsSubmit($participantId, MartProject $martProject)
     {
-        // Get last Android stats submission from MART database
         $stat = MartStat::forParticipant($participantId)
+            ->where('mart_project_id', $martProject->id)
             ->whereNotNull('android_usage_stats')
             ->orderBy('timestamp', 'desc')
             ->first();

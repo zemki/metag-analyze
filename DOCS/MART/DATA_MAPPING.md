@@ -14,6 +14,8 @@ How MART API types map to database storage.
 | `collectDeviceInfos` | `projects.inputs` JSON | In `martConfig.projectOptions` |
 | `initialHoursOfAndroidStats` | `projects.inputs` JSON | In `martConfig.projectOptions` |
 | `overlapAndroidStatsHours` | `projects.inputs` JSON | In `martConfig.projectOptions` |
+| `minBreakBetweenDataDonationQuestionnaires` | `projects.inputs` JSON | In `martConfig.projectOptions`, hours (decimals allowed). Sent only when a number of 0 or more; left out when empty |
+| `minBreakBetweenAndroidStats` | `projects.inputs` JSON | In `martConfig.projectOptions`, hours (decimals allowed). Sent only when a number of 0 or more; left out when empty |
 | `pages` | `mart_pages.id` array | MART DB, derived |
 | `pagesToShowInMenu` | `mart_pages` where `show_in_menu=true` | MART DB |
 | `pagesToShowOnFirstAppStart` | `mart_pages` where `show_on_first_app_start=true` | MART DB |
@@ -69,25 +71,38 @@ How MART API types map to database storage.
 | `videoUrl` | `mart_questions.config->video_url` | JSON |
 | `options.randomizationGroupId` | `mart_questions.config->randomization_group_id` | JSON |
 | `options.randomizeAnswers` | `mart_questions.config->randomize_answers` | JSON |
+| `options.randomPositionWithinQuestionnaire` | `mart_questions.config->randomPositionWithinQuestionnaire` | JSON, `true`, `false` or `null` (checked on save); missing or `null` means `false` |
 | `options.noValueAllowed` | `!mart_questions.is_mandatory` | Inverse |
 | `options.itemGroup` | `mart_questions.config->item_group` | JSON |
+| `posterUrl` | `mart_questions.config->posterUrl` | JSON, a URL of at most 2048 characters (checked on save); the editor saves it only with a video; left out when empty |
 
 ## Scale (Question Type Config)
 
 | API Type | Database `type` | Config Fields |
 |----------|-----------------|---------------|
 | `number` | `number` | `minValue`, `maxValue`, `maxDigits` |
-| `text` | `text` | `textOptions.type` |
-| `textarea` | `textarea` | - |
-| `radio` | `one choice` | `options[]` in config |
-| `checkbox` | `multiple choice` | `options[]` in config |
-| `radioWithText` | `one choice` | `options[]` + `includeOtherOption: true` |
-| `checkboxWithText` | `multiple choice` | `options[]` + `includeOtherOption: true` |
-| `range` | `range` | `minValue`, `maxValue`, `steps`, `defaultValue` |
-| `rangeValues` | `range values` | `rangeValueOptions[]` |
+| `text` | `text` | `placeholder` in config, sent as `textOptions.placeholder` |
+| `textarea` | `textarea` | `placeholder` in config, sent as `textOptions.placeholder` |
+| `radio` | `one choice` | `options[]` in config, sent with `value` = key + 1. With `includeOtherOption`, adds an option with the value `text` (label from `otherOptionLabel`) and `textOptions.type` from `otherTextType` |
+| `checkbox` | `multiple choice` | Same as `radio` |
+| `range` | `range` | `minValue`, `maxValue`, `steps`, `defaultValue` in `rangeOptions` |
+| `rangeValues` | `range values` | `options[]` in config (the labels; a blank one is stored as `null` and sent as `""`), sent as `rangeValueOptions` with `value` = key + 1. At least 2 options, checked on save. No "other" option |
 | `photoUpload` | `photo` | `photoUploadOptions` |
 | `audioUpload` | `audio` | `audioUploadOptions` |
 | `videoUpload` | `video` | `videoUploadOptions` |
+| `fileUpload` | `file` | `fileUploadOptions` {`maxFileSize` (MB), `allowedFormats`} in config, saved as sent. Sent with `maxFileSize` as a number and each format lowercase with one leading dot (`MartFile::normaliseFileFormat`), listed once; a key without a value is left out. No `fileType`. A size from 1 to 50 and at least one format, each one from `MartFile::FILE_UPLOAD_EXTENSIONS`, checked on save |
+| `radio` / `checkbox`, shown disabled | `display` | Only with `displaySelection` (`radio` or `checkbox`) in config. Then `options[]`, `includeOtherOption`, `otherTextType` and `otherOptionLabel` work as for `radio`, and the scale is the one an answerable choice with the same config gets, so the two can share it. At least 2 options, none blank, and a known `displaySelection`, checked on save. Never sent with a `defaultValue`, `jump` or `randomizeAnswers`, whatever config holds (the editor saves none); a `timer` is sent. Without `displaySelection` a `display` item has no scale, and the editor saves no timer for it |
+
+`defaultValue` in config goes to `options.defaultValue` for any type. For `radio`, `checkbox`
+and `rangeValues`, config holds the option's 0-based key and the API sends key + 1, the same as
+the option's `value`. `jump.jumpCondition` works the same way (`radio` and `checkbox` only).
+The editor finds a choice default by its text, and a `rangeValues` default by its position,
+because a slider's labels can be blank or repeat.
+
+A `display` item's `itemId` is `null` either way, so the app greys out its options and sends
+no answer for it. The editor saves it with `is_mandatory` false, and the submit doesn't
+require an answer for a `display` item, so older rows saved as mandatory are accepted too.
+`answers` may be empty, as it is for a questionnaire of `display` items only.
 
 ## Page
 
@@ -112,6 +127,13 @@ How MART API types map to database storage.
 | `answers` | `mart_answers.answer_value` | Per question UUID |
 | `timestamp` | `mart_entries.timestamp` | Unix timestamp |
 | `timezone` | `mart_entries.timezone` | |
+
+An upload answer (`photo`, `audio`, `video`, `file`) is `[fileUrl, file_id]`, stored as sent
+in `mart_answers.answer_value`. The submit links the `mart_files` row of that `file_id`, when
+it belongs to the submitting case: `mart_entry_id` is set to the entry and `question_uuid` to
+the answered question, replacing the zero UUID the app uploads with. `mart_files.file_type`
+is the bucket inferred from the content (`photo`, `video`, `audio`, `document`) when the app
+sends `file`.
 
 ## DeviceInfo
 

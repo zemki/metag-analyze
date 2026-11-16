@@ -28,10 +28,8 @@ MART enables researchers to:
 
 | Type | Description |
 |------|-------------|
-| `radio` | Single choice |
-| `radioWithText` | Single choice with "Other" text field |
-| `checkbox` | Multiple choice |
-| `checkboxWithText` | Multiple choice with "Other" text field |
+| `radio` | Single choice, optionally with an "Other" text field |
+| `checkbox` | Multiple choice, optionally with an "Other" text field |
 | `range` | Numeric slider |
 | `rangeValues` | Labeled slider |
 | `text` | Short text input |
@@ -40,6 +38,7 @@ MART enables researchers to:
 | `photoUpload` | Camera/gallery photo |
 | `audioUpload` | Audio recording |
 | `videoUpload` | Video recording |
+| `fileUpload` | Any file, within a size and a list of formats |
 
 ### Page Types
 

@@ -194,7 +194,7 @@
 </template>
 <script>
 import Modal from "./global/modal.vue";
-import { emitter } from '../app.js';
+import { emitter } from '../emitter.js';
 
 export default {
   name: "ProjectsList",
@@ -272,7 +272,7 @@ export default {
               "/projects/invite/" + self.leaveProjectUserId,
               {
                 email: self.loggedUser.email,
-                study: self.leaveProjectStudyId,
+                project: self.leaveProjectStudyId,
               }
           )
           .then((response) => {

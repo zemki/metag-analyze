@@ -1,0 +1,488 @@
+{
+	"1": {
+		"type": "number",
+		"maxValue": 130,
+		"minValue": 12,
+		"maxDigits": 3
+	},
+	"2": {
+		"type": "radio",
+		"radioOptions": [
+			{
+				"value": 1,
+				"text": "weiblich"
+			},
+			{
+				"value": 2,
+				"text": "männlich"
+			},
+			{
+				"value": 3,
+				"text": "divers"
+			}
+		]
+	},
+	"4": {
+		"type": "checkbox",
+		"checkboxOptions": [
+			{
+				"value": 1,
+				"text": "Option 1"
+			},
+			{
+				"value": 2,
+				"text": "Option 2"
+			},
+			{
+				"value": 3,
+				"text": "Option 3"
+			}
+		],
+		"defaultValue": 1
+	},
+	"5": {
+		"type": "textarea",
+		"defaultValue": "Hier kann ein default Text stehen..",
+		"textOptions": {
+			"placeholder": "placeholder Text"
+		}
+	},
+	"6": {
+		"type": "checkbox",
+		"checkboxOptions": [
+			{
+				"value": 1,
+				"text": "Option 1"
+			},
+			{
+				"value": 2,
+				"text": "Option 2"
+			},
+			{
+				"value": 3,
+				"text": "Option 3"
+			},
+			{
+				"value": 4,
+				"text": "Option 4"
+			},
+			{
+				"value": "text",
+				"text": "etwas anders:"
+			}
+		],
+		"textOptions": {
+			"type": "text"
+		}
+	},
+	"7": {
+		"type": "checkbox",
+		"checkboxOptions": [
+			{
+				"value": 1,
+				"text": "Option 1"
+			},
+			{
+				"value": 2,
+				"text": "Option 2"
+			},
+			{
+				"value": "text",
+				"text": "etwas anders"
+			}
+		],
+		"textOptions": {
+			"type": "textarea"
+		}
+	},
+	"8": {
+		"type": "radio",
+		"radioOptions": [
+			{
+				"value": 1,
+				"text": "Option 1"
+			},
+			{
+				"value": 2,
+				"text": "Option 2"
+			},
+			{
+				"value": "text",
+				"text": "Sonstiges"
+			}
+		],
+		"textOptions": {
+			"type": "text"
+		}
+	},
+	"9": {
+		"type": "radio",
+		"radioOptions": [
+			{
+				"value": 1,
+				"text": "Option 1"
+			},
+			{
+				"value": 2,
+				"text": "Option 2"
+			},
+			{
+				"value": 3,
+				"text": "Option 3"
+			},
+			{
+				"value": 4,
+				"text": "Option 4"
+			},
+			{
+				"value": "text",
+				"text": "etwas Anderes"
+			}
+		],
+		"textOptions": {
+			"type": "textarea"
+		}
+	},
+	"10": {
+		"type": "radio",
+		"radioOptions": [
+			{
+				"value": 1,
+				"text": "Option 1"
+			},
+			{
+				"value": 2,
+				"text": "Option 2"
+			}
+		],
+		"jump": {
+			"jumpCondition": 2,
+			"jumpOver": 1
+		}
+	},
+	"11": {
+		"type": "checkbox",
+		"checkboxOptions": [
+			{
+				"value": 1,
+				"text": "Option 1"
+			},
+			{
+				"value": 2,
+				"text": "Option 2"
+			},
+			{
+				"value": "text",
+				"text": "etwas anders"
+			}
+		],
+		"textOptions": {
+			"type": "textarea"
+		}
+	},
+	"12": {
+		"type": "checkbox",
+		"checkboxOptions": [
+			{
+				"value": 1,
+				"text": "Option 1"
+			},
+			{
+				"value": 2,
+				"text": "Option 2"
+			},
+			{
+				"value": "text",
+				"text": "etwas anders"
+			}
+		],
+		"timer": {
+			"time": 5,
+			"showCountdown": false
+		}
+	},
+	"13": {
+		"type": "radio",
+		"radioOptions": [
+			{
+				"value": 1,
+				"text": "Option 1"
+			},
+			{
+				"value": 2,
+				"text": "Option 2"
+			},
+			{
+				"value": "text",
+				"text": "etwas anders"
+			}
+		],
+		"timer": {
+			"time": 3,
+			"showCountdown": true
+		}
+	},
+	"14": {
+		"type": "textarea",
+		"timer": {
+			"time": 4,
+			"showCountdown": false
+		}
+	},
+	"15": {
+		"type": "range",
+		"rangeOptions": {
+			"minValue": 0,
+			"maxValue": 100,
+			"steps": 5
+		},
+		"defaultValue": 55
+	},
+	"16": {
+		"type": "rangeValues",
+		"rangeValueOptions": [
+			{
+				"value": 1,
+				"text": "sehr schlecht"
+			},
+			{
+				"value": 2,
+				"text": "schlecht"
+			},
+			{
+				"value": 3,
+				"text": "ok"
+			},
+			{
+				"value": 4,
+				"text": "gut"
+			},
+			{
+				"value": 5,
+				"text": "sehr gut"
+			}
+		],
+		"defaultValue": 2
+	},
+	"17": {
+		"type": "checkbox",
+		"checkboxOptions": [
+			{
+				"value": 1,
+				"text": "Option 1"
+			},
+			{
+				"value": 2,
+				"text": "Option 2"
+			}
+		]
+	},
+	"18": {
+		"type": "radio",
+		"radioOptions": [
+			{
+				"value": 1,
+				"text": "option 1"
+			},
+			{
+				"value": 2,
+				"text": "option 2"
+			},
+			{
+				"value": 3,
+				"text": "option 3"
+			},
+			{
+				"value": 4,
+				"text": "option 4"
+			},
+			{
+				"value": 5,
+				"text": "option 5"
+			},
+			{
+				"value": 6,
+				"text": "option 6"
+			}
+		]
+	},
+	"200": {
+		"type": "radio",
+		"radioOptions": [
+			{
+				"value": 1,
+				"text": "katastrophal"
+			},
+			{
+				"value": 2,
+				"text": "schlecht"
+			},
+			{
+				"value": 3,
+				"text": "nicht so gut"
+			},
+			{
+				"value": 4,
+				"text": "okay"
+			},
+			{
+				"value": 5,
+				"text": "gut"
+			},
+			{
+				"value": 6,
+				"text": "sehr gut"
+			},
+			{
+				"value": 7,
+				"text": "hervorragend"
+			}
+		]
+	},
+	"201": {
+		"type": "radio",
+		"radioOptions": [
+			{
+				"value": 1,
+				"text": "zu Hause"
+			},
+			{
+				"value": 2,
+				"text": "Bei der Arbeit"
+			},
+			{
+				"value": 3,
+				"text": "Sonstiges"
+			}
+		]
+	},
+	"202": {
+		"type": "radio",
+		"radioOptions": [
+			{
+				"value": 1,
+				"text": "0"
+			},
+			{
+				"value": 2,
+				"text": "1"
+			},
+			{
+				"value": 3,
+				"text": "2-5"
+			}
+		]
+	},
+	"301": {
+		"type": "rangeValues",
+		"rangeValueOptions": [
+			{
+				"value": 1,
+				"text": "sehr schlecht"
+			},
+			{
+				"value": 2,
+				"text": "schlecht"
+			},
+			{
+				"value": 3,
+				"text": "ok"
+			},
+			{
+				"value": 4,
+				"text": "gut"
+			},
+			{
+				"value": 5,
+				"text": "sehr gut"
+			}
+		],
+		"defaultValue": 3
+	},
+	"401": {
+		"type": "radio",
+		"radioOptions": [
+			{
+				"value": 1,
+				"text": "Ja"
+			},
+			{
+				"value": 2,
+				"text": "Nein"
+			},
+			{
+				"value": 3,
+				"text": "Vielleicht"
+			}
+		]
+	},
+	"501": {
+		"type": "fileUpload",
+		"fileUploadOptions": {
+			"fileRequired": false,
+			"maxFileSize": 20,
+			"allowedFormats": [
+				".jpg",
+				".jpeg",
+				".pdf",
+				".svg",
+				".mp4"
+			]
+		}
+	},
+	"502": {
+		"type": "photoUpload",
+		"photoUploadOptions": {
+			"fileRequired": false,
+			"allowFileSelection": false,
+			"allowEditing": false,
+			"quality": 90
+		}
+	},
+	"503": {
+		"type": "photoUpload",
+		"photoUploadOptions": {
+			"fileRequired": false,
+			"allowFileSelection": true,
+			"allowEditing": true,
+			"quality": 50
+		}
+	},
+	"504": {
+		"type": "videoUpload",
+		"videoUploadOptions": {
+			"fileRequired": true,
+			"maxFileSize": 100,
+			"maxVideoLength": 10
+		}
+	},
+	"505": {
+		"type": "videoUpload",
+		"videoUploadOptions": {
+			"fileRequired": true,
+			"allowFileSelection": true,
+			"maxVideoLength": 10
+		}
+	},
+	"506": {
+		"type": "audioUpload",
+		"audioUploadOptions": {
+			"fileRequired": true,
+			"allowFileSelection": true,
+			"maxAudioLength": 10,
+			"maxFileSize": 10
+		}
+	},
+	"600": {
+		"type": "number",
+		"maxValue": 999,
+		"minValue": 0,
+		"maxDigits": 3
+	},
+	"601": {
+		"type": "number",
+		"maxValue": 60,
+		"minValue": 0,
+		"maxDigits": 2
+	}
+}

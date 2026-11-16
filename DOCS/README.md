@@ -2,9 +2,10 @@
 
 Research platform for mobile experience sampling and media diaries.
 
-- [Installation Guide](./INSTALLATION.md) - Setup instructions
+- [Installation Guide](./INSTALLATION.md) - Local setup
+- [Deployment Guide](./DEPLOYMENT.md) - Installing and updating on an Ubuntu/Apache server
 - [Architecture Overview](./ARCHITECTURE.md) - Tech stack and design
-- [Admin Guide](./ADMIN_GUIDE.md) - Admin panel usage
+- [Admin Guide](./ADMIN_GUIDE.md) - Admin panel and roles
 - [MART Documentation](./MART/) - Mobile app API
 
 ## Commands
@@ -18,8 +19,9 @@ npm run build                # Production build (user runs npm run dev)
 
 ### Database
 ```bash
-php artisan migrate                    # Run migrations
-php artisan migrate:status             # Check status
+php artisan migrate                    # Run main migrations
+php artisan migrate:mart               # Run MART migrations (own folder and history)
+php artisan migrate:status             # Check status (migrate:mart --status for MART)
 php artisan migrate:fresh-all --seed   # Reset both databases (local only)
 ```
 

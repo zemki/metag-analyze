@@ -45,6 +45,7 @@ class EntryController extends Controller
     public function store(Cases $case)
     {
         $this->authorize('store', [Entry::class, $case]);
+        $this->refuseMartCase($case);
 
         // if request has "media" key, assign it to the key "media_id"
         if (request()->has('media')) {
@@ -60,15 +61,11 @@ class EntryController extends Controller
             request()->merge([self::MEDIA_ID => request()->entity]);
         }
 
-        // MART projects have no media/entity concept, so make the field optional
-        // when the case belongs to one. The Vue form already hides the input.
-        $isMartProject = $case->project && $case->project->isMartProject();
-
         $attributes = request()->validate([
             self::BEGIN => self::REQUIRED,
             'end' => self::REQUIRED,
             'case_id' => self::REQUIRED,
-            self::MEDIA_ID => $isMartProject ? 'nullable' : self::REQUIRED,
+            self::MEDIA_ID => self::REQUIRED,
             self::INPUTS => 'nullable',
         ]);
 
@@ -76,18 +73,12 @@ class EntryController extends Controller
         $attributes[self::BEGIN] = $this->convertTimestampToDatetime($attributes[self::BEGIN]);
         $attributes['end'] = $this->convertTimestampToDatetime($attributes['end']);
 
-        if ($isMartProject) {
-            // Skip the Media::firstOrCreate path entirely for MART.
-            $attributes[self::MEDIA_ID] = null;
-            $attributes[self::INPUTS] = json_encode(request()->inputs);
+        $isComingFromBackend = is_numeric($attributes[self::MEDIA_ID]);
+        if ($isComingFromBackend) {
+            $attributes[self::INPUTS] = json_encode($attributes[self::INPUTS]);
         } else {
-            $isComingFromBackend = is_numeric($attributes[self::MEDIA_ID]);
-            if ($isComingFromBackend) {
-                $attributes[self::INPUTS] = json_encode($attributes[self::INPUTS]);
-            } else {
-                $attributes[self::MEDIA_ID] = Media::firstOrCreate(['name' => $attributes[self::MEDIA_ID]])->id;
-                $attributes[self::INPUTS] = json_encode(request()->inputs);
-            }
+            $attributes[self::MEDIA_ID] = Media::firstOrCreate(['name' => $attributes[self::MEDIA_ID]])->id;
+            $attributes[self::INPUTS] = json_encode(request()->inputs);
         }
         $entry = Entry::create($attributes);
 
@@ -118,6 +109,7 @@ class EntryController extends Controller
     public function update(Cases $case, Entry $entry)
     {
         $this->authorize('update', [Entry::class, $entry]);
+        $this->refuseMartCase($case);
 
         // if request has "media" key, assign it to the key "media_id"
         if (request()->has('media')) {
@@ -133,15 +125,11 @@ class EntryController extends Controller
             request()->merge([self::MEDIA_ID => request()->entity]);
         }
 
-        // MART projects have no media/entity concept; the Vue form hides the field
-        // and won't send it. Make the validator optional so the request passes.
-        $isMartProject = $case->project && $case->project->isMartProject();
-
         $attributes = request()->validate([
             self::BEGIN => self::REQUIRED,
             'end' => self::REQUIRED,
             'case_id' => self::REQUIRED,
-            self::MEDIA_ID => $isMartProject ? 'nullable' : self::REQUIRED,
+            self::MEDIA_ID => self::REQUIRED,
             self::INPUTS => 'nullable',
         ]);
 
@@ -149,10 +137,7 @@ class EntryController extends Controller
         $attributes[self::BEGIN] = $this->convertTimestampToDatetime($attributes[self::BEGIN]);
         $attributes['end'] = $this->convertTimestampToDatetime($attributes['end']);
 
-        if ($isMartProject) {
-            // Don't touch the existing entry's media_id on a MART update.
-            unset($attributes[self::MEDIA_ID]);
-        } elseif (is_string($attributes[self::MEDIA_ID])) {
+        if (is_string($attributes[self::MEDIA_ID])) {
             $attributes[self::MEDIA_ID] = Media::firstOrCreate(['name' => $attributes[self::MEDIA_ID]])->id;
         }
 
@@ -225,6 +210,8 @@ class EntryController extends Controller
      */
     public function destroy(Cases $case, Entry $entry)
     {
+        $this->refuseMartCase($case);
+
         try {
             if ($case->file_token !== '') {
                 if (isset(json_decode($entry->inputs)->file)) {

@@ -29,10 +29,16 @@ use Illuminate\Support\Facades\Mail;
 class MartAuthController extends Controller
 {
     /**
+     * How long Screen 1's email check stays valid for the next screen. Long
+     * enough for a participant to look up a password or set one up.
+     */
+    private const EMAIL_CHECK_MINUTES = 10;
+
+    /**
      * Screen 1: Check if email exists
      *
      * First step of the 3-screen auth flow. Checks if the email is registered.
-     * Stores result in cache for 1 minute (required by Screen 2).
+     * Stores result in cache for 10 minutes (required by Screen 2).
      *
      * @unauthenticated
      *
@@ -54,12 +60,12 @@ class MartAuthController extends Controller
         $exists = $user && ! $user->trashed();
         $verified = $exists && (bool) $user->email_verified_at;
 
-        // Store in cache for 1 minute (used by Screen 2)
+        // Store in cache for the next screen (Screen 1b or 2)
         $cacheKey = 'email_check:'.md5($email.$request->ip());
         Cache::put($cacheKey, [
             'email' => $email,
             'checked_at' => now(),
-        ], now()->addMinutes(1));
+        ], now()->addMinutes(self::EMAIL_CHECK_MINUTES));
 
         // Return response matching frontend TypeScript type
         return response()->json([
@@ -73,7 +79,7 @@ class MartAuthController extends Controller
      * Screen 1b: Send password setup email
      *
      * For new users after check-email returns emailExists: false.
-     * Requires email check within the last minute.
+     * Requires an email check within the last 10 minutes.
      *
      * @unauthenticated
      *
@@ -90,7 +96,7 @@ class MartAuthController extends Controller
 
         $email = strtolower(trim($request->email));
 
-        // 2. Check if email was checked recently (within 1 minute)
+        // 2. Check if email was checked recently (within 10 minutes)
         $cacheKey = 'email_check:'.md5($email.$request->ip());
         $emailCheck = Cache::get($cacheKey);
 
@@ -163,7 +169,7 @@ class MartAuthController extends Controller
     /**
      * Screen 2: Check password
      *
-     * Validates email was checked in Screen 1 (within 1 minute).
+     * Validates email was checked in Screen 1 (within 10 minutes).
      * Returns bearerToken (30-day) and refreshToken (7-day).
      *
      * @unauthenticated
@@ -183,7 +189,7 @@ class MartAuthController extends Controller
 
         $email = strtolower(trim($request->email));
 
-        // 2. Check if email was checked recently (within 1 minute)
+        // 2. Check if email was checked recently (within 10 minutes)
         $emailCheckKey = 'email_check:'.md5($email.$request->ip());
         $emailCheck = Cache::get($emailCheckKey);
 
@@ -336,7 +342,7 @@ class MartAuthController extends Controller
             $case->save();
 
             // Calculate dynamic start/end dates for questionnaires with "start on login"
-            $this->calculateMartDynamicEndDates($case);
+            \App\Mart\MartCaseSchedule::calculateForCase($case);
         }
 
         // 8. Return success response with participant info
@@ -414,62 +420,5 @@ class MartAuthController extends Controller
             'bearerToken' => $newAccessToken,
             'refreshToken' => $newRefreshToken,
         ], 200);
-    }
-
-    /**
-     * Calculate dynamic start/end dates for questionnaires with "start on login"
-     *
-     * Creates per-case schedule overrides in mart_case_schedules table.
-     *
-     * @param  \App\Cases  $case
-     */
-    protected function calculateMartDynamicEndDates($case)
-    {
-        $project = $case->project;
-        $martProject = $project->martProject();
-
-        if (! $martProject) {
-            return;
-        }
-
-        $schedules = \App\Mart\MartSchedule::where('mart_project_id', $martProject->id)->get();
-
-        foreach ($schedules as $schedule) {
-            $timing = $schedule->timing_config ?? [];
-            $overrides = [];
-
-            // Calculate start date if start_on_first_login is true (only for single questionnaires)
-            if (($timing['start_on_first_login'] ?? false) && $schedule->type === 'single') {
-                $overrides['start_date_time'] = [
-                    'date' => $case->first_login_at->format('Y-m-d'),
-                    'time' => $timing['daily_start_time'] ?? '09:00',
-                ];
-            }
-
-            // Calculate end date if use_dynamic_end_date is true
-            if ($timing['use_dynamic_end_date'] ?? false) {
-                // Use the override start date if set, otherwise use schedule's static start date
-                $startDate = $overrides['start_date_time']['date']
-                    ?? ($timing['start_date_time']['date'] ?? null);
-
-                if ($startDate) {
-                    $maxTotalSubmits = $timing['max_total_submits'] ?? 30;
-                    $maxDailySubmits = $timing['max_daily_submits'] ?? 6;
-
-                    $durationDays = (int) ceil($maxTotalSubmits / $maxDailySubmits);
-                    $endDate = \Carbon\Carbon::parse($startDate)->addDays($durationDays);
-
-                    $overrides['end_date_time'] = [
-                        'date' => $endDate->format('Y-m-d'),
-                        'time' => $timing['daily_end_time'] ?? '21:00',
-                    ];
-                }
-            }
-
-            // Store in MART database if there are any overrides
-            if (! empty($overrides)) {
-                \App\Mart\MartCaseSchedule::setForCase($case->id, $schedule->id, $overrides);
-            }
-        }
     }
 }

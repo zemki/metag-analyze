@@ -17,7 +17,8 @@ use Illuminate\Support\Str;
  * File Types:
  * - 'photo': Images (jpeg, png, gif, webp, heic)
  * - 'video': Videos (mp4, quicktime, webm, 3gpp)
- * - 'audio': Audio (mpeg, mp4, wav, ogg, aac)
+ * - 'audio': Audio (mpeg, mp4, wav, ogg, aac, flac, and the mp4, webm and 3gp
+ *   containers that recordings arrive in)
  * - 'document': Documents (pdf, images)
  *
  * Files are stored encrypted in: storage/app/mart/project{id}/files/{case_id}/{uuid}.mfile
@@ -93,15 +94,24 @@ class MartFile extends Model
             'video/3gpp',
             'video/x-msvideo',
         ],
+        // The app's recordings arrive in mp4, webm, ogg or 3gp containers,
+        // which the content check mostly reads as video. fileTypeForMime()
+        // still picks video for those, because video comes first.
         'audio' => [
             'audio/mpeg',
             'audio/mp4',
             'audio/wav',
+            'audio/x-wav',
             'audio/ogg',
             'audio/aac',
+            'audio/x-hx-aac-adts',
             'audio/x-m4a',
             'audio/webm',
             'audio/flac',
+            'audio/x-flac',
+            'video/mp4',
+            'video/webm',
+            'video/3gpp',
         ],
         'document' => [
             'application/pdf',
@@ -128,12 +138,29 @@ class MartFile extends Model
         'audio/mpeg' => 'mp3',
         'audio/mp4' => 'm4a',
         'audio/wav' => 'wav',
+        'audio/x-wav' => 'wav',
         'audio/ogg' => 'ogg',
         'audio/aac' => 'aac',
+        'audio/x-hx-aac-adts' => 'aac',
         'audio/x-m4a' => 'm4a',
         'audio/webm' => 'webm',
         'audio/flac' => 'flac',
+        'audio/x-flac' => 'flac',
         'application/pdf' => 'pdf',
+    ];
+
+    /**
+     * The extensions a fileUpload question can allow, in the editor's order:
+     * those whose real files pass the content check against
+     * ALLOWED_MIME_TYPES, one upload test each in MartFileUploadTest. Not
+     * .svg: an inline SVG can run script on our origin.
+     * FILE_UPLOAD_FORMATS in AddEditQuestionnaireDialog.vue lists the same.
+     */
+    public const FILE_UPLOAD_EXTENSIONS = [
+        '.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.heif',
+        '.pdf',
+        '.mp4', '.mov', '.webm', '.3gp', '.avi',
+        '.mp3', '.m4a', '.ogg', '.flac', '.wav', '.aac',
     ];
 
     /**
@@ -147,6 +174,22 @@ class MartFile extends Model
     public static function maxSizeInKilobytes(): int
     {
         return (int) (self::MAX_FILE_SIZE / 1024);
+    }
+
+    /**
+     * A fileUpload format as the app matches it: "." plus the lowercased
+     * extension, so " PDF", "pdf" and ".pdf" are all ".pdf". Null for
+     * anything that isn't a string with an extension in it.
+     */
+    public static function normaliseFileFormat(mixed $format): ?string
+    {
+        if (! is_string($format)) {
+            return null;
+        }
+
+        $extension = ltrim(strtolower(trim($format)), '.');
+
+        return $extension === '' ? null : '.' . $extension;
     }
 
     /**
@@ -323,14 +366,19 @@ class MartFile extends Model
     }
 
     /**
-     * Link this file to a MART entry.
+     * Link this file to a MART entry, and to the question it answers when
+     * one is given.
      *
      * @param int $entryId
+     * @param  string|null  $questionUuid  The question the file answers; null keeps the stored one
      * @return bool
      */
-    public function linkToEntry(int $entryId): bool
+    public function linkToEntry(int $entryId, ?string $questionUuid = null): bool
     {
         $this->mart_entry_id = $entryId;
+        if ($questionUuid !== null) {
+            $this->question_uuid = $questionUuid;
+        }
 
         return $this->save();
     }

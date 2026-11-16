@@ -51,6 +51,7 @@ class EntryController extends Controller
     public function store(Cases $case)
     {
         $this->authorize('store', [Entry::class, $case]);
+        $this->refuseMartCase($case);
 
         // V1 primarily uses media_id but accepts entity_id for forward compatibility
         if (request()->has('media')) {

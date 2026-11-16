@@ -86,7 +86,8 @@ class CasesExport implements FromCollection, WithHeadings, WithMapping
                 }
             }
         }
-        $tempValuesArray['media'] = Media::where('id', $entry->media_id)->first()->name;
+        $media = $entry->media_id ? Media::where('id', $entry->media_id)->first() : null;
+        $tempValuesArray['media'] = $media ? $media->name : '';
         $tempValuesArray['start'] = $entry->begin;
         $tempValuesArray['end'] = $entry->end;
 

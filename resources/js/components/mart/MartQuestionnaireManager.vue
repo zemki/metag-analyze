@@ -190,14 +190,18 @@
 
                 <!-- Toggles Row -->
                 <div class="flex flex-wrap items-center gap-2 pt-1">
-                  <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium" :class="getNotificationConfig(schedule, 'show_notifications') ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-400'">
-                    <svg class="w-3.5 h-3.5 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg>
-                    {{ trans('Notifications') }}
-                  </span>
-                  <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium" :class="getNotificationConfig(schedule, 'show_progress_bar') ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-400'">
-                    <svg class="w-3.5 h-3.5 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                    {{ trans('Progress bar') }}
-                  </span>
+                  <!-- The app always shows the progress bar for a data donation
+                       questionnaire and sends no notifications for it. -->
+                  <template v-if="!isDataDonation(schedule)">
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium" :class="getNotificationConfig(schedule, 'show_notifications') ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-400'">
+                      <svg class="w-3.5 h-3.5 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg>
+                      {{ trans('Notifications') }}
+                    </span>
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium" :class="getNotificationConfig(schedule, 'show_progress_bar') ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-400'">
+                      <svg class="w-3.5 h-3.5 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                      {{ trans('Progress bar') }}
+                    </span>
+                  </template>
                   <span v-if="schedule.is_ios_data_donation" class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-700 text-white">
                     iOS Data Donation
                   </span>
@@ -338,7 +342,7 @@
 import { defineAsyncComponent } from 'vue';
 import AddEditQuestionnaireDialog from './AddEditQuestionnaireDialog.vue';
 import VersionHistoryModal from './VersionHistoryModal.vue';
-import { emitter } from '../../app.js';
+import { emitter } from '../../emitter.js';
 
 // Lazy load SchedulePreview component for better performance
 const SchedulePreview = defineAsyncComponent(() =>
@@ -517,6 +521,10 @@ export default {
     getNotificationConfig(schedule, key) {
       if (!schedule.notification_config) return null;
       return schedule.notification_config[key];
+    },
+
+    isDataDonation(schedule) {
+      return !!(schedule.is_ios_data_donation || schedule.is_android_data_donation);
     },
 
     hasScheduleData(schedule) {

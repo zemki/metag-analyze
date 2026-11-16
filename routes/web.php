@@ -29,8 +29,12 @@ Route::group(['middleware' => ['throttle:3,10']], static function () {
     Route::post('email/resend', 'Auth\VerificationController@resend')->name('verification.resend');
 });
 
+// Authenticity comes from the signed URL (the 'signed'
+// middleware is applied in EmailChangeController's constructor), not from the
+// session - so this route sits outside the auth group on purpose.
+Route::get('/verifyNewEmail', 'Auth\EmailChangeController@verify')->name('verifyNewEmail');
+
 Route::group(['middleware' => ['auth', 'authorised', 'verified', 'LoggedUser']], function () {
-    Route::get('/verifyNewEmail', 'Auth\EmailChangeController@verify')->name('verifyNewEmail');
     Route::post('/changeemail', 'Auth\EmailChangeController@change')->name('change');
 
     /**
@@ -62,6 +66,7 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified', 'LoggedUser']],
      * MART Questionnaire Routes
      */
     Route::get('/projects/{project}/questionnaires', 'MartQuestionnaireController@index');
+    Route::get('/projects/{project}/questionnaires/codebook', 'MartQuestionnaireController@codebook');
     Route::post('/projects/{project}/questionnaires', 'MartQuestionnaireController@store');
     Route::put('/questionnaires/{schedule}/questions', 'MartQuestionnaireController@updateQuestions');
     Route::get('/questionnaires/{schedule}/history', 'MartQuestionnaireController@history');

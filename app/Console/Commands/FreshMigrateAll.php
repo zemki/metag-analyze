@@ -89,14 +89,17 @@ class FreshMigrateAll extends Command
         $this->newLine();
         $this->info('🗑️  Resetting BOTH databases...');
 
-        // SOLUTION: Manually drop MART tables, then run migrate:fresh once
-        // This is because migrate:fresh runs ALL migrations, and we need them to run on correct connections
+        // MART has its own migrations and history: drop its tables by hand,
+        // reset main with migrate:fresh, then build MART with migrate:mart.
 
         $this->info('    1. Manually dropping all MART database tables...');
         $this->dropAllMartTables();
 
-        $this->info('    2. Running migrate:fresh on MAIN (will also create MART tables via Schema::connection)...');
+        $this->info('    2. Running migrate:fresh on MAIN...');
         $this->call('migrate:fresh', ['--force' => true]);
+
+        $this->info('    3. Running migrate:mart on MART...');
+        $this->call('migrate:mart', ['--force' => true]);
 
         $this->newLine();
         $this->info('✅ Both databases have been reset!');
@@ -140,9 +143,9 @@ class FreshMigrateAll extends Command
     }
 
     /**
-     * Manually drop all tables in the MART database.
-     * This is necessary because migrate:fresh --database=mart would try to run
-     * ALL migrations on the mart connection, which is incorrect.
+     * Manually drop all tables in the MART database, its `migrations` table
+     * included. migrate:fresh only resets the default connection, and
+     * migrate:fresh --database=mart would run every migration on MART.
      */
     protected function dropAllMartTables()
     {

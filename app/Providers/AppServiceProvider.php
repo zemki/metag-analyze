@@ -5,7 +5,9 @@ namespace App\Providers;
 use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
 use Dedoc\Scramble\Support\Generator\SecurityScheme;
+use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
@@ -22,13 +24,28 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+
         Schema::defaultStringLength(191);
 
-        // Scramble: Include both MART route prefixes in API docs
+        // Production only: metagtest runs APP_ENV=local, so the MART base
+        // migration has to protect itself there.
+        DB::prohibitDestructiveCommands(App::environment('production'));
+
+        // Provide central config values to all views
+        View::composer('*', function ($view) {
+            $view->with([
+                'appVersion' => config('app.version'),
+                'appBuild'   => config('app.build'),
+                'appName'   => config('app.name'),
+                'appOwner' => config('app.owner'),
+            ]);
+        });
+
+        // Scramble: document the MART app routes. The /api/mart and /mart-api
+        // aliases point at the same controllers, so they would only repeat them.
         Scramble::configure()
             ->routes(function (\Illuminate\Routing\Route $route) {
-                return Str::startsWith($route->uri, 'api/mart/')
-                    || Str::startsWith($route->uri, 'mart-api/');
+                return Str::startsWith($route->uri, 'api/mobile/');
             })
             ->withDocumentTransformers(function (OpenApi $openApi) {
                 $openApi->secure(SecurityScheme::http('bearer'));
@@ -57,6 +74,12 @@ class AppServiceProvider extends ServiceProvider
                 $view->with('telescopeScriptVariables', ['path' => 'metag/telescope', 'timezone' => config('app.timezone'), 'recording' => ! cache('telescope:pause-recording')]);
             });
         }
+
+        // Have an app version/build and make it visible in `php artisan about`
+        AboutCommand::add('Environment', [
+            'App Version' => config('app.version'),
+            'App Build' => config('app.build'),
+        ]);
 
     }
 

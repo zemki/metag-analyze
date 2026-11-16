@@ -118,7 +118,7 @@
 
 <script>
 import Modal from './global/modal.vue';
-import { emitter } from '../app.js';
+import { emitter } from '../emitter.js';
 
 const convertTimeHHMMSS = (val) => {
   const hhmmss = new Date(val * 1000).toISOString().substr(11, 8);

@@ -24,6 +24,7 @@ class MartEntry extends Model
      */
     protected $fillable = [
         'main_entry_id',
+        'case_id',
         'schedule_id',
         'questionnaire_id',
         'participant_id',

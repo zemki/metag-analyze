@@ -21,6 +21,18 @@
             {{ trans('Create Case') }}
           </a>
 
+          <!-- MART questions with the values their answers are stored as -->
+          <button v-if="isMartProject"
+                  type="button"
+                  data-test="mart-questions"
+                  @click="showMartQuestions = true"
+                  class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 whitespace-nowrap">
+            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+            </svg>
+            Questions
+          </button>
+
           <!-- Project Settings Button -->
           <button @click="openProjectSettings"
                   class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 whitespace-nowrap">
@@ -62,7 +74,7 @@
                   </svg>
                   {{ trans('Download all data') }}
                 </a>
-                <a :href="urlToCreateCase + '/treemap'"
+                <a v-if="!isMartProject" :href="urlToCreateCase + '/treemap'"
                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                   <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -294,6 +306,10 @@
       <div v-html="dialog.message"></div>
     </Modal>
 
+    <MartQuestionsModal v-if="showMartQuestions"
+                        :project-id="project.id"
+                        @close="showMartQuestions = false" />
+
     <!-- QR Code Modal -->
     <QRCodeModal v-if="qrCodeModalVisible"
                  :show="qrCodeModalVisible"
@@ -440,6 +456,7 @@ import ProjectInvites from './projectsInvites.vue';
 import Modal from './global/modal.vue';
 import PaginationControls from './PaginationControls.vue';
 import QRCodeModal from './QRCodeModal.vue';
+import MartQuestionsModal from './mart/MartQuestionsModal.vue';
 // Redesign primitives (stage 2)
 import StatusPill from './global/StatusPill.vue';
 import SectionBar from './global/SectionBar.vue';
@@ -447,7 +464,7 @@ import FilterRow from './global/FilterRow.vue';
 import CaseRow from './global/CaseRow.vue';
 import CasesEmptyState from './global/CasesEmptyState.vue';
 import { useProjectCapabilities } from '../utils/useProjectCapabilities.js';
-import { emitter } from '../app.js';
+import { emitter } from '../emitter.js';
 
 // Status note copy used by the inline status-guide legend.
 const STATUS_NOTES = {
@@ -539,6 +556,7 @@ export default {
     Modal,
     PaginationControls,
     QRCodeModal,
+    MartQuestionsModal,
     // Redesign primitives
     StatusPill,
     SectionBar,
@@ -626,6 +644,9 @@ export default {
         onCancel: null
       },
 
+      // MART questions list
+      showMartQuestions: false,
+
       // QR Code Modal
       qrCodeModalVisible: false,
       qrCodeData: null,
@@ -658,21 +679,31 @@ export default {
       return this.projectInputs;
     },
     /**
+     * Reads the inputs like Project::isMartProject() does, because the project
+     * prop on this page carries no is_mart_project flag.
+     */
+    isMartProject() {
+      const inputs = this.parsedProjectInputs;
+      return Array.isArray(inputs) && inputs.some((input) => input?.type === 'mart');
+    },
+    /**
      * Project-type capabilities. Centralizes regular vs MART rules so the
      * template doesn't re-derive `is_mart_project` checks inline.
      * The composable returns a Vue computed; we unwrap it here to expose
      * the plain object on the Options API instance.
      */
     capabilities() {
-      return useProjectCapabilities(() => this.localProject).value;
+      // The project prop has no MART flag, so it's added from the inputs here.
+      return useProjectCapabilities({ ...this.localProject, is_mart_project: this.isMartProject }).value;
     },
   },
   watch: {
     // Remove automatic prop syncing to prevent overriding our updates
   },
   mounted() {
-    // Initialize local project copy
-    this.localProject = { ...this.project };
+    // Initialize local project copy. The project prop has no MART flag, and the
+    // case rows and canShowQRCode() read it from here.
+    this.localProject = { ...this.project, is_mart_project: this.isMartProject };
 
     // Cap the cases panel at ~60% of the viewport so the entries panel
     // below always has room (roughly 260+ px after the page header).

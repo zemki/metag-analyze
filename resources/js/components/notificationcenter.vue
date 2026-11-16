@@ -251,7 +251,7 @@
 </template>
 <script>
 import moment from "moment";
-import { emitter } from '../app.js';
+import { emitter } from '../emitter.js';
 
 export default {
   props: {

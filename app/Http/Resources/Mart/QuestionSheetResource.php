@@ -14,13 +14,17 @@ class QuestionSheetResource extends JsonResource
 
     protected $scheduleName;
 
-    public function __construct($resource, $questions = null, $martConfig = null, $questionnaireId = 1, $scheduleName = null)
+    /** MART only: scaleId per item index, assigned in MartStructureResource. */
+    protected $itemScaleIds;
+
+    public function __construct($resource, $questions = null, $martConfig = null, $questionnaireId = 1, $scheduleName = null, array $itemScaleIds = [])
     {
         parent::__construct($resource);
         $this->questions = $questions;
         $this->martConfig = $martConfig;
         $this->questionnaireId = $questionnaireId;
         $this->scheduleName = $scheduleName;
+        $this->itemScaleIds = $itemScaleIds;
     }
 
     public function toArray($request)
@@ -33,16 +37,30 @@ class QuestionSheetResource extends JsonResource
                 $questionType = $question['type'] ?? 'text';
                 $isDisplayOnly = $questionType === 'display';
 
+                // The item-level options live in the question's `config` JSON,
+                // where the questionnaire editor puts them. Mandatoriness is the
+                // exception - it has its own column.
+                $config = $question['config'] ?? [];
+
                 $item = [
-                    // Per martTypes.ts: itemId/scaleId are null for display-only items (text without question)
+                    // A display item has no itemId, so the app sends no answer for
+                    // it and greys out the options of its scale, if it has one.
+                    // It still takes its place, so later items keep index + 1.
                     'itemId' => $isDisplayOnly ? null : $index + 1,
-                    'scaleId' => $isDisplayOnly ? null : $index + 1,
+                    'scaleId' => $this->itemScaleIds[$index] ?? null,
                     'text' => $question['text'] ?? $question['name'] ?? '',
                     'options' => [
-                        'randomizationGroupId' => $question['randomizationGroupId'] ?? null,
-                        'randomizeAnswers' => $question['randomizeAnswers'] ?? false,
-                        'itemGroup' => $question['item_group'] ?? null,
-                        'noValueAllowed' => $isDisplayOnly ? true : ($question['noValueAllowed'] ?? false),
+                        'randomizationGroupId' => $config['randomizationGroupId'] ?? null,
+                        // Never for a display item: its options are shown, not picked.
+                        'randomizeAnswers' => $isDisplayOnly ? false : ($config['randomizeAnswers'] ?? false),
+                        'randomPositionWithinQuestionnaire' => $config['randomPositionWithinQuestionnaire'] ?? false,
+                        // martTypes.ts declares itemGroup as a string; older
+                        // data may hold an int, so normalise here.
+                        'itemGroup' => isset($config['itemGroup']) ? (string) $config['itemGroup'] : null,
+                        // Inverse of is_mandatory. A display item is never
+                        // answerable, and rows saved before the editor stopped
+                        // marking one mandatory still are, so that branch stays.
+                        'noValueAllowed' => $isDisplayOnly ? true : ! ($question['is_mandatory'] ?? true),
                     ],
                 ];
 
@@ -52,6 +70,11 @@ class QuestionSheetResource extends JsonResource
                 }
                 if (!empty($question['video_url'])) {
                     $item['videoUrl'] = $question['video_url'];
+                }
+                // Shown in place of a video before it starts. A top-level item
+                // field per martTypes.ts, stored in config like the options.
+                if (!empty($config['posterUrl'])) {
+                    $item['posterUrl'] = $config['posterUrl'];
                 }
 
                 $items[] = $item;

@@ -475,8 +475,13 @@
                 </div>
               </div>
 
-              <!-- Notification Settings -->
-              <div class="space-y-3">
+              <!-- Notification Settings — hidden for data-donation questionnaires:
+                   the app leaves them out of its schedule lists, so it always
+                   shows the progress bar and sends no notifications for them. -->
+              <p v-if="dataDonationType !== 'none'" id="donation-progress-notifications-note" class="text-xs text-gray-500">
+                {{ trans('The app always shows the progress bar and sends no notifications for data donation questionnaires.') }}
+              </p>
+              <div v-else class="space-y-3">
                 <div class="flex items-center">
                   <input
                       v-model="formData.show_progress_bar"
@@ -502,10 +507,11 @@
                 </div>
 
                 <div v-if="formData.show_notifications">
-                  <label class="block text-sm font-medium text-gray-700">{{ trans('Notification Text') }}</label>
+                  <label for="notification_text" class="block text-sm font-medium text-gray-700">{{ trans('Notification Text') }}</label>
                   <input
                       v-model="formData.notification_text"
                       type="text"
+                      id="notification_text"
                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
                       :placeholder="trans('Time for your questionnaire!')"
                   />
@@ -592,6 +598,17 @@
             <div class="pt-6 border-t border-gray-200">
               <div class="mb-4">
                 <h4 class="text-md font-medium text-gray-900">{{ trans('Questions') }}</h4>
+                <p v-if="orderLocked" id="question-order-locked-note" class="mt-1 text-xs text-gray-600">
+                  {{ trans('This questionnaire already has answers, so saved questions keep their places: the app matches answers to questions by position. New questions go at the end and can be moved among themselves.') }}
+                </p>
+                <!-- The app counts a jump's items and a randomization group's
+                     members by position. A warning only: the move is saved. -->
+                <p v-if="jumpMovedOver" id="question-order-jump-warning" class="mt-1 text-xs text-amber-700">
+                  {{ trans('A move changed which questions a jump skips: the app counts the items to skip by position. Check the jump settings.') }}
+                </p>
+                <p v-if="groupMovedApart" id="question-order-group-warning" class="mt-1 text-xs text-amber-700">
+                  {{ trans('A move split a randomization group: the app only shuffles consecutive items with the same group number. Keep the group\'s items together.') }}
+                </p>
               </div>
 
               <!-- Questions List -->
@@ -605,7 +622,7 @@
               <div v-else class="space-y-4">
                 <div
                     v-for="(question, index) in formData.questions"
-                    :key="index"
+                    :key="questionKey(question)"
                     class="border-2 border-gray-200 rounded-lg p-4 space-y-4 hover:border-blue-300 transition-colors duration-150"
                     :class="{'border-red-300 bg-red-50': saveAttempted && hasQuestionError(index)}"
                 >
@@ -622,16 +639,42 @@
                         </svg>
                       </span>
                     </div>
-                    <button
-                        type="button"
-                        @click="removeQuestion(index)"
-                        class="text-red-600 hover:text-red-900 hover:bg-red-50 p-1 rounded transition-colors"
-                        :title="trans('Delete question')"
-                    >
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                      </svg>
-                    </button>
+                    <div class="flex items-center space-x-1">
+                      <button
+                          type="button"
+                          :id="'move-up-' + index"
+                          @click="moveQuestion(index, -1)"
+                          :disabled="!canMoveQuestion(index, -1)"
+                          class="text-gray-500 hover:text-gray-900 hover:bg-gray-100 p-1 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                          :title="trans('Move question up')"
+                      >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                        </svg>
+                      </button>
+                      <button
+                          type="button"
+                          :id="'move-down-' + index"
+                          @click="moveQuestion(index, 1)"
+                          :disabled="!canMoveQuestion(index, 1)"
+                          class="text-gray-500 hover:text-gray-900 hover:bg-gray-100 p-1 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                          :title="trans('Move question down')"
+                      >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                      </button>
+                      <button
+                          type="button"
+                          @click="removeQuestion(index)"
+                          class="text-red-600 hover:text-red-900 hover:bg-red-50 p-1 rounded transition-colors"
+                          :title="trans('Delete question')"
+                      >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                      </button>
+                    </div>
                   </div>
 
                   <!-- Question Text -->
@@ -672,6 +715,20 @@
                         {{ trans('Video shown above the question') }}
                       </p>
                     </div>
+                    <!-- Saved only with a video: the app shows it on the video. -->
+                    <div v-if="question.videoUrl && question.videoUrl.trim()">
+                      <label :for="'poster-url-' + index" class="block text-sm font-medium text-gray-700">{{ trans('Poster image URL (Optional)') }}</label>
+                      <input
+                          type="url"
+                          :id="'poster-url-' + index"
+                          v-model="question.posterUrl"
+                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                          :placeholder="trans('https://example.com/poster.jpg')"
+                      />
+                      <p class="mt-1 text-xs text-gray-500">
+                        {{ trans('Still image shown until the video plays. Not used for YouTube or Vimeo links.') }}
+                      </p>
+                    </div>
                   </div>
 
                   <!-- Randomization Group -->
@@ -686,6 +743,33 @@
                     />
                     <p class="mt-1 text-xs text-gray-500">
                       {{ trans('Items with same group number will be randomized together. Leave empty for no randomization.') }}
+                    </p>
+                  </div>
+
+                  <!-- Random Position Within Questionnaire -->
+                  <div>
+                    <div class="flex items-center">
+                      <input
+                          type="checkbox"
+                          :id="'random-position-' + index"
+                          v-model="question.randomPositionWithinQuestionnaire"
+                          class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
+                      />
+                      <label :for="'random-position-' + index" class="ml-2 block text-sm text-gray-700">
+                        {{ trans('Random position within questionnaire') }}
+                      </label>
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500">
+                      {{ trans('The app moves this item to a random place between the first and the last item.') }}
+                    </p>
+                    <!-- The app reads the random position only for an item
+                         without a randomization group. -->
+                    <p
+                        v-if="question.randomPositionWithinQuestionnaire && question.randomizationGroupId"
+                        :id="'random-position-hint-' + index"
+                        class="mt-1 text-xs text-amber-700"
+                    >
+                      {{ trans('The app ignores the random position of an item in a randomization group: it shuffles the item within its group instead.') }}
                     </p>
                   </div>
 
@@ -721,6 +805,7 @@
                     <label class="block text-sm font-medium text-gray-700">{{ trans('Question Type') }} *</label>
                     <select
                         v-model="question.type"
+                        @change="question.defaultValue = ''"
                         class="mt-1 block w-full px-4 py-3 rounded-md shadow-xs border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
                     >
                       <option disabled value="">{{ trans('Select type...') }}</option>
@@ -729,15 +814,47 @@
                       <option value="textarea">{{ trans('Text Area') }}</option>
                       <option value="number">{{ trans('Number') }}</option>
                       <option value="range">{{ trans('Range/Slider') }}</option>
+                      <option value="rangeValues">{{ trans('Slider with Labels') }}</option>
                       <option value="radio">{{ trans('Single Choice') }}</option>
                       <option value="checkbox">{{ trans('Multiple Choice') }}</option>
                       <option value="photoUpload">{{ trans('Photo Upload') }}</option>
                       <option value="audioUpload">{{ trans('Audio Upload') }}</option>
                       <option value="videoUpload">{{ trans('Video Upload') }}</option>
+                      <option value="fileUpload">{{ trans('File Upload') }}</option>
                     </select>
                     <p v-if="question.type === 'display'" class="mt-1 text-xs text-blue-600">
                       {{ trans('This item will show text without requiring an answer (instructions, headers, etc.)') }}
                     </p>
+
+                    <!-- Answer options shown disabled, as Directus can. The app greys
+                         out the options of an item without an itemId. -->
+                    <div v-if="question.type === 'display'" class="mt-3 space-y-2">
+                      <div class="flex items-center">
+                        <input
+                            type="checkbox"
+                            :id="'display-selection-' + index"
+                            :checked="!!question.displaySelection"
+                            @change="question.displaySelection = $event.target.checked ? 'radio' : ''"
+                            class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
+                        />
+                        <label :for="'display-selection-' + index" class="ml-2 block text-sm text-gray-700">
+                          {{ trans('Show answer options (disabled)') }}
+                        </label>
+                      </div>
+                      <div v-if="question.displaySelection" class="ml-6">
+                        <select
+                            :id="'display-selection-type-' + index"
+                            v-model="question.displaySelection"
+                            class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                        >
+                          <option value="radio">{{ trans('Single Choice') }}</option>
+                          <option value="checkbox">{{ trans('Multiple Choice') }}</option>
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">
+                          {{ trans('Participants see the options but cannot pick one, and nothing is recorded.') }}
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
                   <!-- Placeholder (for text/textarea) -->
@@ -820,9 +937,15 @@
                     </div>
                   </div>
 
-                  <!-- Choice Options -->
-                  <div v-if="question.type === 'radio' || question.type === 'checkbox'" class="space-y-3">
-                    <label class="block text-sm font-medium text-gray-700">{{ trans('Options') }}</label>
+                  <!-- Choice Options (labels for a slider with labels, or a display
+                       item's disabled options) -->
+                  <div v-if="showsOptions(question)" class="space-y-3">
+                    <label class="block text-sm font-medium text-gray-700">
+                      {{ question.type === 'rangeValues' ? trans('Labels') : trans('Options') }}
+                    </label>
+                    <p v-if="question.type === 'rangeValues'" class="text-xs text-gray-500">
+                      {{ trans('One label per slider step, from left to right. A label can be blank. At least 2 steps.') }}
+                    </p>
                     <div v-for="(answer, aIndex) in question.answers" :key="aIndex" class="flex items-center space-x-2">
                       <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gray-200 text-gray-700 text-sm font-medium flex-shrink-0">
                         {{ aIndex + 1 }}
@@ -853,8 +976,9 @@
                       {{ trans('Add Option') }}
                     </button>
 
-                    <!-- Randomize Answers Checkbox -->
-                    <div class="flex items-center mt-3 pt-3 border-t border-gray-200">
+                    <!-- Randomize Answers Checkbox (choices only: not for a slider
+                         with labels or a display item) -->
+                    <div v-if="question.type === 'radio' || question.type === 'checkbox'" class="flex items-center mt-3 pt-3 border-t border-gray-200">
                       <input
                           type="checkbox"
                           :id="'randomize-answers-' + index"
@@ -866,8 +990,8 @@
                       </label>
                     </div>
 
-                    <!-- Include "Other" Text Field Checkbox -->
-                    <div class="flex items-center mt-2">
+                    <!-- Include "Other" Text Field Checkbox (not for a slider with labels) -->
+                    <div v-if="question.type !== 'rangeValues'" class="flex items-center mt-2">
                       <input
                           type="checkbox"
                           :id="'include-other-' + index"
@@ -879,7 +1003,7 @@
                       </label>
                     </div>
                     <!-- Custom label for "Other" option -->
-                    <div v-if="question.includeOtherOption" class="mt-2 ml-6">
+                    <div v-if="question.includeOtherOption && question.type !== 'rangeValues'" class="mt-2 ml-6">
                       <label class="block text-sm font-medium text-gray-700">{{ trans('"Other" Option Label') }}</label>
                       <input
                           type="text"
@@ -890,11 +1014,72 @@
                       <p class="mt-1 text-xs text-gray-500">
                         {{ trans('Custom label text shown for the "Other" option. Leave empty for default.') }}
                       </p>
+                      <label class="mt-3 block text-sm font-medium text-gray-700">{{ trans('"Other" Text Field') }}</label>
+                      <select
+                          v-model="question.otherTextType"
+                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="text">{{ trans('Single line') }}</option>
+                        <option value="textarea">{{ trans('Multiple lines') }}</option>
+                      </select>
                     </div>
                   </div>
 
-                  <!-- Timer Options (applies to all question types) -->
-                  <div class="space-y-3 p-4 bg-amber-50 rounded-lg border border-amber-200">
+                  <!-- Default Value -->
+                  <div v-if="hasDefaultValue(question.type)">
+                    <label class="block text-sm font-medium text-gray-700">{{ trans('Default Value (Optional)') }}</label>
+                    <!-- A slider's labels can be blank or repeat, so its default is a position. -->
+                    <select
+                        v-if="question.type === 'rangeValues'"
+                        v-model="question.defaultValue"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="">{{ trans('No default') }}</option>
+                      <option
+                          v-for="(answer, aIndex) in question.answers"
+                          :key="aIndex"
+                          :value="aIndex"
+                      >
+                        {{ aIndex + 1 }}{{ answer.trim() ? ': ' + answer : '' }}
+                      </option>
+                    </select>
+                    <select
+                        v-else-if="hasOptions(question.type)"
+                        v-model="question.defaultValue"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="">{{ trans('No default') }}</option>
+                      <option
+                          v-for="(answer, aIndex) in question.answers.filter(a => a.trim())"
+                          :key="aIndex"
+                          :value="answer"
+                      >
+                        {{ answer }}
+                      </option>
+                    </select>
+                    <input
+                        v-else-if="question.type === 'range' || question.type === 'number'"
+                        type="number"
+                        v-model.number="question.defaultValue"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <input
+                        v-else
+                        type="text"
+                        v-model="question.defaultValue"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <p class="mt-1 text-xs text-gray-500">
+                      {{ trans('Answer already filled in when the question opens.') }}
+                    </p>
+                    <p v-if="question.type === 'rangeValues'" class="mt-1 text-xs text-gray-500">
+                      {{ trans('Without a default, nothing is recorded until the participant moves the slider.') }}
+                    </p>
+                  </div>
+
+                  <!-- Timer Options (all question types except a plain display item,
+                       which has no scale to carry a timer) -->
+                  <div v-if="question.type !== 'display' || showsDisabledOptions(question)" class="space-y-3 p-4 bg-amber-50 rounded-lg border border-amber-200">
                     <div class="flex items-center">
                       <input
                           type="checkbox"
@@ -1055,6 +1240,47 @@
                     </div>
                   </div>
 
+                  <!-- File Upload Options. The app reads maxFileSize (MB) and
+                       allowedFormats, which it matches against the file name's extension. -->
+                  <div v-if="question.type === 'fileUpload'" class="space-y-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <h4 class="text-sm font-medium text-gray-900">{{ trans('File Upload Options') }}</h4>
+                    <div>
+                      <label :for="'file_max_size_' + index" class="block text-sm font-medium text-gray-700">{{ trans('Max file size (MB)') }} *</label>
+                      <input
+                          type="number"
+                          :id="'file_max_size_' + index"
+                          v-model.number="question.config.fileUploadOptions.maxFileSize"
+                          min="1"
+                          :max="maxFileSizeMb"
+                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:ring-blue-500 focus:border-blue-500"
+                          :placeholder="trans('e.g., 20')"
+                      />
+                      <p class="mt-1 text-xs text-gray-500">
+                        {{ trans('From 1 to 50 MB. The app refuses a larger file before it is sent.') }}
+                      </p>
+                    </div>
+                    <div>
+                      <span class="block text-sm font-medium text-gray-700">{{ trans('Allowed formats') }} *</span>
+                      <div v-for="group in fileUploadFormats" :key="group.label" class="mt-2">
+                        <p class="text-xs font-medium text-gray-500">{{ trans(group.label) }}</p>
+                        <div class="mt-1 flex flex-wrap gap-x-4 gap-y-1">
+                          <label v-for="format in group.formats" :key="format" class="inline-flex items-center text-sm text-gray-700">
+                            <input
+                                type="checkbox"
+                                :value="format"
+                                v-model="question.config.fileUploadOptions.allowedFormats"
+                                class="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
+                            />
+                            <span class="ml-1">{{ format }}</span>
+                          </label>
+                        </div>
+                      </div>
+                      <p class="mt-2 text-xs text-gray-500">
+                        {{ trans('Only formats the server takes are listed. The app checks the extension of the file name, so tick both .jpg and .jpeg for JPEG files.') }}
+                      </p>
+                    </div>
+                  </div>
+
                   <!-- Jump/Filter Options (radio and checkbox only) -->
                   <div v-if="question.type === 'radio' || question.type === 'checkbox'" class="space-y-3 p-4 bg-purple-50 rounded-lg border border-purple-200">
                     <div class="flex items-center">
@@ -1149,7 +1375,41 @@
 
 <script>
 import SchedulePreview from './SchedulePreview.vue';
-import { emitter } from '../../app.js';
+import { emitter } from '../../emitter.js';
+
+// The extensions a file upload question can allow. Must match
+// MartFile::FILE_UPLOAD_EXTENSIONS, in the same order: the questionnaire routes
+// refuse any other, and MartFileUploadTest uploads a real file of each. Left
+// out: .svg, since an inline SVG can run script on our origin.
+const FILE_UPLOAD_FORMATS = [
+  { label: 'Images', formats: ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.heif'] },
+  { label: 'Documents', formats: ['.pdf'] },
+  { label: 'Video', formats: ['.mp4', '.mov', '.webm', '.3gp', '.avi'] },
+  { label: 'Audio', formats: ['.mp3', '.m4a', '.ogg', '.flac', '.wav', '.aac'] },
+];
+const ALL_FILE_UPLOAD_FORMATS = FILE_UPLOAD_FORMATS.flatMap(group => group.formats);
+
+// A format as the app matches it, like MartFile::normaliseFileFormat: "." plus
+// the lowercased extension. Null for anything without an extension in it.
+function normaliseFileFormat(format) {
+  if (typeof format !== 'string') return null;
+  const extension = format.trim().toLowerCase().replace(/^\.+/, '');
+
+  return extension === '' ? null : `.${extension}`;
+}
+
+// MartFile::MAX_FILE_SIZE, the most the server takes.
+const MAX_FILE_SIZE_MB = 50;
+
+// The list key of a question without a uuid yet, so each question keeps its
+// own card when questions move. Never sent to the server. Counts up, so it
+// also tells the order new questions were added in.
+let lastClientId = 0;
+function newClientId() {
+  lastClientId += 1;
+
+  return lastClientId;
+}
 
 export default {
   name: 'AddEditQuestionnaireDialog',
@@ -1182,6 +1442,10 @@ export default {
       saving: false,
       showFormula: false,
       saveAttempted: false,
+      fileUploadFormats: FILE_UPLOAD_FORMATS,
+      maxFileSizeMb: MAX_FILE_SIZE_MB,
+      // Question keys in the order the dialog opened with.
+      openedOrder: [],
       formData: {
         questionnaire_id: this.nextQuestionnaireId,
         name: '',
@@ -1217,6 +1481,51 @@ export default {
       return this.schedule !== null;
     },
 
+    // Once a questionnaire has answers its saved questions keep their places:
+    // the app numbers items by position, and the server maps each answer
+    // back to a question by it. The server refuses a reorder too.
+    orderLocked() {
+      return this.isEditMode && !!this.schedule.has_entries;
+    },
+
+    // The questions in the order they'd have without any move: as opened,
+    // then the new ones in the order they were added, always at the end.
+    unmovedQuestions() {
+      const rank = question => {
+        const opened = this.openedOrder.indexOf(this.questionKey(question));
+        return opened !== -1 ? opened : this.openedOrder.length + (question.clientId || 0);
+      };
+
+      return [...this.formData.questions].sort((a, b) => rank(a) - rank(b));
+    },
+
+    // Whether a move changed which questions a jump skips: the app counts
+    // the items to skip by position. Their order among themselves doesn't
+    // matter, all of them are skipped.
+    jumpMovedOver() {
+      const questions = this.formData.questions;
+      const unmoved = this.unmovedQuestions;
+
+      return questions.some((question, index) => {
+        if (!this.savesJump(question)) return false;
+
+        const count = Number(question.jumpOver) || 0;
+        const unmovedIndex = unmoved.indexOf(question);
+        const skipped = questions.slice(index + 1, index + 1 + count);
+        const skippedUnmoved = unmoved.slice(unmovedIndex + 1, unmovedIndex + 1 + count);
+
+        return skipped.length !== skippedUnmoved.length || skipped.some(item => !skippedUnmoved.includes(item));
+      });
+    },
+
+    // Whether a move split a randomization group that was together: the
+    // app shuffles consecutive items with the same group number.
+    groupMovedApart() {
+      const splitUnmoved = this.splitRandomizationGroups(this.unmovedQuestions);
+
+      return this.splitRandomizationGroups(this.formData.questions).some(group => !splitUnmoved.includes(group));
+    },
+
     repeatingQuestionnaires() {
       // Filter to only repeating questionnaires, excluding the current one if editing
       return this.allSchedules.filter(s => {
@@ -1233,16 +1542,21 @@ export default {
       for (const question of this.formData.questions) {
         if (!question.text || !question.type) return false;
 
-        if ((question.type === 'radio' || question.type === 'checkbox') &&
-            (!question.answers || question.answers.filter(a => a.trim()).length < 2)) {
+        if (this.showsOptions(question) && this.optionCount(question) < 2) {
+          return false;
+        }
+
+        if (question.type === 'fileUpload' && this.fileUploadLimitsMissing(question)) {
           return false;
         }
       }
 
       if (!this.isEditMode) {
         if (!this.formData.name) return false;
-        // Start date is required only if not using "start on first login"
-        if (!this.formData.start_on_first_login && !this.formData.start_date_time.date) return false;
+        // Start date is required only if not using "start on first login".
+        // A data donation questionnaire hides the date fields, and the
+        // server never sends its start date to the app, so it needs none.
+        if (this.dataDonationType === 'none' && !this.formData.start_on_first_login && !this.formData.start_date_time.date) return false;
         if (this.formData.type === 'repeating' && !this.formData.use_dynamic_end_date && !this.formData.end_date_time.date) return false;
 
         // Validate max_daily_submits doesn't exceed number of intervals
@@ -1379,6 +1693,7 @@ export default {
       this.formData.introductory_text = this.schedule.introductory_text || '';
       this.loadScheduleData();
     }
+    this.openedOrder = this.formData.questions.map(question => this.questionKey(question));
   },
 
   methods: {
@@ -1408,25 +1723,43 @@ export default {
 
         return {
           uuid: q.uuid,  // Include UUID for updates
+          // The list key of a question without a uuid; not sent.
+          clientId: q.uuid ? null : newClientId(),
           text: q.text || '',
           imageUrl: q.image_url || '',
           videoUrl: q.video_url || '',
+          // Unlike the image and video URLs, the poster lives in config.
+          posterUrl: config.posterUrl || '',
           type: this.mapBackendTypeToFormType(q.type) || '',
           mandatory: q.is_mandatory !== undefined ? q.is_mandatory : true,
-          randomizationGroupId: q.randomizationGroupId || null,
-          randomizeAnswers: q.randomizeAnswers || false,
+          // These live in config, same as includeOtherOption below. They used
+          // to be read off q.*, where they have never existed, so every reopen
+          // silently reset them.
+          randomizationGroupId: config.randomizationGroupId || null,
+          randomizeAnswers: config.randomizeAnswers || false,
+          randomPositionWithinQuestionnaire: !!config.randomPositionWithinQuestionnaire,
           includeOtherOption: config.includeOtherOption || false,
           otherOptionLabel: config.otherOptionLabel || '',
-          itemGroup: q.item_group || null,
+          otherTextType: config.otherTextType || 'text',
+          // A display item's disabled options: 'radio', 'checkbox', or '' for none.
+          displaySelection: config.displaySelection || '',
+          itemGroup: config.itemGroup || null,
           useTimer: !!timer.time,
           timerSeconds: timer.time || 30,
           showCountdown: timer.showCountdown !== undefined ? timer.showCountdown : true,
           useJump: !!(jump.jumpCondition !== undefined || jump.jumpOver !== undefined),
-          // Convert jumpCondition from 0-based (API) to 1-based (UI)
+          // Convert jumpCondition from 0-based (config) to 1-based (UI)
           jumpCondition: jump.jumpCondition !== undefined ? parseInt(jump.jumpCondition) + 1 : 1,
           jumpOver: jump.jumpOver !== undefined ? jump.jumpOver : 1,
           placeholder: config.placeholder || '',
-          answers: config.options || [],
+          // A choice default is saved as the option's key. The form holds the
+          // option's text, so it can't drift when options are added or removed.
+          // A slider's labels can be blank or repeat, so its form keeps the key.
+          defaultValue: q.type !== 'range values' && config.options
+              ? config.options[config.defaultValue] ?? ''
+              : config.defaultValue ?? '',
+          // A slider's blank label is stored as null (Laravel turns '' into null).
+          answers: (config.options || []).map(a => a ?? ''),
           config: {
             minValue: config.min || 0,
             maxValue: config.max || 10,
@@ -1451,6 +1784,9 @@ export default {
               maxFileSize: config.videoUploadOptions?.maxFileSize ?? null,
               maxVideoLength: config.videoUploadOptions?.maxVideoLength ?? null,
             },
+            fileUploadOptions: config.fileUploadOptions
+              ? this.loadedFileUploadOptions(config.fileUploadOptions)
+              : this.defaultFileUploadOptions(),
           }
         };
       });
@@ -1563,30 +1899,32 @@ export default {
     },
 
     // Map backend/DB types to form types.
-    // DB stores: number, range, text, textarea, one choice, multiple choice, display,
-    //            photo, audio, video.
-    // Form uses: number, range, text, textarea, radio, checkbox, display,
-    //            photoUpload, audioUpload, videoUpload (form values match the
-    //            mobile API contract).
+    // DB stores: number, range, range values, text, textarea, one choice,
+    //            multiple choice, display, photo, audio, video, file.
+    // Form uses: number, range, rangeValues, text, textarea, radio, checkbox,
+    //            display, photoUpload, audioUpload, videoUpload, fileUpload
+    //            (form values match the mobile API contract).
     mapBackendTypeToFormType(backendType) {
       const mapping = {
         'text': 'text',
         'textarea': 'textarea',
         'number': 'number',
         'range': 'range',
+        'range values': 'rangeValues',
         'one choice': 'radio',
         'multiple choice': 'checkbox',
         'display': 'display',
         'photo': 'photoUpload',
         'audio': 'audioUpload',
         'video': 'videoUpload',
+        'file': 'fileUpload',
       };
       return mapping[backendType] || 'text';
     },
 
     // Map form types to backend/DB types.
-    // DB stores: number, range, text, textarea, one choice, multiple choice, display,
-    //            photo, audio, video.
+    // DB stores: number, range, range values, text, textarea, one choice,
+    //            multiple choice, display, photo, audio, video, file.
     // Mobile API expects the form values verbatim (e.g. `photoUpload` for a photo
     // question); the mapping below is just the storage half of the round-trip.
     mapFormTypeToBackendType(formType) {
@@ -1595,27 +1933,35 @@ export default {
         'textarea': 'textarea',
         'number': 'number',
         'range': 'range',
+        'rangeValues': 'range values',
         'radio': 'one choice',
         'checkbox': 'multiple choice',
         'display': 'display',
         'photoUpload': 'photo',
         'audioUpload': 'audio',
         'videoUpload': 'video',
+        'fileUpload': 'file',
       };
       return mapping[formType] || 'text';
     },
 
     addQuestion() {
       this.formData.questions.push({
+        // The list key until the question is saved; not sent.
+        clientId: newClientId(),
         text: '',
         imageUrl: '',
         videoUrl: '',
+        posterUrl: '',
         type: '',
         mandatory: false,
         randomizationGroupId: null,
         randomizeAnswers: false,
+        randomPositionWithinQuestionnaire: false,
         includeOtherOption: false,
         otherOptionLabel: '',
+        otherTextType: 'text',
+        displaySelection: '',
         itemGroup: null,
         useTimer: false,
         timerSeconds: 30,
@@ -1624,6 +1970,7 @@ export default {
         jumpCondition: '',
         jumpOver: 1,
         placeholder: '',
+        defaultValue: '',
         answers: [],
         config: {
           minValue: 0,
@@ -1651,12 +1998,97 @@ export default {
             maxFileSize: null,
             maxVideoLength: null,
           },
+          fileUploadOptions: this.defaultFileUploadOptions(),
         }
       });
     },
 
+    // A new file upload question takes every format the server takes, up
+    // to 20 MB: Directus project 1's size, and the upload body is base64,
+    // about 1.37 times the file.
+    defaultFileUploadOptions() {
+      return { maxFileSize: 20, allowedFormats: [...ALL_FILE_UPLOAD_FORMATS] };
+    },
+
+    // Saved options in the form's terms. The server also takes a size saved
+    // as text and formats in another spelling, such as "PDF", so the size
+    // becomes a number and each format is written the way the list writes it.
+    loadedFileUploadOptions(options) {
+      const size = options.maxFileSize;
+      const isNumericText = typeof size === 'string' && size.trim() !== '' && !Number.isNaN(Number(size));
+      const formats = (options.allowedFormats || []).map(normaliseFileFormat).filter(format => format !== null);
+
+      return {
+        maxFileSize: isNumericText ? Number(size) : size ?? '',
+        allowedFormats: [...new Set(formats)],
+      };
+    },
+
+    // The offered formats among these, in the list's order. Any other
+    // (such as .svg) is dropped: the server refuses it.
+    offeredFileFormats(formats) {
+      return ALL_FILE_UPLOAD_FORMATS.filter(format => (formats || []).includes(format));
+    },
+
+    // Without a size and a format the app takes any file. When the server
+    // refuses it, the app stops the whole submit with a message that is
+    // usually off screen.
+    fileUploadLimitsMissing(question) {
+      const options = question.config?.fileUploadOptions || {};
+      const size = options.maxFileSize;
+
+      return typeof size !== 'number' || size < 1 || size > MAX_FILE_SIZE_MB ||
+          this.offeredFileFormats(options.allowedFormats).length === 0;
+    },
+
     removeQuestion(index) {
       this.formData.questions.splice(index, 1);
+    },
+
+    // The uuid of a saved question, the client-side id of a new one.
+    questionKey(question) {
+      return question.uuid || question.clientId;
+    },
+
+    // Swaps the question with its neighbour above (-1) or below (1).
+    moveQuestion(index, direction) {
+      if (!this.canMoveQuestion(index, direction)) return;
+
+      const questions = this.formData.questions;
+      const [question] = questions.splice(index, 1);
+      questions.splice(index + direction, 0, question);
+    },
+
+    // Never past either end. With the order locked only new questions trade
+    // places, so none goes above a saved one.
+    canMoveQuestion(index, direction) {
+      const questions = this.formData.questions;
+      const target = index + direction;
+      if (target < 0 || target >= questions.length) return false;
+
+      return !this.orderLocked || (!questions[index].uuid && !questions[target].uuid);
+    },
+
+    // Whether save() sends a jump for this question.
+    savesJump(question) {
+      return !!question.useJump && (question.type === 'radio' || question.type === 'checkbox');
+    },
+
+    // The randomization groups whose questions are not next to each other.
+    splitRandomizationGroups(questions) {
+      const places = {};
+      questions.forEach((question, index) => {
+        if (!question.randomizationGroupId) return;
+
+        const group = String(question.randomizationGroupId);
+        if (!places[group]) places[group] = [];
+        places[group].push(index);
+      });
+
+      return Object.keys(places).filter(group => {
+        const indexes = places[group];
+        return indexes[indexes.length - 1] - indexes[0] + 1 !== indexes.length;
+      });
     },
 
     addOption(questionIndex) {
@@ -1667,10 +2099,48 @@ export default {
     },
 
     removeOption(questionIndex, optionIndex) {
-      const answers = this.formData.questions[questionIndex].answers;
+      const question = this.formData.questions[questionIndex];
+      const answers = question.answers;
       if (answers.length > 1) {
         answers.splice(optionIndex, 1);
+
+        // A slider's default is a position, so it follows its step.
+        if (question.type === 'rangeValues' && question.defaultValue !== '') {
+          if (question.defaultValue === optionIndex) {
+            question.defaultValue = '';
+          } else if (question.defaultValue > optionIndex) {
+            question.defaultValue -= 1;
+          }
+        }
       }
+    },
+
+    hasDefaultValue(type) {
+      return ['range', 'rangeValues', 'number', 'radio', 'checkbox', 'text', 'textarea'].includes(type);
+    },
+
+    // Types whose answers come from a list the researcher writes. Their
+    // default is saved as the key of an option. Jumps are radio/checkbox only.
+    hasOptions(type) {
+      return ['radio', 'checkbox', 'rangeValues'].includes(type);
+    },
+
+    // A display item can show a choice's options, disabled. It keeps its
+    // type, has no default, jump or randomize, and is never answered.
+    showsDisabledOptions(question) {
+      return question.type === 'display' && !!question.displaySelection;
+    },
+
+    // Whether the question has an options list to fill in.
+    showsOptions(question) {
+      return this.hasOptions(question.type) || this.showsDisabledOptions(question);
+    },
+
+    // Blank choice options are dropped on save; a slider keeps a blank label
+    // as a step.
+    optionCount(question) {
+      const answers = question.answers || [];
+      return question.type === 'rangeValues' ? answers.length : answers.filter(a => a.trim()).length;
     },
 
     async save() {
@@ -1696,11 +2166,20 @@ export default {
             if (q.config.maxDigits) {
               config.maxDigits = q.config.maxDigits;
             }
-          } else if (q.type === 'radio' || q.type === 'checkbox') {
+          } else if (q.type === 'rangeValues') {
+            // Labels only: no "Other" option, no jump. Every label is a step
+            // on the slider, so a blank one stays, as empty text.
+            config.options = q.answers.map(a => (a.trim() ? a : ''));
+          } else if (q.type === 'radio' || q.type === 'checkbox' || this.showsDisabledOptions(q)) {
+            // A display item's options are a choice's, shown disabled.
+            if (q.type === 'display') {
+              config.displaySelection = q.displaySelection;
+            }
             config.options = q.answers.filter(a => a.trim());
             // Include "Other" text field option flag and custom label
             if (q.includeOtherOption) {
               config.includeOtherOption = true;
+              config.otherTextType = q.otherTextType;
               if (q.otherOptionLabel) {
                 config.otherOptionLabel = q.otherOptionLabel;
               }
@@ -1732,10 +2211,28 @@ export default {
               maxVideoLength: q.config.videoUploadOptions.maxVideoLength ?? null,
               maxFileSize: q.config.videoUploadOptions.maxFileSize ?? null,
             };
+          } else if (q.type === 'fileUpload') {
+            // ScaleResource sends both as fileUploadOptions, without the
+            // fileType from martTypes.ts, which the app never reads.
+            config.fileUploadOptions = {
+              maxFileSize: q.config.fileUploadOptions.maxFileSize,
+              allowedFormats: this.offeredFileFormats(q.config.fileUploadOptions.allowedFormats),
+            };
           }
 
-          // Add timer config if enabled
-          if (q.useTimer) {
+          if (this.hasDefaultValue(q.type)) {
+            // The form holds a choice default as its text and a slider's as
+            // its position, which is already the key.
+            const isChoice = q.type === 'radio' || q.type === 'checkbox';
+            const defaultValue = isChoice ? config.options.indexOf(q.defaultValue) : q.defaultValue;
+            if (defaultValue !== '' && defaultValue !== -1 && defaultValue !== undefined) {
+              config.defaultValue = defaultValue;
+            }
+          }
+
+          // Add timer config if enabled. A plain display item has no scale,
+          // so its timer would never reach the app.
+          if (q.useTimer && (q.type !== 'display' || this.showsDisabledOptions(q))) {
             config.timer = {
               time: q.timerSeconds,
               showCountdown: q.showCountdown
@@ -1743,7 +2240,7 @@ export default {
           }
 
           // Add jump config if enabled (only for radio/checkbox)
-          // Convert jumpCondition from 1-based (UI) to 0-based (API)
+          // Convert jumpCondition from 1-based (UI) to 0-based (config)
           if (q.useJump && (q.type === 'radio' || q.type === 'checkbox')) {
             config.jump = {
               jumpCondition: String(q.jumpCondition - 1),
@@ -1751,17 +2248,41 @@ export default {
             };
           }
 
+          // Item-level options belong in config. Sent as siblings they were
+          // dropped by the validator, which only allows text/image_url/
+          // video_url/type/mandatory/config.
+          if (q.randomizationGroupId) {
+            config.randomizationGroupId = q.randomizationGroupId;
+          }
+          // Only radio and checkbox have the checkbox, and the app only
+          // shuffles their options.
+          if (q.randomizeAnswers && (q.type === 'radio' || q.type === 'checkbox')) {
+            config.randomizeAnswers = true;
+          }
+          if (q.randomPositionWithinQuestionnaire) {
+            config.randomPositionWithinQuestionnaire = true;
+          }
+          if (q.itemGroup) {
+            config.itemGroup = String(q.itemGroup);
+          }
+          // The app shows the poster on the video, so it goes with it. Trimmed
+          // because the server turns a blank video URL into null.
+          if (q.videoUrl?.trim() && q.posterUrl?.trim()) {
+            config.posterUrl = q.posterUrl;
+          }
+
+          // No noValueAllowed here: `mandatory` already carries it and lands in
+          // is_mandatory. The API derives the inverse on the way out.
+          // A display item is never mandatory: the app never answers one, and
+          // its checkbox is hidden, so a row saved as mandatory can't be fixed
+          // by hand.
           const questionData = {
             text: q.text,
             image_url: q.imageUrl || null,
             video_url: q.videoUrl || null,
             type: backendType,
-            mandatory: q.mandatory,
-            config: config,
-            randomizationGroupId: q.randomizationGroupId || null,
-            randomizeAnswers: q.randomizeAnswers || false,
-            noValueAllowed: !q.mandatory,
-            item_group: q.itemGroup || null
+            mandatory: q.type === 'display' ? false : q.mandatory,
+            config: config
           };
 
           // Include UUID for updates
@@ -1787,6 +2308,15 @@ export default {
           show_after_repeating: showAfterRepeating,
           questions: processedQuestions
         };
+
+        // The app always shows the progress bar for a data donation
+        // questionnaire and sends no notifications for it, so that's what is
+        // saved. The form keeps its values, which come back if the type is
+        // switched back.
+        if (this.formData.is_ios_data_donation || this.formData.is_android_data_donation) {
+          payload.show_progress_bar = true;
+          payload.show_notifications = false;
+        }
 
         if (this.isEditMode) {
           // Update questions, settings, and introductory text
@@ -1818,8 +2348,11 @@ export default {
       const question = this.formData.questions[index];
       if (!question.text || !question.type) return true;
 
-      if ((question.type === 'radio' || question.type === 'checkbox') &&
-          (!question.answers || question.answers.filter(a => a.trim()).length < 2)) {
+      if (this.showsOptions(question) && this.optionCount(question) < 2) {
+        return true;
+      }
+
+      if (question.type === 'fileUpload' && this.fileUploadLimitsMissing(question)) {
         return true;
       }
 

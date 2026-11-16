@@ -17,10 +17,11 @@ import exporting from "highcharts/modules/exporting";
 import gantt from "highcharts/modules/gantt";
 import stock from "highcharts/modules/stock";
 import treemap from "highcharts/modules/treemap";
-import mitt from "mitt";
+import { emitter } from "./emitter";
 
-// Create a global event emitter
-export const emitter = mitt();
+// The global event emitter lives in ./emitter.js; import it from there, never
+// from this entry file (see the note in emitter.js).
+export { emitter };
 
 // Get productionUrl from meta tag at runtime (extracts path from APP_URL)
 function getProductionUrl() {

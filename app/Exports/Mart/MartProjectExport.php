@@ -5,9 +5,14 @@ namespace App\Exports\Mart;
 use App\Cases;
 use App\Project;
 use Maatwebsite\Excel\Concerns\Exportable;
+use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
-class MartProjectExport implements WithMultipleSheets
+/**
+ * The MART workbook. Every sheet binds values through FormulaSafeValueBinder,
+ * so text typed in the app or the editor that starts with "=" stays text.
+ */
+class MartProjectExport extends FormulaSafeValueBinder implements WithCustomValueBinder, WithMultipleSheets
 {
     use Exportable;
 
@@ -25,7 +30,7 @@ class MartProjectExport implements WithMultipleSheets
     {
         $martProject = $this->project->martProject();
 
-        if (!$martProject) {
+        if (! $martProject) {
             return [];
         }
 
@@ -46,6 +51,9 @@ class MartProjectExport implements WithMultipleSheets
             new MartDeviceInfoSheet($scheduleIds, $participantId),
             new MartStatsSheet($projectId, $participantId),
             new MartFilesSheet($mainProjectId, $caseId),
+            // Last, so the earlier sheets keep their place for anyone who
+            // reads the file by sheet number.
+            new MartQuestionsSheet($schedules),
         ];
     }
 }

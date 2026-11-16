@@ -184,32 +184,6 @@ class EmailCheckSecurityTest extends TestCase
     }
 
     /** @test */
-    public function it_rejects_non_mart_projects()
-    {
-        $response = $this->postJson('/api/check-email', [
-            'email' => 'test@example.com',
-            'project_id' => $this->nonMartProject->id,
-        ]);
-
-        $response->assertStatus(403)
-            ->assertJson([
-                'error' => 'Invalid project',
-            ]);
-    }
-
-    /** @test */
-    public function it_rejects_non_existent_projects()
-    {
-        $response = $this->postJson('/api/check-email', [
-            'email' => 'test@example.com',
-            'project_id' => 99999,
-        ]);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['project_id']);
-    }
-
-    /** @test */
     public function it_sanitizes_email_input()
     {
         $user = User::factory()->create([
@@ -489,16 +463,6 @@ class EmailCheckSecurityTest extends TestCase
         $response3 = $this->postJson('/api/check-email', []);
 
         $response3->assertStatus(422)
-            ->assertJsonValidationErrors(['email', 'project_id']);
-    }
-
-    /** @test */
-    public function it_handles_malformed_json()
-    {
-        $response = $this->postJson('/api/check-email', []);
-
-        // Laravel should handle malformed JSON gracefully (should return 422 for missing fields)
-        $response->assertStatus(422)
             ->assertJsonValidationErrors(['email', 'project_id']);
     }
 

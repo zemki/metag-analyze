@@ -38,4 +38,11 @@ Read-only log of user actions. Cannot be modified or deleted through the admin p
 
 ## Granting Admin Access
 
-Admin access is controlled via database roles. Contact a system administrator to grant admin privileges to a user account.
+Admin access is controlled via database roles, set on the server:
+
+```bash
+php artisan roleadd:admin user@example.org
+php artisan roleremove:admin user@example.org
+```
+
+The same commands exist for `researcher` and `user`. The `ADMINS` setting in `.env` doesn't grant any role. See the [Deployment Guide](./DEPLOYMENT.md#managing-roles).

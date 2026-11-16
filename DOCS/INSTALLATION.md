@@ -1,10 +1,12 @@
 # Installation
 
+Local setup. For a server, see the [Deployment Guide](./DEPLOYMENT.md).
+
 ## Requirements
 
-- PHP 8.3+
+- PHP 8.3
 - MySQL 8.0+
-- Node.js 18+
+- Node.js 22
 - Composer
 - Redis (optional, for caching)
 
@@ -27,11 +29,11 @@ php artisan key:generate
 ### 3. Database
 Create two databases (main and MART).
 
-Update `.env` with database credentials.
+Update `.env` with the credentials, `DB_DATABASE` for the main database and `MART_DB_DATABASE` for the MART one.
 
-Run migrations:
+Create the tables in both, the base roles and an administrator:
 ```bash
-php artisan migrate
+php artisan metag:install
 ```
 
 ### 4. Build Assets

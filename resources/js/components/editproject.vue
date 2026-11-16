@@ -271,8 +271,36 @@
                 />
                 <p class="text-xs text-gray-400 mt-1">{{ trans('Overlap to ensure no data is missed') }}</p>
               </div>
+              <div>
+                <label for="min-break-android-stats" class="block text-xs font-medium text-gray-700">{{ trans('Minimum break between Android stats collections (hours)') }}</label>
+                <input
+                    type="number"
+                    id="min-break-android-stats"
+                    v-model.number="projectData.minBreakBetweenAndroidStats"
+                    :disabled="!editable"
+                    min="0"
+                    step="any"
+                    class="mt-1 block w-full px-3 py-2 text-sm rounded-md border-gray-300 shadow-xs focus:border-green-500 focus:ring focus:ring-green-200"
+                />
+                <p class="text-xs text-gray-400 mt-1">{{ trans('Collection runs after each questionnaire submit. Leave empty for no break.') }}</p>
+              </div>
             </div>
           </div>
+        </div>
+
+        <!-- Minimum break between data donation questionnaires -->
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+          <label for="min-break-data-donation" class="block text-sm font-medium text-gray-900">{{ trans('Minimum break between data donation questionnaires (hours)') }}</label>
+          <input
+              type="number"
+              id="min-break-data-donation"
+              v-model.number="projectData.minBreakBetweenDataDonationQuestionnaires"
+              :disabled="!editable"
+              min="0"
+              step="any"
+              class="mt-1 block w-48 px-3 py-2 text-sm rounded-md border-gray-300 shadow-xs focus:border-green-500 focus:ring focus:ring-green-200"
+          />
+          <p class="text-xs text-gray-500 mt-1">{{ trans('How long a participant waits after a data donation before the next one. Only matters when the project has a data donation questionnaire. Leave empty for no break.') }}</p>
         </div>
       </div>
 
@@ -685,7 +713,7 @@
 
 <script>
 import MartQuestionnaireManager from './mart/MartQuestionnaireManager.vue';
-import { emitter } from '../app.js';
+import { emitter } from '../emitter.js';
 
 export default {
   name: 'EditProject',
@@ -738,6 +766,9 @@ export default {
         collectAndroidStats: false,
         initialHoursOfAndroidStats: 24,
         overlapAndroidStatsHours: 2,
+        // MART minimum breaks in hours; empty = no break, the key is left out
+        minBreakBetweenAndroidStats: '',
+        minBreakBetweenDataDonationQuestionnaires: '',
         // MART Project Availability Window (both optional;
         // empty start = available right away, empty end = available indefinitely)
         projectStartDate: '',
@@ -847,6 +878,8 @@ export default {
           this.projectData.collectAndroidStats = martConfig?.projectOptions?.collectAndroidStats ?? false;
           this.projectData.initialHoursOfAndroidStats = martConfig?.projectOptions?.initialHoursOfAndroidStats ?? 24;
           this.projectData.overlapAndroidStatsHours = martConfig?.projectOptions?.overlapAndroidStatsHours ?? 2;
+          this.projectData.minBreakBetweenAndroidStats = martConfig?.projectOptions?.minBreakBetweenAndroidStats ?? '';
+          this.projectData.minBreakBetweenDataDonationQuestionnaires = martConfig?.projectOptions?.minBreakBetweenDataDonationQuestionnaires ?? '';
 
           // Extract Project Availability Window (both optional)
           this.projectData.projectStartDate = martConfig?.projectOptions?.startDateAndTime?.date ?? '';
@@ -1184,6 +1217,21 @@ export default {
             martConfig.projectOptions.collectAndroidStats = this.projectData.collectAndroidStats;
             martConfig.projectOptions.initialHoursOfAndroidStats = this.projectData.initialHoursOfAndroidStats;
             martConfig.projectOptions.overlapAndroidStatsHours = this.projectData.overlapAndroidStatsHours;
+
+            // Save the minimum breaks. The app applies a break only when its
+            // key is present, so an empty field deletes the key. 0 is kept.
+            // A negative or non-numeric value is deleted too: the API would
+            // leave it out, so keeping it would show a break never applied.
+            // The empty check comes first because Number('') is 0.
+            for (const key of ['minBreakBetweenAndroidStats', 'minBreakBetweenDataDonationQuestionnaires']) {
+              const hours = this.projectData[key];
+              const value = Number(hours);
+              if (hours === '' || hours === null || hours === undefined || !Number.isFinite(value) || value < 0) {
+                delete martConfig.projectOptions[key];
+              } else {
+                martConfig.projectOptions[key] = value;
+              }
+            }
 
             // Save Project Availability Window. If a date is empty we delete
             // the key entirely so the mobile sees "available right away" /

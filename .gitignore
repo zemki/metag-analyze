@@ -6,7 +6,8 @@
 bootstrap/compiled.php
 .env
 .env.testing
-composer.lock
+.env_prod_backup
+.env_local_backup
 .phpunit.result.cache
 
 # JavaScript/Node
@@ -17,7 +18,6 @@ composer.lock
 npm-debug.log
 yarn-error.log
 yarn.lock
-package-lock.json
 
 # Build assets
 /public/build

@@ -17,19 +17,32 @@ class MartFileController extends Controller
      * Upload a file
      *
      * Accepts either multipart/form-data (field: `file`) or a JSON body with
-     * base64-encoded content. When `file_type` is omitted, it is inferred from
-     * the detected MIME type. Files are uploaded before submission, then
+     * base64-encoded content. When `file_type` is omitted or `file`, it is
+     * inferred from the detected MIME type. Only the participant who owns the
+     * case can upload to it. Files are uploaded before submission, then
      * referenced by UUID in the submit.
      *
      * @throws \Illuminate\Auth\AuthenticationException
      */
     public function store(Request $request, Cases $case): JsonResponse
     {
+        // The app uploads to the case check-access returned for the bearer's
+        // account, so a case of anyone else is refused.
+        $userId = $request->user()?->id;
+        if ($userId === null || (int) $case->user_id !== (int) $userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Access denied to this case',
+                'hint' => 'Upload to the case that check-access returned for the account the bearer token belongs to.',
+            ], 403);
+        }
+
         $isMultipart = $request->hasFile('file');
 
         $request->validate([
             'question_uuid' => 'nullable|string', // Optional - can link later
-            'file_type' => 'nullable|in:' . implode(',', array_keys(MartFile::ALLOWED_MIME_TYPES)),
+            // "file" is what the app sends for a fileUpload question: any bucket.
+            'file_type' => 'nullable|in:file,' . implode(',', array_keys(MartFile::ALLOWED_MIME_TYPES)),
             'file' => $isMultipart
                 ? 'required|file|max:' . MartFile::maxSizeInKilobytes()
                 : 'required|string', // base64
@@ -88,8 +101,9 @@ class MartFileController extends Controller
             ], 400);
         }
 
-        // Resolve file_type: use explicit value if provided, else infer from MIME
-        $explicitFileType = $request->file_type;
+        // Resolve file_type: use explicit value if provided, else infer from
+        // MIME. "file" names no bucket, so it's inferred too.
+        $explicitFileType = $request->file_type === 'file' ? null : $request->file_type;
         $fileType = $explicitFileType ?? MartFile::fileTypeForMime($detectedMimeType);
         if (!$fileType) {
             return response()->json([
@@ -150,7 +164,7 @@ class MartFileController extends Controller
         return response()->json([
             'success' => true,
             'file_id' => $martFile->id,
-            'fileUrl' => "/mart-api/files/{$martFile->id}",
+            'fileUrl' => route('mobile.files.show', $martFile->id, false),
             'file_type' => $martFile->file_type,
             'mime_type' => $martFile->mime_type,
             'size' => $martFile->size,
@@ -331,12 +345,16 @@ class MartFileController extends Controller
      * Link uploaded files to a MART entry after submission.
      * Called from MartApiController::submitEntry
      *
+     * The app uploads every file with the zero question UUID, so linking
+     * replaces it with the question the file answers.
+     *
      * @param array $fileIds Array of file UUIDs
      * @param int $entryId The MART entry ID
      * @param int $caseId The case ID for verification
+     * @param  string|null  $questionUuid  The question the files answer
      * @return array Results with success/error info
      */
-    public static function linkFilesToEntry(array $fileIds, int $entryId, int $caseId): array
+    public static function linkFilesToEntry(array $fileIds, int $entryId, int $caseId, ?string $questionUuid = null): array
     {
         $results = [
             'linked' => [],
@@ -361,7 +379,7 @@ class MartFileController extends Controller
                 continue;
             }
 
-            $file->linkToEntry($entryId);
+            $file->linkToEntry($entryId, $questionUuid);
             $results['linked'][] = $fileId;
         }
 

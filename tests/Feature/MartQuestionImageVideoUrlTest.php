@@ -271,4 +271,65 @@ class MartQuestionImageVideoUrlTest extends TestCase
         $this->assertEquals('https://example.com/added-image.jpg', $question->image_url);
         $this->assertEquals('https://example.com/added-video.mp4', $question->video_url);
     }
+
+    /**
+     * The editor sends null for a cleared field.
+     *
+     * @test
+     */
+    public function it_clears_question_urls_sent_as_null_via_api()
+    {
+        $this->actingAs($this->user);
+
+        $question = MartQuestion::create([
+            'schedule_id' => $this->schedule->id,
+            'position' => 1,
+            'text' => 'Question with media',
+            'image_url' => 'https://example.com/old-image.jpg',
+            'video_url' => 'https://example.com/old-video.mp4',
+            'type' => 'text',
+            'config' => [],
+            'is_mandatory' => true,
+            'version' => 1,
+        ]);
+
+        $this->putJson("/questionnaires/{$this->schedule->id}/questions", [
+            'questions' => [
+                [
+                    'uuid' => $question->uuid,
+                    'text' => 'Question with media',
+                    'image_url' => null,
+                    'video_url' => null,
+                    'type' => 'text',
+                    'mandatory' => true,
+                ],
+            ],
+        ])->assertStatus(200);
+
+        $question->refresh();
+        $this->assertNull($question->image_url);
+        $this->assertNull($question->video_url);
+    }
+
+    /** @test */
+    public function update_question_keeps_the_urls_it_is_not_given()
+    {
+        $question = MartQuestion::create([
+            'schedule_id' => $this->schedule->id,
+            'position' => 1,
+            'text' => 'Question keeping its media',
+            'image_url' => 'https://example.com/kept-image.jpg',
+            'video_url' => 'https://example.com/kept-video.mp4',
+            'type' => 'text',
+            'config' => [],
+            'is_mandatory' => true,
+            'version' => 1,
+        ]);
+
+        $question->updateQuestion(['text' => 'Question keeping its media, edited']);
+
+        $question->refresh();
+        $this->assertEquals('https://example.com/kept-image.jpg', $question->image_url);
+        $this->assertEquals('https://example.com/kept-video.mp4', $question->video_url);
+    }
 }

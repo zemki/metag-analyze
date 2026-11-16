@@ -36,6 +36,7 @@ class RouteServiceProvider extends ServiceProvider
     {
         $this->mapApiRoutes();
         $this->mapWebRoutes();
+        $this->mapMobileRoutes();
         $this->mapMartApiRoutes();
         //
     }
@@ -69,15 +70,33 @@ class RouteServiceProvider extends ServiceProvider
     }
 
     /**
+     * Define the "api/mobile" routes for the MART mobile app.
+     *
+     * Only `bindings`, not the `api` group: an unnamed throttle keys its
+     * counter by user or IP alone, so the group's throttle:120 and the routes'
+     * own limits would share one counter and count every request twice.
+     *
+     * @return void
+     */
+    protected function mapMobileRoutes()
+    {
+        Route::prefix('api/mobile')
+            ->middleware(['boundary:mart', 'bindings'])
+            ->group(base_path('routes/mobile.php'));
+    }
+
+    /**
      * Define the "mart-api" routes for the application.
-     * These routes are for the MART mobile application integration.
+     * Alias of the data routes in routes/mobile.php, kept so app versions on
+     * these URLs keep working. `bindings` only, for the reason given on
+     * mapMobileRoutes().
      *
      * @return void
      */
     protected function mapMartApiRoutes()
     {
         Route::prefix('mart-api')
-            ->middleware('api')
+            ->middleware(['boundary:mart', 'bindings'])
             ->namespace($this->namespace)
             ->group(base_path('routes/mart_api.php'));
     }

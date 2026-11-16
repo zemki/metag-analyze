@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Cases;
 use App\Entry;
+use App\Mart\MartEntry;
 use App\Mart\MartProject;
 use App\Media;
 use App\Project;
@@ -44,9 +45,11 @@ class StatsOverview extends StatsOverviewWidget
             // Get MART projects count (gracefully handle if MART tables don't exist)
             try {
                 $martProjectsCount = MartProject::count();
+                $submissionsWithoutMainEntry = MartEntry::whereNull('main_entry_id')->count();
             } catch (\Exception $e) {
                 // MART database not migrated yet
                 $martProjectsCount = 0;
+                $submissionsWithoutMainEntry = 0;
             }
 
             // Get total projects
@@ -58,8 +61,9 @@ class StatsOverview extends StatsOverviewWidget
             // Get cases count
             $casesCount = Cases::count();
 
-            // Get entries count
-            $entriesCount = Entry::count();
+            // Get entries count. Older MART submissions have a row in `entries`,
+            // so only the ones without one are added.
+            $entriesCount = Entry::count() + $submissionsWithoutMainEntry;
 
             // Get media/files count
             $filesCount = Media::count();

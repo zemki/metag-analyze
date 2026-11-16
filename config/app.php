@@ -4,6 +4,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Application Version
+    |--------------------------------------------------------------------------
+    |
+    | This value determines the version number of the application. Please
+    | increase it whenever code changes change the bahaviour of the app.
+    | On any even small portion of change increase build number.
+    | Deliberately NOT set from ".env" file to reflect code changes.
+    |
+    */
+    'version' => '1.0.0',
+    'build' => '9',
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Name
     |--------------------------------------------------------------------------
     |
@@ -27,6 +41,17 @@ return [
     */
 
     'env' => env('APP_ENV', 'production'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Application Copyright Ownership
+    |--------------------------------------------------------------------------
+    |
+    | Set this in your ".env" file.
+    |
+    */
+
+    'owner' => env('APP_OWNER', 'ZeMKI, Universität Bremen'),
 
     /*
     |--------------------------------------------------------------------------
@@ -81,6 +106,9 @@ return [
     */
 
     'api_v2_cutoff_date' => env('API_V2_CUTOFF_DATE', '2025-03-21'),
+
+    // Serve every MeTag login in the v2 format, whatever the project's age.
+    'force_api_v2' => env('FORCE_API_V2', false),
 
     /*
     |--------------------------------------------------------------------------

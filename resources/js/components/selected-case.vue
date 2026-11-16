@@ -50,8 +50,13 @@
           singular="entry"
           plural="entries"
         />
+        <!-- MART submissions: questionnaire and answers, read only. -->
+        <MartEntryTable
+          v-if="isMartProject && selectedCase.entries && selectedCase.entries.length > 0"
+          :entries="selectedCase.entries"
+        />
         <EntryTable
-          v-if="selectedCase.entries && selectedCase.entries.length > 0"
+          v-else-if="selectedCase.entries && selectedCase.entries.length > 0"
           :entries="selectedCase.entries"
           :project-inputs="parsedProjectInputs"
           :project="cases.project"
@@ -77,6 +82,7 @@ import EditEntryModal from "./global/EditEntryModal.vue";
 import EntriesEmptyState from "./global/EntriesEmptyState.vue";
 import NotConsultableState from "./global/NotConsultableState.vue";
 import EntryTable from "./global/EntryTable.vue";
+import MartEntryTable from "./mart/MartEntryTable.vue";
 import SectionBar from "./global/SectionBar.vue";
 
 export default {
@@ -88,6 +94,7 @@ export default {
     EntriesEmptyState,
     NotConsultableState,
     EntryTable,
+    MartEntryTable,
     SectionBar,
   },
   props: {
@@ -171,10 +178,7 @@ export default {
 
     // True when the project is MART. The graph routes only render
     // legacy / non-MART entries, so the buttons are hidden for MART.
-    const isMartProject = computed(() => {
-      const inputs = parsedProjectInputs.value;
-      return inputs.length > 0 && inputs[0]?.type === 'mart';
-    });
+    const isMartProject = computed(() => !!props.cases?.project?.is_mart_project);
 
     // Edit modal state — the parent owns visibility + which entry is being
     // edited; the modal component (EditEntryModal) owns the form internals.

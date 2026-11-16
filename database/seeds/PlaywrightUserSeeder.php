@@ -14,6 +14,13 @@ class PlaywrightUserSeeder extends Seeder
      */
     public function run()
     {
+        // An admin with a password that is in the repository: local machines only.
+        if (! app()->environment('local', 'testing')) {
+            $this->command?->warn('Skipped PlaywrightUserSeeder: only runs in local and testing.');
+
+            return;
+        }
+
         // Create or update Playwright test user
         $user = User::updateOrCreate(
             ['email' => 'playwright@test.com'],

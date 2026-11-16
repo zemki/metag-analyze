@@ -1,0 +1,131 @@
+{
+	"projectName": "Single and Repeating Questionnaires",
+	"options": {
+		"startDateAndTime": {
+			"date": "2025-03-20",
+			"time": "06:00"
+		},
+		"endDateAndTime": {
+			"date": "2026-12-21",
+			"time": "22:00"
+		},
+		"collectAndroidStats": true,
+		"collectDeviceInfos": true,
+		"iOSDataDonationQuestionnaire": 6,
+		"androidDataDonationQuestionnaire": 7,
+		"minBreakBetweenDataDonationQuestionnaires": 1,
+		"minBreakBetweenAndroidStats": 6,
+		"androidStatsPermissionPage": 7,
+		"iOSNotificationPermissionPage": 8,
+		"androidNotificationPermissionPage": 9,
+		"successPage": 10,
+		"pagesToShowOnFirstAppStart": [
+			2,
+			3
+		],
+		"overlapAndroidStatsHours": 3,
+		"initialHoursOfAndroidStats": 720,
+		"pages": [
+			2,
+			3,
+			5,
+			6,
+			7,
+			8,
+			9,
+			10
+		],
+		"pagesToShowInMenu": [
+			2,
+			3,
+			6
+		],
+		"repeatingQuestionnaires": [
+			{
+				"questionnaireId": 2,
+				"type": "repeating",
+				"showNotifications": true,
+				"notificationText": "Wiederholender Fragebogen Id 2 ausfüllen",
+				"minBreakBetweenQuestionnaire": 30,
+				"dailyIntervalDuration": 2,
+				"maxDailySubmits": 7,
+				"dailyStartTime": "08:00",
+				"dailyEndTime": "22:00",
+				"startDateAndTime": {
+					"date": "2025-06-18",
+					"time": "10:30"
+				},
+				"endDateAndTime": {
+					"date": "2026-03-25",
+					"time": "22:00"
+				},
+				"questAvailableAt": "randomTimeWithinInterval"
+			},
+			{
+				"questionnaireId": 9,
+				"type": "repeating",
+				"showNotifications": true,
+				"notificationText": "Wiederholender Fragebogen Id 9 ausfüllen",
+				"minBreakBetweenQuestionnaire": 30,
+				"dailyIntervalDuration": 1,
+				"maxDailySubmits": 3,
+				"dailyStartTime": "06:00",
+				"dailyEndTime": "22:00",
+				"startDateAndTime": {
+					"date": "2025-06-18",
+					"time": "10:30"
+				},
+				"endDateAndTime": {
+					"date": "2026-03-25",
+					"time": "22:00"
+				},
+				"questAvailableAt": "startOfInterval"
+			}
+		],
+		"singleQuestionnaires": [
+			{
+				"questionnaireId": 1,
+				"type": "single",
+				"collectDeviceInfos": true,
+				"startDateAndTime": {
+					"date": "2025-08-20",
+					"time": "12:31"
+				}
+			},
+			{
+				"questionnaireId": 3,
+				"type": "single",
+				"showNotifications": true,
+				"showAfterRepeatingQ": {
+					"repeatingQuestId": 9,
+					"showAfterAmount": 3
+				},
+				"startDateAndTime": {
+					"date": "2025-08-21",
+					"time": "17:12"
+				},
+				"showProgressBar": false
+			},
+			{
+				"questionnaireId": 4,
+				"type": "single",
+				"showNotifications": true,
+				"notificationText": "Fragebogen Id 4 ausfüllen",
+				"startDateAndTime": {
+					"date": "2025-10-25",
+					"time": "13:20"
+				}
+			},
+			{
+				"questionnaireId": 5,
+				"type": "single",
+				"showNotifications": true,
+				"notificationText": "Fragebogen Id 5 ausfüllen",
+				"startDateAndTime": {
+					"date": "2025-10-11",
+					"time": "13:20"
+				}
+			}
+		]
+	}
+}

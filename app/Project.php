@@ -32,18 +32,11 @@ class Project extends Model
     {
         parent::boot();
         static::deleting(function ($project) {
-            $project->invited()->detach();
+            // First, so a MART failure stops the delete before main changes.
+            // Cascades remove the related MART rows.
+            $project->martProject()?->delete();
 
-            // Delete MART data if exists (cascade handles related tables)
-            // Wrapped in try-catch in case MART database doesn't exist yet
-            try {
-                $martProject = \App\Mart\MartProject::where('main_project_id', $project->id)->first();
-                if ($martProject) {
-                    $martProject->delete();
-                }
-            } catch (\Exception $e) {
-                // MART database may not exist - ignore
-            }
+            $project->invited()->detach();
 
             // if the user created the project, delete main DB data
             if ($project->created_by === auth()->user()->id && $project->cases->count() > 0) {
@@ -307,22 +300,22 @@ class Project extends Model
 
     /**
      * Get the MART project from the MART database (cross-DB query).
-     * Returns null if this is not a MART project or no MART data exists.
+     * Returns null if this is not a MART project or no MART data exists, and
+     * never queries MART for a MeTag project.
      * Results are cached in-memory to avoid repeated queries during the same request.
      *
      * @return \App\Mart\MartProject|null
      */
     public function martProject()
     {
+        if (! $this->isMartProject()) {
+            return null;
+        }
+
         // Check if we've already queried this during the request
         if ($this->martProjectCache === null) {
-            try {
-                // Query and cache result (false = not found, to distinguish from null = not checked)
-                $this->martProjectCache = \App\Mart\MartProject::where('main_project_id', $this->id)->first() ?: false;
-            } catch (\Exception $e) {
-                // MART tables don't exist yet (database not migrated)
-                $this->martProjectCache = false;
-            }
+            // Query and cache result (false = not found, to distinguish from null = not checked)
+            $this->martProjectCache = \App\Mart\MartProject::where('main_project_id', $this->id)->first() ?: false;
         }
 
         // Return null if not found (false indicates "checked but not found")

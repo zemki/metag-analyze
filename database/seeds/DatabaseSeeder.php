@@ -27,7 +27,7 @@ class DatabaseSeeder extends Seeder
         // Ask user which seeder to run
         $choice = $this->command->choice(
             'Which data seeder would you like to run?',
-            ['Interactive (original)', 'Realistic (new)', 'MART Projects', 'Combined (Realistic + MART)', 'Staging MART Setup', 'All'],
+            ['Interactive (original)', 'Realistic (new)', 'MART Projects', 'Combined (Realistic + MART)', 'Staging MART Setup', 'MART reference project (Directus project 1)', 'All'],
             4 // Default to 'Staging MART Setup'
         );
 
@@ -51,6 +51,9 @@ class DatabaseSeeder extends Seeder
                 break;
             case 'Staging MART Setup':
                 $this->call(StagingMartSeeder::class);
+                break;
+            case 'MART reference project (Directus project 1)':
+                $this->call(MartReferenceProjectSeeder::class);
                 break;
             case 'All':
                 $this->call(ProjectCaseUserEntrySeeder::class);
