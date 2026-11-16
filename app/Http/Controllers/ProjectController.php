@@ -563,6 +563,8 @@ class ProjectController extends Controller
 
     public function duplicate(Project $project)
     {
+        $this->authorize('view', $project);
+
         // Check if original project has MART data
         $originalMartProject = $project->martProject();
         $isMartProject = $originalMartProject !== null;
@@ -708,6 +710,12 @@ class ProjectController extends Controller
 
     public function removeFromProject(Request $request)
     {
+        // Without a project, detach() would remove every invitation of that user.
+        $request->validate([
+            'email' => 'required|email',
+            self::PROJECT => 'required|integer|exists:projects,id',
+        ]);
+
         $userWantsToBeRemovedFromStudy = $request->email != auth()->user()->email;
         if ($userWantsToBeRemovedFromStudy) {
             $this->authorize(self::UPDATESTRING, Project::where('id', $request->input(self::PROJECT))->first());

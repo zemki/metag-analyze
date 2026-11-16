@@ -127,6 +127,18 @@ describe('ProjectsList.vue', () => {
     expect(listItems[0].html()).toContain('Invited By John Doe');
   });
 
+  test('leaving a project tells the server which project to leave', () => {
+    window.axios.post = jest.fn(() => new Promise(() => {}));
+
+    wrapper.vm.confirmLeaveProject({ id: 1, email: 'test@example.com' }, 2);
+    wrapper.vm.detachUser();
+
+    expect(window.axios.post).toHaveBeenCalledWith('/projects/invite/1', {
+      email: 'test@example.com',
+      project: 2,
+    });
+  });
+
   test('calls confirmDelete when clicking "Delete Project"', async () => {
     // Mock the confirmDelete method
     const confirmDeleteMock = jest.fn();

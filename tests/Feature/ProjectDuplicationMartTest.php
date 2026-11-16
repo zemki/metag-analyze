@@ -260,7 +260,7 @@ class ProjectDuplicationMartTest extends TestCase
     }
 
     /** @test */
-    public function any_authenticated_user_can_duplicate_any_project()
+    public function a_researcher_outside_the_project_cannot_duplicate_it()
     {
         $owner = User::factory()->researcher()->create([
             'email_verified_at' => now(),
@@ -270,7 +270,6 @@ class ProjectDuplicationMartTest extends TestCase
             'email_verified_at' => now(),
         ]);
 
-        // Create project with MART configuration
         $project = Project::factory()->create([
             'created_by' => $owner->id,
             'name' => 'Private MART Project',
@@ -279,23 +278,11 @@ class ProjectDuplicationMartTest extends TestCase
             ]),
         ]);
 
-        // Try to duplicate as unauthorized user
-        $response = $this->actingAs($otherUser)
-            ->get("/projects/{$project->id}/duplicate");
+        $this->actingAs($otherUser)
+            ->get("/projects/{$project->id}/duplicate")
+            ->assertForbidden();
 
-        // Currently there's no authorization check, so it succeeds
-        $response->assertStatus(200);
-
-        // Verify duplication occurred
-        $this->assertEquals(2, Project::where('name', 'Private MART Project')->count());
-
-        // The duplicated project maintains the original creator
-        $duplicatedProject = Project::where('name', 'Private MART Project')
-            ->where('id', '!=', $project->id)
-            ->first();
-
-        // The duplicate method doesn't change created_by, so it remains the original owner
-        $this->assertEquals($owner->id, $duplicatedProject->created_by);
+        $this->assertEquals(1, Project::where('name', 'Private MART Project')->count());
     }
 
     /** @test */
