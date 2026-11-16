@@ -118,6 +118,28 @@ class MartQuestion extends Model
     }
 
     /**
+     * The question as plain text, for pages and exports: the editor can
+     * store HTML such as <br>, which becomes a space.
+     */
+    public function plainText(): string
+    {
+        $spaced = preg_replace('/<br\s*\/?>/i', ' ', (string) $this->text);
+        $text = html_entity_decode(strip_tags($spaced), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        return trim(preg_replace('/\s+/', ' ', $text));
+    }
+
+    /**
+     * What the "other" option of a choice is called, as the app shows it.
+     */
+    public function otherOptionLabel(): string
+    {
+        $label = $this->config['otherOptionLabel'] ?? null;
+
+        return ! empty($label) ? (string) $label : 'Other';
+    }
+
+    /**
      * Boot function to auto-generate UUID.
      */
     protected static function boot()

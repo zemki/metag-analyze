@@ -50,8 +50,13 @@
           singular="entry"
           plural="entries"
         />
+        <!-- MART submissions: questionnaire and answers, read only. -->
+        <MartEntryTable
+          v-if="isMartProject && selectedCase.entries && selectedCase.entries.length > 0"
+          :entries="selectedCase.entries"
+        />
         <EntryTable
-          v-if="selectedCase.entries && selectedCase.entries.length > 0"
+          v-else-if="selectedCase.entries && selectedCase.entries.length > 0"
           :entries="selectedCase.entries"
           :project-inputs="parsedProjectInputs"
           :project="cases.project"
@@ -77,6 +82,7 @@ import EditEntryModal from "./global/EditEntryModal.vue";
 import EntriesEmptyState from "./global/EntriesEmptyState.vue";
 import NotConsultableState from "./global/NotConsultableState.vue";
 import EntryTable from "./global/EntryTable.vue";
+import MartEntryTable from "./mart/MartEntryTable.vue";
 import SectionBar from "./global/SectionBar.vue";
 
 export default {
@@ -88,6 +94,7 @@ export default {
     EntriesEmptyState,
     NotConsultableState,
     EntryTable,
+    MartEntryTable,
     SectionBar,
   },
   props: {

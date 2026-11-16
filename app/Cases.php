@@ -5,6 +5,8 @@ namespace App;
 use App\Enums\CaseStatus;
 use App\Helpers\Helper;
 use App\Mart\MartEntry;
+use App\Mart\MartEntryAnswers;
+use App\Mart\MartSchedule;
 use App\Notifications\researcherNotificationToUser;
 use App\Setting;
 use File;
@@ -571,7 +573,9 @@ class Cases extends Model
      *
      * The rows are unsaved Entry models in the shape the case page reads. Their
      * ids are mart_entries ids, so they must never reach the entries routes:
-     * EntryController refuses MART cases and EntryTable hides Edit and Delete.
+     * EntryController refuses MART cases and the case page shows them in
+     * MartEntryTable, which has no Edit or Delete. The mart_* keys carry the
+     * questionnaire, the app's duration and the readable answers.
      */
     public static function loadMartEntries(Collection $cases): void
     {
@@ -581,8 +585,10 @@ class Cases extends Model
 
         $submissions = MartEntry::whereIn('case_id', $cases->pluck('id'))
             ->orderBy('id')
-            ->get(['id', 'case_id', 'started_at', 'completed_at', 'created_at'])
-            ->groupBy('case_id');
+            ->get(['id', 'case_id', 'schedule_id', 'started_at', 'completed_at', 'duration_ms', 'created_at']);
+        $answers = MartEntryAnswers::forEntries($submissions);
+        $questionnaires = MartSchedule::whereIn('id', $submissions->pluck('schedule_id')->unique())->pluck('name', 'id');
+        $submissions = $submissions->groupBy('case_id');
 
         foreach ($cases as $case) {
             $rows = collect($submissions[$case->id] ?? [])->map(fn (MartEntry $submission) => (new Entry)->forceFill([
@@ -593,6 +599,9 @@ class Cases extends Model
                 'end' => $submission->completed_at->format('Y-m-d H:i:s'),
                 'inputs' => '[]',
                 'created_at' => $submission->created_at,
+                'mart_questionnaire' => $questionnaires[$submission->schedule_id] ?? '',
+                'mart_duration_ms' => $submission->duration_ms,
+                'mart_answers' => $answers[$submission->id] ?? [],
             ]));
 
             $case->setRelation('entries', $rows);
