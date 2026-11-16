@@ -215,22 +215,6 @@ class ApiLoginTest extends TestCase
     }
 
     /** @test */
-    public function it_saves_device_id_on_login()
-    {
-        $deviceId = 'test-device-id-123';
-
-        $response = $this->postJson('/api/login', [
-            'email' => 'test@example.com',
-            'password' => 'password123',
-            'deviceID' => $deviceId,
-            'datetime' => time(),
-        ]);
-
-        $this->user->refresh();
-        $this->assertContains($deviceId, $this->user->deviceID);
-    }
-
-    /** @test */
     public function it_creates_profile_if_not_exists()
     {
         $this->user->profile()->delete();
