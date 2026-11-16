@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils';
 import AddEditQuestionnaireDialog from '@/components/mart/AddEditQuestionnaireDialog.vue';
 
-jest.mock('@/app.js', () => ({ emitter: { emit: jest.fn() } }));
+jest.mock('@/emitter.js', () => ({ emitter: { emit: jest.fn() } }));
 
 const { methods } = AddEditQuestionnaireDialog;
 

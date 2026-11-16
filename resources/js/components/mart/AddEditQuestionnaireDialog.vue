@@ -1375,7 +1375,7 @@
 
 <script>
 import SchedulePreview from './SchedulePreview.vue';
-import { emitter } from '../../app.js';
+import { emitter } from '../../emitter.js';
 
 // The extensions a file upload question can allow. Must match
 // MartFile::FILE_UPLOAD_EXTENSIONS, in the same order: the questionnaire routes

@@ -713,7 +713,7 @@
 
 <script>
 import MartQuestionnaireManager from './mart/MartQuestionnaireManager.vue';
-import { emitter } from '../app.js';
+import { emitter } from '../emitter.js';
 
 export default {
   name: 'EditProject',

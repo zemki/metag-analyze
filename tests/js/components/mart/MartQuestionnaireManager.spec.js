@@ -1,7 +1,7 @@
 import { mount, flushPromises } from '@vue/test-utils';
 import MartQuestionnaireManager from '@/components/mart/MartQuestionnaireManager.vue';
 
-jest.mock('@/app.js', () => ({ emitter: { emit: jest.fn() } }));
+jest.mock('@/emitter.js', () => ({ emitter: { emit: jest.fn() } }));
 
 function schedule(fields) {
   return {

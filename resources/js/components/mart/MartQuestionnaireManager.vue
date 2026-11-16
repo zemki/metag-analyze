@@ -342,7 +342,7 @@
 import { defineAsyncComponent } from 'vue';
 import AddEditQuestionnaireDialog from './AddEditQuestionnaireDialog.vue';
 import VersionHistoryModal from './VersionHistoryModal.vue';
-import { emitter } from '../../app.js';
+import { emitter } from '../../emitter.js';
 
 // Lazy load SchedulePreview component for better performance
 const SchedulePreview = defineAsyncComponent(() =>

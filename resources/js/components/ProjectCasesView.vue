@@ -447,7 +447,7 @@ import FilterRow from './global/FilterRow.vue';
 import CaseRow from './global/CaseRow.vue';
 import CasesEmptyState from './global/CasesEmptyState.vue';
 import { useProjectCapabilities } from '../utils/useProjectCapabilities.js';
-import { emitter } from '../app.js';
+import { emitter } from '../emitter.js';
 
 // Status note copy used by the inline status-guide legend.
 const STATUS_NOTES = {

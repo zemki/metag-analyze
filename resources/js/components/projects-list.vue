@@ -194,7 +194,7 @@
 </template>
 <script>
 import Modal from "./global/modal.vue";
-import { emitter } from '../app.js';
+import { emitter } from '../emitter.js';
 
 export default {
   name: "ProjectsList",

@@ -14,6 +14,9 @@ module.exports = {
     '^./app$': '<rootDir>/tests/js/mocks/app.js',
     '^../app\\.js$': '<rootDir>/tests/js/mocks/app.js',
     '^./app\\.js$': '<rootDir>/tests/js/mocks/app.js',
+    // Components import the event bus from emitter.js; give them the same mock
+    '^\\.\\./emitter(\\.js)?$': '<rootDir>/tests/js/mocks/app.js',
+    '^\\./emitter(\\.js)?$': '<rootDir>/tests/js/mocks/app.js',
     // Mock mitt
     'mitt': '<rootDir>/tests/js/mocks/mitt.js'
   },
