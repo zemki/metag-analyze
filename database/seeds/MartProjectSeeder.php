@@ -238,7 +238,7 @@ class MartProjectSeeder extends Seeder
      * The project row with only the MART marker in inputs, as
      * ProjectController and editproject.vue save it, plus its MART rows.
      */
-    private function createProject(User $user, string $name, string $description, string $questionnaireName, array $pages): Project
+    protected function createProject(User $user, string $name, string $description, string $questionnaireName, array $pages): Project
     {
         $project = Project::create([
             'name' => $name,
@@ -403,7 +403,7 @@ class MartProjectSeeder extends Seeder
         if ($answerWindow > 0) {
             for ($i = 0; $i < $answerCount; $i++) {
                 $startedAt = $firstDay->copy()->addMinutes(rand(0, $answerWindow));
-                $this->submit($case, $schedule, $questions, $inputs($i, $startedAt), $startedAt, rand(2, 5));
+                $this->submit($case, $schedule, $questions, $inputs($i, $startedAt), $startedAt, rand(2, 5) * 60);
             }
         }
 
@@ -416,10 +416,15 @@ class MartProjectSeeder extends Seeder
     /**
      * One submit through the same code as the app's.
      */
-    private function submit(Cases $case, MartSchedule $schedule, Collection $questions, array $inputs, Carbon $startedAt, int $durationMinutes): void
+    protected function submit(Cases $case, MartSchedule $schedule, Collection $questions, array $inputs, Carbon $startedAt, int $durationSeconds): void
     {
         $answers = [];
         foreach ($questions->values() as $index => $question) {
+            // A text-only item has no itemId, so the app sends nothing for it;
+            // later items keep their place-based itemIds.
+            if ($question->type === 'display') {
+                continue;
+            }
             $answers[(string) ($index + 1)] = $this->appAnswer($question, $inputs[$question->text] ?? null);
         }
 
@@ -429,9 +434,9 @@ class MartProjectSeeder extends Seeder
             'userId' => $case->user->email,
             'participantId' => $case->name,
             'questionnaireStarted' => $startedAt->getTimestampMs(),
-            'questionnaireDuration' => $durationMinutes * 60 * 1000,
+            'questionnaireDuration' => $durationSeconds * 1000,
             'answers' => $answers,
-            'timestamp' => $startedAt->copy()->addMinutes($durationMinutes)->getTimestampMs(),
+            'timestamp' => $startedAt->copy()->addSeconds($durationSeconds)->getTimestampMs(),
             'timezone' => 'Europe/Berlin',
         ]);
 
@@ -443,7 +448,8 @@ class MartProjectSeeder extends Seeder
 
     /**
      * The answer as the app sends it: always an array, empty when unanswered.
-     * Choices are option values from 1. The app drops a range or number of 0.
+     * Choices and sliders with labels are option values from 1, given here as
+     * their label. The app drops a range or number of 0.
      */
     private function appAnswer(MartQuestion $question, $value): array
     {
@@ -452,11 +458,32 @@ class MartProjectSeeder extends Seeder
         }
 
         return match ($question->type) {
-            'one choice' => [$this->optionValue($question, $value)],
-            'multiple choice' => array_map(fn ($text) => $this->optionValue($question, $text), $value),
+            'one choice' => $this->choiceValues($question, [$value]),
+            'multiple choice' => $this->choiceValues($question, $value),
+            'range values' => [$this->optionValue($question, $value)],
             'range', 'number' => $value === 0 ? [] : [$value],
             default => [$value],
         };
+    }
+
+    /**
+     * Option values from 1. An ['other' => typed words] choice becomes "text"
+     * followed by the typed words, as the app sends the "other" option.
+     */
+    private function choiceValues(MartQuestion $question, array $choices): array
+    {
+        $values = [];
+        foreach ($choices as $choice) {
+            if (is_array($choice) && isset($choice['other'])) {
+                $values[] = 'text';
+                $values[] = $choice['other'];
+
+                continue;
+            }
+            $values[] = $this->optionValue($question, $choice);
+        }
+
+        return $values;
     }
 
     private function optionValue(MartQuestion $question, string $text): int
@@ -810,7 +837,7 @@ class MartProjectSeeder extends Seeder
      * Create individual MartQuestion records for a schedule, positions from 1
      * as the editor saves them.
      */
-    private function createQuestionsForSchedule($schedule, array $questions)
+    protected function createQuestionsForSchedule($schedule, array $questions)
     {
         foreach ($questions as $index => $question) {
             MartQuestion::create([
