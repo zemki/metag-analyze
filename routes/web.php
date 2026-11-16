@@ -66,6 +66,7 @@ Route::group(['middleware' => ['auth', 'authorised', 'verified', 'LoggedUser']],
      * MART Questionnaire Routes
      */
     Route::get('/projects/{project}/questionnaires', 'MartQuestionnaireController@index');
+    Route::get('/projects/{project}/questionnaires/codebook', 'MartQuestionnaireController@codebook');
     Route::post('/projects/{project}/questionnaires', 'MartQuestionnaireController@store');
     Route::put('/questionnaires/{schedule}/questions', 'MartQuestionnaireController@updateQuestions');
     Route::get('/questionnaires/{schedule}/history', 'MartQuestionnaireController@history');

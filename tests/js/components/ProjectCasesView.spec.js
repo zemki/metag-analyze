@@ -36,6 +36,36 @@ describe('ProjectCasesView actions menu', () => {
   });
 });
 
+// MART questions live in the MART database, so the project page offers their
+// list, with the values the answers are stored as. MeTag keeps its own views.
+describe('ProjectCasesView MART questions', () => {
+  beforeEach(() => {
+    window.axios = { get: jest.fn(() => new Promise(() => {})) };
+  });
+
+  const questionsButton = (projectInputs) => shallowMount(ProjectCasesView, {
+    props: { project: { id: 1, name: 'Study', description: 'A study' }, projectInputs },
+  }).find('[data-test="mart-questions"]');
+
+  it('offers the questions on a MART project', () => {
+    expect(questionsButton(JSON.stringify([{ type: 'mart' }])).exists()).toBe(true);
+  });
+
+  it('offers no MART questions on a MeTag project', () => {
+    expect(questionsButton(JSON.stringify([{ name: 'Mood', type: 'text' }])).exists()).toBe(false);
+  });
+
+  it('opens the list from the button', async () => {
+    const wrapper = shallowMount(ProjectCasesView, {
+      props: { project: { id: 1, name: 'Study', description: 'A study' }, projectInputs: JSON.stringify([{ type: 'mart' }]) },
+    });
+
+    await wrapper.find('[data-test="mart-questions"]').trigger('click');
+
+    expect(wrapper.findComponent({ name: 'MartQuestionsModal' }).exists()).toBe(true);
+  });
+});
+
 // The case rows and the case strip take their MeTag-only actions (QR code login,
 // close early) from these capabilities. MART participants sign in with email and
 // password, so a MART project offers no QR code.

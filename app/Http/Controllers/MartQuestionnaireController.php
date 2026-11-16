@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mart\MartCodebook;
 use App\Mart\MartFile;
 use App\Mart\MartProject;
 use App\Mart\MartQuestion;
@@ -44,6 +45,22 @@ class MartQuestionnaireController extends Controller
             'success' => true,
             'questionnaires' => $questionnaires,
         ]);
+    }
+
+    /**
+     * The read-only list of the project's questions with the values their
+     * answers are stored as, for the project page. Anyone who can see the
+     * project gets it, as with index(), which returns more.
+     */
+    public function codebook(Project $project)
+    {
+        $this->authorize('view', $project);
+
+        if (! $project->isMartProject()) {
+            abort(404);
+        }
+
+        return response()->json(['questionnaires' => MartCodebook::forProject($project)]);
     }
 
     /**

@@ -21,6 +21,18 @@
             {{ trans('Create Case') }}
           </a>
 
+          <!-- MART questions with the values their answers are stored as -->
+          <button v-if="isMartProject"
+                  type="button"
+                  data-test="mart-questions"
+                  @click="showMartQuestions = true"
+                  class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 whitespace-nowrap">
+            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+            </svg>
+            Questions
+          </button>
+
           <!-- Project Settings Button -->
           <button @click="openProjectSettings"
                   class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 whitespace-nowrap">
@@ -294,6 +306,10 @@
       <div v-html="dialog.message"></div>
     </Modal>
 
+    <MartQuestionsModal v-if="showMartQuestions"
+                        :project-id="project.id"
+                        @close="showMartQuestions = false" />
+
     <!-- QR Code Modal -->
     <QRCodeModal v-if="qrCodeModalVisible"
                  :show="qrCodeModalVisible"
@@ -440,6 +456,7 @@ import ProjectInvites from './projectsInvites.vue';
 import Modal from './global/modal.vue';
 import PaginationControls from './PaginationControls.vue';
 import QRCodeModal from './QRCodeModal.vue';
+import MartQuestionsModal from './mart/MartQuestionsModal.vue';
 // Redesign primitives (stage 2)
 import StatusPill from './global/StatusPill.vue';
 import SectionBar from './global/SectionBar.vue';
@@ -539,6 +556,7 @@ export default {
     Modal,
     PaginationControls,
     QRCodeModal,
+    MartQuestionsModal,
     // Redesign primitives
     StatusPill,
     SectionBar,
@@ -625,6 +643,9 @@ export default {
         onConfirm: null,
         onCancel: null
       },
+
+      // MART questions list
+      showMartQuestions: false,
 
       // QR Code Modal
       qrCodeModalVisible: false,
