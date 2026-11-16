@@ -1,4 +1,4 @@
-import { computed, unref } from 'vue';
+import { computed, toValue } from 'vue';
 
 /**
  * useProjectCapabilities — single source of truth for the regular vs.
@@ -6,8 +6,9 @@ import { computed, unref } from 'vue';
  * in the redesigned dashboard reads its conditionals from here, so the
  * type-aware behavior is defined exactly once.
  *
- * Pass the project (plain object or ref/reactive) and read the returned
- * computed for capability flags + helper predicates.
+ * Pass the project (plain object, ref/reactive, or a getter such as
+ * `() => props.project`) and read the returned computed for capability
+ * flags + helper predicates. toValue() reads all three forms.
  *
  * Project shape this expects:
  *   {
@@ -15,7 +16,7 @@ import { computed, unref } from 'vue';
  *     ...other fields
  *   }
  *
- * @param  {object|import('vue').Ref<object>} project
+ * @param  {object|import('vue').Ref<object>|(() => object)} project
  * @return {import('vue').ComputedRef<{
  *   isMartProject: boolean,
  *   showBackendStatus: boolean,
@@ -31,7 +32,7 @@ import { computed, unref } from 'vue';
  */
 export function useProjectCapabilities(project) {
   return computed(() => {
-    const p = unref(project) ?? {};
+    const p = toValue(project) ?? {};
     const isMart = !!p.is_mart_project;
 
     return {

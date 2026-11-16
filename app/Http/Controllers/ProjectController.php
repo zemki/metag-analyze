@@ -98,7 +98,9 @@ class ProjectController extends Controller
                 $case->consultable = $case->isConsultable() && ! $case->notYetStarted();
                 $case->backend = $case->isBackend();
 
-                // Attach project data for frontend access
+                // Attach project data for frontend access. The checks above load the
+                // real project relation, which would win over this in the JSON.
+                $case->unsetRelation('project');
                 $case->project = (object) [
                     'id' => $project->id,
                     'is_mart_project' => $project->isMartProject(),
@@ -217,7 +219,9 @@ class ProjectController extends Controller
             $case->consultable = $case->isAccessible(); // Use new accessibility logic
             $case->backend = $case->isBackend();
 
-            // Attach project data for frontend access
+            // Attach project data for frontend access. The checks above load the
+            // real project relation, which would win over this in the JSON.
+            $case->unsetRelation('project');
             $case->project = (object) [
                 'id' => $project->id,
                 'is_mart_project' => $project->isMartProject(),

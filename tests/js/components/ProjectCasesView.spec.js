@@ -35,3 +35,36 @@ describe('ProjectCasesView actions menu', () => {
     expect(link.exists()).toBe(false);
   });
 });
+
+// The case rows and the case strip take their MeTag-only actions (QR code login,
+// close early) from these capabilities. MART participants sign in with email and
+// password, so a MART project offers no QR code.
+describe('ProjectCasesView capabilities', () => {
+  beforeEach(() => {
+    window.axios = { get: jest.fn(() => new Promise(() => {})) };
+  });
+
+  const capabilities = (projectInputs) => shallowMount(ProjectCasesView, {
+    props: { project: { id: 1, name: 'Study', description: 'A study' }, projectInputs },
+  }).vm.capabilities;
+
+  it('offers the QR code on a MeTag project', () => {
+    expect(capabilities(JSON.stringify([{ name: 'Mood', type: 'text' }])).showQRAction).toBe(true);
+  });
+
+  it('offers no QR code on a MART project', () => {
+    expect(capabilities(JSON.stringify([{ type: 'mart' }])).showQRAction).toBe(false);
+  });
+
+  it('offers no early close on a MART project', () => {
+    expect(capabilities(JSON.stringify([{ type: 'mart' }])).showCloseEarlyAction).toBe(false);
+  });
+
+  it('marks the project it gives the case rows as MART', () => {
+    const wrapper = shallowMount(ProjectCasesView, {
+      props: { project: { id: 1, name: 'Study', description: 'A study' }, projectInputs: JSON.stringify([{ type: 'mart' }]) },
+    });
+
+    expect(wrapper.vm.localProject.is_mart_project).toBe(true);
+  });
+});

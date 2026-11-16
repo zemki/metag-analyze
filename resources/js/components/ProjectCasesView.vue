@@ -672,15 +672,17 @@ export default {
      * the plain object on the Options API instance.
      */
     capabilities() {
-      return useProjectCapabilities(() => this.localProject).value;
+      // The project prop has no MART flag, so it's added from the inputs here.
+      return useProjectCapabilities({ ...this.localProject, is_mart_project: this.isMartProject }).value;
     },
   },
   watch: {
     // Remove automatic prop syncing to prevent overriding our updates
   },
   mounted() {
-    // Initialize local project copy
-    this.localProject = { ...this.project };
+    // Initialize local project copy. The project prop has no MART flag, and the
+    // case rows and canShowQRCode() read it from here.
+    this.localProject = { ...this.project, is_mart_project: this.isMartProject };
 
     // Cap the cases panel at ~60% of the viewport so the entries panel
     // below always has room (roughly 260+ px after the page header).
