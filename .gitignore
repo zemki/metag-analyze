@@ -8,6 +8,7 @@ bootstrap/compiled.php
 .env.testing
 .env_prod_backup
 .env_local_backup
+.env.ezio-herdo-backup
 .phpunit.result.cache
 
 # JavaScript/Node
