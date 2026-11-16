@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\CaseStatus;
 use App\Mart\MartAnswer;
 use App\Mart\MartEntry;
 use App\Mart\MartProject;
@@ -80,6 +81,29 @@ class MartReferenceProjectSeederTest extends TestCase
         $entryIds = MartEntry::whereIn('case_id', $project->cases()->pluck('id'))->pluck('id');
 
         $this->assertFalse(MartAnswer::whereIn('entry_id', $entryIds)->where('answer_value', 'like', '%http%')->exists());
+    }
+
+    /**
+     * MART cases open to researchers only once they are completed, and the
+     * sample submits are from 2025, so each sample case has ended.
+     *
+     * @test
+     */
+    public function every_sample_case_is_completed_so_researchers_can_consult_it()
+    {
+        $project = $this->seedReferenceProject();
+
+        $this->assertTrue($project->cases()->get()->every(fn ($case) => $case->getStatus() === CaseStatus::COMPLETED && $case->isAccessible()));
+    }
+
+    /** @test */
+    public function a_sample_case_runs_from_its_first_to_its_last_submit()
+    {
+        $project = $this->seedReferenceProject();
+
+        $case = $project->cases()->where('name', 'ref-p3')->firstOrFail();
+
+        $this->assertSame(['27.08.2025', '05.09.2025'], [$case->startDay(), $case->lastDay()]);
     }
 
     /** @test */

@@ -26,6 +26,13 @@ class StagingMartSeeder extends Seeder
      */
     public array $accounts = [];
 
+    /**
+     * Also give each project the 4 sample participants and their answers, as
+     * completed cases a researcher can consult. Asked in the terminal; tests
+     * set it here.
+     */
+    public bool $withSampleParticipants = false;
+
     public function run()
     {
         $this->command->info('======================================');
@@ -34,6 +41,8 @@ class StagingMartSeeder extends Seeder
         $this->command->newLine();
 
         $accounts = $this->accounts ?: $this->askForAccounts();
+        $withSampleParticipants = $this->withSampleParticipants
+            || (! $this->accounts && $this->command->confirm('Add the 4 sample participants with their answers, as completed cases you can consult?', false));
         $reference = (new MartReferenceProjectSeeder)->setContainer($this->container)->setCommand($this->command);
 
         $users = [];
@@ -57,6 +66,11 @@ class StagingMartSeeder extends Seeder
                     'duration' => 'startDay:' . now()->format('d.m.Y') . '|lastDay:' . now()->addMonths(3)->format('d.m.Y'),
                     'created_at' => now(),
                 ]);
+
+                if ($withSampleParticipants) {
+                    $reference->seedSampleData($project);
+                    $this->command->info('    + 4 sample participants with their answers (completed cases)');
+                }
 
                 $userProjects[] = $project;
                 $allProjects[] = $project;

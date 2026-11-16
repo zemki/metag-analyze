@@ -63,6 +63,35 @@ class MartDemoSeedersTest extends TestCase
     }
 
     /** @test */
+    public function staging_leaves_the_sample_participants_out_unless_asked()
+    {
+        $this->runStaging([['email' => 'tester@example.test', 'projects' => ['Staging A']]]);
+
+        $this->assertSame(['participant-001'], Project::where('name', 'Staging A')->firstOrFail()->cases()->orderBy('name')->pluck('name')->all());
+    }
+
+    /** @test */
+    public function staging_adds_the_sample_participants_when_asked()
+    {
+        $this->runStaging([['email' => 'tester@example.test', 'projects' => ['Staging A']]], withSampleParticipants: true);
+
+        $this->assertSame(
+            ['participant-001', 'ref-p1', 'ref-p2', 'ref-p3', 'ref-p4'],
+            Project::where('name', 'Staging A')->firstOrFail()->cases()->orderBy('name')->pluck('name')->all(),
+        );
+    }
+
+    /** @test */
+    public function staging_sample_participants_bring_their_answers()
+    {
+        $this->runStaging([['email' => 'tester@example.test', 'projects' => ['Staging A']]], withSampleParticipants: true);
+
+        $caseIds = Project::where('name', 'Staging A')->firstOrFail()->cases()->where('name', 'like', 'ref-p%')->pluck('id');
+
+        $this->assertSame(count(MartReferenceProjectSeeder::fixture('submits')), MartEntry::whereIn('case_id', $caseIds)->count());
+    }
+
+    /** @test */
     public function staging_repeating_questionnaires_are_open_today()
     {
         $repeating = $this->stagingProjectOptions()['repeatingQuestionnaires'];
@@ -262,10 +291,11 @@ class MartDemoSeedersTest extends TestCase
         return (int) Carbon::parse($start)->diffInDays(Carbon::parse($end));
     }
 
-    private function runStaging(array $accounts): void
+    private function runStaging(array $accounts, bool $withSampleParticipants = false): void
     {
         $seeder = new StagingMartSeeder;
         $seeder->accounts = $accounts;
+        $seeder->withSampleParticipants = $withSampleParticipants;
 
         $this->runSeeder($seeder);
     }

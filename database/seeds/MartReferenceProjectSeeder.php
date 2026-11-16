@@ -10,6 +10,7 @@ use App\Mart\MartSchedule;
 use App\Project;
 use App\Role;
 use App\User;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -162,6 +163,8 @@ class MartReferenceProjectSeeder extends Seeder
                 throw new RuntimeException('A seeded submit was rejected: ' . ($result['message'] ?? 'no message'));
             }
         }
+
+        $this->endSampleCases($cases);
 
         foreach (self::fixture('device_infos') as $info) {
             // The device-infos endpoint only takes android and ios. Directus also
@@ -567,6 +570,32 @@ class MartReferenceProjectSeeder extends Seeder
         }
 
         return $answers;
+    }
+
+    /**
+     * A sample case runs from the participant's first submit to their last.
+     * The submits are from 2025, so each case is completed, and MART cases
+     * open to researchers only once completed (Cases::isAccessible). Run after
+     * the submits, which go in while the case is still open.
+     *
+     * @param  array<string, Cases>  $cases  by participant id
+     */
+    private function endSampleCases(array $cases): void
+    {
+        $submits = collect(self::fixture('submits'))->groupBy('participantId');
+
+        foreach ($cases as $participantId => $case) {
+            $rows = $submits[$participantId];
+            // The fixture gives the time zone as "MESZ", German summer time,
+            // which PHP doesn't know by that name.
+            $first = Carbon::createFromTimestampMs($rows->min(fn ($row) => (int) $row['questionnaireStarted']))->setTimezone('Europe/Berlin');
+            $last = Carbon::createFromTimestampMs($rows->max(fn ($row) => (int) $row['timestamp']))->setTimezone('Europe/Berlin');
+
+            $case->update([
+                'duration' => 'startDay:' . $first->format('d.m.Y') . '|lastDay:' . $last->format('d.m.Y') . '|',
+                'first_login_at' => $first,
+            ]);
+        }
     }
 
     /**
