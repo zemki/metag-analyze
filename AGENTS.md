@@ -158,6 +158,7 @@ The editor keys the question list by uuid, or by a client-side `clientId` for a 
 - `MartReferenceProjectSeeder` rebuilds Directus project 1 from `database/seeds/fixtures/mart-reference/` (a 27 October 2026 snapshot, personal data removed), in the editor's config format. `MartReferenceParityTest` lists every remaining difference from Directus, and a gap fix must remove its lines. The fixtures stay free of personal data; `MartReferenceProjectSeederTest` checks.
 - Trigger migrations need `SUPER` or `log_bin_trust_function_creators=1`; they skip with a warning otherwise.
 - Case lists and exports for MART come from the MART DB. The treemap, the graph pages and `store` on `/api/v1` and `/api/v2` refuse MART with 403.
+- Blade Icons components are off (`config/blade-icons.php`), so `<x-heroicon-*>` and `<x-fi-*>` don't exist. Use `@svg('heroicon-o-check')` or `<x-filament::icon icon="heroicon-o-check" />`.
 
 ## Docs
 - `DOCS/MART/API.md` (endpoint reference), `DOCS/MART/DATA_MAPPING.md`, `DOCS/MART/README.md`.

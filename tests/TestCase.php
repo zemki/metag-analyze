@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Sleep;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -34,6 +35,10 @@ abstract class TestCase extends BaseTestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        // No real waiting: Laravel's login timebox sleeps 200 ms after every
+        // failed attempt. Laravel resets the fake after each test.
+        Sleep::fake();
 
         // Create test user with a case
         $this->user = User::factory()->researcher()->create([

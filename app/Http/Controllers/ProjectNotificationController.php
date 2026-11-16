@@ -9,6 +9,9 @@ class ProjectNotificationController extends Controller
 {
     public function show(Project $project)
     {
+        // The page lists every participant's user data: project members and admins only.
+        $this->authorize('view', $project);
+
         $data['breadcrumb'] = [url($project->path()) => strlen($project->name) > 20 ? substr($project->name, 0, 20) . '...' : $project->name, '#' => 'Notification Center'];
         $data['cases'] = $project->cases;
         $data['project'] = $project;

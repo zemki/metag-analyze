@@ -399,9 +399,6 @@ class MartAuthFlowTest extends TestCase
 
         $refreshToken = $loginResponse->json('refreshToken');
 
-        // Wait a moment to ensure new tokens are different
-        sleep(1);
-
         // Refresh tokens
         $response = $this->postJson('/api/mart/refresh', [
             'refreshToken' => $refreshToken,

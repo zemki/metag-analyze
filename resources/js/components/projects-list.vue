@@ -272,7 +272,7 @@ export default {
               "/projects/invite/" + self.leaveProjectUserId,
               {
                 email: self.loggedUser.email,
-                study: self.leaveProjectStudyId,
+                project: self.leaveProjectStudyId,
               }
           )
           .then((response) => {

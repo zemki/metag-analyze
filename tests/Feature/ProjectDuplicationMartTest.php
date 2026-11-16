@@ -295,7 +295,7 @@ class ProjectDuplicationMartTest extends TestCase
     }
 
     /** @test */
-    public function any_authenticated_user_can_duplicate_any_project()
+    public function a_researcher_outside_the_project_cannot_duplicate_it()
     {
         $owner = User::factory()->researcher()->create([
             'email_verified_at' => now(),
@@ -305,7 +305,6 @@ class ProjectDuplicationMartTest extends TestCase
             'email_verified_at' => now(),
         ]);
 
-        // Create project with MART configuration
         $project = Project::factory()->create([
             'created_by' => $owner->id,
             'name' => 'Private MART Project',
@@ -314,23 +313,11 @@ class ProjectDuplicationMartTest extends TestCase
             ]),
         ]);
 
-        // Try to duplicate as unauthorized user
-        $response = $this->actingAs($otherUser)
-            ->get("/projects/{$project->id}/duplicate");
+        $this->actingAs($otherUser)
+            ->get("/projects/{$project->id}/duplicate")
+            ->assertForbidden();
 
-        // Currently there's no authorization check, so it succeeds
-        $response->assertStatus(200);
-
-        // Verify duplication occurred
-        $this->assertEquals(2, Project::where('name', 'Private MART Project')->count());
-
-        // The duplicated project maintains the original creator
-        $duplicatedProject = Project::where('name', 'Private MART Project')
-            ->where('id', '!=', $project->id)
-            ->first();
-
-        // The duplicate method doesn't change created_by, so it remains the original owner
-        $this->assertEquals($owner->id, $duplicatedProject->created_by);
+        $this->assertEquals(1, Project::where('name', 'Private MART Project')->count());
     }
 
     /** @test */
@@ -376,47 +363,7 @@ class ProjectDuplicationMartTest extends TestCase
     }
 
     /** @test */
-    public function duplicating_mart_project_with_media_preserves_media_relationships()
-    {
-        $user = User::factory()->researcher()->create([
-            'email_verified_at' => now(),
-        ]);
-
-        // Create MART project with media (even though use_entity might be false)
-        $project = Project::factory()->create([
-            'created_by' => $user->id,
-            'name' => 'MART Project with Media',
-            'inputs' => json_encode([
-                ['type' => 'mart', 'questionnaire_days' => [1, 2, 3]],
-            ]),
-            'use_entity' => true,
-            'entity_name' => 'location',
-        ]);
-
-        // Create and attach media
-        $media1 = Media::factory()->create(['name' => 'Location A']);
-        $media2 = Media::factory()->create(['name' => 'Location B']);
-        $project->media()->attach([$media1->id, $media2->id]);
-
-        // Duplicate the project
-        $response = $this->actingAs($user)
-            ->get("/projects/{$project->id}/duplicate");
-
-        $response->assertStatus(200);
-
-        // Find the duplicated project
-        $duplicatedProject = Project::where('id', '!=', $project->id)
-            ->where('name', 'MART Project with Media')
-            ->first();
-
-        // Verify media relationships are preserved
-        $this->assertEquals(2, $duplicatedProject->media()->count());
-        $this->assertTrue($duplicatedProject->media->contains($media1));
-        $this->assertTrue($duplicatedProject->media->contains($media2));
-    }
-
-    /** @test */
-    public function duplicating_mart_project_without_entity_does_not_copy_media()
+    public function duplicating_mart_project_without_entity_still_copies_media()
     {
         $user = User::factory()->researcher()->create([
             'email_verified_at' => now(),

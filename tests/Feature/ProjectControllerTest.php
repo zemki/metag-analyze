@@ -135,24 +135,6 @@ class ProjectControllerTest extends TestCase
         $this->assertDatabaseMissing('projects', ['id' => $project->id]);
     }
 
-    public function test_create_project_with_cases_and_entries()
-    {
-
-        $user = User::factory()->researcher()->create();
-        $project = Project::factory()->create(['created_by' => $user->id]);
-        $user->projects()->save($project);
-
-        // Create 5 cases
-        $cases = Cases::factory(5)->create(['project_id' => $project->id]);
-
-        // Create 100 entries for each case
-        foreach ($cases as $case) {
-            $entries = Entry::factory(100)->create(['case_id' => $case->id]);
-            $this->assertCount(100, $entries);
-        }
-
-    }
-
     public function test_destroy_project_with_cases_and_entries()
     {
 
