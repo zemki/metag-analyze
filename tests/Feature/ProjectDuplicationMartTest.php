@@ -341,47 +341,7 @@ class ProjectDuplicationMartTest extends TestCase
     }
 
     /** @test */
-    public function duplicating_mart_project_with_media_preserves_media_relationships()
-    {
-        $user = User::factory()->researcher()->create([
-            'email_verified_at' => now(),
-        ]);
-
-        // Create MART project with media (even though use_entity might be false)
-        $project = Project::factory()->create([
-            'created_by' => $user->id,
-            'name' => 'MART Project with Media',
-            'inputs' => json_encode([
-                ['type' => 'mart', 'questionnaire_days' => [1, 2, 3]],
-            ]),
-            'use_entity' => true,
-            'entity_name' => 'location',
-        ]);
-
-        // Create and attach media
-        $media1 = Media::factory()->create(['name' => 'Location A']);
-        $media2 = Media::factory()->create(['name' => 'Location B']);
-        $project->media()->attach([$media1->id, $media2->id]);
-
-        // Duplicate the project
-        $response = $this->actingAs($user)
-            ->get("/projects/{$project->id}/duplicate");
-
-        $response->assertStatus(200);
-
-        // Find the duplicated project
-        $duplicatedProject = Project::where('id', '!=', $project->id)
-            ->where('name', 'MART Project with Media')
-            ->first();
-
-        // Verify media relationships are preserved
-        $this->assertEquals(2, $duplicatedProject->media()->count());
-        $this->assertTrue($duplicatedProject->media->contains($media1));
-        $this->assertTrue($duplicatedProject->media->contains($media2));
-    }
-
-    /** @test */
-    public function duplicating_mart_project_without_entity_does_not_copy_media()
+    public function duplicating_mart_project_without_entity_still_copies_media()
     {
         $user = User::factory()->researcher()->create([
             'email_verified_at' => now(),
