@@ -34,7 +34,7 @@ Feature tests render Blade views with `@vite`, so `public/build` must exist. The
 
 ## Environment
 
-- Laravel Herd on Windows, PHP 8.3, MySQL 8, Node 22. Local URL `https://metag-analyze.test`.
+- Windows, PHP 8.3 served by Ezio Herdo, MySQL 8, Node 22. Local URL `https://metag-analyze.test`.
 - `.env.testing`: main DB `metagtesting`, MART DB `metag_marttesting`. Tests must never point at the dev databases.
 - CI (`.github/workflows/backend_tests.yml`) migrates both DBs, builds the frontend, runs Pest. Jest is not in CI.
 
@@ -73,7 +73,7 @@ A MART project is a normal `projects` row whose `inputs` JSON contains one objec
 - `app/Http/Controllers/MartFileController.php`: encrypted file uploads.
 - `app/Http/Controllers/MartQuestionnaireController.php`: researcher CRUD with question versioning.
 - `app/Http/Resources/Mart/*`: mobile JSON shape. `app/Mart/MartSchedule::toMobileFormat()` builds schedule options.
-- `app/Exports/Mart/*`: Excel export (entries, device info, stats, files), project-wide or per case.
+- `app/Exports/Mart/*`: Excel export (entries, device info, stats, files, questions), project-wide or per case.
 - `resources/js/components/mart/`: `MartQuestionnaireManager.vue`, `AddEditQuestionnaireDialog.vue`, `VersionHistoryModal.vue`; `editproject.vue` hosts them for MART projects.
 - `app/Http/Middleware/ForceJsonResponse.php`: all MART routes return JSON, never a login redirect.
 - Legacy, do not extend: `app/MartPage.php`, `app/MartQuestionnaireSchedule.php`, `MartScheduleController.php`, main-DB `mart_*` tables.
@@ -85,7 +85,7 @@ The source of truth is `martTypes.ts` from the app developer. Keep the current c
 Interactive docs: `/docs/api` (Scramble + Stoplight), HTTP Basic auth via `API_DOCS_USER` / `API_DOCS_PASSWORD` unless `API_DOCS_PROTECT_ACCESS=false` (default true); an empty password returns 503. See `.claude/docs/scramble-laravel-openapi.md`.
 
 ### Auth
-- Flow: `/api/mobile/auth/check-email` -> `/send-password-setup` or `/check-password` -> `/check-access` -> `/refresh`. Steps are chained through cache keys (email + IP) with 1 and 5 minute windows.
+- Flow: `/api/mobile/auth/check-email` -> `/send-password-setup` or `/check-password` -> `/check-access` -> `/refresh`. Steps are chained through cache keys (email + IP) with 10 and 5 minute windows.
 - `check-password` returns `bearerToken` (30 days) and `refreshToken` (7 days). Tokens are stored as `sha256` in `users.api_token` / `users.refresh_token`; the `auth:api` guard is Laravel's token driver.
 - `check-access` auto-creates a case named `P` + 6 hex chars and sets `cases.first_login_at`.
 - Everything under `/api/mobile` outside `auth/` needs `Authorization: Bearer`.
