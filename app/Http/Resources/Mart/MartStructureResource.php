@@ -259,16 +259,18 @@ class MartStructureResource extends JsonResource
     /**
      * Get last automatic Android stats submission timestamp
      * Returns object per martTypes.ts: { timestamp: number }
+     *
+     * Asks for the newest timestamp only: a stats row can hold megabytes of
+     * usage and event data, and MySQL refuses to sort rows that outgrow its
+     * sort buffer ("Out of sort memory").
      */
     private function getLastAndroidStatsSubmit($participantId, MartProject $martProject)
     {
-        $stat = MartStat::forParticipant($participantId)
+        $timestamp = MartStat::forParticipant($participantId)
             ->where('mart_project_id', $martProject->id)
             ->whereNotNull('android_usage_stats')
-            ->orderBy('timestamp', 'desc')
-            ->first();
+            ->max('timestamp');
 
-        // Return object with timestamp per martTypes.ts
-        return $stat ? ['timestamp' => $stat->timestamp] : null;
+        return $timestamp !== null ? ['timestamp' => (int) $timestamp] : null;
     }
 }

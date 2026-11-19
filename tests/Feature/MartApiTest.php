@@ -336,6 +336,40 @@ class MartApiTest extends TestCase
         $this->assertSame(['Own phone'], array_column($structure['deviceInfos'], 'model'));
     }
 
+    /**
+     * Android stats rows run to megabytes of usage and event data. MySQL
+     * refuses to sort rows that outgrow its sort buffer ("Out of sort
+     * memory"), so finding the latest submit must not sort whole rows.
+     *
+     * @test
+     */
+    public function a_participant_with_megabytes_of_android_stats_still_gets_the_structure()
+    {
+        $name = 'P-stats-' . uniqid();
+        $this->case->update(['name' => $name]);
+        $stat = MartStat::create([
+            'mart_project_id' => $this->project->martProject()->id,
+            'participant_id' => $name,
+            'user_id' => $this->user->email,
+            'android_usage_stats' => [['packageName' => 'com.example.app']],
+            'android_event_stats' => array_fill(0, 30000, ['packageName' => 'com.example.app', 'eventType' => 1, 'timeStamp' => 1700000000000]),
+            'timestamp' => 1700000500,
+            'timezone' => 'Europe/Berlin',
+        ]);
+
+        try {
+            $request = \Illuminate\Http\Request::create('/test', 'GET', ['participant_id' => $name]);
+            $structure = (new \App\Http\Controllers\MartApiController)
+                ->getProjectStructure($request, $this->project)
+                ->toArray($request);
+
+            $this->assertSame(['timestamp' => 1700000500], $structure['lastAndroidStatsSubmit']);
+        } finally {
+            // The MART connection isn't rolled back in this class.
+            $stat->delete();
+        }
+    }
+
     private function createMartEntry(MartSchedule $schedule, string $participantId, string $userId, int $timestamp): MartEntry
     {
         return MartEntry::create([
