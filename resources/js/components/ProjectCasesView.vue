@@ -8,6 +8,11 @@
           <div>
             <h1 class="text-2xl font-bold text-gray-900">{{ localProject.name }}</h1>
             <p class="text-sm text-gray-600 mt-1">{{ localProject.description }}</p>
+            <!-- Participants type this ID into the MART app to log in -->
+            <p v-if="isMartProject" class="text-sm text-gray-600 mt-1">
+              {{ trans('Project ID for the app:') }}
+              <span data-test="project-id" class="font-mono font-semibold text-gray-900">{{ localProject.id }}</span>
+            </p>
           </div>
         </div>
 

@@ -487,12 +487,11 @@ class MartApiTest extends TestCase
     }
 
     /**
-     * Item 3 (bonus, from Stefan's round-2 email): data-donation
-     * questionnaires must NOT appear in `singleQuestionnaires` — only in
-     * the top-level `questionnaires` catalog. The mobile's scheduler reads
-     * `singleQuestionnaires` to plan time-based prompts; donation
-     * questionnaires are user-triggered (tap to donate) and would cause
-     * spurious schedules if included.
+     * Data-donation questionnaires must NOT appear in `singleQuestionnaires`,
+     * only in the top-level `questionnaires` catalog. The mobile's scheduler
+     * reads `singleQuestionnaires` to plan time-based prompts; the app shows
+     * a donation questionnaire after a regular one instead, and would plan
+     * spurious schedules if it were included.
      *
      * @test
      */

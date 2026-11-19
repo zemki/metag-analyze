@@ -1195,6 +1195,13 @@ describe('AddEditQuestionnaireDialog data donation questionnaire settings', () =
 
       expect(wrapper.find('#donation-progress-notifications-note').exists()).toBe(false);
     });
+
+    it('says the app shows a data donation questionnaire after a regular one', async () => {
+      const wrapper = mountedDialog();
+      await wrapper.find('#data_donation_android').setValue();
+
+      expect(wrapper.find('#data-donation-note').text()).toContain('after a regular single or repeating questionnaire');
+    });
   });
 
   describe('on save', () => {
@@ -1601,5 +1608,78 @@ describe('AddEditQuestionnaireDialog question order', () => {
 
       expect([warned(wrapper, 'jump'), warned(wrapper, 'group')]).toEqual([false, false]);
     });
+  });
+});
+
+// The app files each answer under the item's itemId: its place in the
+// questionnaire, counting text-only items, which have none themselves.
+describe('AddEditQuestionnaireDialog item IDs', () => {
+  function openedQuestionnaire() {
+    return mount(AddEditQuestionnaireDialog, {
+      props: {
+        projectId: 1,
+        nextQuestionnaireId: 1,
+        schedule: {
+          id: 7,
+          name: 'Daily',
+          questionnaire_id: 3,
+          type: 'single',
+          questions: [
+            { uuid: 'q-1', text: 'Welcome', type: 'display', is_mandatory: false, config: {} },
+            { uuid: 'q-2', text: 'Age', type: 'text', is_mandatory: true, config: {} },
+            { uuid: 'q-3', text: 'Shown options', type: 'display', is_mandatory: false, config: { displaySelection: 'radio', options: ['A', 'B'] } },
+            { uuid: 'q-4', text: 'Mood', type: 'text', is_mandatory: true, config: {} },
+          ],
+        },
+      },
+      global: { stubs: { SchedulePreview: true } },
+    });
+  }
+
+  function itemId(wrapper, index) {
+    return wrapper.find(`#item-id-${index}`).text();
+  }
+
+  it('shows a question its place in the questionnaire as its itemId', async () => {
+    const wrapper = openedQuestionnaire();
+    await wrapper.vm.$nextTick();
+
+    expect(itemId(wrapper, 1)).toBe('itemId 2');
+  });
+
+  it('counts the text-only items before a question', async () => {
+    const wrapper = openedQuestionnaire();
+    await wrapper.vm.$nextTick();
+
+    expect(itemId(wrapper, 3)).toBe('itemId 4');
+  });
+
+  it('shows no itemId for a text-only item', async () => {
+    const wrapper = openedQuestionnaire();
+    await wrapper.vm.$nextTick();
+
+    expect(itemId(wrapper, 0)).toBe('No itemId');
+  });
+
+  it('shows no itemId for a text-only item with answer options', async () => {
+    const wrapper = openedQuestionnaire();
+    await wrapper.vm.$nextTick();
+
+    expect(itemId(wrapper, 2)).toBe('No itemId');
+  });
+
+  it('numbers a moved question by its new place', async () => {
+    const wrapper = mount(AddEditQuestionnaireDialog, {
+      props: { projectId: 1, nextQuestionnaireId: 1, schedule: null },
+      global: { stubs: { SchedulePreview: true } },
+    });
+    wrapper.vm.addQuestion();
+    wrapper.vm.addQuestion();
+    Object.assign(wrapper.vm.formData.questions[0], { text: 'First', type: 'text' });
+    Object.assign(wrapper.vm.formData.questions[1], { text: 'Intro', type: 'display' });
+    wrapper.vm.moveQuestion(1, -1);
+    await wrapper.vm.$nextTick();
+
+    expect(itemId(wrapper, 1)).toBe('itemId 2');
   });
 });

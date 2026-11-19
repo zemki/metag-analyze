@@ -7,7 +7,12 @@
           <h3 class="text-2xl font-bold text-gray-900">{{ trans('Edit Project') }}</h3>
           <p class="mt-2 text-sm text-gray-600">{{ trans('You can edit your project details here.') }}</p>
         </div>
-        <div v-if="isMartProject" class="flex items-center">
+        <div v-if="isMartProject" class="flex items-center gap-3">
+          <!-- Participants type this ID into the MART app to log in -->
+          <span class="text-sm text-gray-600" :title="trans('Participants enter this ID in the MART app to log in.')">
+            {{ trans('Project ID') }}
+            <span data-test="project-id" class="font-mono font-semibold text-gray-900">{{ project.id }}</span>
+          </span>
           <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
@@ -220,6 +225,29 @@
           <p class="mt-2 text-sm text-gray-600">
             {{ trans('Configure automatic data collection for this project.') }}
           </p>
+        </div>
+
+        <!-- Collect Device Infos Toggle -->
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+          <div class="flex items-start">
+            <div class="flex items-center h-5">
+              <input
+                  type="checkbox"
+                  id="collect-device-infos"
+                  v-model="projectData.collectDeviceInfos"
+                  :disabled="!editable"
+                  class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+              />
+            </div>
+            <div class="ml-3">
+              <label for="collect-device-infos" class="text-sm font-medium text-gray-900">
+                {{ trans('Collect Device Infos') }}
+              </label>
+              <p class="text-xs text-gray-500">
+                {{ trans('The app sends the phone\'s operating system, its version, model and manufacturer.') }}
+              </p>
+            </div>
+          </div>
         </div>
 
         <!-- Collect Android Stats Toggle -->
@@ -762,6 +790,8 @@ export default {
         media: [],
         questionnaireName: "",
         pages: [],
+        // MART device infos; the API sends true for a project that never set it
+        collectDeviceInfos: true,
         // MART Android Stats settings
         collectAndroidStats: false,
         initialHoursOfAndroidStats: 24,
@@ -873,6 +903,8 @@ export default {
             ...page,
             pageType: page.pageType || ''
           }));
+
+          this.projectData.collectDeviceInfos = martConfig?.projectOptions?.collectDeviceInfos ?? true;
 
           // Extract Android Stats settings from MART config
           this.projectData.collectAndroidStats = martConfig?.projectOptions?.collectAndroidStats ?? false;
@@ -1212,6 +1244,8 @@ export default {
               pageType: page.pageType || null,
               sortOrder: index
             }));
+
+            martConfig.projectOptions.collectDeviceInfos = this.projectData.collectDeviceInfos;
 
             // Save Android Stats settings
             martConfig.projectOptions.collectAndroidStats = this.projectData.collectAndroidStats;

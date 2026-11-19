@@ -176,3 +176,64 @@ describe('EditProject minimum breaks', () => {
     expect(payload.inputs).not.toContain('minBreakBetween');
   });
 });
+
+// The app collects device infos only while collectDeviceInfos is true, and the
+// API sends true for a project that never set it.
+describe('EditProject device infos', () => {
+  beforeEach(() => {
+    window.axios = { patch: jest.fn().mockResolvedValue({ data: 'Project updated' }) };
+  });
+
+  const deviceInfos = (wrapper) => wrapper.find('input#collect-device-infos');
+
+  it('ticks Collect Device Infos on a project that never set it', () => {
+    const wrapper = mountWith(martInputs({}));
+
+    expect(deviceInfos(wrapper).element.checked).toBe(true);
+  });
+
+  it('loads Collect Device Infos turned off', () => {
+    const wrapper = mountWith(martInputs({ collectDeviceInfos: false }));
+
+    expect(deviceInfos(wrapper).element.checked).toBe(false);
+  });
+
+  it('saves Collect Device Infos turned off', async () => {
+    const wrapper = mountWith(martInputs({}));
+    await deviceInfos(wrapper).setValue(false);
+
+    const projectOptions = await savedProjectOptions(wrapper);
+
+    expect(projectOptions.collectDeviceInfos).toBe(false);
+  });
+
+  it('saves Collect Device Infos turned on', async () => {
+    const wrapper = mountWith(martInputs({ collectDeviceInfos: false }));
+    await deviceInfos(wrapper).setValue(true);
+
+    const projectOptions = await savedProjectOptions(wrapper);
+
+    expect(projectOptions.collectDeviceInfos).toBe(true);
+  });
+
+  it('shows no Collect Device Infos on a MeTag project', () => {
+    const wrapper = mountWith(metagInputs);
+
+    expect(deviceInfos(wrapper).exists()).toBe(false);
+  });
+});
+
+// Participants type the project ID into the MART app to log in.
+describe('EditProject project ID', () => {
+  it('shows the project ID on a MART project', () => {
+    const wrapper = mountWith(martInputs({}));
+
+    expect(wrapper.find('[data-test="project-id"]').text()).toBe('1');
+  });
+
+  it('shows no project ID on a MeTag project', () => {
+    const wrapper = mountWith(metagInputs);
+
+    expect(wrapper.find('[data-test="project-id"]').exists()).toBe(false);
+  });
+});

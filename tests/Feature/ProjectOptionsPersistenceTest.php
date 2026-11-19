@@ -178,6 +178,29 @@ class ProjectOptionsPersistenceTest extends TestCase
     }
 
     /**
+     * The project settings' "Collect Device Infos" switch, saved off, reaches
+     * the app as false.
+     *
+     * @test
+     */
+    public function device_infos_switched_off_reach_the_app_as_false()
+    {
+        $this->makeMartProject([]);
+
+        $this->patchJson('/projects/' . $this->project->id, [
+            'name' => $this->project->name,
+            'description' => $this->project->description,
+            'inputs' => json_encode([[
+                'type' => 'mart',
+                'name' => 'MART Configuration',
+                'projectOptions' => ['collectDeviceInfos' => false],
+            ]]),
+        ])->assertSuccessful();
+
+        $this->assertFalse($this->structureOptions($this->project)['collectDeviceInfos']);
+    }
+
+    /**
      * The app applies a minimum break only when its key is present, so a
      * project without one must not send the key at all.
      *

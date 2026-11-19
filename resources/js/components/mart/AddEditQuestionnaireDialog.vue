@@ -69,8 +69,9 @@
                 <p class="mt-1 text-xs text-gray-500">{{ trans('This text will be shown at the top of the questionnaire before any questions.') }}</p>
               </div>
 
-              <!-- Questionnaire Type — hidden for data-donation questionnaires
-                   (they're always single + user-triggered by definition). -->
+              <!-- Questionnaire Type — hidden for data-donation questionnaires:
+                   the app shows one after a regular questionnaire, never on a
+                   schedule of its own. -->
               <div v-if="dataDonationType === 'none'">
                 <label class="block text-sm font-medium text-gray-700 mb-2">{{ trans('Questionnaire Type') }} *</label>
                 <div class="grid grid-cols-2 gap-4">
@@ -104,7 +105,7 @@
               </div>
 
               <!-- Start on First Login Checkbox — hidden for data-donation
-                   questionnaires (user-triggered, not login-relative). -->
+                   questionnaires, which follow a regular questionnaire. -->
               <div v-if="dataDonationType === 'none'" class="p-3 bg-green-50 rounded-lg border border-green-200">
                 <div class="flex items-center">
                   <input
@@ -185,8 +186,8 @@
                 </div>
               </div>
 
-              <!-- Date/Time Settings — hidden for data-donation questionnaires
-                   (user-triggered, no calendar schedule). -->
+              <!-- Date/Time Settings — hidden for data-donation questionnaires:
+                   the app never receives their dates. -->
               <div v-if="dataDonationType === 'none'" class="space-y-3">
                 <div class="flex justify-between items-center">
                   <h4 class="text-sm font-medium text-gray-900">{{ trans('Schedule Dates') }}</h4>
@@ -574,8 +575,8 @@
                      Sits inside the donation block so it appears right where
                      the user just toggled, making clear *why* the scheduling
                      fields above disappeared. -->
-                <div v-if="dataDonationType !== 'none'" class="mt-2 p-2.5 bg-purple-100 rounded text-xs text-purple-800 leading-relaxed">
-                  {{ trans('Data donation questionnaires are user-triggered — the participant taps "Donate" in the app whenever they choose. Type, scheduling and login-relative options above don\'t apply and are hidden.') }}
+                <div v-if="dataDonationType !== 'none'" id="data-donation-note" class="mt-2 p-2.5 bg-purple-100 rounded text-xs text-purple-800 leading-relaxed">
+                  {{ trans('The app shows a data donation questionnaire after a regular single or repeating questionnaire. The minimum break between data donations is set in the project settings. Type, scheduling and login-relative options above don\'t apply and are hidden.') }}
                 </div>
               </div>
             </div>
@@ -633,6 +634,13 @@
                         {{ index + 1 }}
                       </span>
                       <span class="text-sm font-medium text-gray-700">{{ trans('Question') }}</span>
+                      <!-- The app's itemId is the item's place in the questionnaire;
+                           a text-only item has none, but keeps its place. -->
+                      <span
+                          :id="'item-id-' + index"
+                          class="text-xs font-mono text-gray-500"
+                          :title="trans('The app files answers under the itemId: the item\'s place in the questionnaire. Text-only items have none.')"
+                      >{{ question.type === 'display' ? trans('No itemId') : 'itemId ' + (index + 1) }}</span>
                       <span v-if="question.uuid" class="text-xs text-gray-400" :title="trans('Existing question with UUID')">
                         <svg class="w-3 h-3 inline" fill="currentColor" viewBox="0 0 20 20">
                           <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />

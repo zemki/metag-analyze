@@ -98,3 +98,22 @@ describe('ProjectCasesView capabilities', () => {
     expect(wrapper.vm.localProject.is_mart_project).toBe(true);
   });
 });
+
+// Participants type the project ID into the MART app to log in.
+describe('ProjectCasesView project ID', () => {
+  beforeEach(() => {
+    window.axios = { get: jest.fn(() => new Promise(() => {})) };
+  });
+
+  const projectId = (projectInputs) => shallowMount(ProjectCasesView, {
+    props: { project: { id: 42, name: 'Study', description: 'A study' }, projectInputs },
+  }).find('[data-test="project-id"]');
+
+  it('shows the project ID on a MART project', () => {
+    expect(projectId(JSON.stringify([{ type: 'mart' }])).text()).toBe('42');
+  });
+
+  it('shows no project ID on a MeTag project', () => {
+    expect(projectId(JSON.stringify([{ name: 'Mood', type: 'text' }])).exists()).toBe(false);
+  });
+});
